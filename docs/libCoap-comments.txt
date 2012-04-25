@@ -1,0 +1,64 @@
+Comments on NSDL-C (SVN checkout from NanoServiceDeviceLibrary on 16.4.2012) 
+
+Zach Shelby
+
+
+Minimal requirements for NSDL-C package release for NanoService R1.4
+
+- x86 Linux GCC library port
+- MSP430 IAR library port
+- Cortex GCC library port (if time)
+- libCoap basic build and parse support
+- libCoap with coap-09, link-format-11, observe-04, block-08 compatibility
+- libCoap verified against Sensinode ETSI Plugtest v0.6 test suite
+- libCoap packet retransmission support
+- libCoap simple RD registration helper functions 
+- ETSI Plugtest server (for internal testing)
+- ETSI Plugtest client (for internal testing)
+- Examples implementations
+	- Connected Home example node (x86 Linux)
+	- Street Lighting example node (x86 Linux)
+	- NanoStack example node (MSP430)
+- libCoap documentation
+- NSDL-C documentation
+
+
+Structural comments
+
+There is way too much functionality and complexity in the current NanoServiceDeviceLibrary project. Most of this is just not necessary 
+for NSDL-C. Things that should be removed for this release:
+
+- GSR-ASL
+- NSDL-ASL
+- SE20, HTTP, XML are only SE2 specific, not to be included in NSDL-C release
+
+I attempted to make use of NSDL-ASL and GSR-ASL in some real CoAP x86 Linux applications, and it is a total mess. There are constant and 
+serious memory faults and the functionality is not really useful for a CoAP application developer. It is easier and requires less code 
+to simply use libCoap directly without the ASL overhead.
+
+Recommendation: Keep the GSR structure for SE2, but get rid of it for NSDL-C completely. We could think of adding some more automated 
+resource handling logic in the future, but not for a first release.  
+
+
+Bugs fixes and improvements made to libCoap in the nsdl-c-simple project:
+
+- The msg_id field of the packet header structure was not being set properly. Fixed this so that the parser and builder uses the msg_id 
+from the packet header structure. Removed the unnecessary msg_id function call parameter. 
+
+- Called sn_linked_list_init(sn_coap_protocol_malloc, sn_coap_protocol_free); from sn_coap_protocol_init() as this otherwise is easily left uninitialized by a developer.
+
+- Upgraded the library to the latest coap-09, observe-04 and block-08 specifications.
+
+- Added simple RD registration, update and deregistration functions to libCoap directly. 
+
+- Fixed location-path and location-query parsing not inserting / and & characters.
+
+- New sn_coap_packet_debug() added to libCoap for easy packet inspection in applications.
+
+
+
+Suggested improvements for libCoap
+
+- BUG: Parsing fails on GET / request.
+
+
