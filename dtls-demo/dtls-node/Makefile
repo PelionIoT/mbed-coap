@@ -2,8 +2,8 @@ PLATFORM=
 OS = MACOSX
 TARGET	= coap_server
 OBJECTS = main.o coap_server.o dtls_udp_client.o
-CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../libCoap -DHAVE_DEBUG -DHAVE_DTLS
-LDFLAGS = -L../libCoap/ -D_REENTRANT -lpthread -lssl -lcrypto -lCoap
+CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../libCoap -DHAVE_DEBUG -DHAVE_DTLS
+LDFLAGS = -L../../libCoap/ -D_REENTRANT -lpthread -lssl -lcrypto -lCoap
 
 all: $(TARGET) 
 
