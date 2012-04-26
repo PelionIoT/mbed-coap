@@ -218,6 +218,7 @@ extern sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_d
 extern int16_t        sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
 extern uint16_t       sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr);
 extern void           sn_coap_builder_release_allocated_send_msg_mem(sn_nsdl_transmit_s *freed_send_msg_ptr);
+extern sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code);
 extern void           sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg_ptr);
 extern void 		  sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr);
 

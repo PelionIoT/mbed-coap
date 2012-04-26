@@ -81,6 +81,46 @@ void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
 }
 
 /**
+ * \fn SN_MEM_ATTR_COAP_BUILDER_FUNC sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr)
+ *
+ * \brief Prepares generic response packet from a request packet. This function allocates memory for the resulting sn_coap_hdr_s
+ *
+ * \param *coap_packet_ptr The request packet pointer
+ *
+ * \return *coap_packet_ptr The allocated and pre-filled response packet pointer
+ * 			NULL	Error in parsing the request
+ *
+ */
+SN_MEM_ATTR_COAP_BUILDER_FUNC
+sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
+{
+	sn_coap_hdr_s *coap_res_ptr;
+	coap_res_ptr = sn_coap_malloc(sizeof(sn_coap_hdr_s));
+	memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
+	if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
+	{
+		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+		coap_res_ptr->msg_code = msg_code;
+		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
+	} else if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE) {
+		coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+		coap_res_ptr->msg_code = msg_code;
+		/* msg_id needs to be set by the caller in this case */
+	} else {
+		return NULL;
+	}
+
+	if (coap_packet_ptr->token_ptr)
+	{
+		coap_res_ptr->token_len = coap_packet_ptr->token_len;
+		coap_res_ptr->token_ptr = sn_coap_malloc(coap_res_ptr->token_len);
+		memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
+	}
+	return coap_res_ptr;
+}
+
+
+/**
  * \fn SN_MEM_ATTR_COAP_BUILDER_FUNC int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr,
  * 									sn_coap_hdr_s *src_coap_msg_ptr, uint16_t msg_id)
  *

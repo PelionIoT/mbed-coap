@@ -36,8 +36,11 @@
 /* * * * * * * * * * * * * * * * * * * * */
 
 static void                  sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time);
+#ifdef NOT_USED
 static sn_nsdl_transmit_s   *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
+#endif
+
 static void                  sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr);
 static int32_t               sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr);
 static void                  sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr);
@@ -62,10 +65,17 @@ static uint8_t              *sn_coap_protocol_blockwise_search_block_option_from
 static void                  sn_coap_protocol_blockwise_handle_received_ack_block_option(sn_nsdl_addr_s *src_addr_ptr, uint8_t option_value);
 static void                  sn_coap_protocol_blockwise_handle_payload_size_change(sn_nsdl_addr_s *src_addr_ptr, uint8_t payload_size);
 #endif
+
+#ifdef NOT_USED
 static sn_nsdl_transmit_s   *sn_coap_protocol_build_msg(void *src_msg_ptr);
 static int8_t                sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len, void *msg_ptr);
+#endif
+
 static int8_t                sn_coap_protocol_store_coap_message_for_sending(sn_nsdl_addr_s *dst_addr_ptr, sn_coap_msg_type_e msg_type, uint16_t msg_id);
+
+#ifdef NOT_USED
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *freed_send_msg_ptr);
+#endif
 
 /* * * * * * * * * * * * * * * * * */
 /* * * * GLOBAL DECLARATIONS * * * */
@@ -1523,6 +1533,7 @@ static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr
 #endif /* SN_COAP_RESENDING_MAX_MSGS_COUNT */
 }
 
+#ifdef NOT_USED
 /**************************************************************************//**
  * \fn SN_MEM_ATTR_COAP_PROTOCOL_FUNC static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
  *
@@ -1636,6 +1647,9 @@ static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_add
 
 #endif /* SN_COAP_RESENDING_MAX_MSGS_COUNT */
 }
+
+#endif
+
 
 /**************************************************************************//**
  * \fn SN_MEM_ATTR_COAP_PROTOCOL_FUNC static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr)
@@ -2776,6 +2790,7 @@ static void sn_coap_protocol_blockwise_handle_payload_size_change(sn_nsdl_addr_s
 
 #endif /* SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE */
 
+#ifdef NOT_USED
 /**************************************************************************//**
  * \fn SN_MEM_ATTR_COAP_PROTOCOL_FUNC sn_nsdl_transmit_s *sn_coap_protocol_build_msg(void *src_msg_ptr)
  *
@@ -2896,6 +2911,8 @@ int8_t sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr,
 
     return 0;
 }
+#endif
+
 
 /**************************************************************************//**
  * \fn SN_MEM_ATTR_COAP_PROTOCOL_FUNC static int8_t sn_coap_protocol_store_coap_message_for_sending(sn_nsdl_addr_s *dst_addr_ptr, sn_coap_msg_type_e msg_type, uint16_t msg_id)
@@ -2969,6 +2986,7 @@ static int8_t sn_coap_protocol_store_coap_message_for_sending(sn_nsdl_addr_s *ds
     return 0;
 }
 
+#ifdef NOT_USED
 /**************************************************************************//**
  * \fn SN_MEM_ATTR_COAP_PROTOCOL_FUNC static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *freed_send_msg_ptr)
  *
@@ -2986,3 +3004,4 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *fre
         sn_coap_protocol_free(freed_send_msg_ptr);
     }
 }
+#endif
