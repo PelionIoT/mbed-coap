@@ -366,17 +366,7 @@ void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 	else { /* URI not found */
 		printf("URI not found\n");
 		sn_coap_hdr_s *coap_res_ptr;
-		coap_res_ptr = own_alloc(sizeof(sn_coap_hdr_s));
-		memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
-		coap_res_ptr->msg_code = COAP_MSG_CODE_RESPONSE_NOT_FOUND;
-		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
-		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
-		if (coap_packet_ptr->token_ptr)
-		{
-			coap_res_ptr->token_len = coap_packet_ptr->token_len;
-			coap_res_ptr->token_ptr = own_alloc(coap_res_ptr->token_len);
-			memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
-		}
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_FOUND);
 		svr_send_msg(coap_res_ptr);		
 	}
 
@@ -385,22 +375,11 @@ void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 /* Handle /test */
 void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 {
+	sn_coap_hdr_s *coap_res_ptr;
 	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
 		printf("GET /test\n");
-		
-		sn_coap_hdr_s *coap_res_ptr;
-		coap_res_ptr = own_alloc(sizeof(sn_coap_hdr_s));
-		memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
-		coap_res_ptr->msg_code = COAP_MSG_CODE_RESPONSE_CONTENT;
-		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
-		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
-		if (coap_packet_ptr->token_ptr)
-		{
-			coap_res_ptr->token_len = coap_packet_ptr->token_len;
-			coap_res_ptr->token_ptr = own_alloc(coap_res_ptr->token_len);
-			memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
-		}
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 		coap_res_ptr->payload_len = strlen(res_test);
@@ -417,19 +396,7 @@ void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 			memset(res_test, 0, sizeof(res_test));
 			memcpy(res_test, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
 		}
-		
-		sn_coap_hdr_s *coap_res_ptr;
-		coap_res_ptr = own_alloc(sizeof(sn_coap_hdr_s));
-		memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
-		coap_res_ptr->msg_code = COAP_MSG_CODE_RESPONSE_CHANGED;
-		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
-		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
-		if (coap_packet_ptr->token_ptr)
-		{
-			coap_res_ptr->token_len = coap_packet_ptr->token_len;
-			coap_res_ptr->token_ptr = own_alloc(coap_res_ptr->token_len);
-			memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
-		}
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CHANGED);
 		svr_send_msg(coap_res_ptr);
 		return;
 
@@ -441,19 +408,7 @@ void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 			memset(res_test, 0, sizeof(res_test));
 			memcpy(res_test, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
 		}
-		
-		sn_coap_hdr_s *coap_res_ptr;
-		coap_res_ptr = own_alloc(sizeof(sn_coap_hdr_s));
-		memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
-		coap_res_ptr->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
-		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
-		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
-		if (coap_packet_ptr->token_ptr)
-		{
-			coap_res_ptr->token_len = coap_packet_ptr->token_len;
-			coap_res_ptr->token_ptr = own_alloc(coap_res_ptr->token_len);
-			memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
-		}
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CREATED);
 		/* Options */
 		coap_res_ptr->options_list_ptr = own_alloc(sizeof(sn_coap_options_list_s));
 		memset(coap_res_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
@@ -470,35 +425,12 @@ void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 	} else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_DELETE)
 	{
 		printf("DELETE /test\n");
-		
-		sn_coap_hdr_s *coap_res_ptr;
-		coap_res_ptr = own_alloc(sizeof(sn_coap_hdr_s));
-		memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
-		coap_res_ptr->msg_code = COAP_MSG_CODE_RESPONSE_DELETED;
-		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
-		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
-		if (coap_packet_ptr->token_ptr)
-		{
-			coap_res_ptr->token_len = coap_packet_ptr->token_len;
-			coap_res_ptr->token_ptr = own_alloc(coap_res_ptr->token_len);
-			memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
-		}
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_DELETED);
 		svr_send_msg(coap_res_ptr);
 		return;
 	} else { /* Method not supported */
 		printf("Method not supported\n");
-		sn_coap_hdr_s *coap_res_ptr;
-		coap_res_ptr = own_alloc(sizeof(sn_coap_hdr_s));
-		memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
-		coap_res_ptr->msg_code = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
-		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
-		if (coap_packet_ptr->token_ptr)
-		{
-			coap_res_ptr->token_len = coap_packet_ptr->token_len;
-			coap_res_ptr->token_ptr = own_alloc(coap_res_ptr->token_len);
-			memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
-		}
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}
 }
@@ -513,22 +445,11 @@ void svr_handle_request_query(sn_coap_hdr_s *coap_packet_ptr)
 
 void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr)
 {
+	sn_coap_hdr_s *coap_res_ptr;
 	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
 		printf("GET /.well-known/core\n");
-
-		sn_coap_hdr_s *coap_res_ptr;
-		coap_res_ptr = own_alloc(sizeof(sn_coap_hdr_s));
-		memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
-		coap_res_ptr->msg_code = COAP_MSG_CODE_RESPONSE_CONTENT;
-		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
-		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
-		if (coap_packet_ptr->token_ptr)
-		{
-			coap_res_ptr->token_len = coap_packet_ptr->token_len;
-			coap_res_ptr->token_ptr = own_alloc(coap_res_ptr->token_len);
-			memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
-		}
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
 		coap_res_ptr->content_type_ptr = &link_format;
 		coap_res_ptr->content_type_len = sizeof(link_format);
 		coap_res_ptr->payload_len = strlen(LINKS);
@@ -538,18 +459,7 @@ void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr)
 		return;
 	} else { /* Method not supported */
 		printf("Method not supported\n");
-		sn_coap_hdr_s *coap_res_ptr;
-		coap_res_ptr = own_alloc(sizeof(sn_coap_hdr_s));
-		memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
-		coap_res_ptr->msg_code = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
-		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
-		if (coap_packet_ptr->token_ptr)
-		{
-			coap_res_ptr->token_len = coap_packet_ptr->token_len;
-			coap_res_ptr->token_ptr = own_alloc(coap_res_ptr->token_len);
-			memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
-		}
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}
 }
