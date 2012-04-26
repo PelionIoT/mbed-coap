@@ -44,7 +44,7 @@
 #define RES_WELL_KNOWN (const char *)(".well-known/core")
 #define EP (const char *)("etsi-server")
 #define EP_TYPE (const char *)("")
-#define LINKS (const char *)("</test>")
+#define LINKS (const char *)("</test>,</seg1/seg2/seg3>,</query>,</separate>")
 #define RD_PATH (const char *)("rd")
 
 extern void stop_pgm();
@@ -56,6 +56,7 @@ static void svr_msg_handler(char *msg, int len);
 void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_seg(sn_coap_hdr_s *coap_packet_ptr);
+void svr_handle_request_separate(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_query(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr);
 int nsp_register(const char *ep, const char *rt, const char *links);
@@ -77,8 +78,8 @@ extern void dtls_start(char *remote_address, char *local_address, int port, int 
 
 /* CoAP related globals*/
 uint16_t current_mid = 0;
-uint8_t	 text_plain = 0;
-uint8_t	 link_format = 40;
+uint8_t	 text_plain = COAP_CT_TEXT_PLAIN;
+uint8_t	 link_format = COAP_CT_LINK_FORMAT;
 
 /* Resource related globals*/
 char res_test[BUFLEN] = "Sensinode test resource";
@@ -361,6 +362,8 @@ void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 		svr_handle_request_query(coap_packet_ptr);
 	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_SEG, strlen(RES_SEG)) == 0)
 		svr_handle_request_seg(coap_packet_ptr);
+	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_SEPARATE, strlen(RES_SEPARATE)) == 0)
+		svr_handle_request_separate(coap_packet_ptr);
 	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_WELL_KNOWN, strlen(RES_WELL_KNOWN)) == 0)
 		svr_handle_request_wellknown(coap_packet_ptr);		
 	else { /* URI not found */
@@ -378,8 +381,12 @@ void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 	sn_coap_hdr_s *coap_res_ptr;
 	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
-		printf("GET /test\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
+		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
+		{
+			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+			coap_res_ptr->msg_id = current_mid++;
+		}
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 		coap_res_ptr->payload_len = strlen(res_test);
@@ -390,25 +397,33 @@ void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 	}
 	else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT)
 	{
-		printf("PUT /test\n");
 		if (coap_packet_ptr->payload_ptr && coap_packet_ptr->payload_len < sizeof(res_test))
 		{
 			memset(res_test, 0, sizeof(res_test));
 			memcpy(res_test, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
 		}
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CHANGED);
+		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
+		{
+			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+			coap_res_ptr->msg_id = current_mid++;
+		}
 		svr_send_msg(coap_res_ptr);
 		return;
 
 	} else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST)
 	{
-		printf("POST /test\n");
 		if (coap_packet_ptr->payload_ptr && coap_packet_ptr->payload_len < sizeof(res_test))
 		{
 			memset(res_test, 0, sizeof(res_test));
 			memcpy(res_test, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
 		}
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CREATED);
+		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
+		{
+			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+			coap_res_ptr->msg_id = current_mid++;
+		}
 		/* Options */
 		coap_res_ptr->options_list_ptr = own_alloc(sizeof(sn_coap_options_list_s));
 		memset(coap_res_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
@@ -424,8 +439,12 @@ void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 
 	} else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_DELETE)
 	{
-		printf("DELETE /test\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_DELETED);
+		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
+		{
+			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+			coap_res_ptr->msg_id = current_mid++;
+		}
 		svr_send_msg(coap_res_ptr);
 		return;
 	} else { /* Method not supported */
@@ -437,10 +456,75 @@ void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 
 void svr_handle_request_seg(sn_coap_hdr_s *coap_packet_ptr)
 {
+	sn_coap_hdr_s *coap_res_ptr;
+	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
+	{
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
+		coap_res_ptr->content_type_ptr = &text_plain;
+		coap_res_ptr->content_type_len = sizeof(text_plain);
+		coap_res_ptr->payload_len = strlen(res_test);
+		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		memcpy(coap_res_ptr->payload_ptr, res_test, coap_res_ptr->payload_len);
+		svr_send_msg(coap_res_ptr);
+		return;
+	} else { /* Method not supported */
+		printf("Method not supported\n");
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
+		svr_send_msg(coap_res_ptr);
+	}
+}
+
+void svr_handle_request_separate(sn_coap_hdr_s *coap_packet_ptr)
+{
+	sn_coap_hdr_s *coap_res_ptr;
+	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
+	{
+
+		/* Send an ACK first if it is a CON */
+		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
+		{
+			coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_EMPTY);
+			svr_send_msg(coap_res_ptr);
+		}
+
+		/* Send NON response */
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
+		coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+		coap_res_ptr->msg_id = current_mid++;
+
+		coap_res_ptr->content_type_ptr = &text_plain;
+		coap_res_ptr->content_type_len = sizeof(text_plain);
+		coap_res_ptr->payload_len = strlen(res_test);
+		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		memcpy(coap_res_ptr->payload_ptr, res_test, coap_res_ptr->payload_len);
+		svr_send_msg(coap_res_ptr);
+		return;
+	} else { /* Method not supported */
+		printf("Method not supported\n");
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
+		svr_send_msg(coap_res_ptr);
+	}
 }
 
 void svr_handle_request_query(sn_coap_hdr_s *coap_packet_ptr)
 {
+	sn_coap_hdr_s *coap_res_ptr;
+	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
+	{
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
+		coap_res_ptr->content_type_ptr = &text_plain;
+		coap_res_ptr->content_type_len = sizeof(text_plain);
+		/* Return the query string as the payload */
+		coap_res_ptr->payload_len = coap_packet_ptr->options_list_ptr->uri_query_len;
+		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		memcpy(coap_res_ptr->payload_ptr, coap_packet_ptr->options_list_ptr->uri_query_ptr, coap_res_ptr->payload_len);
+		svr_send_msg(coap_res_ptr);
+		return;
+	} else { /* Method not supported */
+		printf("Method not supported\n");
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
+		svr_send_msg(coap_res_ptr);
+	}
 }
 
 void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr)

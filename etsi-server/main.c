@@ -31,9 +31,7 @@ void usage_show(void)
 {
 	printf("Usage:\n\n"
 
-			"help\ncoap_server -h\n\n"
-
-			"server mode\ncoap [-p 8000] \n"
+			"etsi-server [-p 8000] \n"
 			"-p	port to listen on (default = 8000)\n"
 			"-d	NSP IPv6 address (default = ::1)\n"
 			"-dp NSP port number (default = 5863)\n"

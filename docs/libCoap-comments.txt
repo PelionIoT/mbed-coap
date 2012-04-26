@@ -1,4 +1,4 @@
-Comments on NSDL-C (SVN checkout from NanoServiceDeviceLibrary on 16.4.2012) 
+Comments on NSDL-C (Based on SVN checkout from NanoServiceDeviceLibrary on 16.4.2012) 
 
 Zach Shelby
 
@@ -55,10 +55,18 @@ from the packet header structure. Removed the unnecessary msg_id function call p
 
 - New sn_coap_packet_debug() added to libCoap for easy packet inspection in applications.
 
+- New sn_coap_build_response() to help simplify the creation of a response header structure when handling a request.
+
+- Added CoAP content-type defines to coap_header.h
 
 
-Suggested improvements for libCoap
+Suggested improvements for libCoap and bugs identified:
 
 - BUG: Parsing fails on GET / request.
+
+- Limitation: sn_coap_build_response() does not set the msg_id when the response needs to be a NON. Move to coap_protocol in order to take advantage of the global MID there?
+
+
+
 
 
