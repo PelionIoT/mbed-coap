@@ -3,7 +3,7 @@ Comments on NSDL-C (Based on SVN checkout from NanoServiceDeviceLibrary on 16.4.
 Zach Shelby
 
 
-Minimal requirements for NSDL-C package release for NanoService R1.4
+Minimal requirements for NSDL-C package release for NanoService Release 1.4
 
 - x86 Linux GCC library port
 - MSP430 IAR library port
@@ -13,14 +13,14 @@ Minimal requirements for NSDL-C package release for NanoService R1.4
 - libCoap verified against Sensinode ETSI Plugtest v0.6 test suite
 - libCoap packet retransmission support
 - libCoap simple RD registration helper functions 
-- ETSI Plugtest server (for internal testing)
+- ETSI Plugtest server
 - ETSI Plugtest client (for internal testing)
 - Examples implementations
 	- Connected Home example node (x86 Linux)
 	- Street Lighting example node (x86 Linux)
 	- NanoStack example node (MSP430)
-- libCoap documentation
-- NSDL-C documentation
+- libCoap and example documentation
+- Standard (no libCoap source code) and Enterprise (libCoap source code) release versions
 
 
 Structural comments

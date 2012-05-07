@@ -27,7 +27,7 @@ ETSI Plugtest:
 
 Currently the following ETSI tests are supported.
 
-- All CORE tests 01-16 except 14-15 where retransmission is required
+- All CORE tests 01-16
 - LINK test 01 (TODO: test 02 requires filtering on the rt= query parameter)
 
 To run these tests using the Java test tools:
