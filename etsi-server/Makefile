@@ -1,5 +1,5 @@
 PLATFORM= 
-OS = MACOSX
+OS = LINUX
 TARGET	= etsi_server
 OBJECTS = main.o etsi_server.o 
 #dtls_udp_client.o

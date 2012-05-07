@@ -1,5 +1,5 @@
 PLATFORM= 
-OS = MACOSX
+OS = LINUX
 TARGET	= coap_server
 OBJECTS = main.o coap_server.o dtls_udp_client.o
 CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../libCoap -DHAVE_DEBUG -DHAVE_DTLS
