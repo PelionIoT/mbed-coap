@@ -31,18 +31,22 @@
 #define BUFLEN 1024
 
 /* Resource paths and registration parameters */
-#define RES_TEST (const char *)("test")
-#define RES_SEG (const char *)("seg1/seg2/seg3")
-#define RES_QUERY (const char *)("query")
-#define RES_SEPARATE (const char *)("separate")
-#define RES_LARGE (const char *)("large")
-#define RES_LARGE_UPDATE (const char *)("large_update")
-#define RES_LARGE_CREATE (const char *)("large_create")
-#define RES_OBS (const char *)("obs")
+#define RES_MFG	(const char *)("dev/mfg")
+#define RES_MFG_VAL	(const char *)("Sensinode")
+#define RES_MDL	(const char *)("dev/mdl")
+#define RES_MDL_VAL	(const char *)("NSDL-C power node")
+#define RES_BAT	(const char *)("dev/bat")
+#define RES_BAT_VAL	(const char *)("3.31")
+#define RES_PWR (const char *)("pwr/0/w")
+#define RES_PWR_VAL	(const char *)("80")
+#define RES_REL (const char *)("pwr/0/rel")
+#define RES_TEMP (const char *)("sen/temp")
+#define RES_TEMP_VAL (const char *)("25.4")
+
 #define RES_WELL_KNOWN (const char *)(".well-known/core")
 #define EP (const char *)("nsdlc-power")
-#define EP_TYPE (const char *)("")
-#define LINKS (const char *)("</test>")
+#define EP_TYPE (const char *)("PowerNode")
+#define LINKS (const char *)("</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\"")
 #define RD_PATH (const char *)("rd")
 
 extern void stop_pgm();
@@ -52,10 +56,12 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr);
 int svr_receive_msg(char *buf);
 static void svr_msg_handler(char *msg, int len);
 void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr);
-void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr);
-void svr_handle_request_seg(sn_coap_hdr_s *coap_packet_ptr);
-void svr_handle_request_separate(sn_coap_hdr_s *coap_packet_ptr);
-void svr_handle_request_query(sn_coap_hdr_s *coap_packet_ptr);
+void svr_handle_request_mfg(sn_coap_hdr_s *coap_packet_ptr);
+void svr_handle_request_mdl(sn_coap_hdr_s *coap_packet_ptr);
+void svr_handle_request_bat(sn_coap_hdr_s *coap_packet_ptr);
+void svr_handle_request_pwr(sn_coap_hdr_s *coap_packet_ptr);
+void svr_handle_request_rel(sn_coap_hdr_s *coap_packet_ptr);
+void svr_handle_request_temp(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr);
 int nsp_register(const char *ep, const char *rt, const char *links);
 int nsp_deregister(char *location);
@@ -75,7 +81,7 @@ uint8_t	 text_plain = COAP_CT_TEXT_PLAIN;
 uint8_t	 link_format = COAP_CT_LINK_FORMAT;
 
 /* Resource related globals*/
-char res_test[BUFLEN] = "Sensinode test resource";
+char res_rel = '1';
 char *reg_location;
 
 /* This is called from main to start the CoAP server */
@@ -319,14 +325,18 @@ void svr_msg_handler(char *msg, int len)
 void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 {
 	/* Compare the request URI against server's resource, pass to resource handler when matching */
-	if (memcmp(coap_packet_ptr->uri_path_ptr, RES_TEST, strlen(RES_TEST)) == 0)
-		svr_handle_request_test(coap_packet_ptr);
-	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_QUERY, strlen(RES_QUERY)) == 0)
-		svr_handle_request_query(coap_packet_ptr);
-	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_SEG, strlen(RES_SEG)) == 0)
-		svr_handle_request_seg(coap_packet_ptr);
-	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_SEPARATE, strlen(RES_SEPARATE)) == 0)
-		svr_handle_request_separate(coap_packet_ptr);
+	if (memcmp(coap_packet_ptr->uri_path_ptr, RES_MFG, strlen(RES_MFG)) == 0)
+		svr_handle_request_mfg(coap_packet_ptr);
+	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_MDL, strlen(RES_MDL)) == 0)
+		svr_handle_request_mdl(coap_packet_ptr);
+	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_BAT, strlen(RES_BAT)) == 0)
+		svr_handle_request_bat(coap_packet_ptr);
+	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_PWR, strlen(RES_PWR)) == 0)
+		svr_handle_request_pwr(coap_packet_ptr);
+	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_REL, strlen(RES_REL)) == 0)
+		svr_handle_request_rel(coap_packet_ptr);
+	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_TEMP, strlen(RES_TEMP)) == 0)
+		svr_handle_request_temp(coap_packet_ptr);
 	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_WELL_KNOWN, strlen(RES_WELL_KNOWN)) == 0)
 		svr_handle_request_wellknown(coap_packet_ptr);		
 	else { /* URI not found */
@@ -338,75 +348,18 @@ void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 
 }
 
-void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
+
+void svr_handle_request_mfg(sn_coap_hdr_s *coap_packet_ptr)
 {
 	sn_coap_hdr_s *coap_res_ptr;
 	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
-		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
-		{
-			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-			coap_res_ptr->msg_id = current_mid++;
-		}
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
-		coap_res_ptr->payload_len = strlen(res_test);
+		coap_res_ptr->payload_len = strlen(RES_MFG_VAL);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
-		memcpy(coap_res_ptr->payload_ptr, res_test, coap_res_ptr->payload_len);
-		svr_send_msg(coap_res_ptr);
-		return;
-	}
-	else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT)
-	{
-		if (coap_packet_ptr->payload_ptr && coap_packet_ptr->payload_len < sizeof(res_test))
-		{
-			memset(res_test, 0, sizeof(res_test));
-			memcpy(res_test, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
-		}
-		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CHANGED);
-		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
-		{
-			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-			coap_res_ptr->msg_id = current_mid++;
-		}
-		svr_send_msg(coap_res_ptr);
-		return;
-
-	} else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST)
-	{
-		if (coap_packet_ptr->payload_ptr && coap_packet_ptr->payload_len < sizeof(res_test))
-		{
-			memset(res_test, 0, sizeof(res_test));
-			memcpy(res_test, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
-		}
-		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CREATED);
-		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
-		{
-			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-			coap_res_ptr->msg_id = current_mid++;
-		}
-		/* Options */
-		coap_res_ptr->options_list_ptr = own_alloc(sizeof(sn_coap_options_list_s));
-		memset(coap_res_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
-		/* Set Location */
-		char location[64];
-		sprintf(location, "test/new");
-		coap_res_ptr->options_list_ptr->location_path_len = strlen(location);
-		coap_res_ptr->options_list_ptr->location_path_ptr = own_alloc(coap_res_ptr->options_list_ptr->location_path_len);
-		memcpy(coap_res_ptr->options_list_ptr->location_path_ptr, location, coap_res_ptr->options_list_ptr->location_path_len);
-		
-		svr_send_msg(coap_res_ptr);
-		return;
-
-	} else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_DELETE)
-	{
-		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_DELETED);
-		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
-		{
-			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-			coap_res_ptr->msg_id = current_mid++;
-		}
+		memcpy(coap_res_ptr->payload_ptr, RES_MFG_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
 	} else { /* Method not supported */
@@ -416,7 +369,7 @@ void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 	}
 }
 
-void svr_handle_request_seg(sn_coap_hdr_s *coap_packet_ptr)
+void svr_handle_request_mdl(sn_coap_hdr_s *coap_packet_ptr)
 {
 	sn_coap_hdr_s *coap_res_ptr;
 	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
@@ -424,9 +377,9 @@ void svr_handle_request_seg(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
-		coap_res_ptr->payload_len = strlen(res_test);
+		coap_res_ptr->payload_len = strlen(RES_MDL_VAL);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
-		memcpy(coap_res_ptr->payload_ptr, res_test, coap_res_ptr->payload_len);
+		memcpy(coap_res_ptr->payload_ptr, RES_MDL_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
 	} else { /* Method not supported */
@@ -436,29 +389,17 @@ void svr_handle_request_seg(sn_coap_hdr_s *coap_packet_ptr)
 	}
 }
 
-void svr_handle_request_separate(sn_coap_hdr_s *coap_packet_ptr)
+void svr_handle_request_bat(sn_coap_hdr_s *coap_packet_ptr)
 {
 	sn_coap_hdr_s *coap_res_ptr;
 	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
-
-		/* Send an ACK first if it is a CON */
-		if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
-		{
-			coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_EMPTY);
-			svr_send_msg(coap_res_ptr);
-		}
-
-		/* Send NON response */
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
-		coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-		coap_res_ptr->msg_id = current_mid++;
-
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
-		coap_res_ptr->payload_len = strlen(res_test);
+		coap_res_ptr->payload_len = strlen(RES_BAT_VAL);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
-		memcpy(coap_res_ptr->payload_ptr, res_test, coap_res_ptr->payload_len);
+		memcpy(coap_res_ptr->payload_ptr, RES_BAT_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
 	} else { /* Method not supported */
@@ -468,7 +409,7 @@ void svr_handle_request_separate(sn_coap_hdr_s *coap_packet_ptr)
 	}
 }
 
-void svr_handle_request_query(sn_coap_hdr_s *coap_packet_ptr)
+void svr_handle_request_pwr(sn_coap_hdr_s *coap_packet_ptr)
 {
 	sn_coap_hdr_s *coap_res_ptr;
 	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
@@ -476,10 +417,9 @@ void svr_handle_request_query(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
-		/* Return the query string as the payload */
-		coap_res_ptr->payload_len = coap_packet_ptr->options_list_ptr->uri_query_len;
+		coap_res_ptr->payload_len = strlen(RES_PWR_VAL);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
-		memcpy(coap_res_ptr->payload_ptr, coap_packet_ptr->options_list_ptr->uri_query_ptr, coap_res_ptr->payload_len);
+		memcpy(coap_res_ptr->payload_ptr, RES_PWR_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
 	} else { /* Method not supported */
@@ -488,6 +428,47 @@ void svr_handle_request_query(sn_coap_hdr_s *coap_packet_ptr)
 		svr_send_msg(coap_res_ptr);
 	}
 }
+
+void svr_handle_request_rel(sn_coap_hdr_s *coap_packet_ptr)
+{
+	sn_coap_hdr_s *coap_res_ptr;
+	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
+	{
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
+		coap_res_ptr->content_type_ptr = &text_plain;
+		coap_res_ptr->content_type_len = sizeof(text_plain);
+		coap_res_ptr->payload_len = 1;
+		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		memcpy(coap_res_ptr->payload_ptr, &res_rel, coap_res_ptr->payload_len);
+		svr_send_msg(coap_res_ptr);
+		return;
+	} else { /* Method not supported */
+		printf("Method not supported\n");
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
+		svr_send_msg(coap_res_ptr);
+	}
+}
+
+void svr_handle_request_temp(sn_coap_hdr_s *coap_packet_ptr)
+{
+	sn_coap_hdr_s *coap_res_ptr;
+	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
+	{
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
+		coap_res_ptr->content_type_ptr = &text_plain;
+		coap_res_ptr->content_type_len = sizeof(text_plain);
+		coap_res_ptr->payload_len = strlen(RES_TEMP_VAL);
+		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		memcpy(coap_res_ptr->payload_ptr, RES_TEMP_VAL, coap_res_ptr->payload_len);
+		svr_send_msg(coap_res_ptr);
+		return;
+	} else { /* Method not supported */
+		printf("Method not supported\n");
+		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
+		svr_send_msg(coap_res_ptr);
+	}
+}
+
 
 void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr)
 {
