@@ -3,7 +3,7 @@ ETSI CoAP Test Server for NSDL C
 Zach Shelby <zach@sensinode.com>
 
 This project is an ETSI Plugtest CoAP server, which verifies the correctness of the CoAP protocol implementation against other 
-CoAP clients. 
+CoAP clients.
 
 Compilation:
 
