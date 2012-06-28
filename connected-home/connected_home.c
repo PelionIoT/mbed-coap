@@ -1,7 +1,7 @@
 /**
- * \file 	etsi_server.c
+ * \file 	connected-home.c
  *
- * \brief	ETSI Plugtest CoAP Server
+ * \brief	Connected Home CoAP Server. Emulates a power node.
  *
  * \author 	Zach Shelby <zach@sensinode.com>
  *
@@ -40,9 +40,9 @@
 #define RES_LARGE_CREATE (const char *)("large_create")
 #define RES_OBS (const char *)("obs")
 #define RES_WELL_KNOWN (const char *)(".well-known/core")
-#define EP (const char *)("etsi-server")
+#define EP (const char *)("nsdlc-power")
 #define EP_TYPE (const char *)("")
-#define LINKS (const char *)("</test>,</seg1/seg2/seg3>,</query>,</separate>")
+#define LINKS (const char *)("</test>")
 #define RD_PATH (const char *)("rd")
 
 extern void stop_pgm();

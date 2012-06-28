@@ -1,7 +1,7 @@
 /**
  * \file 	main.c
  *
- * \brief	Command line parameter parsing for ETSI server
+ * \brief	Command line parameter parsing for Connected Home server
  *
  * \author 	Zach Shelby <zach@sensinode.com>
  *
@@ -38,7 +38,7 @@ void usage_show(void)
 {
 	printf("Usage:\n\n"
 
-			"etsi-server [-p 8000] \n"
+			"connected-home [-p 8000] \n"
 			"-p	port to listen on (default = 8000)\n"
 			"-d	NSP IPv6 address (default = ::1)\n"
 			"-dp NSP port number (default = 5863)\n");
