@@ -39,6 +39,7 @@
 #define RES_BAT_VAL	(const char *)("3.31")
 #define RES_PWR (const char *)("pwr/0/w")
 #define RES_PWR_VAL	(const char *)("80")
+#define RES_PWR_VAL_OFF	(const char *)("0")
 #define RES_REL (const char *)("pwr/0/rel")
 #define RES_TEMP (const char *)("sen/temp")
 #define RES_TEMP_VAL (const char *)("25.4")
@@ -417,9 +418,15 @@ void svr_handle_request_pwr(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
-		coap_res_ptr->payload_len = strlen(RES_PWR_VAL);
-		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
-		memcpy(coap_res_ptr->payload_ptr, RES_PWR_VAL, coap_res_ptr->payload_len);
+		if (res_rel == '1') {
+			coap_res_ptr->payload_len = strlen(RES_PWR_VAL);
+			coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+			memcpy(coap_res_ptr->payload_ptr, RES_PWR_VAL, coap_res_ptr->payload_len);
+		} else {
+			coap_res_ptr->payload_len = strlen(RES_PWR_VAL_OFF);
+			coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+			memcpy(coap_res_ptr->payload_ptr, RES_PWR_VAL_OFF, coap_res_ptr->payload_len);
+		}
 		svr_send_msg(coap_res_ptr);
 		return;
 	} else { /* Method not supported */
@@ -439,9 +446,24 @@ void svr_handle_request_rel(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 		coap_res_ptr->payload_len = 1;
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
-		memcpy(coap_res_ptr->payload_ptr, &res_rel, coap_res_ptr->payload_len);
+		coap_res_ptr->payload_ptr[0] = res_rel;
 		svr_send_msg(coap_res_ptr);
 		return;
+	} else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT)
+		{
+			if (coap_packet_ptr->payload_ptr && coap_packet_ptr->payload_len < 2)
+			{
+				res_rel = coap_packet_ptr->payload_ptr[0];
+			}
+			coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CHANGED);
+			if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
+			{
+				coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+				coap_res_ptr->msg_id = current_mid++;
+			}
+			svr_send_msg(coap_res_ptr);
+			return;
+
 	} else { /* Method not supported */
 		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
