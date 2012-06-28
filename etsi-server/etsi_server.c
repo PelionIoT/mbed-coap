@@ -1,9 +1,11 @@
 /**
- * \file
- *			ETSI Plugtest CoAP Server
- * \authors
- * 			zach@sensinode.com	
-*/
+ * \file 	etsi_server.c
+ *
+ * \brief	ETSI Plugtest CoAP Server
+ *
+ * \author 	Zach Shelby <zach@sensinode.com>
+ *
+ */
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -17,8 +19,10 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <time.h>
+
 #include "arguments.h"
 
+/* libCoap includes */
 #include "pl_types.h"
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
@@ -26,6 +30,7 @@
 
 #define BUFLEN 1024
 
+/* Resource paths and registration parameters */
 #define RES_TEST (const char *)("test")
 #define RES_SEG (const char *)("seg1/seg2/seg3")
 #define RES_QUERY (const char *)("query")
@@ -58,7 +63,7 @@ void *own_alloc(uint16_t size);
 void own_free(void* ptr);
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr);
 static void ctrl_c_handle_function(void);
-typedef void (*signalhandler_t)(int); /* Function pointer type for ctrl-c pressing */
+typedef void (*signalhandler_t)(int); /* Function pointer type for ctrl-c */
 
 /* Socket globals */
 static struct sockaddr_in6 sa_dst, sa_src;
@@ -73,22 +78,23 @@ uint8_t	 link_format = COAP_CT_LINK_FORMAT;
 char res_test[BUFLEN] = "Sensinode test resource";
 char *reg_location;
 
+/* This is called from main to start the CoAP server */
 int svr_ipv6(void)
 {
 	char buf[BUFLEN];
 	int rcv_size=0;
 
-	/*Catch ctrl-c pressing to own handler */
+	/* Catch ctrl-c */
 	if (signal(SIGINT, (signalhandler_t)ctrl_c_handle_function) == SIG_ERR)
 	{
 		printf("Error with SIGINT: %s\n", strerror(errno));
 		return -1;
 	}
 
+#ifdef HAVE_DEBUG
 	printf("\nCoAP server\nport: %i\n", arg_port);
+#endif
 
-if (arg_dtls == FALSE)
-{
 	/* Open the server socket*/
 	if ((sock_server=socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP))==-1)
 		stop_pgm("socket() error");
@@ -103,7 +109,7 @@ if (arg_dtls == FALSE)
 		stop_pgm("inet_ntop() failed");
 	if (bind(sock_server, (struct sockaddr *) &sa_src, sizeof(sa_src))==-1)
 		stop_pgm("bind() error");
-} 
+
 
 	/* Initialize the CoAP library */
 	sn_coap_builder_and_parser_init(&own_alloc, &own_free);
@@ -114,12 +120,14 @@ if (arg_dtls == FALSE)
 	current_mid = rand() % 10000;
 
 	/* Register with NSP */
+#ifdef HAVE_DEBUG
 	printf("h: %s\n", EP);
 	printf("rt: %s\n", EP_TYPE);
 	printf("links: %s\n", LINKS);
+#endif
 	nsp_register(EP, EP_TYPE, LINKS);
 
-	/*listen and process incoming message*/
+	/* Listen and process incoming messages */
 	while (1)
 	{
 		usleep(100);
@@ -137,17 +145,14 @@ int svr_receive_msg(char *buf)
 
   memset(rcv_in6_addr,0,32);
 
-  if (arg_dtls == FALSE)
-  {
-	if ((rcv_size=recvfrom(sock_server, buf, BUFLEN, 0, (struct sockaddr *)&sa_dst, (socklen_t*)&slen_sa_dst))==-1)
+  if ((rcv_size=recvfrom(sock_server, buf, BUFLEN, 0, (struct sockaddr *)&sa_dst, (socklen_t*)&slen_sa_dst))==-1)
 		stop_pgm("recvfrom()");
-	else
-	{
-		inet_ntop(AF_INET6, &(sa_dst.sin6_addr),rcv_in6_addr,INET6_ADDRSTRLEN);
+  else
+  {
+	inet_ntop(AF_INET6, &(sa_dst.sin6_addr),rcv_in6_addr,INET6_ADDRSTRLEN);
 #ifdef HAVE_DEBUG
-		printf("\nRX %s.%d [%d B] - ", rcv_in6_addr, ntohs(sa_dst.sin6_port), rcv_size);
+	printf("\nRX %s.%d [%d B] - ", rcv_in6_addr, ntohs(sa_dst.sin6_port), rcv_size);
 #endif
-	}
   }
 
  return rcv_size;
@@ -160,8 +165,6 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 	uint16_t 	message_len	= 0;
 	char dst_in6_addr[32];
 
-	/* Build CoAP message */
-
 	/* Calculate message length */
 	message_len = sn_coap_builder_calc_needed_packet_data_size(coap_hdr_ptr);
 
@@ -172,20 +175,15 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 	sn_coap_builder(message_ptr, coap_hdr_ptr);
 
 	inet_ntop(AF_INET6, &(sa_dst.sin6_addr),dst_in6_addr,INET6_ADDRSTRLEN);
+
 #ifdef HAVE_DEBUG
-  if (arg_dtls == FALSE)
 	printf("TX %s.%d [%d B] - ", dst_in6_addr, ntohs(sa_dst.sin6_port), message_len);
-  else if (arg_dtls == TRUE)
-  	printf("TX dtls [%d B] - ", message_len);
-  sn_coap_packet_debug(coap_hdr_ptr);
+	sn_coap_packet_debug(coap_hdr_ptr);
 #endif
 
 	/* Send the message */
-  if (arg_dtls == FALSE) 
-  {
 	if (sendto(sock_server, message_ptr, message_len, 0, (const struct sockaddr *)&sa_dst, slen_sa_dst)==-1)
 				stop_pgm("sendto() failed");
-  } 
 
   own_free(message_ptr);
   own_free(coap_hdr_ptr->payload_ptr);
@@ -218,6 +216,7 @@ int nsp_register(const char *ep, const char *rt, const char *links)
 	coap_hdr_ptr = own_alloc(sizeof(sn_coap_hdr_s));
 	memset(coap_hdr_ptr, 0x00, sizeof(sn_coap_hdr_s));
 
+	/* Build the registration CoAP request using the libCoap helper function */
 	sn_coap_register(coap_hdr_ptr, ep, rt, links);
 	msg_id = coap_hdr_ptr->msg_id;
 	svr_send_msg(coap_hdr_ptr);
@@ -279,6 +278,7 @@ int nsp_deregister(char *location)
 	coap_hdr_ptr = own_alloc(sizeof(sn_coap_hdr_s));
 	memset(coap_hdr_ptr, 0x00, sizeof(sn_coap_hdr_s));
 
+	/* Build the de-registration CoAP request using the libCoap helper function */
 	sn_coap_deregister(coap_hdr_ptr, location);
 
 	svr_send_msg(coap_hdr_ptr);
@@ -286,13 +286,13 @@ int nsp_deregister(char *location)
 	return 0;
 }
 
-
 void svr_msg_handler(char *msg, int len)
 {
 
 	sn_coap_hdr_s 	*coap_packet_ptr 	= NULL;
 	coap_version_e coap_version = COAP_VERSION_1;
 
+	/* Parse the buffer into a CoAP message structure */
 	coap_packet_ptr = sn_coap_parser(len, (uint8_t*)msg, &coap_version);
 
 	/* Check if parsing was successfull */
@@ -306,6 +306,7 @@ void svr_msg_handler(char *msg, int len)
 	sn_coap_packet_debug(coap_packet_ptr);
 #endif
 
+	/* If the message code range is a request method, then handle the request */
 	if (coap_packet_ptr->msg_code >= 1 && coap_packet_ptr->msg_code <= 4)
 	{
 		svr_handle_request(coap_packet_ptr);
@@ -317,6 +318,7 @@ void svr_msg_handler(char *msg, int len)
 
 void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 {
+	/* Compare the request URI against server's resource, pass to resource handler when matching */
 	if (memcmp(coap_packet_ptr->uri_path_ptr, RES_TEST, strlen(RES_TEST)) == 0)
 		svr_handle_request_test(coap_packet_ptr);
 	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_QUERY, strlen(RES_QUERY)) == 0)
@@ -336,7 +338,6 @@ void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 
 }
 
-/* Handle /test */
 void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 {
 	sn_coap_hdr_s *coap_res_ptr;
@@ -509,7 +510,7 @@ void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr)
 	}
 }
 
-
+/* These alloc and free functions are required for libCoap */
 void *own_alloc(uint16_t size)
 {
 	if(size)
@@ -524,9 +525,9 @@ void own_free(void *ptr)
 		free(ptr);
 }
 
+/* Unused function needed for libCoap protocol initialization */
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr)
 {
-	printf("tx_function()\n");
 	return 0;
 }
 
@@ -536,8 +537,6 @@ static void ctrl_c_handle_function(void)
 
 	nsp_deregister(reg_location);
 	usleep(100);
-
-	/* Close used sockets */
 
 	exit(1);
 }

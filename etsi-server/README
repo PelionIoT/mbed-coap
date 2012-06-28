@@ -1,8 +1,9 @@
-ETSI CoAP Test Server for libCoAP (zach@sensinode.com)
+ETSI CoAP Test Server for NSDL C
+
+Zach Shelby <zach@sensinode.com>
 
 This project is an ETSI Plugtest CoAP server, which verifies the correctness of the CoAP protocol implementation against other 
-CoAP clients. Use the Sensinode Java ETSI test tools (etsi-test-tools-v0.6) and the associated scripts to test aginst this server. 
-
+CoAP clients. 
 
 Compilation:
 
@@ -28,14 +29,7 @@ ETSI Plugtest:
 Currently the following ETSI tests are supported.
 
 - All CORE tests 01-16
-- LINK test 01 (TODO: test 02 requires filtering on the rt= query parameter)
-
-To run these tests using the Java test tools:
-
-cd etsi-test-tools-v0.6
-./TD_COAP_CORE_01 [::1]:8000
-./TD_COAP_CORE_02 [::1]:8000
-etc.
+- LINK test 01
 
 
 Known Limitations:

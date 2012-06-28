@@ -1,3 +1,12 @@
+/**
+ * \file 	main.c
+ *
+ * \brief	Command line parameter parsing for ETSI server
+ *
+ * \author 	Zach Shelby <zach@sensinode.com>
+ *
+ */
+
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -23,8 +32,6 @@ void arg_init(void)
 	arg_port=8000; 					
 	arg_sport=5683;
 	arg_dport=5683;
-	arg_dtlsport=8001;
-	arg_dtls = FALSE;
 }
 
 void usage_show(void)
@@ -34,8 +41,7 @@ void usage_show(void)
 			"etsi-server [-p 8000] \n"
 			"-p	port to listen on (default = 8000)\n"
 			"-d	NSP IPv6 address (default = ::1)\n"
-			"-dp NSP port number (default = 5863)\n"
-			"-dtls dtls proxy port(flag to run in DTLS mode)\n");			
+			"-dp NSP port number (default = 5863)\n");
 }
 
 int main(int argc, char **argv)
@@ -59,14 +65,6 @@ int main(int argc, char **argv)
 			{
 				usage_show();
 				stop_pgm("");
-			}
-			else if (!(strcmp("-dtls",argv[i])))
-			{
-				arg_dtls = TRUE;
-				if (i++!=argc)
-					arg_dtlsport=atoi(argv[i]);
-				i++;
-				continue;
 			}
 			else if (!(strcmp("-d",argv[i])))
 			{
@@ -104,7 +102,7 @@ int main(int argc, char **argv)
 
 		}
 
-		/* Run the CoAP server */
+		/* Start the CoAP server */
 		svr_ipv6();
 
 	}
