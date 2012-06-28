@@ -1,9 +1,8 @@
-Connected Home Server for NSDL C
+Lighting Server for NSDL C
 
 Zach Shelby <zach@sensinode.com>
 
-This project is an example of a NanoService endpoint for the Connected Home Reference App, which emulates the sensors of 
-a power measurement and relay node.  
+This project is an example of a NanoService endpoint for the Lighting Reference App, which emulates a street light node.  
 
 Compilation:
 
@@ -16,14 +15,14 @@ make
 
 Usage:
 
-connected-home [-p 8000] 
+lighting [-p 8000] 
 -p	port to listen on (default = 8000)
 -d	NSP IPv6 address (default = ::1)
 -dp NSP port number (default = 5683)
 
 When running on the same machine as NSP, simply run:
 
-./connected-home
+./lighting
 
 
 Known Limitations:
