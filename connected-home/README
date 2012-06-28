@@ -1,9 +1,8 @@
-ETSI CoAP Test Server for NSDL C
+Connected Home Server for NSDL C
 
 Zach Shelby <zach@sensinode.com>
 
-This project is an ETSI Plugtest CoAP server, which verifies the correctness of the CoAP protocol implementation against other 
-CoAP clients.
+This project is ....
 
 Compilation:
 
@@ -17,18 +16,10 @@ make
 
 Usage:
 
-etsi-server [-p 8000] 
+connected-home [-p 8000] 
 -p	port to listen on (default = 8000)
 -d	NSP IPv6 address (default = ::1)
 -dp NSP port number (default = 5683)
-
-
-ETSI Plugtest:
-
-Currently the following ETSI tests are supported.
-
-- All CORE tests 01-16
-- LINK test 01
 
 
 Known Limitations:
