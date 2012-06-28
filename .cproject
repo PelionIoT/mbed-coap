@@ -42,7 +42,7 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="0.1288259375.595066238" name="Makefile" rcbsApplicability="disable" resourcePath="libCoap/Makefile" toolsToInvoke=""/>
+					<fileInfo id="0.1288259375.595066238" name="Makefile" rcbsApplicability="disable" resourcePath="libCoap/x86_gcc/Makefile" toolsToInvoke=""/>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -86,7 +86,7 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="0.1288259375.1230988278.libCoap/Makefile" name="Makefile" rcbsApplicability="disable" resourcePath="libCoap/Makefile" toolsToInvoke=""/>
+					<fileInfo id="0.1288259375.1230988278.libCoap/Makefile" name="Makefile" rcbsApplicability="disable" resourcePath="libCoap/x86_gcc/Makefile" toolsToInvoke=""/>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -130,7 +130,7 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="0.1288259375.450215367.libCoap/Makefile" name="Makefile" rcbsApplicability="disable" resourcePath="libCoap/Makefile" toolsToInvoke=""/>
+					<fileInfo id="0.1288259375.450215367.libCoap/Makefile" name="Makefile" rcbsApplicability="disable" resourcePath="libCoap/x86_gcc/Makefile" toolsToInvoke=""/>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>

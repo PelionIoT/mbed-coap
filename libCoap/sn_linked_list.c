@@ -28,7 +28,6 @@ sn_linked_list_t *sn_linked_list_create(void)
 		new_linked_list->first_node = NULL;
 		new_linked_list->current_node = NULL;
 		new_linked_list->node_count = 0;
-
 	}
 
 	return new_linked_list;
@@ -289,55 +288,5 @@ uint16_t sn_linked_list_count_nodes(sn_linked_list_t *linked_list)
 	return linked_list->node_count;
 
 }
-
-/*
-#include <stdio.h>
-
-int main()
-{
-	int test_node1 = 8;
-	int test_node2 = 3456;
-	int test_node3 = 321;
-	sn_linked_list_t *linked_list = NULL;
-	linked_list = sn_linked_list_create();
-
-	printf("test 1: %i\n",sn_linked_list_add_node(linked_list, &test_node1));
-	printf("test 2: %i\n",sn_linked_list_add_node(linked_list, &test_node2));
-	printf("test 3: %i\n",sn_linked_list_add_node(linked_list, &test_node3));
-	printf("test 4: %i\n",(int*)sn_linked_list_get_first_node(linked_list));
-	printf("test 5: %i\n",(int*)sn_linked_list_get_next_node(linked_list));
-	printf("test 6: %i\n",sn_linked_list_remove_current_node(linked_list));
-	printf("test 7: %i\n",sn_linked_list_remove_current_node(linked_list));
-	printf("test 8: %i\n",sn_linked_list_remove_current_node(linked_list));
-	printf("test 9: %i\n",sn_linked_list_free(linked_list));
-	printf("test 10: %i\n",(int*)sn_linked_list_get_first_node(linked_list));
-	printf("test 11: %i\n",sn_linked_list_remove_current_node(linked_list));
-	printf("test 12: %i\n",sn_linked_list_free(linked_list));
-	linked_list = NULL;
-	printf("test 13: %i\n",sn_linked_list_add_node(linked_list, &test_node1));
-	linked_list = sn_linked_list_create();
-	if(linked_list)
-	{
-		printf("test 14: %i\n",sn_linked_list_add_node(linked_list, &test_node1));
-		printf("test 15: %i\n",sn_linked_list_add_node(linked_list, &test_node2));
-		printf("test 16: %i\n",sn_linked_list_add_node(linked_list, &test_node3));
-		printf("test 17: %i\n",(int*)sn_linked_list_get_next_node(linked_list));
-		printf("test 18: %i\n",(int*)sn_linked_list_get_first_node(linked_list));
-		printf("test 19: %i\n",(int*)sn_linked_list_get_next_node(linked_list));
-		printf("test 20: %i\n",(int*)sn_linked_list_get_next_node(linked_list));
-		printf("test 21: %i\n",(int*)sn_linked_list_get_next_node(linked_list));
-		printf("test 22: %i\n",(int*)sn_linked_list_get_next_node(linked_list));
-		printf("test 23: %i\n",(int*)sn_linked_list_get_first_node(linked_list));
-		printf("test 24: %i\n",sn_linked_list_remove_current_node(linked_list));
-		printf("test 25: %i\n",sn_linked_list_remove_current_node(linked_list));
-		printf("test 26: %i\n",sn_linked_list_remove_current_node(linked_list));
-		printf("test 27: %i\n",sn_linked_list_remove_current_node(linked_list));
-		printf("test 28: %i\n",sn_linked_list_add_node(linked_list, NULL));
-		printf("test 29: %i\n",sn_linked_list_free(linked_list));
-	}
-
-	return 0;
-}
-*/
 
 /* EOF */

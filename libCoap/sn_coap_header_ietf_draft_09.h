@@ -6,7 +6,7 @@
  *  Created on: Jun 30, 2011
  *      Author: pekka_ext
  *
- * \note Supports draft-ietf-core-coap-06
+ * \note Supports draft-ietf-core-coap-09
  *****************************************************************************/
 
 #ifndef SN_COAP_HEADER_IETF_DRAFT_09_H_

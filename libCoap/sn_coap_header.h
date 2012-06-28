@@ -84,13 +84,13 @@ typedef enum sn_coap_option_numbers_
     COAP_OPTION_URI_PATH        = 9,
     COAP_OPTION_OBSERVE         = 10,
     COAP_OPTION_TOKEN           = 11,
-    COAP_OPTION_ACCEPT          = 12, /* TODO: Accept not yet supported */
-    COAP_OPTION_IF_MATCH        = 13, /* TODO: If-Match not yet supported */
+    COAP_OPTION_ACCEPT          = 12, /* Accept not yet supported */
+    COAP_OPTION_IF_MATCH        = 13, /* If-Match not yet supported */
     COAP_OPTION_FENCEPOST1      = 14, /* Not for User, this is used as fenceposts for bigger Option numbers than 15 (= max number with 4 bits) */
     COAP_OPTION_URI_QUERY       = 15,
     COAP_OPTION_BLOCK2          = 17,
     COAP_OPTION_BLOCK1          = 19,
-    COAP_OPTION_IF_NONE_MATCH   = 21, /* TODO: If-None-Match not yet supported */
+    COAP_OPTION_IF_NONE_MATCH   = 21, /* If-None-Match not yet supported */
 
 } sn_coap_option_numbers_e;
 
@@ -213,7 +213,6 @@ typedef struct sn_coap_hdr_
 /* * * * * * * * * * * * * * * * * * * * * * */
 
 extern void           sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*));
-/* Zach: Why in the world is coap_version_e a pointer? Makes it hard to pass on a fixed value */
 extern sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr);
 extern int16_t        sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
 extern uint16_t       sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr);

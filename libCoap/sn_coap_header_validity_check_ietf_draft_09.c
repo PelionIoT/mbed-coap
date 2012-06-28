@@ -8,7 +8,7 @@
  *  Created on: Aug 22, 2011
  *      Author: pekka_ext
  *
- * \note Supports draft-ietf-core-coap-06
+ * \note Supports draft-ietf-core-coap-09
  */
 
 /* * * * * * * * * * * * * * */
@@ -74,7 +74,7 @@ int8_t sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_versi
         return -1;
     }
 
-    /* Great success */
+    /* Success */
     return 0;
 }
 
@@ -147,7 +147,7 @@ static int8_t sn_coap_header_validity_check_coap_version(uint8_t value)
     /* Check validity of CoAP Version */
     switch (value)
     {
-        /* Ok cases */
+        /* Ok case */
         case COAP_VERSION_1:
             return 0;
 

@@ -1,25 +1,25 @@
 /******************************************************************************
- * \file sn_coap_protocol_ietf_draft_06.h
+ * \file sn_coap_protocol_ietf_draft_09.h
  *
  * \brief Header file for CoAP Protocol part
  *
  *  Created on: Jun 30, 2011
  *      Author: pekka_ext
  *
- * \note Supports draft-ietf-core-coap-06
+ * \note Supports draft-ietf-core-coap-09
  *****************************************************************************/
 
-#ifndef SN_COAP_PROTOCOL_IETF_DRAFT_06_H_
-#define SN_COAP_PROTOCOL_IETF_DRAFT_06_H_
+#ifndef SN_COAP_PROTOCOL_IETF_DRAFT_09_H_
+#define SN_COAP_PROTOCOL_IETF_DRAFT_09_H_
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
 /* * * * * * * * * * * */
 
 /* CoAP Resending defines */
-#define MAX_RETRANSMIT            3 /* Maximum resending count, value is specified in IETF CoAP specification */
+#define MAX_RETRANSMIT          3   /* Maximum resending count, value is specified in IETF CoAP specification */
 #define RESPONSE_TIMEOUT        2   /* Initial resending timeout as seconds, value is specified in IETF CoAP specification */
-#define RESPONSE_RANDOM_FACTOR  1 /* Resending random factor, value is specified in IETF CoAP specification */
+#define RESPONSE_RANDOM_FACTOR  1   /* Resending random factor, value is specified in IETF CoAP specification */
 
 #define COAP_SEND_MSG_ONCE      0xFFFFFFFF /* Sends CoAP message once from Linked list, no resendins */
 
@@ -96,4 +96,4 @@ typedef struct coap_blockwise_payload_
 /* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */
 /* * * * * * * * * * * * * * * * * * * * * * */
 
-#endif /* SN_COAP_PROTOCOL_IETF_DRAFT_06_H_ */
+#endif /* SN_COAP_PROTOCOL_IETF_DRAFT_09_H_ */

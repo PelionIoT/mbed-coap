@@ -1,5 +1,5 @@
 /**
- * \file sn_coap_builder_ietf_draft_06.c
+ * \file sn_coap_builder_ietf_draft_09.c
  *
  * \brief CoAP Header builder
  *
@@ -8,7 +8,7 @@
  *  Created on: Jun 30, 2011
  *      Author: pekka_ext
  *
- * \note Supports draft-ietf-core-coap-06
+ * \note Supports draft-ietf-core-coap-09
  */
 
 /* * * * * * * * * * * * * * */
@@ -660,7 +660,7 @@ static int8_t sn_coap_builder_header_build(uint8_t **dst_packet_data_pptr,
     /* Increase destination Packet data pointer */
     (*dst_packet_data_pptr) += COAP_HEADER_LENGTH;
 
-    /* Great success */
+    /* Success */
     return 0;
 }
 
@@ -1027,13 +1027,11 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
  *
  * \return Return value is 0 in ok case and -1 in failure case
  */
-//todo combine
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 static int16_t sn_coap_builder_options_build_add_multiple_option(uint8_t **dst_packet_data_pptr,
                                                           uint8_t **src_pptr, uint16_t *src_len_ptr, sn_coap_option_numbers_e option)
 {
     /* Check if there is Uri-Path option at all */
-    //if (src_coap_msg_ptr->options_list_ptr->uri_query_ptr != NULL)
 	if (*src_pptr != NULL)
     {
         uint8_t    *query_ptr            	= *src_pptr;
@@ -1073,7 +1071,7 @@ static int16_t sn_coap_builder_options_build_add_multiple_option(uint8_t **dst_p
         }
     }
 
-    /* Great success */
+    /* Success */
     return 0;
 }
 
@@ -1090,7 +1088,6 @@ static int16_t sn_coap_builder_options_build_add_multiple_option(uint8_t **dst_p
  *
  * \return Return value is count of needed memory as bytes for Uri-query option
  */
-//todo: combine with sn_coap_builder_options_calc_path_size DONE
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, uint8_t *query_ptr, sn_coap_option_numbers_e option)
 {
@@ -1128,7 +1125,7 @@ static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, uin
         ret_value += one_query_part_len;
     }
 
-    /* Great success */
+    /* Success */
     return ret_value;
 }
 
@@ -1145,7 +1142,6 @@ static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, uin
  *
  * \return Return value is count of query parts
  */
-//todo: combine with sn_coap_builder_options_get_path_part_count DONE
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 static uint8_t sn_coap_builder_options_get_option_part_count(uint16_t query_len, uint8_t *query_ptr, sn_coap_option_numbers_e option)
 {
@@ -1198,7 +1194,6 @@ static uint8_t sn_coap_builder_options_get_option_part_count(uint16_t query_len,
  *
  * \return Return value is length of query part
  */
-//todo:combine with sn_coap_builder_options_get_path_part_length_from_whole_path DONE
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option_string(uint16_t query_len,
                                                                              uint8_t *query_ptr,
@@ -1267,7 +1262,6 @@ static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option
  * \return Return value is position (= offset) of query part in whole query. In
  *         fail cases -1 is returned.
  */
-//todo: combine with sn_coap_builder_options_get_query_part_position DONE
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 static uint16_t sn_coap_builder_options_get_option_part_position(uint16_t query_len,
                                                                uint8_t *query_ptr,
@@ -1353,7 +1347,7 @@ static int8_t sn_coap_builder_options_increase_count_in_header(uint8_t increased
         /* Add wanted Options count to Header */
         COAP_HEADER_OPTIONS_COUNT_DATA += increased_options_count;
 
-        /* Great success */
+        /* Success */
         return 0;
     }
 }
@@ -1410,7 +1404,7 @@ static int16_t sn_coap_builder_options_add_option_value_len(uint16_t option_valu
         (*dst_packet_data_pptr)++;
     }
 
-    /* Great success */
+    /* Success */
     return 0;
 }
 

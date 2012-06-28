@@ -2,7 +2,7 @@
  * sn_linked_list.h
  *
  *  Created on: 9.8.2011
- *      Author: user
+ *      Author:
  */
 
 #ifndef SN_LINKED_LIST_H_

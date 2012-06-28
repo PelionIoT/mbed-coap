@@ -67,6 +67,13 @@ Suggested improvements for libCoap and bugs identified:
 - Limitation: sn_coap_build_response() does not set the msg_id when the response needs to be a NON. Move to coap_protocol in order to take advantage of the global MID there?
 
 
+TODOs removed for code release:
+
+sn_coap_protocol_ietf_draft_09.c
+
+/* TODO: How resending failure is told to message creator? */
+/* TODO: How Compiler switches for compiling just Builder and Parser are managed? */
+
 
 
 

@@ -11,8 +11,6 @@
  * \note Supports draft-ietf-core-coap-09
  *****************************************************************************/
 
-/* TODO: How resending failure is told to message creator? */
-/* TODO: How Compiler switches for compiling just Builder and Parser are managed? */
 
 /* * * * * * * * * * * * * * */
 /* * * * INCLUDE FILES * * * */
@@ -416,7 +414,6 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
     /* * * * Create Linked list for storing Acknowledgement info * * * */
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    /* Zach: Bug fix, this was not being called, thus init failed */
     sn_linked_list_init(sn_coap_protocol_malloc, sn_coap_protocol_free);
     /* Check that Linked list is not already created */
     if (global_linked_list_ack_info_ptr == NULL)
@@ -594,25 +591,6 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
                 /* There was not found Message ID for Reset message */
                 return -3;
             }
-//            else if(src_coap_msg_ptr->msg_id)
-//            {
-//            	message_id = (int32_t)src_coap_msg_ptr->msg_id;
-//            }
-//            else
-//            {
-//                /* Non-Confirmable Response message is built because Message ID was not found from Linked list */
-//                src_coap_msg_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-//            }
-//        }
-//        else if (src_coap_msg_ptr->msg_type != COAP_MSG_TYPE_RESET)
-//        {
-//			if(src_coap_msg_ptr->msg_id)
-//			{
-//				message_id = (int32_t)src_coap_msg_ptr->msg_id;
-//			}
-//            /* Non-Confirmable Response message is built because Token option was not used */
-//            src_coap_msg_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-//        }
     }
 
     /* Check if built Message type is else than Acknowledgement or Reset i.e. message type is Confirmable or Non-confirmable */
@@ -1833,7 +1811,6 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id,
     uint16_t         stored_ack_info_count = sn_linked_list_count_nodes(global_linked_list_ack_info_ptr);
     coap_ack_info_s *stored_ack_info_ptr   = sn_linked_list_get_last_node(global_linked_list_ack_info_ptr);
     uint8_t          i                     = 0;
-//    uint8_t mem_cmp_result;
 
     /* Loop all stored Acknowledgement infos in Linked list */
     for (i = 0; i < stored_ack_info_count; i++)
@@ -1883,8 +1860,6 @@ SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_ack_info_remove_old_ones(void)
 {
     coap_ack_info_s *removed_ack_info_ptr   = sn_linked_list_get_first_node(global_linked_list_ack_info_ptr);
-    //uint16_t         stored_ack_infos_count = sn_linked_list_count_nodes(global_linked_list_ack_info_ptr);
-    //uint8_t          i                      = 0;
 
     /* Loop all stored Acknowledgement infos in Linked list */
     while(removed_ack_info_ptr)

@@ -1,8 +1,6 @@
 #ifndef _PL_PC_TYPES_
 #define _PL_PC_TYPES_
 
-//#include <inttypes.h>
-
 #define pl_int_disable() ;
 #define pl_int_enable() ;
 
@@ -15,7 +13,6 @@
 #define NULL 0
 #endif
 
-// TODO: PeKa added 17-8-2011
 typedef signed short int    int16_t;
 typedef signed int          int32_t;
 typedef unsigned int        uint32_t;
@@ -58,6 +55,7 @@ typedef  signed long int prog_int32_t;
 #define SN_LINKED_LIST_FUNCTION_MEMORY_ATTRIBUTE
 
 /* HTTP specific declarations */
+
 #define SN_HTTP_CONST_ARRAY_MEMORY_ATTRIBUTE
 #define SN_HTTP_FUNCTION_POINTER_MEMORY_ATTRIBUTE
 #define SN_HTTP_FUNCTION_MEMORY_ATTRIBUTE

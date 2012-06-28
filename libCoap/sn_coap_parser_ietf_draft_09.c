@@ -1,5 +1,5 @@
 /**
- *\file sn_coap_parser_ietf_draft_06.c
+ *\file sn_coap_parser_ietf_draft_09.c
  *
  * \brief CoAP Header parser
  *
@@ -8,7 +8,7 @@
  *  Created on: Jun 30, 2011
  *      Author: pekka_ext
  *
- * \note Supports draft-ietf-core-coap-06
+ * \note Supports draft-ietf-core-coap-09
  */
 
 /* * * * * * * * * * * * * * */
@@ -407,7 +407,6 @@ static uint8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_
 
                 break;
 
-                //todo: update
             case COAP_OPTION_LOCATION_PATH:
                 /* This is managed independently because User gives this option in one character table */
             	ret_status = sn_coap_parser_options_parse_multiple_options(packet_data_pptr,
@@ -735,11 +734,18 @@ static void sn_coap_parser_payload_parse(uint16_t packet_data_len,
     }
 }
 
+/**
+ * \fn SN_MEM_ATTR_COAP_PARSER_FUNC void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
+ *
+ * \brief Parses CoAP message and prints parts for debugging
+ *
+ * \param *coap_packet_ptr Pointer to the CoAP message to debug
+ *
+ *****************************************************************************/
 SN_MEM_ATTR_COAP_PARSER_FUNC
 void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
 {
 
-	//printf("\ncoap_packet_debug(): msg_type ");
 	switch (coap_packet_ptr->msg_type)
 	{
 		case COAP_MSG_TYPE_CONFIRMABLE:
@@ -759,7 +765,6 @@ void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
             break;
 	}
 
-	//printf("\ncoap_packet_debug(): msg_code ");
 	switch (coap_packet_ptr->msg_code)
 	{
         case COAP_MSG_CODE_EMPTY:
@@ -874,10 +879,8 @@ void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
             break;
     }
 
-	//printf("\ncoap_packet_debug(): msg_id ");
     printf("mid=%i ", (int)(coap_packet_ptr->msg_id));
 
-	//printf("\ncoap_packet_debug(): uri_path ");
 	if (coap_packet_ptr->uri_path_ptr)
 	{
 		int i;
@@ -891,7 +894,6 @@ void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
 		printf(" ");
     }
 
-    //printf("\ncoap_packet_debug(): token ");
 	if (coap_packet_ptr->token_ptr)
 	{
 		int i;
@@ -900,7 +902,6 @@ void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
 		printf(" ");
 	}
 
-    //printf("\ncoap_packet_debug(): content-type ");
     if (coap_packet_ptr->content_type_ptr)
     {
     	switch (coap_packet_ptr->content_type_ptr[0])
@@ -943,7 +944,6 @@ void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
 		printf(" ");
 	}
 
-    //printf("\ncoap_packet_debug(): payload ");
     if (coap_packet_ptr->payload_ptr)
     {
 		int i;

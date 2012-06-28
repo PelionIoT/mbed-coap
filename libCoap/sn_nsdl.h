@@ -73,11 +73,11 @@ typedef enum sn_nsdl_addr_type_
     SN_NSDL_ADDRESS_TYPE_NONE       = 0xFF
 } sn_nsdl_addr_type_e;
 
-/*
+
 #define SN_NDSL_RESOURCE_NOT_REGISTERED	0
 #define SN_NDSL_RESOURCE_REGISTERING	1
 #define SN_NDSL_RESOURCE_REGISTERED		2
-*/
+
 
 /* * * * * * * * * * * * * */
 /* * * * STRUCTURES  * * * */
@@ -109,7 +109,6 @@ typedef struct sn_nsdl_transmit_
 } sn_nsdl_transmit_s;
 
 
-/*
 typedef struct sn_nsdl_resource_parameters_
 {
 	uint8_t		*resource_type_ptr;
@@ -128,7 +127,7 @@ typedef struct sn_nsdl_resource_parameters_
 	uint8_t		registered;
 
 }sn_nsdl_resource_parameters_s;
-*/
+
 
 
 #endif /* SN_NSDL_H_ */

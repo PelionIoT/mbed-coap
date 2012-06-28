@@ -24,9 +24,9 @@
 /* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */
 /* * * * * * * * * * * * * * * * * * * * * * */
 
-extern int8_t 				sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
+extern int8_t 			   sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
 										uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *));
-extern int8_t 				sn_coap_protocol_destroy(void);
+extern int8_t 			   sn_coap_protocol_destroy(void);
 extern int16_t             sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
 extern sn_coap_hdr_s      *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
 extern sn_nsdl_transmit_s *sn_coap_protocol_exec(uint32_t current_time);
