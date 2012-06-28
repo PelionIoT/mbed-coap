@@ -19,13 +19,6 @@
 #include <time.h>
 #include "arguments.h"
 
-#ifdef HAVE_DTLS
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/err.h>
-#include <openssl/rand.h>
-#endif
-
 #include "pl_types.h"
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
@@ -71,11 +64,6 @@ typedef void (*signalhandler_t)(int); /* Function pointer type for ctrl-c pressi
 static struct sockaddr_in6 sa_dst, sa_src;
 static int sock_server, slen_sa_dst=sizeof(sa_dst);
 
-#ifdef HAVE_DTLS
-extern SSL *ssl;
-extern void dtls_start(char *remote_address, char *local_address, int port, int length, int messagenumber);
-#endif
-
 /* CoAP related globals*/
 uint16_t current_mid = 0;
 uint8_t	 text_plain = COAP_CT_TEXT_PLAIN;
@@ -116,12 +104,6 @@ if (arg_dtls == FALSE)
 	if (bind(sock_server, (struct sockaddr *) &sa_src, sizeof(sa_src))==-1)
 		stop_pgm("bind() error");
 } 
-#ifdef HAVE_DTLS
-else if (arg_dtls == TRUE)
-{
-	dtls_start("::1", 0, arg_dtlsport, 15, 12);
-}
-#endif
 
 	/* Initialize the CoAP library */
 	sn_coap_builder_and_parser_init(&own_alloc, &own_free);
@@ -167,18 +149,6 @@ int svr_receive_msg(char *buf)
 #endif
 	}
   }
-#ifdef HAVE_DTLS
-  else if (arg_dtls == TRUE)
-  {
-	     rcv_size = SSL_read(ssl, buf, BUFLEN);
-	     if (rcv_size > 0)
-	     {
-#ifdef HAVE_DEBUG
-	    	 printf("\nRX dtls [%d B] - ", rcv_size);
-#endif
-	     }
-  }
-#endif
 
  return rcv_size;
 }
@@ -216,14 +186,6 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 	if (sendto(sock_server, message_ptr, message_len, 0, (const struct sockaddr *)&sa_dst, slen_sa_dst)==-1)
 				stop_pgm("sendto() failed");
   } 
-#ifdef HAVE_DTLS
-  else if (arg_dtls == TRUE)
-  {
-  	sent = SSL_write(ssl, message_ptr, message_len);
-  	if (sent <= 0)
-  		stop_pgm("SSL_write failed");
-  }
-#endif
 
   own_free(message_ptr);
   own_free(coap_hdr_ptr->payload_ptr);
@@ -258,7 +220,6 @@ int nsp_register(const char *ep, const char *rt, const char *links)
 
 	sn_coap_register(coap_hdr_ptr, ep, rt, links);
 	msg_id = coap_hdr_ptr->msg_id;
-
 	svr_send_msg(coap_hdr_ptr);
 
 	/* Wait for response */

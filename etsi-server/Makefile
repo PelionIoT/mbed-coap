@@ -1,12 +1,9 @@
 PLATFORM= 
-OS = LINUX
+OS = MACOSX
 TARGET	= etsi_server
 OBJECTS = main.o etsi_server.o 
-#dtls_udp_client.o
 CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../libCoap -DHAVE_DEBUG
-#-DHAVE_DTLS
-LDFLAGS = -L../libCoap/ -D_REENTRANT -lpthread -lCoap
-#-lssl -lcrypto
+LDFLAGS = -L../libCoap/x86_gcc/ -D_REENTRANT -lpthread -lCoap
 
 all: $(TARGET) 
 
