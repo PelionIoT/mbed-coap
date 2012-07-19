@@ -62,18 +62,12 @@ static void                  sn_coap_protocol_linked_list_blockwise_remove_old_d
 static uint8_t              *sn_coap_protocol_blockwise_search_block_option_from_packet_data(uint8_t *searched_packet_data_ptr);
 static void                  sn_coap_protocol_blockwise_handle_received_ack_block_option(sn_nsdl_addr_s *src_addr_ptr, uint8_t option_value);
 static void                  sn_coap_protocol_blockwise_handle_payload_size_change(sn_nsdl_addr_s *src_addr_ptr, uint8_t payload_size);
-#endif
-
-#ifdef NOT_USED
-static sn_nsdl_transmit_s   *sn_coap_protocol_build_msg(void *src_msg_ptr);
 static int8_t                sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len, void *msg_ptr);
 #endif
 
 static int8_t                sn_coap_protocol_store_coap_message_for_sending(sn_nsdl_addr_s *dst_addr_ptr, sn_coap_msg_type_e msg_type, uint16_t msg_id);
-
-#ifdef NOT_USED
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *freed_send_msg_ptr);
-#endif
+static sn_nsdl_transmit_s   *sn_coap_protocol_build_msg(void *src_msg_ptr);
 
 /* * * * * * * * * * * * * * * * * */
 /* * * * GLOBAL DECLARATIONS * * * */
@@ -640,7 +634,7 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
 
             if (src_coap_msg_ptr->options_list_ptr == NULL)
             {
-                return NULL;
+                return -2;
             }
         }
 
@@ -665,7 +659,7 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
             {
                 sn_coap_protocol_free(src_coap_msg_ptr->options_list_ptr);
 
-                return NULL;
+                return -2;
             }
         }
         else
@@ -685,7 +679,7 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
                 sn_coap_protocol_free(src_coap_msg_ptr->options_list_ptr);
                 sn_coap_protocol_free(src_coap_msg_ptr->options_list_ptr->fencepost1_ptr);
 
-                return NULL;
+                return -2;
             }
 
             *(src_coap_msg_ptr->options_list_ptr->block1_ptr) = 0x00 +                                     /* First block  (BLOCK NUMBER, 4 MSB bits) */
@@ -703,7 +697,7 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
                 sn_coap_protocol_free(src_coap_msg_ptr->options_list_ptr);
                 sn_coap_protocol_free(src_coap_msg_ptr->options_list_ptr->fencepost1_ptr);
 
-                return NULL;
+                return -2;
             }
 
             *(src_coap_msg_ptr->options_list_ptr->block2_ptr) = 0x00 +                                     /* First block  (BLOCK NUMBER, 4 MSB bits) */
@@ -1009,7 +1003,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
 
                 /* * * Then build CoAP Acknowledgement message * * */
                 src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1_len = 1;
-                *(src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1_ptr) = *(returned_dst_coap_msg_ptr->options_list_ptr->block1_ptr) & 0xF0 + /* Block number (BLOCK NUMBER, 4 MSB bits) */
+                *(src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1_ptr) = (*(returned_dst_coap_msg_ptr->options_list_ptr->block1_ptr) & 0xF0) + /* Block number (BLOCK NUMBER, 4 MSB bits) */
                                                                                   (more_value & 0x08) +                                               /* More flag    (MORE, 1 bit) */
                                                                                   (SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE >> 5);                          /* Block size   (SIZE, 3 LSB bits) */
             }
@@ -1029,7 +1023,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
 
                 /* * * Then build CoAP Acknowledgement message * * */
                 src_coap_blockwise_ack_msg_ptr->options_list_ptr->block2_len = 1;
-                *(src_coap_blockwise_ack_msg_ptr->options_list_ptr->block2_ptr) = *(returned_dst_coap_msg_ptr->options_list_ptr->block2_ptr) & 0xF0 + /* Block number (BLOCK NUMBER, 4 MSB bits) */
+                *(src_coap_blockwise_ack_msg_ptr->options_list_ptr->block2_ptr) = (*(returned_dst_coap_msg_ptr->options_list_ptr->block2_ptr) & 0xF0) + /* Block number (BLOCK NUMBER, 4 MSB bits) */
                                                                                   (more_value & 0x08) +                                               /* More flag    (MORE, 1 bit) */
                                                                                   (SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE / 32);                          /* Block size   (SIZE, 3 LSB bits) */
             }
@@ -1064,7 +1058,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
             }
 
             /* * * Then build Acknowledgement message to Packed data * * */
-            byte_count_built = sn_coap_builder(dst_ack_packet_data_ptr, src_coap_blockwise_ack_msg_ptr, msg_id);
+            byte_count_built = sn_coap_builder(dst_ack_packet_data_ptr, src_coap_blockwise_ack_msg_ptr);
 
             if (byte_count_built < 0)
             {
@@ -2763,9 +2757,6 @@ static void sn_coap_protocol_blockwise_handle_payload_size_change(sn_nsdl_addr_s
     sn_coap_protocol_free(header_ptr);
 }
 
-#endif /* SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE */
-
-#ifdef NOT_USED
 /**************************************************************************//**
  * \fn SN_MEM_ATTR_COAP_PROTOCOL_FUNC sn_nsdl_transmit_s *sn_coap_protocol_build_msg(void *src_msg_ptr)
  *
@@ -2886,7 +2877,8 @@ int8_t sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr,
 
     return 0;
 }
-#endif
+
+#endif /* SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE */
 
 
 /**************************************************************************//**
@@ -2961,7 +2953,6 @@ static int8_t sn_coap_protocol_store_coap_message_for_sending(sn_nsdl_addr_s *ds
     return 0;
 }
 
-#ifdef NOT_USED
 /**************************************************************************//**
  * \fn SN_MEM_ATTR_COAP_PROTOCOL_FUNC static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *freed_send_msg_ptr)
  *
@@ -2979,4 +2970,4 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *fre
         sn_coap_protocol_free(freed_send_msg_ptr);
     }
 }
-#endif
+
