@@ -34,10 +34,8 @@
 /* * * * * * * * * * * * * * * * * * * * */
 
 static void                  sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time);
-#ifdef NOT_USED
 static sn_nsdl_transmit_s   *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
-#endif
 
 static void                  sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr);
 static int32_t               sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr);
@@ -1505,7 +1503,7 @@ static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr
 #endif /* SN_COAP_RESENDING_MAX_MSGS_COUNT */
 }
 
-#ifdef NOT_USED
+
 /**************************************************************************//**
  * \fn SN_MEM_ATTR_COAP_PROTOCOL_FUNC static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
  *
@@ -1619,8 +1617,6 @@ static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_add
 
 #endif /* SN_COAP_RESENDING_MAX_MSGS_COUNT */
 }
-
-#endif
 
 
 /**************************************************************************//**
