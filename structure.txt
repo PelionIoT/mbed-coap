@@ -12,6 +12,11 @@ README.txt
 ----/cc2530_iar
 ----/atmega_iar
 
+--/libEdtls
+----/src
+------/include
+----/ports...
+
 --/examples
 ----/connected-home_linux
 ----/connected-home_nanostack
@@ -21,5 +26,6 @@ README.txt
 ----/full_linux
 ----/minimal_nanostack
 ----/minimal_nanostack
+----/edtls_linux
+----/edtls_nanostack
 ----/etsi-server_linux
-
