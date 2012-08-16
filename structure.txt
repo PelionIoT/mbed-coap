@@ -10,7 +10,7 @@ README.txt
 ------/include
 ----/x86_gcc
 ----/cc2530_iar
-----/atmega_iar
+----/msp430_iar
 
 --/libEdtls
 ----/src
