@@ -15,7 +15,9 @@ README.txt
 --/libEdtls
 ----/src
 ------/include
-----/ports...
+----/x86_gcc
+----/cc2530_iar
+----/msp430_iar
 
 --/examples
 ----/connected-home_linux
