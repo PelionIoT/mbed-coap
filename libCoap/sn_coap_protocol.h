@@ -32,8 +32,8 @@ extern sn_coap_hdr_s      *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, 
 extern sn_nsdl_transmit_s *sn_coap_protocol_exec(uint32_t current_time);
 
 /* NSP registration functions */
-extern int8_t 			   sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, const char *ep, const char *ep_type, const char *links);
-extern int8_t 			   sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, char *location);
-extern int8_t 			   sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, char *location);
+extern int8_t 			   sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr);
+extern int8_t 			   sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length);
+extern int8_t 			   sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length);
 
 #endif /* SN_COAP_PROTOCOL_H_ */

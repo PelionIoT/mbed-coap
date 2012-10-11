@@ -46,8 +46,11 @@
 
 #define RES_WELL_KNOWN (const char *)(".well-known/core")
 #define EP (const char *)("nsdlc-light")
+#define EP_LEN 11
 #define EP_TYPE (const char *)("Light")
+#define EP_TYPE_LEN 5
 #define LINKS (const char *)("</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</gps/loc>;rt=ns:gpsloc;ct=\"0\",</lt/0/on>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\"")
+#define LINKS_LEN 197
 #define RD_PATH (const char *)("rd")
 
 extern void stop_pgm();
@@ -64,8 +67,8 @@ void svr_handle_request_gps(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_rel(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_temp(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr);
-int nsp_register(const char *ep, const char *rt, const char *links);
-int nsp_deregister(char *location);
+int nsp_register(registration_info_t *endpoint_info_ptr);
+int nsp_deregister(char *location, uint8_t length);
 void *own_alloc(uint16_t size);
 void own_free(void* ptr);
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr);
@@ -84,12 +87,19 @@ uint8_t	 link_format = COAP_CT_LINK_FORMAT;
 /* Resource related globals*/
 char res_rel = '1';
 char *reg_location;
+int8_t reg_location_len;
 
+
+
+/*****************************************************/
 /* This is called from main to start the CoAP server */
+/*****************************************************/
 int svr_ipv6(void)
 {
+	/* Local variables */
 	char buf[BUFLEN];
 	int rcv_size=0;
+	registration_info_t endpoint_info;
 
 	/* Catch ctrl-c */
 	if (signal(SIGINT, (signalhandler_t)ctrl_c_handle_function) == SIG_ERR)
@@ -132,8 +142,16 @@ int svr_ipv6(void)
 	printf("rt: %s\n", EP_TYPE);
 	printf("links: %s\n", LINKS);
 #endif
-	nsp_register(EP, EP_TYPE, LINKS);
+	endpoint_info.endpoint_ptr = (const uint8_t *)EP;
+	endpoint_info.endpoint_len = EP_LEN;
+	endpoint_info.endpoint_type_ptr = (const uint8_t *)EP_TYPE;
+	endpoint_info.endpoint_type_len = EP_TYPE_LEN;
+	endpoint_info.links_ptr = (const uint8_t *)LINKS;
+	endpoint_info.links_len = LINKS_LEN;
 
+	nsp_register(&endpoint_info);
+
+	/* 				Main loop.				*/
 	/* Listen and process incoming messages */
 	while (1)
 	{
@@ -145,6 +163,11 @@ int svr_ipv6(void)
 	return 0;
 }
 
+
+
+/****************************/
+/* Message receive function */
+/****************************/
 int svr_receive_msg(char *buf)
 {
   char rcv_in6_addr[32];
@@ -177,6 +200,8 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 
 	/* Allocate memory for message and check was allocating successfully */
 	message_ptr = own_alloc(message_len);
+	if(!message_ptr)
+		return;
 
 	/* Build CoAP message */
 	sn_coap_builder(message_ptr, coap_hdr_ptr);
@@ -192,14 +217,19 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 	if (sendto(sock_server, message_ptr, message_len, 0, (const struct sockaddr *)&sa_dst, slen_sa_dst)==-1)
 				stop_pgm("sendto() failed");
 
-  own_free(message_ptr);
-  own_free(coap_hdr_ptr->payload_ptr);
-  own_free(coap_hdr_ptr->options_list_ptr);
-  own_free(coap_hdr_ptr);
 
+	own_free(message_ptr);
+	own_free(coap_hdr_ptr->payload_ptr);
+	if(coap_hdr_ptr->options_list_ptr)
+	{
+		if(coap_hdr_ptr->options_list_ptr->uri_query_ptr)
+			own_free(coap_hdr_ptr->options_list_ptr->uri_query_ptr);
+		own_free(coap_hdr_ptr->options_list_ptr);
+	}
+	own_free(coap_hdr_ptr);
 }
 
-int nsp_register(const char *ep, const char *rt, const char *links)
+int nsp_register(registration_info_t *endpoint_info_ptr)
 {
 	int rcv_size = 0;
 	uint16_t msg_id;
@@ -221,10 +251,12 @@ int nsp_register(const char *ep, const char *rt, const char *links)
 
 	sn_coap_hdr_s *coap_hdr_ptr;
 	coap_hdr_ptr = own_alloc(sizeof(sn_coap_hdr_s));
+	if(!coap_hdr_ptr)
+		return -1;
 	memset(coap_hdr_ptr, 0x00, sizeof(sn_coap_hdr_s));
 
 	/* Build the registration CoAP request using the libCoap helper function */
-	sn_coap_register(coap_hdr_ptr, ep, rt, links);
+	sn_coap_register(coap_hdr_ptr, endpoint_info_ptr);
 	msg_id = coap_hdr_ptr->msg_id;
 	svr_send_msg(coap_hdr_ptr);
 
@@ -252,12 +284,20 @@ int nsp_register(const char *ep, const char *rt, const char *links)
 		/* Save the location handle */
 		if (coap_packet_ptr->options_list_ptr && coap_packet_ptr->options_list_ptr->location_path_ptr)
 		{
+			reg_location_len = coap_packet_ptr->options_list_ptr->location_path_len;
 			reg_location = own_alloc(coap_packet_ptr->options_list_ptr->location_path_len);
 			if (reg_location)
-				strncpy(reg_location, (char *)coap_packet_ptr->options_list_ptr->location_path_ptr, coap_packet_ptr->options_list_ptr->location_path_len);
+				memcpy(reg_location, (char *)coap_packet_ptr->options_list_ptr->location_path_ptr, reg_location_len);
+			else
+			{
+				own_free(coap_hdr_ptr);
+				return -1;
+			}
 		}
 
-	} else {
+	}
+	else
+	{
 		return -1;
 	}
 
@@ -266,9 +306,8 @@ int nsp_register(const char *ep, const char *rt, const char *links)
 	return 0;
 }
 
-int nsp_deregister(char *location)
+int nsp_deregister(char *location, uint8_t length)
 {
-
 #ifdef HAVE_DEBUG
 	printf("Deregistering from NSP\n");
 #endif
@@ -283,11 +322,12 @@ int nsp_deregister(char *location)
 
 	sn_coap_hdr_s *coap_hdr_ptr;
 	coap_hdr_ptr = own_alloc(sizeof(sn_coap_hdr_s));
+	if(!coap_hdr_ptr)
+		return -1;
 	memset(coap_hdr_ptr, 0x00, sizeof(sn_coap_hdr_s));
 
 	/* Build the de-registration CoAP request using the libCoap helper function */
-	sn_coap_deregister(coap_hdr_ptr, location);
-
+	sn_coap_deregister(coap_hdr_ptr, (uint8_t*)location, length);
 	svr_send_msg(coap_hdr_ptr);
 
 	return 0;
@@ -340,7 +380,9 @@ void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 		svr_handle_request_temp(coap_packet_ptr);
 	else if (memcmp(coap_packet_ptr->uri_path_ptr, RES_WELL_KNOWN, strlen(RES_WELL_KNOWN)) == 0)
 		svr_handle_request_wellknown(coap_packet_ptr);		
-	else { /* URI not found */
+	/* URI not found */
+	else
+	{
 		printf("URI not found\n");
 		sn_coap_hdr_s *coap_res_ptr;
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_FOUND);
@@ -360,10 +402,15 @@ void svr_handle_request_mfg(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 		coap_res_ptr->payload_len = strlen(RES_MFG_VAL);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		if(!coap_res_ptr->payload_ptr)
+			return;
 		memcpy(coap_res_ptr->payload_ptr, RES_MFG_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
-	} else { /* Method not supported */
+	}
+	 /* Method not supported */
+	else
+	{
 		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
@@ -380,10 +427,15 @@ void svr_handle_request_mdl(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 		coap_res_ptr->payload_len = strlen(RES_MDL_VAL);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		if(!coap_res_ptr->payload_ptr)
+			return;
 		memcpy(coap_res_ptr->payload_ptr, RES_MDL_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
-	} else { /* Method not supported */
+	}
+	/* Method not supported */
+	else
+	{
 		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
@@ -400,16 +452,20 @@ void svr_handle_request_bat(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 		coap_res_ptr->payload_len = strlen(RES_BAT_VAL);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		if(!coap_res_ptr->payload_ptr)
+			return;
 		memcpy(coap_res_ptr->payload_ptr, RES_BAT_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
-	} else { /* Method not supported */
+	}
+	 /* Method not supported */
+	else
+	{
 		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}
 }
-
 void svr_handle_request_gps(sn_coap_hdr_s *coap_packet_ptr)
 {
 	sn_coap_hdr_s *coap_res_ptr;
@@ -420,10 +476,15 @@ void svr_handle_request_gps(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 		coap_res_ptr->payload_len = strlen(RES_GPS_VAL);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		if(!coap_res_ptr->payload_ptr)
+			return;
 		memcpy(coap_res_ptr->payload_ptr, RES_GPS_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
-	} else { /* Method not supported */
+	}
+	 /* Method not supported */
+	else
+	{
 		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
@@ -440,7 +501,10 @@ void svr_handle_request_rel(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 		coap_res_ptr->payload_len = 1;
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
-		coap_res_ptr->payload_ptr[0] = res_rel;
+		if(!coap_res_ptr->payload_ptr)
+			return;
+		memcpy(coap_res_ptr->payload_ptr, &res_rel, 1);
+		//coap_res_ptr->payload_ptr[0] = res_rel;
 		svr_send_msg(coap_res_ptr);
 		return;
 	} else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT)
@@ -458,7 +522,10 @@ void svr_handle_request_rel(sn_coap_hdr_s *coap_packet_ptr)
 			svr_send_msg(coap_res_ptr);
 			return;
 
-	} else { /* Method not supported */
+	}
+	 /* Method not supported */
+	else
+	{
 		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
@@ -475,10 +542,15 @@ void svr_handle_request_temp(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 		coap_res_ptr->payload_len = strlen(RES_TEMP_VAL);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		if(!coap_res_ptr->payload_ptr)
+			return;
 		memcpy(coap_res_ptr->payload_ptr, RES_TEMP_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
-	} else { /* Method not supported */
+	}
+	 /* Method not supported */
+	else
+	{
 		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
@@ -497,10 +569,15 @@ void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr->content_type_len = sizeof(link_format);
 		coap_res_ptr->payload_len = strlen(LINKS);
 		coap_res_ptr->payload_ptr = own_alloc(coap_res_ptr->payload_len);
+		if(!coap_res_ptr->payload_ptr)
+			return;
 		memcpy(coap_res_ptr->payload_ptr, LINKS, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
-	} else { /* Method not supported */
+	}
+	 /* Method not supported */
+	else
+	{
 		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
@@ -532,8 +609,12 @@ static void ctrl_c_handle_function(void)
 {
 	printf("Pressed ctrl-c\n");
 
-	nsp_deregister(reg_location);
+	nsp_deregister(reg_location, reg_location_len);
 	usleep(100);
+
+	if(reg_location)
+		own_free(reg_location);
+	sn_coap_protocol_destroy();
 
 	exit(1);
 }

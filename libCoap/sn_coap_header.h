@@ -205,7 +205,7 @@ typedef struct sn_coap_hdr_
     /* * * * * * * * * * * */
 
     uint16_t                payload_len;        /* Must be set to zero if not used */
-    uint8_t                *payload_ptr;        /* Must be set to NULL if not used */
+    uint8_t		           *payload_ptr;        /* Must be set to NULL if not used */
 } sn_coap_hdr_s;
 
 /* * * * * * * * * * * * * * * * * * * * * * */

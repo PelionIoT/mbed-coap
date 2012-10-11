@@ -875,6 +875,7 @@ void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
             printf("5.05 Proxying Not Supported ");
             break;
 
+        default:
             printf("UNKNOWN CODE ");
             break;
     }
@@ -929,7 +930,7 @@ void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
         	case COAP_CT_JSON:
         	     printf("application/json ");
         	     break;
-
+        default:
         	printf("uknown type (%i) ", (int)(coap_packet_ptr->content_type_ptr[0]));
         	break;
 
@@ -948,7 +949,8 @@ void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
     {
 		int i;
 		printf("'");
-		for (i=0; i < coap_packet_ptr->payload_len; i++) printf("%c", (char)(coap_packet_ptr->payload_ptr[i]));
+		for (i=0; i < coap_packet_ptr->payload_len; i++)
+			printf("%c", *(coap_packet_ptr->payload_ptr + i));
 		printf("' ");
     }
 

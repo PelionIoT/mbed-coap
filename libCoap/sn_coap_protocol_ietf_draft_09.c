@@ -1,4 +1,4 @@
-/**************************************************************************//**
+/******************************************************************************
  * \file sn_coap_protocol_ietf_draft_09.c
  *
  * \brief CoAP Protocol implementation
@@ -48,7 +48,7 @@ static void                  sn_coap_protocol_linked_list_duplication_info_remov
 static void                  sn_coap_protocol_linked_list_duplication_info_remove_old_ones(void);
 #endif
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
-static uint16_t              sn_coap_protocol_linked_list_blockwise_msgs_store(sn_nsdl_addr_s *dst_addr_ptr, uint8_t header_len, uint8_t *header_ptr, uint16_t payload_len, uint8_t *payload_ptr, uint8_t one_stored_payload_len);
+static uint16_t              sn_coap_protocol_linked_list_blockwise_msgs_store(sn_nsdl_addr_s *dst_addr_ptr, uint8_t header_len, uint8_t *header_ptr, uint16_t payload_len, uint8_t *payload_ptr, uint16_t one_stored_payload_len);
 static coap_blockwise_msg_s *sn_coap_protocol_linked_list_blockwise_msg_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static coap_blockwise_msg_s *sn_coap_protocol_linked_list_blockwise_msg_search_key_addr(sn_nsdl_addr_s *src_addr_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_msg_remove_current();
@@ -93,7 +93,9 @@ SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              (*sn_coap_protocol_free)
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint8_t 			(*sn_coap_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *) = NULL;
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static void coap_protocol_free_lists(void);
 
-#define RD_PATH (const char *)("rd")
+static uint8_t 	resource_path_ptr[]			= {'r','d'};
+static uint8_t 	ep_name_parameter_string[]	= {'h','='};
+static uint8_t	resource_type_parameter[]	= {'r','t','='};
 
 /**
  * \fn
@@ -108,26 +110,65 @@ SN_MEM_ATTR_COAP_PROTOCOL_DECL static void coap_protocol_free_lists(void);
  * \return Return value 0 given on success. In failure cases:\n
  *          -1 = Failure
  */
+
+
+
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
-int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, const char *ep, const char *ep_type, const char *links)
+int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr)
 {
+	uint8_t *temp_ptr;
+
 	coap_hdr_ptr->msg_code = COAP_MSG_CODE_REQUEST_POST;
 	coap_hdr_ptr->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
 	coap_hdr_ptr->msg_id = global_message_id++;
-	coap_hdr_ptr->uri_path_len = strlen(RD_PATH);
-	coap_hdr_ptr->uri_path_ptr = (uint8_t*)RD_PATH;
-	coap_hdr_ptr->payload_len = strlen(links);
+
+	coap_hdr_ptr->uri_path_len = sizeof(resource_path_ptr);
+	coap_hdr_ptr->uri_path_ptr = resource_path_ptr;
+
+	/* Payload copy */
+	coap_hdr_ptr->payload_len = endpoint_info_ptr->links_len;
 	coap_hdr_ptr->payload_ptr = sn_coap_protocol_malloc(coap_hdr_ptr->payload_len);
-	memcpy(coap_hdr_ptr->payload_ptr, links, coap_hdr_ptr->payload_len);
-	/* Options */
+	if(!coap_hdr_ptr->payload_ptr)
+		return -1;
+	memcpy(coap_hdr_ptr->payload_ptr, endpoint_info_ptr->links_ptr, coap_hdr_ptr->payload_len);
+
+	/* Options allocation */
 	coap_hdr_ptr->options_list_ptr = sn_coap_protocol_malloc(sizeof(sn_coap_options_list_s));
+	if(!coap_hdr_ptr->options_list_ptr)
+	{
+		sn_coap_free(coap_hdr_ptr->payload_ptr);
+		return -1;
+	}
 	memset(coap_hdr_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
 
-	char query[128];
-	sprintf(query, "h=%s&rt=%s", ep, ep_type);
-	coap_hdr_ptr->options_list_ptr->uri_query_len = strlen(query);
+	/* Uri query filling */
+	coap_hdr_ptr->options_list_ptr->uri_query_len = sizeof(ep_name_parameter_string) + endpoint_info_ptr->endpoint_len +
+													sizeof(resource_type_parameter) + endpoint_info_ptr->endpoint_type_len + 1; // + 1 for '&'
+
 	coap_hdr_ptr->options_list_ptr->uri_query_ptr = sn_coap_protocol_malloc(coap_hdr_ptr->options_list_ptr->uri_query_len);
-	memcpy(coap_hdr_ptr->options_list_ptr->uri_query_ptr, query, coap_hdr_ptr->options_list_ptr->uri_query_len);
+	if(!coap_hdr_ptr->options_list_ptr->uri_query_ptr)
+	{
+		sn_coap_free(coap_hdr_ptr->options_list_ptr);
+		sn_coap_free(coap_hdr_ptr->payload_ptr);
+		return -1;
+	}
+
+	temp_ptr = coap_hdr_ptr->options_list_ptr->uri_query_ptr;
+
+	memcpy(temp_ptr, ep_name_parameter_string, sizeof(ep_name_parameter_string));
+	temp_ptr += sizeof(ep_name_parameter_string);
+
+	memcpy(temp_ptr, endpoint_info_ptr->endpoint_ptr, endpoint_info_ptr->endpoint_len);
+	temp_ptr += endpoint_info_ptr->endpoint_len;
+
+	*temp_ptr++ = '&';
+
+	memcpy(temp_ptr, resource_type_parameter, sizeof(resource_type_parameter));
+	temp_ptr += sizeof(resource_type_parameter);
+
+	memcpy(temp_ptr, endpoint_info_ptr->endpoint_type_ptr, endpoint_info_ptr->endpoint_type_len);
+	temp_ptr += endpoint_info_ptr->endpoint_type_len;
+
 
 	return 0;
 }
@@ -144,13 +185,13 @@ int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, const char *ep, const char 
  *          -1 = Failure
  */
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
-int8_t 	sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, char *location)
+int8_t 	sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
 {
 	coap_hdr_ptr->msg_code = COAP_MSG_CODE_REQUEST_PUT;
 	coap_hdr_ptr->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
 	coap_hdr_ptr->msg_id = global_message_id++;
-	coap_hdr_ptr->uri_path_len = strlen(location);
-	coap_hdr_ptr->uri_path_ptr = (uint8_t*)location;
+	coap_hdr_ptr->uri_path_len = length;
+	coap_hdr_ptr->uri_path_ptr = location;
 
 	return 0;
 }
@@ -167,13 +208,13 @@ int8_t 	sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, char *location)
  *          -1 = Failure
  */
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
-int8_t 	sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, char *location)
+int8_t 	sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
 {
 	coap_hdr_ptr->msg_code = COAP_MSG_CODE_REQUEST_DELETE;
 	coap_hdr_ptr->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
 	coap_hdr_ptr->msg_id = global_message_id++;
-	coap_hdr_ptr->uri_path_len = strlen(location);
-	coap_hdr_ptr->uri_path_ptr = (uint8_t*)location;
+	coap_hdr_ptr->uri_path_len = length;
+	coap_hdr_ptr->uri_path_ptr = location;
 
 	return 0;
 }
@@ -382,6 +423,7 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
     	sn_coap_tx_callback = used_tx_callback_ptr;
     }
 
+    sn_linked_list_init(sn_coap_protocol_malloc, sn_coap_protocol_free);
 
 #if SN_COAP_RESENDING_MAX_MSGS_COUNT /* If Message resending is not used at all, this part of code will not be compiled */
 
@@ -408,7 +450,6 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
     /* * * * Create Linked list for storing Acknowledgement info * * * */
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    sn_linked_list_init(sn_coap_protocol_malloc, sn_coap_protocol_free);
     /* Check that Linked list is not already created */
     if (global_linked_list_ack_info_ptr == NULL)
     {
@@ -828,6 +869,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     returned_dst_coap_msg_ptr = sn_coap_parser(packet_data_len, packet_data_ptr, &coap_version);
+    msg_id = returned_dst_coap_msg_ptr->msg_id;
 
     /* Check status of returned pointer */
     if (returned_dst_coap_msg_ptr == NULL)
@@ -1103,10 +1145,10 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
                 uint16_t whole_payload_len      = sn_coap_protocol_linked_list_blockwise_payloads_get_len(src_addr_ptr);
                 uint8_t *temp_whole_payload_ptr = NULL;
 
-                returned_dst_coap_msg_ptr->payload_ptr = sn_coap_protocol_malloc(whole_payload_len);
-                returned_dst_coap_msg_ptr->payload_len = whole_payload_len;
+                temp_whole_payload_ptr = sn_coap_protocol_malloc(whole_payload_len);
 
-                temp_whole_payload_ptr = returned_dst_coap_msg_ptr->payload_ptr;
+                returned_dst_coap_msg_ptr->payload_ptr = temp_whole_payload_ptr;
+                returned_dst_coap_msg_ptr->payload_len = whole_payload_len;
 
                 /* Copy stored Blockwise payloads to returned whole Blockwise payload pointer */
                 while (payload_ptr != NULL)
@@ -1380,7 +1422,7 @@ sn_nsdl_transmit_s *sn_coap_protocol_exec(uint32_t current_time)
                     }
 
                     /* Check if it was last sending of this message */
-                    if (stored_msg_ptr->resending_counter >= (typeof(stored_msg_ptr->resending_counter))MAX_RETRANSMIT)
+                    if (stored_msg_ptr->resending_counter >= MAX_RETRANSMIT)
                     {
                         /* All message sending tryings used */
 
@@ -2096,7 +2138,7 @@ static uint16_t sn_coap_protocol_linked_list_blockwise_msgs_store(sn_nsdl_addr_s
                                                               uint8_t *header_ptr,
                                                               uint16_t payload_len,
                                                               uint8_t *payload_ptr,
-                                                              uint8_t one_stored_payload_len)
+                                                              uint16_t one_stored_payload_len)
 {
     coap_blockwise_msg_s *stored_blockwise_msg_ptr = NULL;
     uint8_t               payload_left             = payload_len;
@@ -2671,7 +2713,7 @@ static void sn_coap_protocol_blockwise_handle_received_ack_block_option(sn_nsdl_
     /* tells if receiver accepted requested Payload size */
     if (block_number == 0)
     {
-        uint8_t accepted_block_size = (block_option_value & 0x07);
+        uint16_t accepted_block_size = (block_option_value & 0x07);
 
         accepted_block_size = (1 << (accepted_block_size + 4));
 
@@ -2909,6 +2951,8 @@ static int8_t sn_coap_protocol_store_coap_message_for_sending(sn_nsdl_addr_s *ds
         return -1;
     }
 
+    memset(src_coap_msg_ptr, 0, sizeof(sn_coap_hdr_s));
+    
     /* * * Then build CoAP message * * */
     src_coap_msg_ptr->msg_type = msg_type;
 

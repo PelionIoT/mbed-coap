@@ -21,7 +21,7 @@
 #define RESPONSE_TIMEOUT        2   /* Initial resending timeout as seconds, value is specified in IETF CoAP specification */
 #define RESPONSE_RANDOM_FACTOR  1   /* Resending random factor, value is specified in IETF CoAP specification */
 
-#define COAP_SEND_MSG_ONCE      0xFFFFFFFF /* Sends CoAP message once from Linked list, no resendins */
+#define COAP_SEND_MSG_ONCE      ((uint32_t)0xFFFFFFFF) /* Sends CoAP message once from Linked list, no resendins */
 
 /* * * * * * * * * * * * * * */
 /* * * * ENUMERATIONS  * * * */

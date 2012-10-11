@@ -1,5 +1,5 @@
 PLATFORM= 
-OS = MACOSX
+OS = LINUX
 TARGET	= connected_home
 OBJECTS = main.o connected_home.o 
 CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../libCoap -DHAVE_DEBUG

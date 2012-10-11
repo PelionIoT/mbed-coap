@@ -129,5 +129,19 @@ typedef struct sn_nsdl_resource_parameters_
 }sn_nsdl_resource_parameters_s;
 
 
+/* simple nsdl addons */
+typedef struct registration_info_
+{
+	const uint8_t *endpoint_ptr;
+	uint8_t endpoint_len;
+
+	const uint8_t *endpoint_type_ptr;
+	uint8_t endpoint_type_len;
+
+	const uint8_t *links_ptr;
+	uint16_t links_len;
+
+}registration_info_t;
+
 
 #endif /* SN_NSDL_H_ */

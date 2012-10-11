@@ -15,7 +15,6 @@
 /* * * * INCLUDE FILES * * * */
 /* * * * * * * * * * * * * * */
 
-#include <stddef.h>
 #include <stdlib.h> /* For libary malloc() */
 #include <string.h> /* For memset() and memcpy() */
 
@@ -96,17 +95,27 @@ sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t ms
 {
 	sn_coap_hdr_s *coap_res_ptr;
 	coap_res_ptr = sn_coap_malloc(sizeof(sn_coap_hdr_s));
+	if(!coap_res_ptr)
+		return NULL;
+
 	memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
+
 	if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
 	{
 		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
 		coap_res_ptr->msg_code = msg_code;
 		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
-	} else if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE) {
+	}
+
+	else if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
+	{
 		coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
 		coap_res_ptr->msg_code = msg_code;
 		/* msg_id needs to be set by the caller in this case */
-	} else {
+	}
+
+	else
+	{
 		return NULL;
 	}
 
@@ -114,6 +123,11 @@ sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t ms
 	{
 		coap_res_ptr->token_len = coap_packet_ptr->token_len;
 		coap_res_ptr->token_ptr = sn_coap_malloc(coap_res_ptr->token_len);
+		if(!coap_res_ptr->token_ptr)
+		{
+			sn_coap_free(coap_res_ptr);
+			return NULL;
+		}
 		memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
 	}
 	return coap_res_ptr;
