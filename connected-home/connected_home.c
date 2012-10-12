@@ -28,7 +28,14 @@
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
 
+#ifdef USE_EDTLS
+#include "shalib.h"
+#include "sn_edtls_lib.h"
+#include "TI_aes.h"
+#endif
+
 #define BUFLEN 1024
+#define MAX_CONNECTING_TIME 200
 
 /* Resource paths and registration parameters */
 #define RES_MFG	(const char *)("dev/mfg")
@@ -89,6 +96,11 @@ char res_rel = '1';
 char *reg_location;
 int8_t reg_location_len;
 
+#ifdef USE_EDTLS
+/* eDTLS related globals*/
+uint8_t edtls_connection_status;
+uint8_t edtls_session_id;
+#endif
 
 
 /*****************************************************/
@@ -100,6 +112,13 @@ int svr_ipv6(void)
 	char buf[BUFLEN];
 	int rcv_size=0;
 	registration_info_t endpoint_info;
+#ifdef USE_EDTLS
+	uint8_t i = 0;
+	sn_edtls_data_buffer_t edtls_buffer_s;
+	sn_edtls_address_t edtls_server_address_s;
+
+	memset(&edtls_server_address_s, 0, sizeof(edtls_server_address_s));
+#endif
 
 	/* Catch ctrl-c */
 	if (signal(SIGINT, (signalhandler_t)ctrl_c_handle_function) == SIG_ERR)
@@ -136,6 +155,44 @@ int svr_ipv6(void)
 	srand (time(NULL));
 	current_mid = rand() % 10000;
 
+	/* eDTLS init and connection */
+#ifdef USE_EDTLS
+	sn_edtls_libraray_initialize();
+
+	edtls_server_address_s.socket = sock_server;
+	edtls_session_id = sn_edtls_connect(&edtls_server_address_s);
+#ifdef HAVE_DEBUG
+			printf("Waiting for eDTLS to connect..\n");
+#endif
+
+	/* Wait for the eDTLS to connect */
+	while((edtls_connection_status != EDTLS_CONNECTION_OK) && (i < MAX_CONNECTING_TIME))
+	{
+		usleep(5000);
+		i++;
+		rcv_size = svr_receive_msg(buf);
+		if(rcv_size)
+		{
+			edtls_buffer_s.buff = (uint8_t*)buf;
+			edtls_buffer_s.len = rcv_size;
+			sn_edtls_read_data(edtls_session_id, &edtls_buffer_s);
+			memset(buf, 0, BUFLEN);
+		}
+	}
+
+	/* If connection failed, then return */
+	if(edtls_connection_status == EDTLS_CONNECTION_CLOSED || edtls_connection_status == EDTLS_CONNECTION_FAILED)
+	{
+#ifdef HAVE_DEBUG
+		printf("eDTLS connection failed!\n");
+#endif
+		return 0;
+	}
+#ifdef HAVE_DEBUG
+		printf("eDTLS connected!\n");
+#endif
+#endif
+
 	/* Register with NSP */
 #ifdef HAVE_DEBUG
 	printf("h: %s\n", EP);
@@ -158,7 +215,14 @@ int svr_ipv6(void)
 		usleep(100);
 		memset(buf, 0, BUFLEN);
 		rcv_size = svr_receive_msg(buf);
+#ifdef USE_EDTLS
+		edtls_buffer_s.buff = (uint8_t*)buf;
+		edtls_buffer_s.len = rcv_size;
+		sn_edtls_read_data(edtls_session_id, &edtls_buffer_s);
+		svr_msg_handler((char*)edtls_buffer_s.buff, edtls_buffer_s.len);
+#else
 		svr_msg_handler(buf, rcv_size);
+#endif
 	}
 	return 0;
 }
@@ -181,7 +245,11 @@ int svr_receive_msg(char *buf)
   {
 	inet_ntop(AF_INET6, &(sa_dst.sin6_addr),rcv_in6_addr,INET6_ADDRSTRLEN);
 #ifdef HAVE_DEBUG
+#ifdef USE_EDTLS
+	printf("eDTLS RX %s.%d [%d B]\n", rcv_in6_addr, ntohs(sa_dst.sin6_port), rcv_size);
+#else
 	printf("\nRX %s.%d [%d B] - ", rcv_in6_addr, ntohs(sa_dst.sin6_port), rcv_size);
+#endif
 #endif
   }
 
@@ -194,6 +262,9 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 	uint8_t 	*message_ptr = NULL;
 	uint16_t 	message_len	= 0;
 	char dst_in6_addr[32];
+#ifdef USE_EDTLS
+	sn_edtls_data_buffer_t edtls_data_s;
+#endif
 
 	/* Calculate message length */
 	message_len = sn_coap_builder_calc_needed_packet_data_size(coap_hdr_ptr);
@@ -213,9 +284,16 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 	sn_coap_packet_debug(coap_hdr_ptr);
 #endif
 
+#ifdef USE_EDTLS
+	edtls_data_s.buff = message_ptr;
+	edtls_data_s.len = message_len;
+	sn_edtls_write_data(edtls_session_id, &edtls_data_s);
+
+#else
 	/* Send the message */
 	if (sendto(sock_server, message_ptr, message_len, 0, (const struct sockaddr *)&sa_dst, slen_sa_dst)==-1)
 				stop_pgm("sendto() failed");
+#endif
 
 
 	own_free(message_ptr);
@@ -236,6 +314,9 @@ int nsp_register(registration_info_t *endpoint_info_ptr)
 	sn_coap_hdr_s 	*coap_packet_ptr 	= NULL;
 	coap_version_e coap_version = COAP_VERSION_1;
 	char buf[BUFLEN];
+#ifdef USE_EDTLS
+	sn_edtls_data_buffer_t edtls_buffer_s;
+#endif
 
 #ifdef HAVE_DEBUG
 	printf("Registering with NSP\n");
@@ -265,7 +346,16 @@ int nsp_register(registration_info_t *endpoint_info_ptr)
 	memset(buf, 0, BUFLEN);
 	rcv_size = svr_receive_msg(buf);
 
+
+#ifdef USE_EDTLS
+	edtls_buffer_s.buff = (uint8_t*)buf;
+	edtls_buffer_s.len = rcv_size;
+	sn_edtls_read_data(edtls_session_id, &edtls_buffer_s);
+	coap_packet_ptr = sn_coap_parser(edtls_buffer_s.len, edtls_buffer_s.buff, &coap_version);
+
+#else
 	coap_packet_ptr = sn_coap_parser(rcv_size, (uint8_t*)buf, &coap_version);
+#endif
 
 	/* Check if parsing was successfull */
 	if(coap_packet_ptr == (sn_coap_hdr_s *)NULL)
@@ -627,3 +717,62 @@ static void ctrl_c_handle_function(void)
 
 	exit(1);
 }
+
+#ifdef USE_EDTLS
+/* eDTLS helper functions */
+
+/* eDTLS allocation function */
+void *edtls_malloc(uint16_t alloc_size)
+{
+	return own_alloc(alloc_size);
+}
+
+/* eDTLS free function */
+void edtls_free(void *mem_ptr)
+{
+	own_free(mem_ptr);
+}
+
+/* eDTLS sending function */
+uint8_t edtls_tx(uint8_t *data_ptr, uint16_t data_len, sn_edtls_address_t *dst_addr)
+{
+	char dst_in6_addr[32];
+
+	/* Set NSP address and port */
+	sa_dst.sin6_family = AF_INET6;
+	sa_dst.sin6_port = htons(arg_dport);
+	if (inet_pton(AF_INET6, arg_dst, &(sa_dst.sin6_addr))==0)
+		stop_pgm("inet_ntop() failed");;
+
+	inet_ntop(AF_INET6, &(sa_dst.sin6_addr),dst_in6_addr,INET6_ADDRSTRLEN);
+
+#ifdef HAVE_DEBUG
+	printf("eDTLS TX [%d B]\n",data_len);
+#endif
+
+	/* Send the message */
+	if (sendto(sock_server, data_ptr, data_len, 0, (const struct sockaddr *)&sa_dst, slen_sa_dst)==-1)
+				stop_pgm("sendto() failed");
+
+	return 1;
+}
+
+/* eDTLS random generation function 	*/
+/* Used to generate client hello random */
+/* fields and sequence numbers.			*/
+uint8_t edtls_random()
+{
+	return rand();
+}
+
+/* eDTLS registration status function 				*/
+/* eDTLS library returns status during registration */
+/* EDTLS_CONNECTION_FAILED = 0						*/
+/* EDTLS_CONNECTION_OK = 1							*/
+/* EDTLS_CONNECTION_CLOSED = 2 						*/
+void edtls_registration_status(uint8_t status)
+{
+	edtls_connection_status = status;
+}
+
+#endif
