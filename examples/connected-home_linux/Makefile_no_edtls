@@ -1,7 +1,7 @@
 PLATFORM= 
 OS = LINUX
-TARGET	= lighting
-OBJECTS = main.o lighting.o 
+TARGET	= connected_home
+OBJECTS = main.o connected_home.o 
 CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -DHAVE_DEBUG
 LDFLAGS = -L../../libCoap/x86_gcc/ -D_REENTRANT -lpthread -lCoap
 

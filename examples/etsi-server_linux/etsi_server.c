@@ -442,7 +442,7 @@ void svr_handle_request_test(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr->options_list_ptr->location_path_ptr = own_alloc(coap_res_ptr->options_list_ptr->location_path_len);
 		if(!coap_res_ptr->options_list_ptr->location_path_ptr)
 		{
-			own_free(coap_res_ptr->options_list_ptr)
+			own_free(coap_res_ptr->options_list_ptr);
 					return;
 		}
 		memcpy(coap_res_ptr->options_list_ptr->location_path_ptr, location, coap_res_ptr->options_list_ptr->location_path_len);
