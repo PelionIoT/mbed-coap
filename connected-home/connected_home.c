@@ -380,7 +380,7 @@ int nsp_register(registration_info_t *endpoint_info_ptr)
 				memcpy(reg_location, (char *)coap_packet_ptr->options_list_ptr->location_path_ptr, reg_location_len);
 			else
 			{
-				own_free(coap_hdr_ptr);
+				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
 				return -1;
 			}
 		}
