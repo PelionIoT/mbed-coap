@@ -1,5 +1,5 @@
 PLATFORM= 
-OS = MACOSX
+OS = LINUX
 TARGET	= etsi_server
 OBJECTS = main.o etsi_server.o 
 CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../libCoap -DHAVE_DEBUG

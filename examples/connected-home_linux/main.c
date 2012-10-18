@@ -41,7 +41,7 @@ void usage_show(void)
 			"connected-home [-p 8000] \n"
 			"-p	port to listen on (default = 8000)\n"
 			"-d	NSP IPv6 address (default = ::1)\n"
-			"-dp NSP port number (default = 5863)\n");
+			"-dp NSP port number (default = 5683)\n");
 }
 
 int main(int argc, char **argv)
