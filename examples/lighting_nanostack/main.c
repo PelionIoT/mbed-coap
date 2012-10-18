@@ -77,7 +77,7 @@ static const uint8_t RES_BAT[] = {"dev/bat"};
 static const uint8_t RES_BAT_VAL[] = {"3.31"};
 static const uint8_t RES_TEMP[] = {"sen/temp"};
 static const uint8_t RES_TEMP_VAL[] = {"25.4"};
-static const uint8_t RES_REL[] = {"pwr/0/rel"};
+static const uint8_t RES_REL[] = {"lt/0/on"};
 static const uint8_t RES_GPS[] = {"gps/loc"};
 static const uint8_t RES_GPS_VAL[] = {"65.017935,25.443785"};
 
