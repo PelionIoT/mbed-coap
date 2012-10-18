@@ -2,9 +2,8 @@ PLATFORM=
 OS = LINUX
 TARGET	= connected_home
 OBJECTS = main.o connected_home.o 
-SOURCE = main.c connected_home.c 
-CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -I ../../libEdtls/src/include -DHAVE_DEBUG -DUSE_EDTLS
-LDFLAGS = -L../../libCoap/x86_gcc/ -L../../libEdtls/x86_gcc -D_REENTRANT -lpthread -lCoap -leDTLS -lTI_aes
+CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -I ../../libCoap/src/x86_include -DHAVE_DEBUG
+LDFLAGS = -L../../libCoap/x86_gcc/ -D_REENTRANT -lpthread -lCoap
 
 all: $(TARGET) 
 
