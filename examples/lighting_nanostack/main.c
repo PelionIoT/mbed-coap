@@ -22,10 +22,6 @@
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
 
-#ifdef USE_EDTLS
-	#include "shalib.h"
-	#include "sn_edtls_lib.h"
-#endif
 
 /*Function prototypes*/
 void main_initialize(void);
@@ -39,7 +35,7 @@ void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_mfg(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_mdl(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_bat(sn_coap_hdr_s *coap_packet_ptr);
-void svr_handle_request_pwr(sn_coap_hdr_s *coap_packet_ptr);
+void svr_handle_request_gps(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_rel(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_temp(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr);
@@ -76,25 +72,24 @@ static int8_t main_compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *u
 static const uint8_t RES_MFG[] = {"dev/mfg"};
 static const uint8_t RES_MFG_VAL[] = {"Sensinode"};
 static const uint8_t RES_MDL[] = {"dev/mdl"};
-static const uint8_t RES_MDL_VAL[] = {"NSDL-C power node"};
+static const uint8_t RES_MDL_VAL[] = {"NSDL-C light node"};
 static const uint8_t RES_BAT[] = {"dev/bat"};
 static const uint8_t RES_BAT_VAL[] = {"3.31"};
-static const uint8_t RES_PWR[] = {"pwr/0/w"};
-static const uint8_t RES_PWR_VAL[] = {"80"};
-static const uint8_t RES_PWR_VAL_OFF[] = {"0"};
-static const uint8_t RES_REL[] = {"pwr/0/rel"};
 static const uint8_t RES_TEMP[] = {"sen/temp"};
 static const uint8_t RES_TEMP_VAL[] = {"25.4"};
+static const uint8_t RES_REL[] = {"pwr/0/rel"};
+static const uint8_t RES_GPS[] = {"gps/loc"};
+static const uint8_t RES_GPS_VAL[] = {"65.017935,25.443785"};
 
 
 
 #define RES_WELL_KNOWN (const uint8_t *)(".well-known/core")
-#define EP (const uint8_t *)("nsdlc-power")
+#define EP (const uint8_t *)("nsdlc-light")
 #define EP_LEN 11
-#define EP_TYPE (const uint8_t *)("PowerNode")
-#define EP_TYPE_LEN 9
-#define LINKS (const uint8_t *)("</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\"")
-#define LINKS_LEN 200
+#define EP_TYPE (const uint8_t *)("light")
+#define EP_TYPE_LEN 5
+#define LINKS (const uint8_t *)("</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</gps/loc>;rt=ns:gpsloc;ct=\"0\",</lt/0/on>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\"")
+#define LINKS_LEN 197
 #define RD_PATH (const uint8_t *)("rd")
 
 /*Global variables*/
@@ -119,21 +114,10 @@ uint8_t res_rel = '1';
 uint8_t *reg_location;
 int8_t reg_location_len;
 
-/* eDTLS related glogals */
-#ifdef USE_EDTLS
-uint8_t edtls_session_status = 0;
-uint8_t edtls_session_id;
-sn_edtls_address_t edtls_address;
-sn_edtls_data_buffer_t edtls_message_buffer;
-#endif
+
 
 __root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xBF}; //0xfd80 = {0x04, 0x02, 0x00, 0xde, 0xad, 0x00, 0x00, 0x01};  // need if hardware debugger is used
-
-#ifdef USE_EDTLS
-static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xdc};
-#else
 static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xde};
-#endif
 static uint16_t nsp_port = 5683;
 
 /*Configurable channel list for beacon scan*/
@@ -308,9 +292,7 @@ void tasklet_main(event_t *event)
 
 				sn_coap_builder_and_parser_init(&own_alloc, &own_free);
 				sn_coap_protocol_init(&own_alloc, &own_free, &tx_function);
-#ifdef USE_EDTLS
-				sn_edtls_libraray_initialize();
-#endif
+
 				timer_sys_event_cancel(START);
 				timer_sys_event(START, 1000);
 			}					
@@ -341,15 +323,7 @@ void tasklet_main(event_t *event)
 					/* All registrations are hadled here */
 					registration_info_t endpoint_info;
 					timer_sys_event_cancel((uint8_t)REG_TIMER);
-#ifdef USE_EDTLS
-					if(edtls_session_status != EDTLS_CONNECTION_OK)
-					{
-						LED4_TOGGLE();
-						timer_sys_event((uint8_t)REG_TIMER, 500);
-						return;
-					}
 
-#endif
 					//register to NSP
 					endpoint_info.endpoint_ptr = (const uint8_t *)EP;
 					endpoint_info.endpoint_len = EP_LEN;
@@ -405,14 +379,6 @@ void app_parse_network_event(uint8_t event)
                       
 			//mark access point status to TRUE
 			access_point_status=1;	
-
-#ifdef USE_EDTLS
-			edtls_address.port = nsp_port;
-			edtls_address.socket = app_udp_socket;
-			memcpy(edtls_address.address, nsp_addr, 16);
-
-			edtls_session_id = sn_edtls_connect(&edtls_address);
-#endif
 
 			timer_sys_event((uint8_t)REG_TIMER, 1000);
 
@@ -476,16 +442,9 @@ void main_receive(void *cb)
 						memcpy(app_dest.address,app_src.address,16);
 						app_dest.identifier = app_src.identifier;
 
-#ifdef USE_EDTLS
-						edtls_message_buffer.buff = rx_buffer;
-						edtls_message_buffer.len = (uint16_t)length;
-						edtls_message_buffer.address = 0;
-						if(sn_edtls_read_data(edtls_session_id, &edtls_message_buffer) != -1)
-							svr_msg_handler(edtls_message_buffer.buff, edtls_message_buffer.len);
-#else
+
 						// parse data
 						svr_msg_handler(rx_buffer, length);
-#endif
 					}
 					 // Clear rx_buffer in order to avoid misunderstandings
 					memset(rx_buffer,0,128);
@@ -518,14 +477,8 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 	app_dest.type = ADDRESS_IPV6;
 
 	/* Send the message */
-#ifdef eDTLS
-	edtls_message_buffer.buff = data_ptr;
-	edtls_message_buffer.len = datalen;
-	edtls_message_buffer.address = 0;
-	sn_edtls_write_data(edtls_session_id, &edtls_message_buffer);
-#else
+
     socket_sendto(app_udp_socket, &app_dest, message_ptr, message_len);
-#endif
 
 	free(message_ptr);
 	free(coap_hdr_ptr->payload_ptr);
@@ -624,8 +577,8 @@ void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 		svr_handle_request_mdl(coap_packet_ptr);
 	else if (main_compare_uripaths(coap_packet_ptr, RES_BAT))
 		svr_handle_request_bat(coap_packet_ptr);
-	else if (main_compare_uripaths(coap_packet_ptr, RES_PWR))
-		svr_handle_request_pwr(coap_packet_ptr);
+	else if (main_compare_uripaths(coap_packet_ptr, RES_GPS))
+		svr_handle_request_gps(coap_packet_ptr);
 	else if (main_compare_uripaths(coap_packet_ptr, RES_REL))
 		svr_handle_request_rel(coap_packet_ptr);
 	else if (main_compare_uripaths(coap_packet_ptr, RES_TEMP))
@@ -719,7 +672,7 @@ void svr_handle_request_bat(sn_coap_hdr_s *coap_packet_ptr)
 	}
 }
 
-void svr_handle_request_pwr(sn_coap_hdr_s *coap_packet_ptr)
+void svr_handle_request_gps(sn_coap_hdr_s *coap_packet_ptr)
 {
 	sn_coap_hdr_s *coap_res_ptr;
 	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
@@ -727,19 +680,11 @@ void svr_handle_request_pwr(sn_coap_hdr_s *coap_packet_ptr)
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
-		if (res_rel == '1') {
-			coap_res_ptr->payload_len = (sizeof(RES_PWR_VAL)-1);
-			coap_res_ptr->payload_ptr = malloc(coap_res_ptr->payload_len);
-			if(!coap_res_ptr->payload_ptr)
-				return;
-			memcpy(coap_res_ptr->payload_ptr, RES_PWR_VAL, coap_res_ptr->payload_len);
-		} else {
-			coap_res_ptr->payload_len = (sizeof(RES_PWR_VAL_OFF)-1);
-			coap_res_ptr->payload_ptr = malloc(coap_res_ptr->payload_len);
-			if(!coap_res_ptr->payload_ptr)
-				return;
-			memcpy(coap_res_ptr->payload_ptr, RES_PWR_VAL_OFF, coap_res_ptr->payload_len);
-		}
+		coap_res_ptr->payload_len = (sizeof(RES_GPS_VAL)-1);
+		coap_res_ptr->payload_ptr = malloc(coap_res_ptr->payload_len);
+		if(!coap_res_ptr->payload_ptr)
+			return;
+		memcpy(coap_res_ptr->payload_ptr, RES_GPS_VAL, coap_res_ptr->payload_len);
 		svr_send_msg(coap_res_ptr);
 		return;
 	}
@@ -875,38 +820,4 @@ static int8_t main_compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *u
 	}
 	return 0;
 }
-
-#ifdef USE_EDTLS
-void 	*edtls_malloc(uint16_t size)
-{
-	return own_alloc(size);
-}
-
-void 	edtls_free(void *ptr)
-{
-	own_free(ptr);
-}
-
-uint8_t 	edtls_tx(uint8_t *message_ptr, uint16_t message_len, sn_edtls_address_t *address_ptr)
-{
-	memcpy(app_dest.address, address_ptr->address, 16);
-	app_dest.identifier = address_ptr->port;
-	app_dest.type = ADDRESS_IPV6;
-
-    socket_sendto(address_ptr->socket, &app_dest, message_ptr, message_len);
-}
-
-uint8_t 	edtls_random()
-{
-	return 1;
-}
-
-void 	edtls_registration_status(uint8_t received_status)
-{
-	edtls_session_status = received_status;
-}
-
-#endif
-
-
 

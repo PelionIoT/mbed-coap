@@ -160,8 +160,7 @@
         <debug>1</debug>
         <option>
           <name>CCDefines</name>
-          <state>USE_EDTLS</state>
-          <state>HAVE_AES=1</state>
+          <state></state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -318,12 +317,9 @@
         </option>
         <option>
           <name>newCCIncludePaths</name>
-          <state>$PROJ_DIR$\include</state>
-          <state>C:\Work\workspace\eDTLS_lib</state>
-          <state>$PROJ_DIR$\..\..\libCoap</state>
+          <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
           <state>$PROJ_DIR$\..\..\..\NanoStack-2.x\Lib_Applications\Lib\include</state>
           <state>$PROJ_DIR$\..\..\..\NanoStack-2.x\Lib_Applications\Lib\include\MSP430</state>
-          <state>$PROJ_DIR$\..\..\CoapCLibrary\libCoap</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1876,9 +1872,6 @@
   </configuration>
   <file>
     <name>$PROJ_DIR$\main.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\eDTLS_lib\Debug\Exe\msp430_eDTLS_lib.r43</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\libCoap\msp430_iar\Debug\Exe\msp_430_libCoap.r43</name>
