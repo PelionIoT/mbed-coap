@@ -199,11 +199,11 @@ int svr_ipv6(void)
 	printf("rt: %s\n", EP_TYPE);
 	printf("links: %s\n", LINKS);
 #endif
-	endpoint_info.endpoint_ptr = (const uint8_t *)EP;
+	endpoint_info.endpoint_ptr = (uint8_t *)EP;
 	endpoint_info.endpoint_len = EP_LEN;
-	endpoint_info.endpoint_type_ptr = (const uint8_t *)EP_TYPE;
+	endpoint_info.endpoint_type_ptr = (uint8_t *)EP_TYPE;
 	endpoint_info.endpoint_type_len = EP_TYPE_LEN;
-	endpoint_info.links_ptr = (const uint8_t *)LINKS;
+	endpoint_info.links_ptr = (uint8_t *)LINKS;
 	endpoint_info.links_len = LINKS_LEN;
 
 	nsp_register(&endpoint_info);

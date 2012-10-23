@@ -55,9 +55,10 @@ static int8_t main_compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *u
 /*INPUT INDEX MAX*/
 #define INPUT_INDEX_MAX 60
 /*RX buffer size*/
-#define APP_SOCK_RX_SIZE 128
+#define APP_SOCK_RX_SIZE 1284
 #define APP_SOCK_RX_LIMIT (APP_SOCK_RX_SIZE - 4)
 
+#ifdef MSP430
 //LED definitions. Note that LEDs are initialized by NanoStack library already so we need just to define ON/OFF/TOGGLE switches to use them.
 #define LED1_OFF()		{P4OUT |= 0x01;}
 #define LED1_ON()		{P4OUT &= ~0x01;}
@@ -71,29 +72,45 @@ static int8_t main_compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *u
 #define LED2_TOGGLE()	{P4OUT ^= 0x02;}
 #define LED3_TOGGLE()	{P4OUT ^= 0x04;}
 #define LED4_TOGGLE()	{P4OUT ^= 0x08;}
+#else
+#define LED1_OFF()
+#define LED1_ON()
+#define LED2_OFF()
+#define LED2_ON()
+#define LED3_OFF()
+#define LED3_ON()
+#define LED4_OFF()
+#define LED4_ON()
+#define LED1_TOGGLE()
+#define LED2_TOGGLE()
+#define LED3_TOGGLE()
+#define LED4_TOGGLE()
+#endif
 
 
-static const uint8_t RES_MFG[] = {"dev/mfg"};
-static const uint8_t RES_MFG_VAL[] = {"Sensinode"};
-static const uint8_t RES_MDL[] = {"dev/mdl"};
-static const uint8_t RES_MDL_VAL[] = {"NSDL-C power node"};
-static const uint8_t RES_BAT[] = {"dev/bat"};
-static const uint8_t RES_BAT_VAL[] = {"3.31"};
-static const uint8_t RES_PWR[] = {"pwr/0/w"};
-static const uint8_t RES_PWR_VAL[] = {"80"};
-static const uint8_t RES_PWR_VAL_OFF[] = {"0"};
-static const uint8_t RES_REL[] = {"pwr/0/rel"};
-static const uint8_t RES_TEMP[] = {"sen/temp"};
-static const uint8_t RES_TEMP_VAL[] = {"25.4"};
+
+static uint8_t RES_MFG[] = {"dev/mfg"};
+static uint8_t RES_MFG_VAL[] = {"Sensinode"};
+static uint8_t RES_MDL[] = {"dev/mdl"};
+static uint8_t RES_MDL_VAL[] = {"NSDL-C power node"};
+static uint8_t RES_BAT[] = {"dev/bat"};
+static uint8_t RES_BAT_VAL[] = {"3.31"};
+static uint8_t RES_PWR[] = {"pwr/0/w"};
+static uint8_t RES_PWR_VAL[] = {"80"};
+static uint8_t RES_PWR_VAL_OFF[] = {"0"};
+static uint8_t RES_REL[] = {"pwr/0/rel"};
+static uint8_t RES_TEMP[] = {"sen/temp"};
+static uint8_t RES_TEMP_VAL[] = {"25.4"};
 
 
 
 #define RES_WELL_KNOWN (const uint8_t *)(".well-known/core")
-#define EP (const uint8_t *)("nsdlc-power")
+
+static uint8_t EP[] = {"nsdlc-power"};
 #define EP_LEN 11
-#define EP_TYPE (const uint8_t *)("PowerNode")
+static uint8_t EP_TYPE[] = {"PowerNode"};
 #define EP_TYPE_LEN 9
-#define LINKS (const uint8_t *)("</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\"")
+static uint8_t LINKS[] = {"</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\""};
 #define LINKS_LEN 200
 #define RD_PATH (const uint8_t *)("rd")
 
@@ -127,7 +144,9 @@ sn_edtls_address_t edtls_address;
 sn_edtls_data_buffer_t edtls_message_buffer;
 #endif
 
+#ifdef MSP430
 __root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xBF}; //0xfd80 = {0x04, 0x02, 0x00, 0xde, 0xad, 0x00, 0x00, 0x01};  // need if hardware debugger is used
+#endif
 
 #ifdef USE_EDTLS
 static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xdc};
@@ -180,6 +199,9 @@ uint32_t app_ns_core_idle(uint8_t event, uint32_t time_ns)
  */
 void main(void)
 {	
+#ifdef CC2530
+	hal_init(0);
+#endif
     net_init_core(app_ns_core_idle);
 	event_dispatch();
 }
@@ -351,11 +373,11 @@ void tasklet_main(event_t *event)
 
 #endif
 					//register to NSP
-					endpoint_info.endpoint_ptr = (const uint8_t *)EP;
+					endpoint_info.endpoint_ptr = EP;
 					endpoint_info.endpoint_len = EP_LEN;
-					endpoint_info.endpoint_type_ptr = (const uint8_t *)EP_TYPE;
+					endpoint_info.endpoint_type_ptr = EP_TYPE;
 					endpoint_info.endpoint_type_len = EP_TYPE_LEN;
-					endpoint_info.links_ptr = (const uint8_t *)LINKS;
+					endpoint_info.links_ptr = LINKS;
 					endpoint_info.links_len = LINKS_LEN;
 
 					nsp_register(&endpoint_info);
@@ -405,6 +427,10 @@ void app_parse_network_event(uint8_t event)
                       
 			//mark access point status to TRUE
 			access_point_status=1;	
+#ifndef USE_NSP_ADDRESS
+            net_address_get(ADDR_ND_ER_IPV6,&access_point_adr);
+            memcpy(&nsp_addr, &access_point_adr.address, 16);
+#endif
 
 #ifdef USE_EDTLS
 			edtls_address.port = nsp_port;
@@ -584,7 +610,6 @@ void svr_msg_handler(uint8_t *msg, int16_t len)
 	/* Check if parsing was successfull */
 	if(coap_packet_ptr == (sn_coap_hdr_s *)NULL)
 	{
-		printf("svr_msg_handler(): CoAP parsing failed\n");
 		return;
 	}
 
@@ -635,7 +660,6 @@ void svr_handle_request(sn_coap_hdr_s *coap_packet_ptr)
 	/* URI not found */
 	else
 	{
-		printf("URI not found\n");
 		sn_coap_hdr_s *coap_res_ptr;
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_FOUND);
 		svr_send_msg(coap_res_ptr);
@@ -663,7 +687,6 @@ void svr_handle_request_mfg(sn_coap_hdr_s *coap_packet_ptr)
 	 /* Method not supported */
 	else
 	{
-		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}
@@ -688,7 +711,6 @@ void svr_handle_request_mdl(sn_coap_hdr_s *coap_packet_ptr)
 	/* Method not supported */
 	else
 	{
-		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}
@@ -713,7 +735,6 @@ void svr_handle_request_bat(sn_coap_hdr_s *coap_packet_ptr)
 	 /* Method not supported */
 	else
 	{
-		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}
@@ -746,7 +767,6 @@ void svr_handle_request_pwr(sn_coap_hdr_s *coap_packet_ptr)
 	 /* Method not supported */
 	else
 	{
-		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}
@@ -787,7 +807,6 @@ void svr_handle_request_rel(sn_coap_hdr_s *coap_packet_ptr)
 	 /* Method not supported */
 	else
 	{
-		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}
@@ -812,7 +831,6 @@ void svr_handle_request_temp(sn_coap_hdr_s *coap_packet_ptr)
 	 /* Method not supported */
 	else
 	{
-		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}
@@ -824,7 +842,6 @@ void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr)
 	sn_coap_hdr_s *coap_res_ptr;
 	if (coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
-		printf("GET /.well-known/core\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
 		coap_res_ptr->content_type_ptr = &link_format;
 		coap_res_ptr->content_type_len = sizeof(link_format);
@@ -839,7 +856,6 @@ void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr)
 	 /* Method not supported */
 	else
 	{
-		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		svr_send_msg(coap_res_ptr);
 	}

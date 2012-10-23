@@ -20,7 +20,7 @@
 #include <stdlib.h> /* For libary malloc() */
 #include <string.h> /* For memset() and memcpy() */
 #ifndef REAL_EMBEDDED
-#include <time.h> //tehe puukko cc2530
+#include <time.h>
 #endif
 
 #include "pl_types.h"

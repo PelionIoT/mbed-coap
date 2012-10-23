@@ -17,15 +17,15 @@
         <debug>1</debug>
         <option>
           <name>ExePath</name>
-          <state>Debug\Exe</state>
+          <state>MSP430\Debug\Exe</state>
         </option>
         <option>
           <name>ObjPath</name>
-          <state>Debug\Obj</state>
+          <state>MSP430\Debug\Obj</state>
         </option>
         <option>
           <name>ListPath</name>
-          <state>Debug\List</state>
+          <state>MSP430\Debug\List</state>
         </option>
         <option>
           <name>PosIndCode</name>
@@ -160,7 +160,7 @@
         <debug>1</debug>
         <option>
           <name>CCDefines</name>
-          <state></state>
+          <state>MSP430</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -180,19 +180,19 @@
         </option>
         <option>
           <name>CCListCMnemonics</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCListCMessages</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCListAssFile</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCListAssSource</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCEnableRemarks</name>
@@ -265,7 +265,7 @@
         </option>
         <option>
           <name>CCCompilerRuntimeInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IDoubleSize</name>
@@ -576,7 +576,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>$FILE_BNAME$.r43</state>
+          <state></state>
         </option>
         <option>
           <name>AMultibyteSupport</name>
@@ -836,7 +836,7 @@
         </option>
         <option>
           <name>ExtraOutputFile</name>
-          <state>connected-home_nanostack_msp_430.a43</state>
+          <state>lighting_nanostack_msp_430.a43</state>
         </option>
         <option>
           <name>ExtraOutputFormat</name>
