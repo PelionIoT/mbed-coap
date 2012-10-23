@@ -745,7 +745,7 @@ static void sn_coap_parser_payload_parse(uint16_t packet_data_len,
 SN_MEM_ATTR_COAP_PARSER_FUNC
 void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
 {
-
+#ifndef REAL_EMBEDDED
 	switch (coap_packet_ptr->msg_type)
 	{
 		case COAP_MSG_TYPE_CONFIRMABLE:
@@ -955,4 +955,5 @@ void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
     }
 
 	printf("\n");
+#endif
 }

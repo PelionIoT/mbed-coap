@@ -19,7 +19,9 @@
 #include <stdio.h>
 #include <stdlib.h> /* For libary malloc() */
 #include <string.h> /* For memset() and memcpy() */
-#include <time.h>
+#ifndef REAL_EMBEDDED
+#include <time.h> //tehe puukko cc2530
+#endif
 
 #include "pl_types.h"
 #include "sn_nsdl.h"
@@ -67,7 +69,7 @@ static int8_t                sn_coap_protocol_store_coap_message_for_sending(sn_
 static int8_t                sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len, void *msg_ptr);
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *freed_send_msg_ptr);
 static sn_nsdl_transmit_s   *sn_coap_protocol_build_msg(void *src_msg_ptr);
-
+static void 				sn_coap_copy_code(uint8_t * ptr, prog_uint8_t * code_ptr, uint16_t len);
 
 /* * * * * * * * * * * * * * * * * */
 /* * * * GLOBAL DECLARATIONS * * * */
@@ -130,7 +132,8 @@ int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoi
 	coap_hdr_ptr->payload_ptr = sn_coap_protocol_malloc(coap_hdr_ptr->payload_len);
 	if(!coap_hdr_ptr->payload_ptr)
 		return -1;
-	memcpy(coap_hdr_ptr->payload_ptr, endpoint_info_ptr->links_ptr, coap_hdr_ptr->payload_len);
+//	memcpy(coap_hdr_ptr->payload_ptr, endpoint_info_ptr->links_ptr, coap_hdr_ptr->payload_len);
+	sn_coap_copy_code(coap_hdr_ptr->payload_ptr, (prog_uint8_t*)endpoint_info_ptr->links_ptr, coap_hdr_ptr->payload_len);
 
 	/* Options allocation */
 	coap_hdr_ptr->options_list_ptr = sn_coap_protocol_malloc(sizeof(sn_coap_options_list_s));
@@ -228,8 +231,9 @@ int8_t sn_coap_protocol_destroy(void)
 				uint16_t size =  sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr);
 				uint16_t i = 0;
 				coap_send_msg_s*tmp;
-
+#ifndef REAL_EMBEDDED
 				printf("orig global_linked_list_resent_msgs_ptr linked list size: %d \n", sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr));
+#endif
 				for(i=0;i<size;i++)
 				{
 					tmp = sn_linked_list_get_first_node(global_linked_list_resent_msgs_ptr);
@@ -266,8 +270,9 @@ int8_t sn_coap_protocol_destroy(void)
 						tmp = 0;
 					}
 				}
-
+#ifndef REAL_EMBEDDED
 				printf("later global_linked_list_resent_msgs_ptr linked list size: %d \n", sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr));
+#endif
 				if(!sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr))
 				{
 					sn_coap_protocol_free(global_linked_list_resent_msgs_ptr);
@@ -281,8 +286,9 @@ int8_t sn_coap_protocol_destroy(void)
 		uint16_t size =  sn_linked_list_count_nodes(global_linked_list_ack_info_ptr);
 		uint16_t i = 0;
 		coap_ack_info_s*tmp;
-
+#ifndef REAL_EMBEDDED
 		printf("orig global_linked_list_ack_info_ptr linked list size: %d \n", sn_linked_list_count_nodes(global_linked_list_ack_info_ptr));
+#endif
 		for(i=0;i<size;i++)
 		{
 			tmp = sn_linked_list_get_first_node(global_linked_list_ack_info_ptr);
@@ -303,8 +309,9 @@ int8_t sn_coap_protocol_destroy(void)
 				tmp = 0;
 			}
 		}
-
+#ifndef REAL_EMBEDDED
 		printf("later global_linked_list_ack_info_ptr linked list size: %d \n", sn_linked_list_count_nodes(global_linked_list_ack_info_ptr));
+#endif
 		if(!sn_linked_list_count_nodes(global_linked_list_ack_info_ptr))
 		{
 			sn_coap_protocol_free(global_linked_list_ack_info_ptr);
@@ -522,8 +529,12 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
     /* Randomize global message ID */
 #ifndef REAL_EMBEDDED
    	srand(time(NULL));
-   	global_message_id = rand() % 10000;
 #endif
+    {
+	    uint8_t random_number = rand();
+
+	    global_message_id = 100 + random_number;
+    }
 
 	return 0;
 
@@ -3013,3 +3024,11 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *fre
     }
 }
 
+static void sn_coap_copy_code(uint8_t * ptr, prog_uint8_t * code_ptr, uint16_t len)
+{
+	uint16_t i;
+	for(i=0; i<len; i++)
+	{
+		ptr[i] = code_ptr[i];
+	}
+}
