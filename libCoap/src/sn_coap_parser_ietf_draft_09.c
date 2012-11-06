@@ -216,6 +216,14 @@ void sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg
             {
                 sn_coap_free(freed_coap_msg_ptr->options_list_ptr->block1_ptr);
             }
+            if (freed_coap_msg_ptr->options_list_ptr->accept_ptr != NULL)
+             {
+                 sn_coap_free(freed_coap_msg_ptr->options_list_ptr->accept_ptr);
+             }
+            if (freed_coap_msg_ptr->options_list_ptr->fencepost1_ptr != NULL)
+             {
+                 sn_coap_free(freed_coap_msg_ptr->options_list_ptr->fencepost1_ptr);
+             }
 
             sn_coap_free(freed_coap_msg_ptr->options_list_ptr);
         }

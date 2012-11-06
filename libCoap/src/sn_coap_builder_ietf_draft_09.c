@@ -180,7 +180,7 @@ int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr,
             uint8_t fencepost_need = 0;
 
             /* If Request message */
-            if (src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED )
+            if (src_coap_msg_ptr->options_list_ptr->block1_ptr)
             {
                 fencepost_need = sn_coap_builder_options_check_fencepost_need(src_coap_msg_ptr, COAP_OPTION_BLOCK1);
             }
@@ -464,12 +464,19 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
                 /* (Fencepost options has no value, that's why one byte is enough) */
                 returned_byte_count += 1;
             }
+            else if(!src_coap_msg_ptr->options_list_ptr)
+            {
+            	returned_byte_count += 1;
+            }
 
             /* Add maximum payload at one Blockwise message */
             returned_byte_count += SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE;
         }
         else
         {
+        	// we still add block option to packet PUUKKO!!!!!
+        	if(src_coap_msg_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE)
+            	returned_byte_count += 4; //block+fencepost?
             /* Add wanted payload */
             returned_byte_count += src_coap_msg_ptr->payload_len;
         }

@@ -345,11 +345,11 @@ void tasklet_main(event_t *event)
 					timer_sys_event_cancel((uint8_t)REG_TIMER);
 
 					//register to NSP
-					endpoint_info.endpoint_ptr = (uint8_t *)EP;
+					endpoint_info.endpoint_ptr = EP;
 					endpoint_info.endpoint_len = EP_LEN;
-					endpoint_info.endpoint_type_ptr = (uint8_t *)EP_TYPE;
+					endpoint_info.endpoint_type_ptr = EP_TYPE;
 					endpoint_info.endpoint_type_len = EP_TYPE_LEN;
-					endpoint_info.links_ptr = (uint8_t *)LINKS;
+					endpoint_info.links_ptr = LINKS;
 					endpoint_info.links_len = LINKS_LEN;
 
 					nsp_register(&endpoint_info);

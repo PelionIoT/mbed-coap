@@ -112,9 +112,11 @@ typedef enum sn_coap_status_
     COAP_STATUS_PARSER_ERROR_IN_HEADER         = 1, /* CoAP will send Reset message to invalid message sender */
     COAP_STATUS_PARSER_DUPLICATED_MSG          = 2, /* CoAP will send Acknowledgement message to duplicated message sender */
     COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING = 3, /* User will get whole message after all message blocks received.
-                                                       User must release release messages with this status. */
+                                                       User must release messages with this status. */
     COAP_STATUS_PARSER_BLOCKWISE_ACK           = 4, /* Acknowledgement for sent Blockwise message received */
-    COAP_STATUS_PARSER_BLOCKWISE_MSG_REJECTED  = 5  /* Blockwise message received but not supported by compiling switch */
+    COAP_STATUS_PARSER_BLOCKWISE_MSG_REJECTED  = 5, /* Blockwise message received but not supported by compiling switch */
+    COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED  = 6  /* Blockwise message fully received and returned to app. */
+    												/* User must take care of releasing whole payload of the blockwise messages */
 } sn_coap_status_e;
 
 
