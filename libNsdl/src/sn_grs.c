@@ -372,7 +372,7 @@ extern int8_t sn_grs_delete_resource(uint16_t pathlen, uint8_t *path_ptr)
 	uint8_t 				*path_start_ptr = NULL;
 
 	/* Search if resource found */
-	resource_temp = sn_grs_search_resource(pathlen, path_start_ptr, SN_GRS_SEARCH_METHOD);
+	resource_temp = sn_grs_search_resource(pathlen, path_ptr, SN_GRS_SEARCH_METHOD);
 
 	/* If not found */
 	if(resource_temp == (sn_nsdl_resource_info_s *)NULL)
@@ -388,7 +388,7 @@ extern int8_t sn_grs_delete_resource(uint16_t pathlen, uint8_t *path_ptr)
 		sn_grs_resource_info_free(resource_temp);
 
 		/* Search for subresources */
-		resource_temp = sn_grs_search_resource(pathlen, path_start_ptr, SN_GRS_DELETE_METHOD);
+		resource_temp = sn_grs_search_resource(pathlen, path_ptr, SN_GRS_DELETE_METHOD);
 	}
 	return SN_NSDL_SUCCESS;
 }
