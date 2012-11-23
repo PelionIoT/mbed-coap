@@ -6,7 +6,7 @@
  *  Created on: Jun 30, 2011
  *      Author: pekka_ext
  *
- * \note Supports draft-ietf-core-coap-09
+ * \note Supports draft-ietf-core-coap-12
  *****************************************************************************/
 
 #ifndef SN_COAP_HEADER_H_
@@ -40,7 +40,6 @@ typedef enum sn_coap_msg_type_
 typedef enum sn_coap_msg_code_
 {
     COAP_MSG_CODE_EMPTY                                 = 0,
-
     COAP_MSG_CODE_REQUEST_GET                           = 1,
     COAP_MSG_CODE_REQUEST_POST                          = 2,
     COAP_MSG_CODE_REQUEST_PUT                           = 3,
@@ -61,7 +60,7 @@ typedef enum sn_coap_msg_code_
     COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_INCOMPLETE    = 136,	/* Block */
     COAP_MSG_CODE_RESPONSE_PRECONDITION_FAILED			= 140,
     COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE     = 141,
-    COAP_MSG_CODE_RESPONSE_UNSUPPORTED_MEDIA_TYPE       = 143,
+    COAP_MSG_CODE_RESPONSE_UNSUPPORTED_CONTENT_FORMAT   = 143,
     COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR        = 160,
     COAP_MSG_CODE_RESPONSE_NOT_IMPLEMENTED              = 161,
     COAP_MSG_CODE_RESPONSE_BAD_GATEWAY                  = 162,
@@ -73,37 +72,40 @@ typedef enum sn_coap_msg_code_
 /* Enumeration for CoAP Option number, used in CoAP Header */
 typedef enum sn_coap_option_numbers_
 {
-    COAP_OPTION_CONTENT_TYPE    = 1,
-    COAP_OPTION_MAX_AGE         = 2,
-    COAP_OPTION_PROXY_URI       = 3,
-    COAP_OPTION_ETAG            = 4,
-    COAP_OPTION_URI_HOST        = 5,
-    COAP_OPTION_LOCATION_PATH   = 6,
-    COAP_OPTION_URI_PORT        = 7,
-    COAP_OPTION_LOCATION_QUERY  = 8,
-    COAP_OPTION_URI_PATH        = 9,
-    COAP_OPTION_OBSERVE         = 10,
-    COAP_OPTION_TOKEN           = 11,
-    COAP_OPTION_ACCEPT          = 12, /* Accept not yet supported */
-    COAP_OPTION_IF_MATCH        = 13, /* If-Match not yet supported */
-    COAP_OPTION_FENCEPOST1      = 14, /* Not for User, this is used as fenceposts for bigger Option numbers than 15 (= max number with 4 bits) */
-    COAP_OPTION_URI_QUERY       = 15,
-    COAP_OPTION_BLOCK2          = 17,
-    COAP_OPTION_BLOCK1          = 19,
-    COAP_OPTION_IF_NONE_MATCH   = 21, /* If-None-Match not yet supported */
-
+	COAP_OPTION_IF_MATCH		= 1,
+	COAP_OPTION_URI_HOST		= 3,
+	COAP_OPTION_ETAG			= 4,
+	COAP_OPTION_IF_NONE_MATCH	= 5,
+	COAP_OPTION_OBSERVE			= 6,
+	COAP_OPTION_URI_PORT		= 7,
+	COAP_OPTION_LOCATION_PATH	= 8,
+	COAP_OPTION_URI_PATH		= 11,
+	COAP_OPTION_CONTENT_FORMAT	= 12,
+	COAP_OPTION_MAX_AGE			= 14,
+	COAP_OPTION_URI_QUERY		= 15,
+	COAP_OPTION_ACCEPT			= 16,
+	COAP_OPTION_TOKEN			= 19,
+	COAP_OPTION_LOCATION_QUERY	= 20,
+	COAP_OPTION_BLOCK2			= 23,
+	COAP_OPTION_BLOCK1			= 27,
+	COAP_OPTION_SIZE			= 28,
+	COAP_OPTION_PROXY_URI		= 35,
+//	128 =  	(Reserved)
+//	132 =  	(Reserved)
+//	136 =  	(Reserved)
 } sn_coap_option_numbers_e;
 
-/* Enumeration for CoAP Content Type codes */
-typedef enum sn_coap_content_type_
+/* Enumeration for CoAP Content Format codes */
+typedef enum sn_coap_content_format_
 {
+	COAP_CT_NONE				= -1,
     COAP_CT_TEXT_PLAIN          = 0,
     COAP_CT_LINK_FORMAT			= 40,
     COAP_CT_XML			        = 41,
     COAP_CT_OCTET_STREAM		= 42,
     COAP_CT_EXI			        = 47,
     COAP_CT_JSON			    = 50,
-} sn_coap_content_type_e;
+} sn_coap_content_format_e;
 
 /* Enumeration for CoAP status, used in CoAP Header */
 typedef enum sn_coap_status_
@@ -127,6 +129,11 @@ typedef enum sn_coap_status_
 /* Structure for CoAP Options */
 typedef struct sn_coap_options_list_
 {
+
+	/* If-Match */
+	/* If-None-Match */
+	/* Size */
+
     uint8_t     max_age_len;
     uint8_t    *max_age_ptr;        /* Must be set to NULL if not used */
 
@@ -154,9 +161,6 @@ typedef struct sn_coap_options_list_
 
     uint8_t     accept_len;   		/* Must be set to zero if not used */
     uint8_t     *accept_ptr;   		/* Must be set to NULL if not used */
-
-    uint8_t     fencepost1_len;     /* Not for User */
-    uint8_t    *fencepost1_ptr;     /* Not for User */
 
     uint16_t    uri_query_len;
     uint8_t    *uri_query_ptr;      /* Must be set to NULL if not used */
@@ -195,7 +199,7 @@ typedef struct sn_coap_hdr_
     uint8_t                 token_len;          /* Must be set to zero if not used */
     uint8_t                *token_ptr;          /* Must be set to NULL if not used */
 
-    /* Zach: Why is this not just a simple uint16_t? */
+    /* todo: COAP12 - content type ptr as a content_type_e */
     uint8_t                 content_type_len;   /* Must be set to zero if not used */
     uint8_t                *content_type_ptr;   /* Must be set to NULL if not used */
 

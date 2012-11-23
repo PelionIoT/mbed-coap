@@ -1,12 +1,12 @@
 /******************************************************************************
- * \file sn_coap_header_ietf_draft_06.h
+ * \file sn_coap_header_ietf_draft_12.h
  *
  * \brief Header file for CoAP Header part
  *
  *  Created on: Jun 30, 2011
  *      Author: pekka_ext
  *
- * \note Supports draft-ietf-core-coap-09
+ * \note Supports draft-ietf-core-coap-12
  *****************************************************************************/
 
 #ifndef SN_COAP_HEADER_IETF_DRAFT_09_H_
@@ -41,7 +41,7 @@ SN_MEM_ATTR_COAP_PARSER_DECL extern void  (*sn_coap_free)(void*);      /* Functi
 
 /* CoAP Options defines */
 #define COAP_OPTIONS_MAXIMUM_COUNT                  14  /* Maximum count of Options in one CoAP message */
-#define COAP_OPTIONS_OPTION_MAXIMUM_LENGTH          270 /* Maximum length of one Option in CoAP message as bytes */
+#define COAP_OPTIONS_OPTION_MAXIMUM_LENGTH          1034 /* Maximum length of one Option in CoAP message as bytes */
 #define COAP_OPTIONS_OPTION_NUMBER_SHIFT            4
 
 /* * * * * * * * * * * * * * */
@@ -56,9 +56,11 @@ SN_MEM_ATTR_COAP_PARSER_DECL extern void  (*sn_coap_free)(void*);      /* Functi
 /* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */
 /* * * * * * * * * * * * * * * * * * * * * * */
 
-extern int8_t         sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_version_e coap_version);
-extern int8_t         sn_coap_header_validity_check_options_count(uint8_t value);
-extern int8_t         sn_coap_builder_options_check_validity_option_len(uint16_t value);
-extern int8_t         sn_coap_builder_options_check_fencepost_need(sn_coap_hdr_s *src_coap_msg_ptr, sn_coap_option_numbers_e needed_option_number);
+extern int8_t         	sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_version_e coap_version);
+extern int8_t         	sn_coap_header_validity_check_options_count(uint8_t value);
+extern int8_t         	sn_coap_builder_options_check_validity_option_len(uint16_t value);
+extern uint8_t 		 	sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_coap_msg_ptr, uint8_t block_option);
+extern uint16_t 		sn_coap_parser_option_jump_parse(uint8_t **packet_data_pptr);
+extern uint16_t 		sn_coap_parser_option_number_len_parse(uint8_t **packet_data_pptr);
 
 #endif /* SN_COAP_HEADER_IETF_DRAFT_09_H_ */

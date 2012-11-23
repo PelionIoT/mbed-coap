@@ -1,12 +1,12 @@
 /******************************************************************************
- * \file sn_coap_protocol_ietf_draft_09.h
+ * \file sn_coap_protocol_ietf_draft_12.h
  *
  * \brief Header file for CoAP Protocol part
  *
  *  Created on: Jun 30, 2011
  *      Author: pekka_ext
  *
- * \note Supports draft-ietf-core-coap-09
+ * \note Supports draft-ietf-core-coap-12
  *****************************************************************************/
 
 #ifndef SN_COAP_PROTOCOL_IETF_DRAFT_09_H_

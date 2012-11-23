@@ -1,14 +1,14 @@
 /**
- * \file sn_coap_header_validity_check_ietf_draft_06.c
+ * \file sn_coap_header_validity_check_ietf_draft_12.c
  *
  * \brief CoAP Header validity checker
  *
  * Functionality: Checks validity of CoAP Header
  *
  *  Created on: Aug 22, 2011
- *      Author: pekka_ext
+ *      Author: tero
  *
- * \note Supports draft-ietf-core-coap-09
+ * \note Supports draft-ietf-core-coap-12
  */
 
 /* * * * * * * * * * * * * * */
@@ -19,8 +19,8 @@
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
-#include "sn_coap_header_ietf_draft_09.h"
-#include "sn_coap_protocol_ietf_draft_09.h"
+#include "sn_coap_header_ietf_draft_12.h"
+#include "sn_coap_protocol_ietf_draft_12.h"
 
 /* * * * * * * * * * * * * * * * * * * * */
 /* * * * LOCAL FUNCTION PROTOTYPES * * * */
@@ -31,7 +31,7 @@ static int8_t sn_coap_header_validity_check_message_type(uint8_t value);
 static int8_t sn_coap_header_validity_check_message_code(uint8_t value);
 
 /**
- * \fn SN_MEM_ATTR_COAP_VALID_CHECK_FUNC int8_t sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_version_e coap_version)
+ * \fn int8_t sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_version_e coap_version)
  *
  * \brief Checks validity of given Header
  *
@@ -79,7 +79,7 @@ int8_t sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_versi
 }
 
 /**
- * \fn SN_MEM_ATTR_COAP_VALID_CHECK_FUNC int8_t sn_coap_header_validity_check_options_count(uint8_t value)
+ * \fn int8_t sn_coap_header_validity_check_options_count(uint8_t value)
  *
  * \brief Checks validity of given Options count
  *
@@ -106,7 +106,7 @@ int8_t sn_coap_header_validity_check_options_count(uint8_t value)
 
 
 /**
- * \fn SN_MEM_ATTR_COAP_VALID_CHECK_FUNC int8_t sn_coap_builder_options_check_validity_option_len(uint16_t value)
+ * \fn int8_t sn_coap_builder_options_check_validity_option_len(uint16_t value)
  *
  * \brief Checks validity of given Option length
  *
@@ -132,7 +132,7 @@ int8_t sn_coap_builder_options_check_validity_option_len(uint16_t value)
 }
 
 /**
- * \fn SN_MEM_ATTR_COAP_VALID_CHECK_FUNC static int8_t sn_coap_header_validity_check_coap_version(uint8_t value)
+ * \fn static int8_t sn_coap_header_validity_check_coap_version(uint8_t value)
  *
  * \brief Checks validity of given CoAP Version
  *
@@ -158,7 +158,7 @@ static int8_t sn_coap_header_validity_check_coap_version(uint8_t value)
 }
 
 /**
- * \fn SN_MEM_ATTR_COAP_VALID_CHECK_FUNC static int8_t sn_coap_header_validity_check_message_type(uint8_t value)
+ * \fn static int8_t sn_coap_header_validity_check_message_type(uint8_t value)
  *
  * \brief Checks validity of given Message type
  *
@@ -187,7 +187,7 @@ static int8_t sn_coap_header_validity_check_message_type(uint8_t value)
 }
 
 /**
- * \fn SN_MEM_ATTR_COAP_VALID_CHECK_FUNC static int8_t sn_coap_header_validity_check_message_code(uint8_t value)
+ * \fn static int8_t sn_coap_header_validity_check_message_code(uint8_t value)
  *
  * \brief Checks validity of given Message code
  *
@@ -224,7 +224,7 @@ static int8_t sn_coap_header_validity_check_message_code(uint8_t value)
         case COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED:
         case COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_INCOMPLETE:
         case COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE:
-        case COAP_MSG_CODE_RESPONSE_UNSUPPORTED_MEDIA_TYPE:
+        case COAP_MSG_CODE_RESPONSE_UNSUPPORTED_CONTENT_FORMAT:
         case COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR:
         case COAP_MSG_CODE_RESPONSE_NOT_IMPLEMENTED:
         case COAP_MSG_CODE_RESPONSE_BAD_GATEWAY:
