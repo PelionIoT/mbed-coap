@@ -1,12 +1,12 @@
-/******************************************************************************
+/**
  * \file sn_coap_protocol.h
  *
  * \brief CoAP C-library User protocol interface header file
  *
  *  Created on: Jun 30, 2011
- *      Author: pekka_ext
+ *      Author: tero
  *
- *****************************************************************************/
+ */
 
 #ifndef SN_COAP_PROTOCOL_H_
 #define SN_COAP_PROTOCOL_H_

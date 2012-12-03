@@ -1,4 +1,4 @@
-/******************************************************************************
+/**
  * \file sn_coap_protocol_ietf_draft_12.c
  *
  * \brief CoAP Protocol implementation
@@ -9,7 +9,7 @@
  *      Author: tero
  *
  * \note Supports draft-ietf-core-coap-12
- *****************************************************************************/
+ */
 
 
 /* * * * * * * * * * * * * * */
@@ -379,7 +379,8 @@ void coap_protocol_free_lists(void)
 }
 
 /**************************************************************************//**
- * \fn void sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*))
+ * \fn int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
+		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *))
  *
  * \brief Initializes CoAP Protocol part
  *
@@ -1048,7 +1049,6 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
  *
  *        Messages are sent from following Linked lists:
  *         -global_linked_list_resent_msgs_ptr
- *         -global_linked_list_blockwise_sent_msgs_ptr
  *
  * \param current_time is System time in seconds. This time is
  *        used for message resending timing.
@@ -2752,16 +2752,16 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *fre
     }
 }
 
+
+#if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 /**************************************************************************//**
  * \fn static int8_t sn_coap_handle_blockwise_message(void)
  *
  * \brief Handles all received blockwise messages
  *
- * \param
+ * \param *src_addr_ptr pointer to source address information struct
+ * \param *received_coap_msg_ptr pointer to parsed CoAP message structure
  *****************************************************************************/
-
-#if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
-
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr)
 {

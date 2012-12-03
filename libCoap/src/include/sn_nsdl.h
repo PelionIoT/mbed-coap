@@ -1,12 +1,12 @@
-/* ****************************************************************************
+/**
  * \file sn_nsdl.h
  *
  * \brief NanoService Devices Library generic header file
  *
  *  Created on: Aug 23, 2011
- *      Author: pekka_ext
+ *      Author: tero
  *
- * ***************************************************************************/
+ */
 
 #ifndef SN_NSDL_H_
 #define SN_NSDL_H_

@@ -1,13 +1,13 @@
-/******************************************************************************
+/**
  * \file sn_coap_header.h
  *
  * \brief CoAP C-library User header interface header file
  *
  *  Created on: Jun 30, 2011
- *      Author: pekka_ext
+ *      Author: tero
  *
  * \note Supports draft-ietf-core-coap-12
- *****************************************************************************/
+ */
 
 #ifndef SN_COAP_HEADER_H_
 #define SN_COAP_HEADER_H_

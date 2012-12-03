@@ -610,7 +610,8 @@ static uint8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_
 
 
 /**
- * \fn static int8_t sn_coap_parser_options_parse_uri_query(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, uint8_t options_count_left, uint8_t *previous_option_number_ptr)
+ * \fn static int8_t sn_coap_parser_options_parse_multiple_options(uint8_t **packet_data_pptr, uint8_t options_count_left, uint8_t *previous_option_number_ptr, uint8_t **dst_pptr,
+ * 																	uint16_t *dst_len_ptr, sn_coap_option_numbers_e option, uint16_t option_number_len)
  *
  * \brief Parses CoAP message's Uri-query options
  *
@@ -700,7 +701,7 @@ static int8_t sn_coap_parser_options_parse_multiple_options(uint8_t **packet_dat
 
 
 /**
- * \fn static uint16_t sn_coap_parser_options_count_needed_memory_uri_query(uint8_t *packet_data_ptr, uint8_t options_count_left, uint8_t previous_option_number, sn_coap_option_numbers_e option, uint16_t option_number_len)
+ * \fn static uint16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_t *packet_data_ptr, uint8_t options_count_left, uint8_t previous_option_number, sn_coap_option_numbers_e option, uint16_t option_number_len)
  *
  * \brief Counts needed memory for uri query option
  *
