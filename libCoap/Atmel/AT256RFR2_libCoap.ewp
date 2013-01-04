@@ -246,7 +246,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state></state>
+          <state>NDEBUG</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -286,7 +286,7 @@
         </option>
         <option>
           <name>CCDiagSuppress</name>
-          <state></state>
+          <state>Pa050</state>
         </option>
         <option>
           <name>CCDiagRemark</name>
@@ -345,7 +345,7 @@
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCNoErrorMsg</name>
@@ -542,7 +542,7 @@
         </option>
         <option>
           <name>CDebug</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>ADefines</name>
@@ -679,7 +679,7 @@
         </option>
         <option>
           <name>AsmOutputFile</name>
-          <state></state>
+          <state>$FILE_BNAME$.r90</state>
         </option>
         <option>
           <name>AStdIncCheck</name>
@@ -990,7 +990,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>AT256RFR2_libCoap.lib</state>
+          <state>$PROJ_DIR$\AT256RFR2_libCoap.lib</state>
         </option>
       </data>
     </settings>
