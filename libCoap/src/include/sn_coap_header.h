@@ -32,7 +32,7 @@ typedef enum sn_coap_msg_type_
 {
     COAP_MSG_TYPE_CONFIRMABLE       = 0x00, /* User uses this for Reliable Request messages */
     COAP_MSG_TYPE_NON_CONFIRMABLE   = 0x10, /* User uses this for Non-reliable Request and Response messages */
-    COAP_MSG_TYPE_ACKNOWLEDGEMENT   = 0X20, /* User uses this for Response to a Confirmable Request  */
+    COAP_MSG_TYPE_ACKNOWLEDGEMENT   = 0x20, /* User uses this for Response to a Confirmable Request  */
     COAP_MSG_TYPE_RESET             = 0x30  /* User uses this to answer a Bad Request */
 } sn_coap_msg_type_e;
 
