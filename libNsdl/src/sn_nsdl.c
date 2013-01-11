@@ -166,16 +166,16 @@ extern int8_t sn_nsdl_destroy(void)
 }
 
 /**
- * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
- * 									uint8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
- * 									sn_grs_mem_s *sn_memory)
+ * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+ *							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
+ *							sn_nsdl_mem_s *sn_memory)
  *
  *
  * \brief Initialization function for NSDL library. Initializes NSDL, GRS, HTTP and CoAP.
  *
- * \param *sn_grs_tx_callback 	A callback function for sending messages.
+ * \param *sn_nsdl_tx_callback 	A callback function for sending messages.
  *
- * \param *sn_grs_rx_callback 	A callback function for parsed messages. If received message is not CoAP protocol message (eg. ACK), message for GRS (GET, PUT, POST, DELETE) or
+ * \param *sn_nsdl_rx_callback 	A callback function for parsed messages. If received message is not CoAP protocol message (eg. ACK), message for GRS (GET, PUT, POST, DELETE) or
  * 								reply for some NSDL message (register message etc.), rx callback will be called.
  *
  * \param *sn_memory			Memory structure which includes function pointers to the allocation and free functions.
@@ -713,6 +713,13 @@ extern int8_t sn_nsdl_send_eventing_message (uint8_t *event_name_ptr, uint16_t e
 	return status;
 }
 
+/**
+ * \fn extern void sn_nsdl_nsp_lost(void)
+ *
+ *
+ * \brief Sets endpoint registration status to SN_NSDL_ENDPOINT_NOT_REGISTERED.
+ *
+ */
 extern void sn_nsdl_nsp_lost(void)
 {
 	sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_NOT_REGISTERED;
