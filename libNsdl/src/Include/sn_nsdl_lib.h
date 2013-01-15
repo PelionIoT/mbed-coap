@@ -168,24 +168,24 @@ typedef struct sn_nsdl_resource_info_
 //}sn_nsdl_static_resource_struct_t;
 //int8_t sn_nsdl_create_simple_static_resource(sn_nsdl_static_resource_struct_t *resource);
 /**
- * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
- * 									uint8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
- * 									sn_grs_mem_s *sn_memory)
+ * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+ *							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
+ *							sn_nsdl_mem_s *sn_memory)
  *
  *
  * \brief Initialization function for NSDL library. Initializes NSDL, GRS, HTTP and CoAP.
  *
- * \param *sn_grs_tx_callback 	A callback function for sending messages.
+ * \param *sn_nsdl_tx_callback 	A callback function for sending messages.
  *
- * \param *sn_grs_rx_callback 	A callback function for parsed messages. If received message is not CoAP protocol message (eg. ACK), message for GRS (GET, PUT, POST, DELETE) or
+ * \param *sn_nsdl_rx_callback 	A callback function for parsed messages. If received message is not CoAP protocol message (eg. ACK), message for GRS (GET, PUT, POST, DELETE) or
  * 								reply for some NSDL message (register message etc.), rx callback will be called.
  *
  * \param *sn_memory			Memory structure which includes function pointers to the allocation and free functions.
  *
  * \return						SN_NSDL_SUCCESS = 0, Failed = -1
  */
-int8_t sn_nsdl_init	(uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
-							uint8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
+int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
 							sn_nsdl_mem_s *sn_memory);
 
 /**
