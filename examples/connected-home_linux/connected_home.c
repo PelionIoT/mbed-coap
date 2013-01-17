@@ -100,6 +100,9 @@ int8_t reg_location_len;
 /* eDTLS related globals*/
 uint8_t edtls_connection_status;
 uint8_t edtls_session_id;
+static uint8_t 	edtls_psk_key[16] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6'};
+static uint16_t edtls_psk_key_id = 0x0f0f;
+
 #endif
 
 
@@ -159,6 +162,7 @@ int svr_ipv6(void)
 #ifdef USE_EDTLS
 	sn_edtls_libraray_initialize();
 
+	edtls_pre_shared_key_set(edtls_psk_key, edtls_psk_key_id);
 	edtls_server_address_s.socket = sock_server;
 	edtls_session_id = sn_edtls_connect(&edtls_server_address_s);
 #ifdef HAVE_DEBUG
@@ -175,7 +179,7 @@ int svr_ipv6(void)
 		{
 			edtls_buffer_s.buff = (uint8_t*)buf;
 			edtls_buffer_s.len = rcv_size;
-			sn_edtls_read_data(edtls_session_id, &edtls_buffer_s);
+			sn_edtls_parse_data(edtls_session_id, &edtls_buffer_s);
 			memset(buf, 0, BUFLEN);
 		}
 	}
@@ -218,7 +222,7 @@ int svr_ipv6(void)
 #ifdef USE_EDTLS
 		edtls_buffer_s.buff = (uint8_t*)buf;
 		edtls_buffer_s.len = rcv_size;
-		sn_edtls_read_data(edtls_session_id, &edtls_buffer_s);
+		sn_edtls_parse_data(edtls_session_id, &edtls_buffer_s);
 		svr_msg_handler((char*)edtls_buffer_s.buff, edtls_buffer_s.len);
 #else
 		svr_msg_handler(buf, rcv_size);
@@ -350,7 +354,7 @@ int nsp_register(registration_info_t *endpoint_info_ptr)
 #ifdef USE_EDTLS
 	edtls_buffer_s.buff = (uint8_t*)buf;
 	edtls_buffer_s.len = rcv_size;
-	sn_edtls_read_data(edtls_session_id, &edtls_buffer_s);
+	sn_edtls_parse_data(edtls_session_id, &edtls_buffer_s);
 	coap_packet_ptr = sn_coap_parser(edtls_buffer_s.len, edtls_buffer_s.buff, &coap_version);
 
 #else
@@ -770,7 +774,7 @@ uint8_t edtls_random()
 /* EDTLS_CONNECTION_FAILED = 0						*/
 /* EDTLS_CONNECTION_OK = 1							*/
 /* EDTLS_CONNECTION_CLOSED = 2 						*/
-void edtls_registration_status(uint8_t status)
+void edtls_registration_status(uint8_t status, int16_t session_id)
 {
 	edtls_connection_status = status;
 }

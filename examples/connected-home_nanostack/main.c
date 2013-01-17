@@ -89,28 +89,28 @@ static int8_t main_compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *u
 
 
 
-static uint8_t RES_MFG[] = {"dev/mfg"};
-static uint8_t RES_MFG_VAL[] = {"Sensinode"};
-static uint8_t RES_MDL[] = {"dev/mdl"};
-static uint8_t RES_MDL_VAL[] = {"NSDL-C power node"};
-static uint8_t RES_BAT[] = {"dev/bat"};
-static uint8_t RES_BAT_VAL[] = {"3.31"};
-static uint8_t RES_PWR[] = {"pwr/0/w"};
-static uint8_t RES_PWR_VAL[] = {"80"};
-static uint8_t RES_PWR_VAL_OFF[] = {"0"};
-static uint8_t RES_REL[] = {"pwr/0/rel"};
-static uint8_t RES_TEMP[] = {"sen/temp"};
-static uint8_t RES_TEMP_VAL[] = {"25.4"};
+static PL_LARGE uint8_t RES_MFG[] = {"dev/mfg"};
+static PL_LARGE uint8_t RES_MFG_VAL[] = {"Sensinode"};
+static PL_LARGE uint8_t RES_MDL[] = {"dev/mdl"};
+static PL_LARGE uint8_t RES_MDL_VAL[] = {"NSDL-C power node"};
+static PL_LARGE uint8_t RES_BAT[] = {"dev/bat"};
+static PL_LARGE uint8_t RES_BAT_VAL[] = {"3.31"};
+static PL_LARGE uint8_t RES_PWR[] = {"pwr/0/w"};
+static PL_LARGE uint8_t RES_PWR_VAL[] = {"80"};
+static PL_LARGE uint8_t RES_PWR_VAL_OFF[] = {"0"};
+static PL_LARGE uint8_t RES_REL[] = {"pwr/0/rel"};
+static PL_LARGE uint8_t RES_TEMP[] = {"sen/temp"};
+static PL_LARGE uint8_t RES_TEMP_VAL[] = {"25.4"};
 
 
 
 #define RES_WELL_KNOWN (const uint8_t *)(".well-known/core")
 
-static uint8_t EP[] = {"nsdlc-power"};
+static PL_LARGE uint8_t EP[] = {"nsdlc-power"};
 #define EP_LEN 11
-static uint8_t EP_TYPE[] = {"PowerNode"};
+static PL_LARGE uint8_t EP_TYPE[] = {"PowerNode"};
 #define EP_TYPE_LEN 9
-static uint8_t LINKS[] = {"</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\""};
+static PL_LARGE uint8_t LINKS[] = {"</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\""};
 #define LINKS_LEN 200
 #define RD_PATH (const uint8_t *)("rd")
 
@@ -158,7 +158,7 @@ static uint16_t nsp_port = 5683;
 /*Configurable channel list for beacon scan*/
 static PL_LARGE uint32_t channel_list = 0x07FFF800;
 
-uint8_t net_security_key[16] = {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf};
+PL_LARGE uint8_t net_security_key[16] = {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf};
 static PL_LARGE net_security_t level = (net_security_t) NW_SECURITY_LEVEL_MIC128;
 
 //all timer IDs are introduced below
@@ -168,7 +168,7 @@ static PL_LARGE net_security_t level = (net_security_t) NW_SECURITY_LEVEL_MIC128
 #define REG_TIMER 0xf3
 
 
-static uint8_t received_address[16];
+static PL_LARGE uint8_t received_address[16];
 static uint16_t received_port = 0;
 static uint8_t start_msg = 0;
 

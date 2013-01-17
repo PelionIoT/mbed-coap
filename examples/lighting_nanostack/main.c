@@ -85,26 +85,26 @@ static int8_t main_compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *u
 
 
 
-static uint8_t RES_MFG[] = {"dev/mfg"};
-static uint8_t RES_MFG_VAL[] = {"Sensinode"};
-static uint8_t RES_MDL[] = {"dev/mdl"};
-static uint8_t RES_MDL_VAL[] = {"NSDL-C light node"};
-static uint8_t RES_BAT[] = {"dev/bat"};
-static uint8_t RES_BAT_VAL[] = {"3.31"};
-static uint8_t RES_TEMP[] = {"sen/temp"};
-static uint8_t RES_TEMP_VAL[] = {"25.4"};
-static uint8_t RES_REL[] = {"lt/0/on"};
-static uint8_t RES_GPS[] = {"gps/loc"};
-static uint8_t RES_GPS_VAL[] = {"65.017935,25.443785"};
+static PL_LARGE uint8_t RES_MFG[] = {"dev/mfg"};
+static PL_LARGE vuint8_t RES_MFG_VAL[] = {"Sensinode"};
+static PL_LARGE uint8_t RES_MDL[] = {"dev/mdl"};
+static PL_LARGE uint8_t RES_MDL_VAL[] = {"NSDL-C light node"};
+static PL_LARGE uint8_t RES_BAT[] = {"dev/bat"};
+static PL_LARGE uint8_t RES_BAT_VAL[] = {"3.31"};
+static PL_LARGE uint8_t RES_TEMP[] = {"sen/temp"};
+static PL_LARGE uint8_t RES_TEMP_VAL[] = {"25.4"};
+static PL_LARGE uint8_t RES_REL[] = {"lt/0/on"};
+static PL_LARGE uint8_t RES_GPS[] = {"gps/loc"};
+static PL_LARGE uint8_t RES_GPS_VAL[] = {"65.017935,25.443785"};
 
 
 
 #define RES_WELL_KNOWN (const uint8_t *)(".well-known/core")
-uint8_t EP[] = {"nsdlc-light"};
+PL_LARGE uint8_t EP[] = {"nsdlc-light"};
 #define EP_LEN 11
-uint8_t EP_TYPE[] = {"light"};
+PL_LARGE uint8_t EP_TYPE[] = {"light"};
 #define EP_TYPE_LEN 5
-uint8_t LINKS[] = {"</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</gps/loc>;rt=ns:gpsloc;ct=\"0\",</lt/0/on>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\""};
+PL_LARGE uint8_t LINKS[] = {"</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</gps/loc>;rt=ns:gpsloc;ct=\"0\",</lt/0/on>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\""};
 #define LINKS_LEN 197
 #define RD_PATH (const uint8_t *)("rd")
 
@@ -150,7 +150,7 @@ static PL_LARGE net_security_t level = (net_security_t) NW_SECURITY_LEVEL_MIC128
 #define REG_TIMER 0xf3
 
 
-static uint8_t received_address[16];
+static PL_LARGE uint8_t received_address[16];
 static uint16_t received_port = 0;
 static uint8_t start_msg = 0;
 

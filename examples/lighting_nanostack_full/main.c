@@ -76,25 +76,25 @@ static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_pa
 #endif
 
 
-static uint8_t res_mgf[] = {"dev/mfg"};
-static uint8_t res_mgf_val[] = {"Sensinode"};
-static uint8_t res_mdl[] = {"dev/mdl"};
-static uint8_t res_mdl_val[] = {"NSDL-C light node"};
-static uint8_t res_bat[] = {"dev/bat"};
-static uint8_t res_bat_val[] = {"3.31"};
-static uint8_t res_pwr[] = {"pwr/0/w"};
-static uint8_t res_pwr_val[] = {"80"};
-static uint8_t res_pwr_val_off[] = {"0"};
-static uint8_t res_rel[] = {"pwr/0/rel"};
-static uint8_t res_temp[] = {"sen/temp"};
-static uint8_t res_temp_val[] = {"25.4"};
-static uint8_t res_gps[] = {"gps/loc"};
-static uint8_t res_gps_val[] = {"65.017935,25.443785"};
-static uint8_t res_type_test[] = {"test"};
+static PL_LARGE uint8_t res_mgf[] = {"dev/mfg"};
+static PL_LARGE uint8_t res_mgf_val[] = {"Sensinode"};
+static PL_LARGE uint8_t res_mdl[] = {"dev/mdl"};
+static PL_LARGE uint8_t res_mdl_val[] = {"NSDL-C light node"};
+static PL_LARGE uint8_t res_bat[] = {"dev/bat"};
+static PL_LARGE uint8_t res_bat_val[] = {"3.31"};
+static PL_LARGE uint8_t res_pwr[] = {"pwr/0/w"};
+static PL_LARGE uint8_t res_pwr_val[] = {"80"};
+static PL_LARGE uint8_t res_pwr_val_off[] = {"0"};
+static PL_LARGE uint8_t res_rel[] = {"pwr/0/rel"};
+static PL_LARGE uint8_t res_temp[] = {"sen/temp"};
+static PL_LARGE uint8_t res_temp_val[] = {"25.4"};
+static PL_LARGE uint8_t res_gps[] = {"gps/loc"};
+static PL_LARGE uint8_t res_gps_val[] = {"65.017935,25.443785"};
+static PL_LARGE uint8_t res_type_test[] = {"test"};
 
-static uint8_t ep[] = {"nsdl-light"};
-static uint8_t ep_type[] = {"light"};
-static uint8_t lifetime_ptr[] = {"1200"};
+static PL_LARGE uint8_t ep[] = {"nsdl-light"};
+static PL_LARGE uint8_t ep_type[] = {"light"};
+static PL_LARGE uint8_t lifetime_ptr[] = {"1200"};
 
 
 /*Global variables*/
@@ -123,7 +123,7 @@ int8_t reg_location_len;
 #ifdef MSP430
 __root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x19}; //0xfd80 = {0x04, 0x02, 0x00, 0xde, 0xad, 0x00, 0x00, 0x01};  // need if hardware debugger is used
 #endif
-static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xde};
+static PL_LARGE uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xde};
 static uint16_t nsp_port = 5683;
 
 /*Configurable channel list for beacon scan*/
