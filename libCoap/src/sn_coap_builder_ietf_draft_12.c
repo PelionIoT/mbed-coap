@@ -946,7 +946,7 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr,
 
         ret_status = sn_coap_builder_options_build_add_multiple_option(dst_packet_data_pptr,
         															&src_coap_msg_ptr->options_list_ptr->accept_ptr,
-        															&src_coap_msg_ptr->options_list_ptr->accept_len,
+        															(uint16_t*)&src_coap_msg_ptr->options_list_ptr->accept_len,
         															COAP_OPTION_ACCEPT);
 
         if (ret_status == -1)

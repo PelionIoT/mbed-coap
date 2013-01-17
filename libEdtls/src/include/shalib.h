@@ -8,7 +8,7 @@
 #ifndef SHALIB_H_
 #define SHALIB_H_
 
-#include "pl_types.h"
+
 
 #define SHALIB_RING_BUFFER_SIZE 64
 
@@ -28,7 +28,7 @@ uint8_t payload_len;
 uint8_t *buffer;
 }sha256_param_t;
 
-typedef struct sha256_temp_{
+typedef struct{
 uint8_t  m_Data[SHALIB_RING_BUFFER_SIZE];
 uint8_t	 m_Read;
 uint8_t  m_Write;
