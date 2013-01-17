@@ -10,7 +10,6 @@
 #ifndef _ARGUMENTS_
 #define _ARGUMENTS_
 
-#include "inttypes.h"
 
 #ifdef MACOSX 
 // ----------------------------------------

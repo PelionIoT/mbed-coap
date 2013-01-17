@@ -23,7 +23,7 @@
 #include <time.h>
 #endif
 
-#include "pl_types.h"
+#include "nsdl_types.h"
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
