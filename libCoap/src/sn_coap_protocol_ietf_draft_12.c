@@ -71,7 +71,7 @@ static int8_t                sn_coap_protocol_store_coap_message_for_sending(sn_
 static int8_t                sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len, void *msg_ptr);
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *freed_send_msg_ptr);
 static sn_nsdl_transmit_s   *sn_coap_protocol_build_msg(void *src_msg_ptr);
-
+static void 				 coap_protocol_free_lists(void);
 
 /* * * * * * * * * * * * * * * * * */
 /* * * * GLOBAL DECLARATIONS * * * */
@@ -95,7 +95,7 @@ SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint32_t          global_system_time      
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              *(*sn_coap_protocol_malloc)(uint16_t)              = NULL; /* Function pointer for used malloc() function */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              (*sn_coap_protocol_free)(void*)                    = NULL; /* Function pointer for used free()   function */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint8_t 			(*sn_coap_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *) = NULL;
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static void 				coap_protocol_free_lists(void);
+
 
 static uint8_t 	resource_path_ptr[]			= {'r','d'};
 static uint8_t 	ep_name_parameter_string[]	= {'h','='};
