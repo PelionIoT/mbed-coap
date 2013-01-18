@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <fileChecksum>2566833882</fileChecksum>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$PROJ_DIR$\MSP430\Debug\Obj\lighting_nanostack_msp_430.pbd</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\NanoMesh106_NanoStack202-14432.lib</file>
+      <file>$PROJ_DIR$\main.c</file>
+      <file>$PROJ_DIR$\..\..\libCoap\msp430_iar\Debug\Exe\msp_430_libCoap.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\socket_api.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\tasklet.h</file>
+      <file>$TOOLKIT_DIR$\inc\in430.h</file>
+      <file>$TOOLKIT_DIR$\config\multiplier32_loc2.xcl</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdio.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\ns_address.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\pl_types.h</file>
+      <file>$PROJ_DIR$\MSP430\Debug\Obj\main.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\net.h</file>
+      <file>$PROJ_DIR$\MSP430\Debug\List\lighting_nanostack_msp_430.map</file>
+      <file>$TOOLKIT_DIR$\config\lnk430F5438A.xcl</file>
+      <file>$TOOLKIT_DIR$\inc\msp430x54x.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
+      <file>$PROJ_DIR$\MSP430\Debug\Exe\lighting_nanostack_msp_430.d43</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
+      <file>$PROJ_DIR$\MSP430\Debug\Obj\main.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xlff.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\ns_platform.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_nsdl.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ystdio.h</file>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xlff.r43</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\system_event.h</file>
+    </outputs>
+    <file>
+      <name>$PROJ_DIR$\MSP430\Debug\Obj\lighting_nanostack_msp_430.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 25</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\main.c</name>
+      <outputs>
+        <tool>
+          <name>ICC430</name>
+          <file> 14</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 25</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICC430</name>
+          <file> 15 9 20 26 27 4 22 31 21 11 33 5 28 13 19 7 10 12 16 35 6 29 32 30 24</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 15 9 20 26 4 22 31 21 11 33 5 28 13 19 7 10 12 16 35 6 29 32 30 24</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\MSP430\Debug\Exe\lighting_nanostack_msp_430.d43</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 17</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 18 8 1 14 3 34</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 23 17</file>
+        </tool>
+      </outputs>
+    </file>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs/>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>XLINK</tool>
+    </forcedrebuild>
+  </configuration>
+</project>
+
+

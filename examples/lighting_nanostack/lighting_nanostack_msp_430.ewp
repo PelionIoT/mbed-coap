@@ -161,6 +161,8 @@
         <option>
           <name>CCDefines</name>
           <state>MSP430</state>
+          <state>SOCKET_CB</state>
+          <state>USE_NSP_ADDRESS</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -318,8 +320,7 @@
         <option>
           <name>newCCIncludePaths</name>
           <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
-          <state>$PROJ_DIR$\..\..\..\NanoStack-2.x\Lib_Applications\Lib\include</state>
-          <state>$PROJ_DIR$\..\..\..\NanoStack-2.x\Lib_Applications\Lib\include\MSP430</state>
+          <state>$PROJ_DIR$\..\..\NanoStack\MSP430_include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -676,11 +677,11 @@
         </option>
         <option>
           <name>XList</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>SegmentMap</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>ListSymbols</name>
@@ -784,7 +785,7 @@
         </option>
         <option>
           <name>ModuleSummary</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>XlinkStackSize</name>
@@ -1877,7 +1878,7 @@
     <name>$PROJ_DIR$\..\..\libCoap\msp430_iar\Debug\Exe\msp_430_libCoap.r43</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\..\..\..\NanoMesh-1.0.6\Platforms\MSP430_CC1101_TRxEB\NanoStack 2.0 Node\NanoStack20LibraryModel\NanoMesh106_NanoStack202-14432.lib</name>
+    <name>$PROJ_DIR$\..\..\NanoStack\NanoMesh106_NanoStack202-14432.lib</name>
   </file>
 </project>
 

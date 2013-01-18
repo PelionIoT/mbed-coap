@@ -149,7 +149,9 @@ __root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00
 #endif
 
 #ifdef USE_EDTLS
-static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xdc};
+static PL_LARGE uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xdc};
+static PL_LARGE uint8_t	edtls_psk_key[16] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6'};
+static PL_LARGE uint16_t edtls_psk_key_id = 0x0f0f;
 #else
 static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xde};
 #endif
@@ -505,8 +507,7 @@ void main_receive(void *cb)
 #ifdef USE_EDTLS
 						edtls_message_buffer.buff = rx_buffer;
 						edtls_message_buffer.len = (uint16_t)length;
-						edtls_message_buffer.address = 0;
-						if(sn_edtls_read_data(edtls_session_id, &edtls_message_buffer) != -1)
+						if(sn_edtls_parse_data(edtls_session_id, &edtls_message_buffer) != -1)
 							svr_msg_handler(edtls_message_buffer.buff, edtls_message_buffer.len);
 #else
 						// parse data

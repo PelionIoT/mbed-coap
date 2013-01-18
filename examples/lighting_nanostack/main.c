@@ -86,7 +86,7 @@ static int8_t main_compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *u
 
 
 static PL_LARGE uint8_t RES_MFG[] = {"dev/mfg"};
-static PL_LARGE vuint8_t RES_MFG_VAL[] = {"Sensinode"};
+static PL_LARGE uint8_t RES_MFG_VAL[] = {"Sensinode"};
 static PL_LARGE uint8_t RES_MDL[] = {"dev/mdl"};
 static PL_LARGE uint8_t RES_MDL_VAL[] = {"NSDL-C light node"};
 static PL_LARGE uint8_t RES_BAT[] = {"dev/bat"};
@@ -132,7 +132,7 @@ int8_t reg_location_len;
 
 
 #ifdef MSP430
-__root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xBF}; //0xfd80 = {0x04, 0x02, 0x00, 0xde, 0xad, 0x00, 0x00, 0x01};  // need if hardware debugger is used
+__root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xB0}; //0xfd80 = {0x04, 0x02, 0x00, 0xde, 0xad, 0x00, 0x00, 0x01};  // need if hardware debugger is used
 #endif
 static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xde};
 static uint16_t nsp_port = 5683;
@@ -228,7 +228,7 @@ static void main_poll_access_point_status(void)
 	}
 	else
 	{
-	    LED1_OFF();
+	LED1_OFF();
         LED2_OFF();
         LED4_OFF();
         LED3_ON();

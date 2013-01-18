@@ -160,7 +160,7 @@
         <debug>1</debug>
         <option>
           <name>CCDefines</name>
-          <state></state>
+          <state>REAL_EMBEDDED</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -225,7 +225,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>00000</state>
+          <state>11111</state>
         </option>
         <option>
           <name>CCObjUseModuleName</name>
@@ -346,7 +346,7 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
@@ -355,7 +355,7 @@
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CInput</name>
@@ -1870,16 +1870,16 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_09.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_09.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_09.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_09.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>

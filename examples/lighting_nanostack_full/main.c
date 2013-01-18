@@ -92,7 +92,7 @@ static PL_LARGE uint8_t res_gps[] = {"gps/loc"};
 static PL_LARGE uint8_t res_gps_val[] = {"65.017935,25.443785"};
 static PL_LARGE uint8_t res_type_test[] = {"test"};
 
-static PL_LARGE uint8_t ep[] = {"nsdl-light"};
+static PL_LARGE uint8_t ep[] = {"nsdlc-light"};
 static PL_LARGE uint8_t ep_type[] = {"light"};
 static PL_LARGE uint8_t lifetime_ptr[] = {"1200"};
 
