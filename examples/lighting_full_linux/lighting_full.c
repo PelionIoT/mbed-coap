@@ -77,7 +77,7 @@ uint16_t current_mid = 0;
 uint8_t	 text_plain = COAP_CT_TEXT_PLAIN;
 uint8_t	 link_format = COAP_CT_LINK_FORMAT;
 
-uint8_t nsp_registered = 1;
+uint8_t nsp_registered = 0;
 
 /* Resource related globals*/
 char relay_state = '1';
