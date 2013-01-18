@@ -65,8 +65,8 @@ typedef  signed short int prog_int16_t;
 
 typedef  unsigned long int prog_uint32_t;
 typedef  signed long int prog_int32_t;
-typedef unsigned long long uint64_t;
-typedef signed long long int64_t;
+//typedef unsigned long long uint64_t;
+//typedef signed long long int64_t;
 #else
 
 typedef unsigned long int uint32_t;
