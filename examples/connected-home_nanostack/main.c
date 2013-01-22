@@ -89,42 +89,41 @@ static int8_t main_compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *u
 
 
 
-static PL_LARGE uint8_t RES_MFG[] = {"dev/mfg"};
-static PL_LARGE uint8_t RES_MFG_VAL[] = {"Sensinode"};
-static PL_LARGE uint8_t RES_MDL[] = {"dev/mdl"};
-static PL_LARGE uint8_t RES_MDL_VAL[] = {"NSDL-C power node"};
-static PL_LARGE uint8_t RES_BAT[] = {"dev/bat"};
-static PL_LARGE uint8_t RES_BAT_VAL[] = {"3.31"};
-static PL_LARGE uint8_t RES_PWR[] = {"pwr/0/w"};
-static PL_LARGE uint8_t RES_PWR_VAL[] = {"80"};
-static PL_LARGE uint8_t RES_PWR_VAL_OFF[] = {"0"};
-static PL_LARGE uint8_t RES_REL[] = {"pwr/0/rel"};
-static PL_LARGE uint8_t RES_TEMP[] = {"sen/temp"};
-static PL_LARGE uint8_t RES_TEMP_VAL[] = {"25.4"};
-
+PL_LARGE static uint8_t RES_MFG[] = {"dev/mfg"};
+PL_LARGE static uint8_t RES_MFG_VAL[] = {"Sensinode"};
+PL_LARGE static uint8_t RES_MDL[] = {"dev/mdl"};
+PL_LARGE static uint8_t RES_MDL_VAL[] = {"NSDL-C power node"};
+PL_LARGE static uint8_t RES_BAT[] = {"dev/bat"};
+PL_LARGE static uint8_t RES_BAT_VAL[] = {"3.31"};
+PL_LARGE static uint8_t RES_PWR[] = {"pwr/0/w"};
+PL_LARGE static uint8_t RES_PWR_VAL[] = {"80"};
+PL_LARGE static uint8_t RES_PWR_VAL_OFF[] = {"0"};
+PL_LARGE static uint8_t RES_REL[] = {"pwr/0/rel"};
+PL_LARGE static uint8_t RES_TEMP[] = {"sen/temp"};
+PL_LARGE static uint8_t RES_TEMP_VAL[] = {"25.4"};
 
 
 #define RES_WELL_KNOWN (const uint8_t *)(".well-known/core")
 
-static PL_LARGE uint8_t EP[] = {"nsdlc-power"};
+PL_LARGE static uint8_t EP[] = {"nsdlc-power"};
 #define EP_LEN 11
-static PL_LARGE uint8_t EP_TYPE[] = {"PowerNode"};
+PL_LARGE static uint8_t EP_TYPE[] = {"PowerNode"};
 #define EP_TYPE_LEN 9
-static PL_LARGE uint8_t LINKS[] = {"</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\""};
+PL_LARGE static uint8_t LINKS[] = {"</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\""};
 #define LINKS_LEN 200
 #define RD_PATH (const uint8_t *)("rd")
 
 /*Global variables*/
-static PL_LARGE uint8_t access_point_status = 0;		/* Variable where this application keep connection status of an access point: 0 = No Connection, 1 = Connection established */
-static PL_LARGE uint8_t rx_buffer[APP_SOCK_RX_SIZE];	/* Application socket payload buffer used for RX and TX case */
-static PL_LARGE ns_address_t node_euid64;
-static PL_LARGE uint8_t app_version_info[6];
-static PL_LARGE ns_address_t app_src;					/* Used for Receive Data source Address store*/
-static PL_LARGE ns_address_t app_dest;					/* Used for Socket Send Destination Address*/
-static PL_LARGE ns_address_t access_point_adr;			/* Access Point Address store space */
-static PL_LARGE ns_address_t primary_parent_address;
-static PL_LARGE int8_t app_udp_socket = -1;				/*UDP socket variable*/
-static PL_LARGE uint16_t udp_socket = 61630;	/* Listened port (default 61630) */
+PL_LARGE static uint8_t access_point_status = 0;		/* Variable where this application keep connection status of an access point: 0 = No Connection, 1 = Connection established */
+//static PL_LARGE uint8_t rx_buffer[APP_SOCK_RX_SIZE];	/* Application socket payload buffer used for RX and TX case */
+PL_LARGE static ns_address_t node_euid64;
+PL_LARGE static uint8_t app_version_info[6];
+PL_LARGE static ns_address_t app_src;					/* Used for Receive Data source Address store*/
+PL_LARGE static ns_address_t app_dest;					/* Used for Socket Send Destination Address*/
+PL_LARGE static ns_address_t access_point_adr;			/* Access Point Address store space */
+PL_LARGE static ns_address_t primary_parent_address;
+PL_LARGE static int8_t app_udp_socket = -1;				/*UDP socket variable*/
+PL_LARGE static uint16_t udp_socket = 61630;	/* Listened port (default 61630) */
 
 /* CoAP related globals*/
 uint16_t current_mid = 0;
@@ -142,6 +141,8 @@ uint8_t edtls_session_status = 0;
 uint8_t edtls_session_id;
 sn_edtls_address_t edtls_address;
 sn_edtls_data_buffer_t edtls_message_buffer;
+PL_LARGE static uint8_t psk_key[16] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6'};
+PL_LARGE static uint16_t psk_key_id = 0x0F0F;
 #endif
 
 #ifdef MSP430
@@ -149,19 +150,19 @@ __root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00
 #endif
 
 #ifdef USE_EDTLS
-static PL_LARGE uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xdc};
-static PL_LARGE uint8_t	edtls_psk_key[16] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6'};
-static PL_LARGE uint16_t edtls_psk_key_id = 0x0f0f;
+//PL_LARGE static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xdc};
+PL_LARGE static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81, 0x8e};
 #else
-static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xde};
+PL_LARGE static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xde};
+
 #endif
 static uint16_t nsp_port = 5683;
 
 /*Configurable channel list for beacon scan*/
-static PL_LARGE uint32_t channel_list = 0x07FFF800;
+PL_LARGE static uint32_t channel_list = 0x07FFF800;
 
 PL_LARGE uint8_t net_security_key[16] = {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf};
-static PL_LARGE net_security_t level = (net_security_t) NW_SECURITY_LEVEL_MIC128;
+PL_LARGE static net_security_t level = (net_security_t) NW_SECURITY_LEVEL_MIC128;
 
 //all timer IDs are introduced below
 #define START 0xf1
@@ -170,7 +171,7 @@ static PL_LARGE net_security_t level = (net_security_t) NW_SECURITY_LEVEL_MIC128
 #define REG_TIMER 0xf3
 
 
-static PL_LARGE uint8_t received_address[16];
+static uint8_t received_address[16];
 static uint16_t received_port = 0;
 static uint8_t start_msg = 0;
 
@@ -217,6 +218,7 @@ static void main_initialize_NanoStack_library_API(void)
 {
 	/*Set Link layer channel list. Set all 16 channels default*/
 	net_value_set(NW_SCAN_CHANNEL_LIST, channel_list);
+        
 
 	//Get version info
 	net_get_version_information(app_version_info);
@@ -297,6 +299,7 @@ static void main_try_to_enable_networking(void)
  *
  * NOTE: Interrupts requested by HW are possible during this function!
  */
+
 void tasklet_main(event_t *event)
 {
 	
@@ -334,6 +337,7 @@ void tasklet_main(event_t *event)
 				sn_coap_protocol_init(&own_alloc, &own_free, &tx_function);
 #ifdef USE_EDTLS
 				sn_edtls_libraray_initialize();
+                                edtls_pre_shared_key_set(psk_key,psk_key_id);
 #endif
 				timer_sys_event_cancel(START);
 				timer_sys_event(START, 1000);
@@ -487,36 +491,43 @@ void main_receive(void *cb)
 {
 	socket_callback_t * cb_res =0;
 	int16_t length;
+	uint8_t *payload = 0;
 	cb_res = (socket_callback_t *) cb;
     LED2_ON();
 	if(cb_res->event_type == SOCKET_DATA)
 	{
-		if(1)
+		if ( cb_res->d_len > 0)
 		{
-			//Read data to the RX buffer
-			length = socket_read(cb_res->socket_id, &app_src, rx_buffer, APP_SOCK_RX_SIZE);  //replace rx_buffer payload
+			payload = (uint8_t *) own_alloc(cb_res->d_len);
+			if(payload)
+			{
+				//Read data to the RX buffer
+				length = socket_read(cb_res->socket_id, &app_src, payload, cb_res->d_len);  //replace rx_buffer payload
 
-				if(length)
-				{
-					if(cb_res->socket_id == app_udp_socket)
+					if(length)
 					{
-						// Handles data received in UDP socket
-						memcpy(app_dest.address,app_src.address,16);
-						app_dest.identifier = app_src.identifier;
+						if(cb_res->socket_id == app_udp_socket)
+						{
+							// Handles data received in UDP socket
+							memcpy(app_dest.address,app_src.address,16);
+							app_dest.identifier = app_src.identifier;
 
-#ifdef USE_EDTLS
-						edtls_message_buffer.buff = rx_buffer;
-						edtls_message_buffer.len = (uint16_t)length;
-						if(sn_edtls_parse_data(edtls_session_id, &edtls_message_buffer) != -1)
-							svr_msg_handler(edtls_message_buffer.buff, edtls_message_buffer.len);
-#else
-						// parse data
-						svr_msg_handler(rx_buffer, length);
-#endif
+	#ifdef USE_EDTLS
+							edtls_message_buffer.buff = payload;
+							edtls_message_buffer.len = (uint16_t)length;
+							if(sn_edtls_parse_data(edtls_session_id, &edtls_message_buffer) != -1)
+								svr_msg_handler(edtls_message_buffer.buff, edtls_message_buffer.len);
+	#else
+							// parse data
+							svr_msg_handler(payload, length);
+	#endif
+						}
+						 // Clear rx_buffer in order to avoid misunderstandings
+						//memset(rx_buffer,0,128);
+
 					}
-					 // Clear rx_buffer in order to avoid misunderstandings
-					memset(rx_buffer,0,128);
-			}	
+					own_free(payload);
+			}
 		}
 	}
     LED2_OFF();
@@ -545,10 +556,9 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 	app_dest.type = ADDRESS_IPV6;
 
 	/* Send the message */
-#ifdef eDTLS
-	edtls_message_buffer.buff = data_ptr;
-	edtls_message_buffer.len = datalen;
-	edtls_message_buffer.address = 0;
+#ifdef USE_EDTLS
+	edtls_message_buffer.buff = message_ptr;
+	edtls_message_buffer.len = message_len;
 	sn_edtls_write_data(edtls_session_id, &edtls_message_buffer);
 #else
     socket_sendto(app_udp_socket, &app_dest, message_ptr, message_len);
@@ -915,10 +925,10 @@ uint8_t 	edtls_tx(uint8_t *message_ptr, uint16_t message_len, sn_edtls_address_t
 
 uint8_t 	edtls_random()
 {
-	return 1;
+        return rand();
 }
 
-void 	edtls_registration_status(uint8_t received_status)
+void 	edtls_registration_status(uint8_t received_status, int16_t session_id)
 {
 	edtls_session_status = received_status;
 }

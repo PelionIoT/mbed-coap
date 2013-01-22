@@ -6,42 +6,35 @@
   <configuration>
     <name>Debug</name>
     <outputs>
-      <file>$PROJ_DIR$\..\lighting_nanostack_full\main.c</file>
-      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_nsdl.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\stdio.h</file>
-      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\socket_api.h</file>
-      <file>$PROJ_DIR$\MSP430\Debug\Obj\main.pbi</file>
-      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
-      <file>$TOOLKIT_DIR$\config\multiplier32_loc2.xcl</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\NanoMesh106_NanoStack202-14432.lib</file>
+      <file>$PROJ_DIR$\..\..\libCoap\msp430_iar\Debug\Exe\msp_430_libCoap.r43</file>
+      <file>$PROJ_DIR$\main.c</file>
       <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\tasklet.h</file>
-      <file>$PROJ_DIR$\MSP430\Debug\List\connected-home_nanostack_msp_430.map</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdio.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
-      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\system_event.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_nsdl.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\socket_api.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
+      <file>$PROJ_DIR$\MSP430\Debug\Obj\main.pbi</file>
       <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
       <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\ns_platform.h</file>
-      <file>$PROJ_DIR$\MSP430\Debug\List\main.s43</file>
       <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\ns_address.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\system_event.h</file>
       <file>$PROJ_DIR$\MSP430\Debug\Obj\connected-home_nanostack_msp_430.pbd</file>
-      <file>$PROJ_DIR$\..\..\NanoStack\NanoMesh106_NanoStack202-14432.lib</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
-      <file>$TOOLKIT_DIR$\config\lnk430F5438A.xcl</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
-      <file>$PROJ_DIR$\..\..\libCoap\msp430_iar\Debug\Exe\msp_430_libCoap.r43</file>
-      <file>$PROJ_DIR$\main.c</file>
       <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
-      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\net.h</file>
       <file>$TOOLKIT_DIR$\inc\msp430x54x.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
       <file>$TOOLKIT_DIR$\inc\in430.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\net.h</file>
       <file>$PROJ_DIR$\MSP430\Debug\Exe\connected-home_nanostack_msp_430.d43</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\ystdio.h</file>
-      <file>$TOOLKIT_DIR$\lib\dlib\dl430xlff.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
-      <file>$TOOLKIT_DIR$\lib\dlib\dl430xlff.r43</file>
       <file>$PROJ_DIR$\MSP430\Debug\Obj\main.r43</file>
       <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\pl_types.h</file>
     </outputs>
@@ -50,54 +43,35 @@
       <outputs>
         <tool>
           <name>XLINK</name>
-          <file> 31 8</file>
+          <file> 26</file>
         </tool>
       </outputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\MSP430\Debug\Obj\connected-home_nanostack_msp_430.pbd</name>
-      <inputs>
-        <tool>
-          <name>BILINK</name>
-          <file> 4</file>
-        </tool>
-      </inputs>
     </file>
     <file>
       <name>$PROJ_DIR$\main.c</name>
       <outputs>
         <tool>
           <name>ICC430</name>
-          <file> 15 36</file>
+          <file> 29</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 4</file>
+          <file> 11</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
-          <name>ICC430</name>
-          <file> 21 9 12 23 33 10 34 19 22 2 32 3 14 37 28 30 5 16 27 11 7 29 1 13 26</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
-          <file> 21 9 12 23 10 34 19 22 2 32 3 14 37 28 30 5 16 27 11 7 29 1 13 26</file>
+          <file> 18 5 7 20 10 28 17 19 4 27 9 13 30 22 24 8 14 25 15 3 23 6 12 21</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\MSP430\Debug\Exe\connected-home_nanostack_msp_430.d43</name>
-      <outputs>
-        <tool>
-          <name>XLINK</name>
-          <file> 8</file>
-        </tool>
-      </outputs>
+      <name>$PROJ_DIR$\MSP430\Debug\Obj\connected-home_nanostack_msp_430.pbd</name>
       <inputs>
         <tool>
-          <name>XLINK</name>
-          <file> 20 6 18 36 24 35</file>
+          <name>BILINK</name>
+          <file> 11</file>
         </tool>
       </inputs>
     </file>

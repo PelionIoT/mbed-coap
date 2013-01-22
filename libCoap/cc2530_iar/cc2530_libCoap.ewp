@@ -142,7 +142,7 @@
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the legacy C runtime library.</state>
+          <state>To be used with the legacy C runtime library.</state>
         </option>
         <option>
           <name>RTConfigPath</name>
@@ -180,7 +180,7 @@
         </option>
         <option>
           <name>General Idata Stack Size</name>
-          <state>0x40</state>
+          <state>0xC0</state>
         </option>
         <option>
           <name>General Pdata Stack Size</name>
@@ -188,7 +188,7 @@
         </option>
         <option>
           <name>General Xdata Stack Size</name>
-          <state>0xEFF</state>
+          <state>0x150</state>
         </option>
         <option>
           <name>General Ext Stack Size</name>
@@ -266,6 +266,8 @@
         <option>
           <name>CCDefines</name>
           <state>REAL_EMBEDDED</state>
+          <state>CC8051_PLAT</state>
+          <state>NDEBUG</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -346,7 +348,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>00000</state>
+          <state>11111</state>
         </option>
         <option>
           <name>CCObjUseModuleName</name>
@@ -440,7 +442,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\..\src\include</state>
-          <state>$PROJ_DIR$\..\src\x86_include</state>
+          <state>$PROJ_DIR$\..\..\NanoStack\cc2530_include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -465,16 +467,16 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CompilerMisraRules04</name>
@@ -524,7 +526,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state></state>
+          <state>$FILE_BNAME$.r51</state>
         </option>
         <option>
           <name>ACaseSensitivity</name>
@@ -2066,16 +2068,16 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_09.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_09.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_09.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_09.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>

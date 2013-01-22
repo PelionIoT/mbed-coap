@@ -2,146 +2,123 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>3972830002</fileChecksum>
+  <fileChecksum>1248104193</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
-      <file>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_09.c</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_09.c</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_09.c</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_09.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</file>
       <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_parser_ietf_draft_09.r51</file>
-      <file>$PROJ_DIR$\Debug\Obj\cc2530_libCoap.pbd</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_header_validity_check_ietf_draft_09.pbi</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_header_validity_check_ietf_draft_09.r51</file>
-      <file>$PROJ_DIR$\Debug\Exe\cc2530_libCoap.d51</file>
-      <file>$TOOLKIT_DIR$\config\devices\Texas Instruments\lnk51ew_CC2530F256_banked.xcl</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_protocol_ietf_draft_09.pbi</file>
-      <file>$TOOLKIT_DIR$\inc\clib\stdarg.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_linked_list.h</file>
-      <file>$TOOLKIT_DIR$\inc\clib\stdlib.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_nsdl.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol.h</file>
-      <file>$TOOLKIT_DIR$\lib\clib\cl-pli-blxc-1e16x01.r51</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder_ietf_draft_09.r51</file>
-      <file>$PROJ_DIR$\Debug\Exe\cc2530_libCoap.r51</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_header.h</file>
-      <file>$TOOLKIT_DIR$\inc\clib\string.h</file>
-      <file>$TOOLKIT_DIR$\inc\clib\stdio.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder_ietf_draft_09.pbi</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol_ietf_draft_09.h</file>
-      <file>$PROJ_DIR$\..\src\x86_include\pl_types.h</file>
-      <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_parser_ietf_draft_09.pbi</file>
       <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.r51</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_protocol_ietf_draft_12.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\clib\string.h</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol.h</file>
       <file>$TOOLKIT_DIR$\inc\clib\stddef.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_header_ietf_draft_09.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_protocol_ietf_draft_09.r51</file>
+      <file>$PROJ_DIR$\..\src\include\sn_linked_list.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdio.h</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol_ietf_draft_12.h</file>
+      <file>$PROJ_DIR$\..\src\include\nsdl_types.h</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_header_ietf_draft_12.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdarg.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_header_validity_check_ietf_draft_12.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_parser_ietf_draft_12.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder_ietf_draft_12.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdlib.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_protocol_ietf_draft_12.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_header_validity_check_ietf_draft_12.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder_ietf_draft_12.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\cc2530_libCoap.pbd</file>
+      <file>$PROJ_DIR$\..\src\include\sn_nsdl.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_parser_ietf_draft_12.r51</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_header.h</file>
+      <file>$PROJ_DIR$\Debug\Exe\cc2530_libCoap.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.pbi</file>
     </outputs>
     <file>
       <name>[ROOT_NODE]</name>
       <outputs>
         <tool>
-          <name>XLINK</name>
-          <file> 9</file>
-        </tool>
-        <tool>
           <name>XAR</name>
-          <file> 19</file>
+          <file> 28</file>
         </tool>
       </outputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_09.c</name>
+      <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</name>
       <outputs>
         <tool>
-          <name>BICOMP</name>
-          <file> 7</file>
+          <name>ICC8051</name>
+          <file> 17</file>
         </tool>
         <tool>
-          <name>ICC8051</name>
-          <file> 8</file>
+          <name>BICOMP</name>
+          <file> 22</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 25 15 20 16 31 24</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 25 15 20 16 31 24</file>
+          <file> 13 25 27 8 14 12</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_09.c</name>
+      <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</name>
       <outputs>
         <tool>
-          <name>BICOMP</name>
+          <name>ICC8051</name>
           <file> 23</file>
         </tool>
         <tool>
+          <name>BICOMP</name>
+          <file> 19</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 20 16 7 13 25 27 8 14 12</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</name>
+      <outputs>
+        <tool>
           <name>ICC8051</name>
+          <file> 26</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
           <file> 18</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 14 26 21 25 15 20 16 31 24</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 14 26 21 25 15 20 16 31 24</file>
+          <file> 11 15 16 9 7 13 25 27 8 14 12</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_09.c</name>
+      <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</name>
       <outputs>
         <tool>
-          <name>BICOMP</name>
-          <file> 27</file>
+          <name>ICC8051</name>
+          <file> 21</file>
         </tool>
         <tool>
-          <name>ICC8051</name>
-          <file> 5</file>
+          <name>BICOMP</name>
+          <file> 6</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 22 12 26 30 21 25 15 20 16 31 24</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 22 12 26 30 21 25 15 20 16 31 24</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_09.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 11</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 32</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 22 12 26 14 21 25 15 20 16 31 24 13</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 22 12 26 14 21 25 15 20 16 31 24 13</file>
+          <file> 11 15 16 20 7 13 25 27 8 14 12 10</file>
         </tool>
       </inputs>
     </file>
@@ -149,22 +126,18 @@
       <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
       <outputs>
         <tool>
-          <name>BICOMP</name>
-          <file> 29</file>
+          <name>ICC8051</name>
+          <file> 5</file>
         </tool>
         <tool>
-          <name>ICC8051</name>
-          <file> 28</file>
+          <name>BICOMP</name>
+          <file> 29</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 22 12 26 30 25 13</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 22 12 26 30 25 13</file>
+          <file> 11 15 16 9 13 10</file>
         </tool>
       </inputs>
     </file>
@@ -173,32 +146,10 @@
       <inputs>
         <tool>
           <name>BILINK</name>
-          <file> 23 7 27 11 29</file>
+          <file> 19 22 18 6 29</file>
         </tool>
       </inputs>
     </file>
-    <file>
-      <name>$PROJ_DIR$\Debug\Exe\cc2530_libCoap.d51</name>
-      <inputs>
-        <tool>
-          <name>XLINK</name>
-          <file> 10 18 8 5 32 28 17</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\Debug\Exe\cc2530_libCoap.r51</name>
-      <inputs>
-        <tool>
-          <name>XAR</name>
-          <file> 18 8 5 32 28</file>
-        </tool>
-      </inputs>
-    </file>
-    <forcedrebuild>
-      <name>[MULTI_TOOL]</name>
-      <tool>XLINK</tool>
-    </forcedrebuild>
     <forcedrebuild>
       <name>[REBUILD_ALL]</name>
     </forcedrebuild>

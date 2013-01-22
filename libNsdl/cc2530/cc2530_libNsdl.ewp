@@ -126,23 +126,23 @@
         </option>
         <option>
           <name>ExePath</name>
-          <state>CC2530\Debug\Exe</state>
+          <state>Debug\Exe</state>
         </option>
         <option>
           <name>ObjPath</name>
-          <state>CC2530\Debug\Obj</state>
+          <state>Debug\Obj</state>
         </option>
         <option>
           <name>ListPath</name>
-          <state>CC2530\Debug\List</state>
+          <state>Debug\List</state>
         </option>
         <option>
           <name>GOutputBinary</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the legacy C runtime library.</state>
+          <state>To be used with the legacy C runtime library.</state>
         </option>
         <option>
           <name>RTConfigPath</name>
@@ -180,7 +180,7 @@
         </option>
         <option>
           <name>General Idata Stack Size</name>
-          <state>0x80</state>
+          <state>0x40</state>
         </option>
         <option>
           <name>General Pdata Stack Size</name>
@@ -188,7 +188,7 @@
         </option>
         <option>
           <name>General Xdata Stack Size</name>
-          <state>0x130</state>
+          <state>0xEFF</state>
         </option>
         <option>
           <name>General Ext Stack Size</name>
@@ -196,7 +196,7 @@
         </option>
         <option>
           <name>General Xdata Heap Size</name>
-          <state>0x2FF</state>
+          <state>0xFF</state>
         </option>
         <option>
           <name>General Far Heap Size</name>
@@ -265,9 +265,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>SOCKET_CB</state>
-          <state>CC2530</state>
-          <state>USE_NSP_ADDRESS</state>
+          <state></state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -441,8 +439,8 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
+          <state>$PROJ_DIR$\..\src\include</state>
           <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
-          <state>$PROJ_DIR$\..\..\NanoStack\cc2530_include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -459,7 +457,7 @@
         </option>
         <option>
           <name>CCRadioModuleType</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCRadioModuleTypeSlave</name>
@@ -526,7 +524,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>$FILE_BNAME$.r51</state>
+          <state></state>
         </option>
         <option>
           <name>ACaseSensitivity</name>
@@ -697,7 +695,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>lighting_nanostack_cc2530.d51</state>
+          <state>cc2530_libNsdl.d51</state>
         </option>
         <option>
           <name>OutputFormat</name>
@@ -711,7 +709,7 @@
         </option>
         <option>
           <name>SecondaryOutputFile</name>
-          <state>(None for the selected format)</state>
+          <state></state>
         </option>
         <option>
           <name>XDefines</name>
@@ -751,7 +749,7 @@
         </option>
         <option>
           <name>XIncludes</name>
-          <state>$TOOLKIT_DIR$\LIB\</state>
+          <state>###Uninitialized###</state>
         </option>
         <option>
           <name>ModuleStatus</name>
@@ -763,7 +761,7 @@
         </option>
         <option>
           <name>XclFile</name>
-          <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\lnk51ew_CC2530F256_banked.xcl</state>
+          <state>lnk0t.xcl</state>
         </option>
         <option>
           <name>XclFileSlave</name>
@@ -871,7 +869,7 @@
         </option>
         <option>
           <name>xcProgramEntryLabel</name>
-          <state>__program_start</state>
+          <state></state>
         </option>
         <option>
           <name>DebugInformation</name>
@@ -899,7 +897,7 @@
         </option>
         <option>
           <name>ExtraOutputFile</name>
-          <state>lighting_nanostack_cc2530.sim</state>
+          <state></state>
         </option>
         <option>
           <name>ExtraOutputFormat</name>
@@ -1026,7 +1024,7 @@
         </option>
         <option>
           <name>XAROutput</name>
-          <state>###Uninitialized###</state>
+          <state>C:\Work\workspace\CoapCLibrary\libNsdl\cc2530\Debug\Exe\cc2530_libNsdl.r51</state>
         </option>
       </data>
     </settings>
@@ -2068,22 +2066,13 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\..\..\libCoap\cc2530_iar\Debug\Exe\cc2530_libCoap.r51</name>
+    <name>$PROJ_DIR$\..\src\sn_grs.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\hal_sleep.c</name>
+    <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\main.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\NanoStack\NanoStack_Library_CC2530_fix.lib</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\ns_debug.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\uart_sn.c</name>
+    <name>$PROJ_DIR$\..\src\sn_nsdl.c</name>
   </file>
 </project>
 

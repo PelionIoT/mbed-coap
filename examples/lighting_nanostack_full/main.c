@@ -99,7 +99,7 @@ static PL_LARGE uint8_t lifetime_ptr[] = {"1200"};
 
 /*Global variables*/
 static PL_LARGE uint8_t access_point_status = 0;		/* Variable where this application keep connection status of an access point: 0 = No Connection, 1 = Connection established */
-static PL_LARGE uint8_t rx_buffer[APP_SOCK_RX_SIZE];	/* Application socket payload buffer used for RX and TX case */
+//static PL_LARGE uint8_t rx_buffer[APP_SOCK_RX_SIZE];	/* Application socket payload buffer used for RX and TX case */
 static PL_LARGE ns_address_t node_euid64;
 static PL_LARGE uint8_t app_version_info[6];
 static PL_LARGE ns_address_t app_src;					/* Used for Receive Data source Address store*/
@@ -334,8 +334,8 @@ void tasklet_main(event_t *event)
 				break;	
 				
 				case REG_TIMER:
-					sn_nsdl_ep_parameters_s *endpoint_ptr;
-					sn_nsdl_resource_info_s	*resource_ptr;
+					sn_nsdl_ep_parameters_s *endpoint_ptr = 0;
+					sn_nsdl_resource_info_s	*resource_ptr = 0;
 
 					/* All registrations are hadled here */
 					timer_sys_event_cancel((uint8_t)REG_TIMER);
@@ -473,6 +473,51 @@ void main_receive(void *cb)
 {
 	socket_callback_t * cb_res =0;
 	int16_t length;
+	uint8_t *payload = 0;
+	sn_nsdl_addr_s src_struct;
+
+	src_struct.addr_len = 16;
+	src_struct.addr_ptr = nsp_addr;
+	src_struct.socket_information = 0;
+	src_struct.type = SN_NSDL_ADDRESS_TYPE_IPV6;
+	src_struct.port = nsp_port;
+
+	cb_res = (socket_callback_t *) cb;
+
+    LED2_ON();
+	if(cb_res->event_type == SOCKET_DATA)
+	{
+		if ( cb_res->d_len > 0)
+		{
+			payload = (uint8_t *) own_alloc(cb_res->d_len);
+			if(payload)
+			{
+				//Read data to the RX buffer
+				length = socket_read(cb_res->socket_id, &app_src, payload, cb_res->d_len);
+
+					if(length)
+					{
+						if(cb_res->socket_id == app_udp_socket)
+						{
+							// Handles data received in UDP socket
+							memcpy(app_dest.address,app_src.address,16);
+							app_dest.identifier = app_src.identifier;
+							// parse data
+							sn_nsdl_process_coap(payload, length, &src_struct);
+						}
+						 // Clear rx_buffer in order to avoid misunderstandings
+						//memset(rx_buffer,0,128);
+
+					}
+					own_free(payload);
+			}
+		}
+	}
+    LED2_OFF();
+
+#if 0
+	socket_callback_t * cb_res =0;
+	int16_t length;
 	sn_nsdl_addr_s src_struct;
 
 	src_struct.addr_len = 16;
@@ -507,6 +552,7 @@ void main_receive(void *cb)
 		}
 	}
     LED2_OFF();
+#endif
 }
 
 
@@ -541,28 +587,13 @@ uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_l
 uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 {
 
-	uint8_t i;
 	if(coap_header->msg_code == COAP_MSG_CODE_RESPONSE_CREATED)
 	{
 		reg_location_len = coap_header->options_list_ptr->location_path_len;
 		reg_location = malloc(reg_location_len);
 		memcpy(reg_location, coap_header->options_list_ptr->location_path_ptr, reg_location_len);
 
-		printf("Registered to NSP: ");
-		for(i = 0; i < reg_location_len; i++)
-			printf("%c", *(reg_location+i));
-		printf("\n");
 	}
-	else if(coap_header->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED)
-	{
-		printf("rx callback %d bytes:" ,coap_header->payload_len);
-		for(i = 0; i < coap_header->payload_len; i++)
-			printf("%c", *(coap_header->payload_ptr + i));
-		printf("\n");
-
-
-	}
-
 
 	return 0;
 }
@@ -599,7 +630,6 @@ static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_
 	 /* Method not supported */
 	else
 	{
-		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_res_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
 	}
@@ -616,9 +646,6 @@ static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_
 static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
 	sn_coap_hdr_s *coap_res_ptr = 0;
-
-	printf("General callback\n");
-
 
 	if (received_coap_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
@@ -661,7 +688,6 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 	 /* Method not supported */
 	else
 	{
-		printf("Method not supported\n");
 		coap_res_ptr = sn_coap_build_response(coap_res_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
 	}

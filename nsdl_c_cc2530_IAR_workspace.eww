@@ -5,10 +5,16 @@
     <path>$WS_DIR$\libCoap\cc2530_iar\cc2530_libCoap.ewp</path>
   </project>
   <project>
+    <path>$WS_DIR$\libNsdl\cc2530\cc2530_libNsdl.ewp</path>
+  </project>
+  <project>
     <path>$WS_DIR$\examples\connected-home_nanostack\connected-home_nanostack_cc2530.ewp</path>
   </project>
   <project>
     <path>$WS_DIR$\examples\lighting_nanostack\lighting_nanostack_cc2530.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\examples\lighting_nanostack_full\lighting_nanostack_full_cc2530.ewp</path>
   </project>
   <batchBuild/>
 </workspace>

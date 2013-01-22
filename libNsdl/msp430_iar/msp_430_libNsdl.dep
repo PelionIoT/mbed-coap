@@ -6,81 +6,78 @@
   <configuration>
     <name>Debug</name>
     <outputs>
-      <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
       <file>$PROJ_DIR$\..\src\sn_nsdl.c</file>
+      <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
       <file>$PROJ_DIR$\..\src\sn_grs.c</file>
-      <file>$PROJ_DIR$\..\src\Include\sn_nsdl.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
-      <file>$PROJ_DIR$\..\src\Include\sn_grs.h</file>
-      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.r43</file>
-      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
-      <file>$PROJ_DIR$\Debug\Exe\msp_430_libNsdl.r43</file>
-      <file>$PROJ_DIR$\Debug\Obj\msp_430_libNsdl.pbd</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.r43</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.pbi</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_grs.r43</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
+      <file>$PROJ_DIR$\..\src\Include\sn_grs.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
+      <file>$PROJ_DIR$\..\src\Include\sn_nsdl_lib.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.r43</file>
+      <file>$PROJ_DIR$\..\src\Include\sn_nsdl.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
+      <file>$PROJ_DIR$\..\src\Include\nsdl_types.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\msp_430_libNsdl.pbd</file>
+      <file>$PROJ_DIR$\Debug\Exe\msp_430_libNsdl.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_grs.r43</file>
       <file>$PROJ_DIR$\Debug\Obj\sn_grs.pbi</file>
       <file>$PROJ_DIR$\..\src\Include\sn_linked_list.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
-      <file>$PROJ_DIR$\..\src\Include\nsdl_types.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.pbi</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
-      <file>$TOOLKIT_DIR$\lib\dlib\dl430xlff.h</file>
-      <file>$PROJ_DIR$\Debug\List\sn_grs.lst</file>
-      <file>$PROJ_DIR$\Debug\List\sn_linked_list.lst</file>
-      <file>$PROJ_DIR$\Debug\List\sn_nsdl.lst</file>
-      <file>$PROJ_DIR$\..\src\Include\sn_nsdl_lib.h</file>
     </outputs>
     <file>
-      <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
+      <name>[ROOT_NODE]</name>
       <outputs>
         <tool>
-          <name>ICC430</name>
-          <file> 28 12</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 24</file>
+          <name>XAR</name>
+          <file> 21</file>
         </tool>
       </outputs>
-      <inputs>
-        <tool>
-          <name>ICC430</name>
-          <file> 23 21</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 23 21</file>
-        </tool>
-      </inputs>
     </file>
     <file>
       <name>$PROJ_DIR$\..\src\sn_nsdl.c</name>
       <outputs>
         <tool>
           <name>ICC430</name>
-          <file> 29 7</file>
+          <file> 22</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 13</file>
+          <file> 23</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
+          <name>BICOMP</name>
+          <file> 6 4 9 10 8 5 7 3 19 17 18 13 14 12 26</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
+      <outputs>
+        <tool>
           <name>ICC430</name>
-          <file> 25 14 15 22 26 19 16 4 9 23 3 6 8 30 5 21</file>
+          <file> 16</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 25 14 15 22 19 16 4 9 23 3 6 8 30 5 21</file>
+          <file> 15</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 19 26</file>
         </tool>
       </inputs>
     </file>
@@ -89,30 +86,17 @@
       <outputs>
         <tool>
           <name>ICC430</name>
-          <file> 27 17</file>
+          <file> 24</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 20</file>
+          <file> 25</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
-          <name>ICC430</name>
-          <file> 23 21 3 6 8 30 5 18 14 15 22 26 19 16 4 9 25</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
-          <file> 23 21 3 6 8 30 5 18 14 15 22 19 16 4 9 25</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\Debug\Exe\msp_430_libNsdl.r43</name>
-      <inputs>
-        <tool>
-          <name>XAR</name>
-          <file> 17 12 7</file>
+          <file> 19 26 17 18 13 14 12 11 4 9 10 8 5 7 3 6</file>
         </tool>
       </inputs>
     </file>
@@ -121,18 +105,9 @@
       <inputs>
         <tool>
           <name>BILINK</name>
-          <file> 20 24 13</file>
+          <file> 25 15 23</file>
         </tool>
       </inputs>
-    </file>
-    <file>
-      <name>[ROOT_NODE]</name>
-      <outputs>
-        <tool>
-          <name>XAR</name>
-          <file> 10</file>
-        </tool>
-      </outputs>
     </file>
     <forcedrebuild>
       <name>[REBUILD_ALL]</name>

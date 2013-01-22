@@ -126,15 +126,15 @@
         </option>
         <option>
           <name>ExePath</name>
-          <state>CC2530\Debug\Exe</state>
+          <state>Debug\Exe</state>
         </option>
         <option>
           <name>ObjPath</name>
-          <state>CC2530\Debug\Obj</state>
+          <state>Debug\Obj</state>
         </option>
         <option>
           <name>ListPath</name>
-          <state>CC2530\Debug\List</state>
+          <state>Debug\List</state>
         </option>
         <option>
           <name>GOutputBinary</name>
@@ -180,7 +180,7 @@
         </option>
         <option>
           <name>General Idata Stack Size</name>
-          <state>0x80</state>
+          <state>0x40</state>
         </option>
         <option>
           <name>General Pdata Stack Size</name>
@@ -188,7 +188,7 @@
         </option>
         <option>
           <name>General Xdata Stack Size</name>
-          <state>0x130</state>
+          <state>0x180</state>
         </option>
         <option>
           <name>General Ext Stack Size</name>
@@ -196,7 +196,7 @@
         </option>
         <option>
           <name>General Xdata Heap Size</name>
-          <state>0x2FF</state>
+          <state>0x480</state>
         </option>
         <option>
           <name>General Far Heap Size</name>
@@ -348,7 +348,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11111</state>
+          <state>00000</state>
         </option>
         <option>
           <name>CCObjUseModuleName</name>
@@ -442,6 +442,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
+          <state>$PROJ_DIR$\..\..\libNsdl\src\Include</state>
           <state>$PROJ_DIR$\..\..\NanoStack\cc2530_include</state>
         </option>
         <option>
@@ -467,7 +468,7 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
@@ -476,7 +477,7 @@
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>CompilerMisraRules04</name>
@@ -526,7 +527,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>$FILE_BNAME$.r51</state>
+          <state></state>
         </option>
         <option>
           <name>ACaseSensitivity</name>
@@ -697,7 +698,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>lighting_nanostack_cc2530.d51</state>
+          <state>lighting_nanostack_full_cc2530.d51</state>
         </option>
         <option>
           <name>OutputFormat</name>
@@ -899,7 +900,7 @@
         </option>
         <option>
           <name>ExtraOutputFile</name>
-          <state>lighting_nanostack_cc2530.sim</state>
+          <state>lighting_nanostack_full_cc2530.sim</state>
         </option>
         <option>
           <name>ExtraOutputFormat</name>
@@ -2069,6 +2070,9 @@
   </configuration>
   <file>
     <name>$PROJ_DIR$\..\..\libCoap\cc2530_iar\Debug\Exe\cc2530_libCoap.r51</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\libNsdl\cc2530\Debug\Exe\cc2530_libNsdl.r51</name>
   </file>
   <file>
     <name>$PROJ_DIR$\hal_sleep.c</name>
