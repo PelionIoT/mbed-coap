@@ -50,11 +50,21 @@ typedef __code signed short int prog_int16_t;
 typedef __code unsigned long int prog_uint32_t;
 typedef __code signed long int prog_int32_t;
 
+#elif x86
+typedef  unsigned long int        uint32_t;
+typedef  unsigned char const prog_uint8_t;
+typedef  signed char prog_int8_t;
+
+typedef  unsigned short int prog_uint16_t;
+typedef  signed short int prog_int16_t;
+
+typedef  unsigned long int prog_uint32_t;
+typedef  signed long int prog_int32_t;
 #else
 
 #ifndef ATXMEGA256
 #define __code
-//typedef signed long int          int32_t;
+typedef signed long int          int32_t;
 typedef unsigned long int        uint32_t;
 
 typedef  unsigned char const prog_uint8_t;

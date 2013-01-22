@@ -7,13 +7,25 @@ running the examples.
 
 Package:
 
-  README.txt 						This file
-  LICENSE.txt						License information 
-  /pdf								Documentation
-  /libCoap							CoAP library
-  /libCoap/x86_gcc					x86 GCC port of libCoap
-  /connected-home					Example for the Connected Home Reference App
-  /lighting							Example for the Lighting Reference App  
-  /etsi-server						Example for ETSI Plugtest testing
+  README.txt 						        This file
+  LICENSE.txt						        License information 
+  /examples                                 Examples
+  /examples/connected-home_full_linux       Connected home example using libNsdl and libCoap
+  /examples/connected-home_linux            Connected home example using libCoap and libEdtls
+  /examples/connected-home_nanostack        Connected home examples for MSP430 and cc2530 using libCoap
+  /examples/ligthing_full_linux             Lighting example using libNsdl and libCoap
+  /examples/lighting_linux                  Lighting example using libCoap
+  /examples/lighting_nanostack              Lighting examples for MSP430 and cc2530 using libCoap
+  /examples/lighting_full_nanostack         Lighting examples for MSP430 and cc2530 using libCoap and libNsdl
+  /libCoap							        CoAP library 
+  /libCoap/x86_gcc					        x86 GCC port of libCoap
+  /libCoap/cc2530                           cc2530 IAR port of libCoap
+  /libCoap/MSP430                           MSP430 IAR port of libCoap
+  /libEdtls                                 eDTLS library
+  /libNsdl                                  NSDL library
+  /libNsdl/x86_gcc                          x86 GCC port of libNsdl
+  /libNsdl/msp430_iar                       MSP430 IAR port of libNsdl
+  /libNsdl/cc2530_iar                       cc2530 port of libNsdl
+  /pdf                                      Documentation
  
  
