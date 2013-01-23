@@ -246,7 +246,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>NDEBUG</state>
+          <state></state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -286,7 +286,7 @@
         </option>
         <option>
           <name>CCDiagSuppress</name>
-          <state>Pa050</state>
+          <state></state>
         </option>
         <option>
           <name>CCDiagRemark</name>
@@ -345,7 +345,7 @@
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCNoErrorMsg</name>
@@ -401,7 +401,8 @@
         </option>
         <option>
           <name>newCCIncludePaths</name>
-          <state>$PROJ_DIR$\..\src\include</state>
+          <state>$PROJ_DIR$\..\src\Include</state>
+          <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -541,7 +542,7 @@
         </option>
         <option>
           <name>CDebug</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>ADefines</name>
@@ -678,7 +679,7 @@
         </option>
         <option>
           <name>AsmOutputFile</name>
-          <state>$FILE_BNAME$.r90</state>
+          <state></state>
         </option>
         <option>
           <name>AStdIncCheck</name>
@@ -720,7 +721,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>AT256RFR2_libCoap.d90</state>
+          <state>AVR_libNsdl.d90</state>
         </option>
         <option>
           <name>OutputFormat</name>
@@ -734,7 +735,7 @@
         </option>
         <option>
           <name>SecondaryOutputFile</name>
-          <state></state>
+          <state>(None for the selected format)</state>
         </option>
         <option>
           <name>XDefines</name>
@@ -774,7 +775,7 @@
         </option>
         <option>
           <name>XIncludes</name>
-          <state>###Uninitialized###</state>
+          <state>$TOOLKIT_DIR$\LIB\</state>
         </option>
         <option>
           <name>ModuleStatus</name>
@@ -786,7 +787,7 @@
         </option>
         <option>
           <name>XclFile</name>
-          <state>lnk0t.xcl</state>
+          <state>$TOOLKIT_DIR$\src\template\cfgm256rfr2.xcl</state>
         </option>
         <option>
           <name>XclFileSlave</name>
@@ -874,7 +875,7 @@
         </option>
         <option>
           <name>xcProgramEntryLabel</name>
-          <state></state>
+          <state>__program_start</state>
         </option>
         <option>
           <name>DebugInformation</name>
@@ -902,7 +903,7 @@
         </option>
         <option>
           <name>ExtraOutputFile</name>
-          <state></state>
+          <state>AVR_libNsdl.a90</state>
         </option>
         <option>
           <name>ExtraOutputFormat</name>
@@ -986,7 +987,7 @@
         <debug>1</debug>
         <option>
           <name>XAROutOverride</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>XARInputs</name>
@@ -994,7 +995,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>$PROJ_DIR$\AT256RFR2_libCoap.lib</state>
+          <state>AVR_libNsdl.r90</state>
         </option>
       </data>
     </settings>
@@ -2003,19 +2004,13 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</name>
+    <name>$PROJ_DIR$\..\src\sn_grs.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\src\sn_nsdl.c</name>
   </file>
 </project>
 
