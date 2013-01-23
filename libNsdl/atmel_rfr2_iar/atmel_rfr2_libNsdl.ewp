@@ -721,7 +721,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>AVR_libNsdl.d90</state>
+          <state>atmel_rfr2_libNsdl.d90</state>
         </option>
         <option>
           <name>OutputFormat</name>
@@ -735,7 +735,7 @@
         </option>
         <option>
           <name>SecondaryOutputFile</name>
-          <state>(None for the selected format)</state>
+          <state></state>
         </option>
         <option>
           <name>XDefines</name>
@@ -775,7 +775,7 @@
         </option>
         <option>
           <name>XIncludes</name>
-          <state>$TOOLKIT_DIR$\LIB\</state>
+          <state>###Uninitialized###</state>
         </option>
         <option>
           <name>ModuleStatus</name>
@@ -787,7 +787,7 @@
         </option>
         <option>
           <name>XclFile</name>
-          <state>$TOOLKIT_DIR$\src\template\cfgm256rfr2.xcl</state>
+          <state>lnk0t.xcl</state>
         </option>
         <option>
           <name>XclFileSlave</name>
@@ -875,7 +875,7 @@
         </option>
         <option>
           <name>xcProgramEntryLabel</name>
-          <state>__program_start</state>
+          <state></state>
         </option>
         <option>
           <name>DebugInformation</name>
@@ -903,7 +903,7 @@
         </option>
         <option>
           <name>ExtraOutputFile</name>
-          <state>AVR_libNsdl.a90</state>
+          <state></state>
         </option>
         <option>
           <name>ExtraOutputFormat</name>
@@ -995,7 +995,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>AVR_libNsdl.r90</state>
+          <state>atmel_rfr2_libNsdl.r90</state>
         </option>
       </data>
     </settings>

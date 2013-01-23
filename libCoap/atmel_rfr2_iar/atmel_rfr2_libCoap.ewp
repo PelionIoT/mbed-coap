@@ -246,7 +246,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>NDEBUG</state>
+          <state></state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -286,7 +286,7 @@
         </option>
         <option>
           <name>CCDiagSuppress</name>
-          <state>Pa050</state>
+          <state></state>
         </option>
         <option>
           <name>CCDiagRemark</name>
@@ -345,7 +345,7 @@
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCNoErrorMsg</name>
@@ -541,7 +541,7 @@
         </option>
         <option>
           <name>CDebug</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>ADefines</name>
@@ -678,7 +678,7 @@
         </option>
         <option>
           <name>AsmOutputFile</name>
-          <state>$FILE_BNAME$.r90</state>
+          <state></state>
         </option>
         <option>
           <name>AStdIncCheck</name>
@@ -720,7 +720,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>AT256RFR2_libCoap.d90</state>
+          <state>atmel_rfr2_libCoap.d90</state>
         </option>
         <option>
           <name>OutputFormat</name>
@@ -986,7 +986,7 @@
         <debug>1</debug>
         <option>
           <name>XAROutOverride</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>XARInputs</name>
@@ -994,7 +994,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>$PROJ_DIR$\AT256RFR2_libCoap.lib</state>
+          <state>atmel_rfr2_libCoap.r90</state>
         </option>
       </data>
     </settings>
