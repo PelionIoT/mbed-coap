@@ -755,7 +755,6 @@ static uint16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8
 		if (option_number_len == 15)
 		{
 			option_number_len = sn_coap_parser_option_number_len_parse(packet_data_pptr);
-			*packet_data_pptr += 1;
 		}
 
 
