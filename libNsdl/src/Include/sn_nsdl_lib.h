@@ -256,11 +256,17 @@ int8_t sn_nsdl_delete_resource(uint8_t pathlen, uint8_t *path);
 sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint8_t pathlen, uint8_t *path);
 sn_grs_resource_list_s *sn_nsdl_list_resource(uint8_t pathlen, uint8_t *path);
 uint8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
-/*
+/**
  * \brief This function is used to set the NSP address given by an application.
  * @return 0 on success, -1 on false to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
  */
 int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port);
+
+/**
+ * \brief This function releases all allocated memory in nsdl and grs modules.
+ */
+extern int8_t sn_nsdl_destroy(void);
+
 /*
  * \brief A function to request SN internal version information out of NSDL library in case of "error reporting" or similar.
  * @return A string with \0 in the end. A human readable format. Please deliver this item to Sensinode in case if you're to report of errors.

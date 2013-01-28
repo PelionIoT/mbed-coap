@@ -162,7 +162,8 @@ extern int8_t sn_nsdl_destroy(void)
 		sn_nsdl_free(nsp_address_ptr);
 		nsp_address_ptr = 0;
 	}
-	return 0;
+
+	return sn_grs_destroy();
 }
 
 /**
