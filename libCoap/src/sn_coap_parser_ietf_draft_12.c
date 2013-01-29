@@ -652,7 +652,7 @@ static int8_t sn_coap_parser_options_parse_multiple_options(uint8_t **packet_dat
 
     temp_parsed_uri_query_ptr = *dst_pptr;
 
-    *previous_option_number_ptr = *previous_option_number_ptr + option;
+    *previous_option_number_ptr = option;
 
     /* Loop all Uri-Query options */
     while (options_count_left > 0)
