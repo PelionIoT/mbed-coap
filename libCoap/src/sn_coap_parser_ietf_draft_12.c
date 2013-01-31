@@ -507,7 +507,7 @@ static uint8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_
             	if((option_number_len > 2) || dst_coap_msg_ptr->options_list_ptr->observe_ptr)
             		return -1;
 
-            	dst_coap_msg_ptr->options_list_ptr->observe = 1;	//todo: COAP12 - is this needed somewhere, seems like not
+            	dst_coap_msg_ptr->options_list_ptr->observe = 1;
 
             	if(option_number_len)
             	{

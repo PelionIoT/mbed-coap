@@ -2420,7 +2420,7 @@ uint8_t *sn_coap_protocol_blockwise_search_block_option_from_packet_data(uint8_t
 			option_number_len = sn_coap_parser_option_number_len_parse(packet_data_pptr);
 		 }
 
-        previous_option_number += option_number;
+        previous_option_number = option_number;
 
         searched_packet_data_ptr++;
 
