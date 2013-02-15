@@ -738,24 +738,26 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
     /* If block is enabled, but payload does not require blockin */
     /* Still add option to let receiver to know that we require  */
     /* blocking!												 */
-    if(src_coap_msg_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE && (!src_coap_msg_ptr->options_list_ptr->block1_ptr && !src_coap_msg_ptr->options_list_ptr->block2_ptr))
-    {
-    	if(!src_coap_msg_ptr->options_list_ptr)
-    	{
-    		src_coap_msg_ptr->options_list_ptr = sn_coap_malloc(sizeof(sn_coap_options_list_s));
+    /* todo: fix this!											 */
 
-    		//if(!src_coap_msg_ptr->options_list_ptr)
-        		//todo:error handling
-
-    		memset(src_coap_msg_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
-    	}
-
-		if(!src_coap_msg_ptr->options_list_ptr->block2_ptr)
-			src_coap_msg_ptr->options_list_ptr->block2_ptr = sn_coap_malloc(1);
-		//todo:error handling
-		src_coap_msg_ptr->options_list_ptr->block2_len = 1;
-		*src_coap_msg_ptr->options_list_ptr->block2_ptr = (SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE / 32);
-    }
+//    if(src_coap_msg_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE && (!src_coap_msg_ptr->options_list_ptr->block1_ptr && !src_coap_msg_ptr->options_list_ptr->block2_ptr))
+//    {
+//    	if(!src_coap_msg_ptr->options_list_ptr)
+//    	{
+//    		src_coap_msg_ptr->options_list_ptr = sn_coap_malloc(sizeof(sn_coap_options_list_s));
+//
+//    		//if(!src_coap_msg_ptr->options_list_ptr)
+//        		//todo:error handling
+//
+//    		memset(src_coap_msg_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+//    	}
+//
+//		if(!src_coap_msg_ptr->options_list_ptr->block2_ptr)
+//			src_coap_msg_ptr->options_list_ptr->block2_ptr = sn_coap_malloc(1);
+//		//todo:error handling
+//		src_coap_msg_ptr->options_list_ptr->block2_len = 1;
+//		*src_coap_msg_ptr->options_list_ptr->block2_ptr = (SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE / 32);
+//    }
 #endif
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     /* * * * Build Packet data from CoAP message by using CoAP Header builder  * * * */
@@ -1500,6 +1502,9 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id,
     uint8_t          i                     = 0;
     uint8_t mem_cmp_result = 0;
 
+    if(!stored_ack_info_ptr)
+    	return -1;
+
     /* Loop all nodes in Linked list for searching Message ID */
     for (i = 0; i < stored_ack_info_count; i++)
     {
@@ -1574,6 +1579,9 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id,
     uint16_t         stored_ack_info_count = sn_linked_list_count_nodes(global_linked_list_ack_info_ptr);
     coap_ack_info_s *stored_ack_info_ptr   = sn_linked_list_get_last_node(global_linked_list_ack_info_ptr);
     uint8_t          i                     = 0;
+
+    if(!stored_ack_info_ptr)
+    	return;
 
     /* Loop all stored Acknowledgement infos in Linked list */
     for (i = 0; i < stored_ack_info_count; i++)
