@@ -7,6 +7,7 @@
 #define PL_REENTRANT __reentrant
 #define NEAR_FUNC __near_func
 #else
+
 #define PL_LARGE
 #define PL_REENTRANT
 #define NEAR_FUNC
@@ -16,7 +17,6 @@
 #ifndef NULL
 #define NULL 0
 #endif
-
 
 /* Generic PART  to All platforms */
 typedef signed char 		int8_t;
@@ -50,12 +50,22 @@ typedef __code signed short int prog_int16_t;
 typedef __code unsigned long int prog_uint32_t;
 typedef __code signed long int prog_int32_t;
 
+#elif x86
+typedef  unsigned long int        uint32_t;
+typedef  unsigned char const prog_uint8_t;
+typedef  signed char prog_int8_t;
+
+typedef  unsigned short int prog_uint16_t;
+typedef  signed short int prog_int16_t;
+
+typedef  unsigned long int prog_uint32_t;
+typedef  signed long int prog_int32_t;
 #else
 
 #ifndef ATXMEGA256
-
-typedef signed int          int32_t;
-typedef unsigned int        uint32_t;
+#define __code
+typedef signed long int          int32_t;
+typedef unsigned long int        uint32_t;
 
 typedef  unsigned char const prog_uint8_t;
 typedef  signed char prog_int8_t;
@@ -68,6 +78,8 @@ typedef  signed long int prog_int32_t;
 //typedef unsigned long long uint64_t;
 //typedef signed long long int64_t;
 #else
+
+#define __code
 
 typedef unsigned long int uint32_t;
 typedef signed long int int32_t;
@@ -90,6 +102,7 @@ typedef  signed long int prog_int32_t;
 
 #ifndef _NSDL_TYPES_
 #define _NSDL_TYPES_
+
 
 /* GRS specific declarations */
 
