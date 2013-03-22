@@ -21,11 +21,16 @@ Package:
   /libCoap/x86_gcc					        x86 GCC port of libCoap
   /libCoap/cc2530                           cc2530 IAR port of libCoap
   /libCoap/MSP430                           MSP430 IAR port of libCoap
+  /libCoap/atmel_rfr2_iar                   Atmel ATmega256RFR2 IAR port of libCoap
   /libEdtls                                 eDTLS library
   /libNsdl                                  NSDL library
   /libNsdl/x86_gcc                          x86 GCC port of libNsdl
   /libNsdl/msp430_iar                       MSP430 IAR port of libNsdl
   /libNsdl/cc2530_iar                       cc2530 port of libNsdl
+  /libNsdl/atmel_rfr2_iar                   Atmel ATmega256RFR2 IAR port of libNsdl
+  /NanoStack                                Place to put NanoMesh releases for MSP430 and cc2530
+  /NanoStack/MSP430_include                 Include files for MSP430 NanoMesh release
+  /NanoStack/cc2530_include                 Include files for cc2530 NanoMesh release
   /pdf                                      Documentation
  
  

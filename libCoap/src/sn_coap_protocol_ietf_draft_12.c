@@ -1502,13 +1502,15 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id,
     uint8_t          i                     = 0;
     uint8_t mem_cmp_result = 0;
 
-    if(!stored_ack_info_ptr)
+    if(!addr_ptr)
     	return -1;
+
 
     /* Loop all nodes in Linked list for searching Message ID */
     for (i = 0; i < stored_ack_info_count; i++)
     {
-        //int8_t mem_cmp_result = memcmp(token_ptr, stored_ack_info_ptr->token_ptr, token_len);
+        if(!stored_ack_info_ptr)
+        	return -1;
 
         /* If message's Token option is same than is searched */
         if(msg_id == stored_ack_info_ptr->msg_id)
@@ -1522,7 +1524,7 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id,
                 if (stored_ack_info_ptr->port == addr_ptr->port)
                 {
 
-                	if(stored_ack_info_ptr->token_ptr)
+                	if(stored_ack_info_ptr->token_ptr && token_ptr)
                 	{
 
                 		if(stored_ack_info_ptr->token_len == token_len)
@@ -1580,13 +1582,14 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id,
     coap_ack_info_s *stored_ack_info_ptr   = sn_linked_list_get_last_node(global_linked_list_ack_info_ptr);
     uint8_t          i                     = 0;
 
-    if(!stored_ack_info_ptr)
+    if(!addr_ptr)
     	return;
 
     /* Loop all stored Acknowledgement infos in Linked list */
     for (i = 0; i < stored_ack_info_count; i++)
     {
-        //int8_t mem_cmp_result = memcmp(token_ptr, stored_ack_info_ptr->token_ptr, token_len);
+        if(!stored_ack_info_ptr)
+        	return;
 
         /* If message's Token option is same than is searched */
         if (msg_id == stored_ack_info_ptr->msg_id)

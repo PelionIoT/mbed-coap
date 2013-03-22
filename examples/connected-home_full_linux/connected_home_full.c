@@ -36,7 +36,7 @@ static uint8_t res_mgf_val[] = {"Sensinode"};
 static uint8_t res_mdl[] = {"dev/mdl"};
 static uint8_t res_mdl_val[] = {"NSDL-C power node"};
 static uint8_t res_bat[] = {"dev/bat"};
-static uint8_t res_bat_val[] = {"3.31"};
+static uint8_t res_bat_val[] = {'1'};
 static uint8_t res_pwr[] = {"pwr/0/w"};
 static uint8_t res_pwr_val[] = {"80"};
 static uint8_t res_pwr_val_off[] = {"0"};
@@ -45,7 +45,7 @@ static uint8_t res_temp[] = {"sen/temp"};
 static uint8_t res_temp_val[] = {"25.4"};
 static uint8_t res_type_test[] = {"t"};
 
-static uint8_t ep[] = {"nsdl-power"};
+static uint8_t ep[] = {"nsdl-power-x86"};
 static uint8_t ep_type[] = {"PowerNode"};
 static uint8_t lifetime_ptr[] = {"1200"};
 
@@ -84,6 +84,13 @@ char relay_state = '1';
 uint8_t *reg_location;
 int8_t reg_location_len;
 uint8_t nsp_addr[16];
+uint8_t obs_token[8];
+uint8_t obs_token_len = 0;
+
+uint8_t obs_number = 0;
+
+/* Common globals */
+uint8_t domain[] = {"domain"};
 
 sn_nsdl_addr_s received_packet_address;
 
@@ -145,18 +152,21 @@ int svr_ipv6(void)
 	resource_ptr = own_alloc(sizeof(sn_nsdl_resource_info_s));
 	if(!resource_ptr)
 		return 0;
+	memset(resource_ptr, 0, sizeof(sn_nsdl_resource_info_s));
+
 	resource_ptr->resource_parameters_ptr = own_alloc(sizeof(sn_nsdl_resource_parameters_s));
 	if(!resource_ptr->resource_parameters_ptr)
 	{
 		own_free(resource_ptr);
 		return 0;
 	}
+	memset(resource_ptr->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
 
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mgf)-1, (uint8_t*) res_mgf, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mgf_val, sizeof(res_mgf_val)-1);
 
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mdl)-1, (uint8_t*) res_mdl, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mdl_val, sizeof(res_mdl_val)-1);
 
-	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_bat)-1, (uint8_t*) res_bat, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &general_resource_cb)
+	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_bat)-1, (uint8_t*) res_bat, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 1, &general_resource_cb) /* Observable resource */
 
 	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_pwr)-1, (uint8_t*) res_pwr, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &general_resource_cb)
 
@@ -166,6 +176,9 @@ int svr_ipv6(void)
 
 	/* Register with NSP */
 	INIT_REGISTER_NSDL_ENDPOINT(endpoint_ptr, ep, ep_type, lifetime_ptr);
+	endpoint_ptr->domain_name_ptr = domain;
+	endpoint_ptr->domain_name_len = 6;
+
 	sn_nsdl_register_endpoint(endpoint_ptr);
 	CLEAN_REGISTER_NSDL_ENDPOINT(endpoint_ptr);
 
@@ -307,12 +320,31 @@ static void ctrl_c_handle_function(void)
 static void coap_exec_poll_function(void)
 {
 	static uint32_t ns_system_time = 1;
+	static uint8_t i = 0;
 
 	while(1)
 	{
 		sleep(1);
 			sn_nsdl_exec(ns_system_time);
 			ns_system_time++;
+
+			/* If observation received, start sending notifications */
+			if(obs_token_len)
+			{
+				if(i >= 10)
+				{
+					sn_nsdl_send_observation_notification(obs_token, obs_token_len, res_bat_val, sizeof(res_bat_val), &obs_number, 1);
+					if(res_bat_val[0] >= '4')
+						res_bat_val[0] = '0';
+					else
+						res_bat_val[0] += 1;
+
+					obs_number++;
+					i = 0;
+				}
+				else
+					i++;
+			}
 	}
 }
 
@@ -368,6 +400,7 @@ static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_
 static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
 	sn_coap_hdr_s *coap_res_ptr = 0;
+	uint8_t i = 0;
 
 	printf("General callback\n");
 
@@ -378,13 +411,57 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
 
+
+
+		/* res bat */
 		if(compare_uripaths(received_coap_ptr, res_bat))
 		{
-			coap_res_ptr->payload_len = sizeof(res_bat_val)-1;
+			coap_res_ptr->options_list_ptr = own_alloc(sizeof(sn_coap_options_list_s));
+			if(!coap_res_ptr->options_list_ptr)
+				sn_coap_parser_release_allocated_coap_msg_mem(coap_res_ptr);
+
+			memset(coap_res_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+			coap_res_ptr->options_list_ptr->observe_len = 1;
+			coap_res_ptr->options_list_ptr->observe_ptr = &obs_number;
+
+			obs_number ++;
+
+			coap_res_ptr->payload_len = sizeof(res_bat_val);
 			coap_res_ptr->payload_ptr = res_bat_val;
+
+			if(received_coap_ptr->options_list_ptr)
+			{
+				if(received_coap_ptr->options_list_ptr->observe)
+					printf("Observe\n");
+			}
+			if(received_coap_ptr->token_ptr)
+			{
+				printf("token:");
+				while(i < received_coap_ptr->token_len)
+				{
+					printf("%x:", *(received_coap_ptr->token_ptr + i));
+					i++;
+				}
+				printf("\n");
+				memset(obs_token, 0, 8);
+				memcpy(obs_token, received_coap_ptr->token_ptr, received_coap_ptr->token_len);
+				obs_token_len = received_coap_ptr->token_len;
+			}
 		}
+
+		/* res pwr */
 		else if(compare_uripaths(received_coap_ptr, res_pwr))
 		{
+			i = 0;
+			coap_res_ptr->options_list_ptr = own_alloc(sizeof(sn_coap_options_list_s));
+			if(!coap_res_ptr->options_list_ptr)
+				sn_coap_parser_release_allocated_coap_msg_mem(coap_res_ptr);
+
+			memset(coap_res_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+
+			coap_res_ptr->options_list_ptr->max_age_ptr = &i;
+			coap_res_ptr->options_list_ptr->max_age_len = 1;
+
 			if(relay_state == '1')
 			{
 				coap_res_ptr->payload_len = sizeof(res_pwr_val)-1;
@@ -396,6 +473,8 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 				coap_res_ptr->payload_ptr = res_pwr_val_off;
 			}
 		}
+
+		/* res temp */
 		else if(compare_uripaths(received_coap_ptr, res_temp))
 		{
 			coap_res_ptr->payload_len = sizeof(res_temp_val)-1;
@@ -416,6 +495,9 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 	{
 		own_free(coap_res_ptr->token_ptr);
 	}
+
+	if(coap_res_ptr->options_list_ptr)
+		own_free(coap_res_ptr->options_list_ptr);
 	own_free(coap_res_ptr);
 
 	return 0;

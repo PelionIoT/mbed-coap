@@ -80,10 +80,12 @@ uint8_t	 link_format = COAP_CT_LINK_FORMAT;
 uint8_t nsp_registered = 0;
 
 /* Resource related globals*/
-char relay_state = '1';
+uint8_t relay_state = '1';
 uint8_t *reg_location;
 int8_t reg_location_len;
 uint8_t nsp_addr[16];
+
+uint8_t domain[] = {"domain"};
 
 sn_nsdl_addr_s received_packet_address;
 
@@ -145,12 +147,16 @@ int svr_ipv6(void)
 	resource_ptr = own_alloc(sizeof(sn_nsdl_resource_info_s));
 	if(!resource_ptr)
 		return 0;
+	memset(resource_ptr, 0, sizeof(sn_nsdl_resource_info_s));
+
 	resource_ptr->resource_parameters_ptr = own_alloc(sizeof(sn_nsdl_resource_parameters_s));
 	if(!resource_ptr->resource_parameters_ptr)
 	{
 		own_free(resource_ptr);
 		return 0;
 	}
+
+	memset(resource_ptr->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
 
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mgf)-1, (uint8_t*) res_mgf, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mgf_val, sizeof(res_mgf_val)-1);
 
@@ -166,6 +172,9 @@ int svr_ipv6(void)
 
 	/* Register with NSP */
 	INIT_REGISTER_NSDL_ENDPOINT(endpoint_ptr, ep, ep_type, lifetime_ptr);
+	endpoint_ptr->domain_name_ptr = domain;
+	endpoint_ptr->domain_name_len = 6;
+
 	sn_nsdl_register_endpoint(endpoint_ptr);
 	CLEAN_REGISTER_NSDL_ENDPOINT(endpoint_ptr);
 
