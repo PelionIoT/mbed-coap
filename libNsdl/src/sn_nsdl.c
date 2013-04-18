@@ -967,6 +967,7 @@ static void sn_nsdl_resolve_nsp_address(void)
 
 	if(nsp_address_ptr)
 	{
+		memset(nsp_address_ptr, 0, sizeof(sn_nsdl_addr_s));
 		/* This is only for version 0.5 */
 		nsp_address_ptr->type = SN_NSDL_ADDRESS_TYPE_IPV6;
 		nsp_address_ptr->port = 5683;

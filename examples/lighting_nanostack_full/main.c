@@ -590,9 +590,15 @@ uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 	if(coap_header->msg_code == COAP_MSG_CODE_RESPONSE_CREATED)
 	{
 		reg_location_len = coap_header->options_list_ptr->location_path_len;
-		reg_location = malloc(reg_location_len);
-		memcpy(reg_location, coap_header->options_list_ptr->location_path_ptr, reg_location_len);
 
+		if(reg_location)
+			free(reg_location);
+
+		reg_location = malloc(reg_location_len);
+		if(!reg_location)
+			return 0;
+
+		memcpy(reg_location, coap_header->options_list_ptr->location_path_ptr, reg_location_len);
 	}
 
 	return 0;

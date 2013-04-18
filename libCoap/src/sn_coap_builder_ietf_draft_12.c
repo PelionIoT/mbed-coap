@@ -94,6 +94,10 @@ SN_MEM_ATTR_COAP_BUILDER_FUNC
 sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
 {
 	sn_coap_hdr_s *coap_res_ptr;
+
+	if(!coap_packet_ptr)
+		return NULL;
+
 	coap_res_ptr = sn_coap_malloc(sizeof(sn_coap_hdr_s));
 	if(!coap_res_ptr)
 		return NULL;
@@ -234,6 +238,9 @@ SN_MEM_ATTR_COAP_BUILDER_FUNC
 uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr)
 {
     uint16_t returned_byte_count = 0;
+
+    if(!src_coap_msg_ptr)
+    	return 0;
 
     /* * * * * * * * * * * * * * * * * * * * * * * */
     /* * * * Count needed memory for Header * * * */
@@ -562,6 +569,8 @@ uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_coap_msg_
     uint8_t previous_option_number = 0;
     uint8_t needed_space 		   = 0;
 
+    if(!src_coap_msg_ptr)
+    	return 0;
 
     if (src_coap_msg_ptr->options_list_ptr != NULL)
     {
@@ -719,6 +728,9 @@ static int8_t sn_coap_builder_header_build(uint8_t **dst_packet_data_pptr,
     /* * * * Check validity of Header values * * * */
     /* * * * * * * * * * * * * * * * * * * * * * * */
 
+	if(!*dst_packet_data_pptr || !src_coap_msg_ptr)
+		return -1;
+
     int8_t ret_status = sn_coap_header_validity_check(src_coap_msg_ptr, COAP_VERSION);
 
     if (ret_status != 0)
@@ -770,6 +782,9 @@ SN_MEM_ATTR_COAP_BUILDER_FUNC
 static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr,
                                             sn_coap_hdr_s *src_coap_msg_ptr)
 {
+	if(!*dst_packet_data_pptr || !src_coap_msg_ptr)
+		return -1;
+
     uint16_t ret_status = 0;
 
     /* * * * * * * * * * * * * * * * * * * * * * * * */
