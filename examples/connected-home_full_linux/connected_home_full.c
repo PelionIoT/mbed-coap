@@ -81,7 +81,7 @@ uint8_t nsp_registered = 0;
 
 /* Resource related globals*/
 char relay_state = '1';
-uint8_t *reg_location;
+uint8_t *reg_location = 0;
 int8_t reg_location_len;
 uint8_t nsp_addr[16];
 uint8_t obs_token[8];
@@ -104,7 +104,7 @@ int svr_ipv6(void)
 	int16_t rcv_size=0;
 	sn_nsdl_mem_s memory_struct;
 	sn_nsdl_ep_parameters_s *endpoint_ptr = 0;
-	sn_nsdl_resource_info_s	*resource_ptr;
+	sn_nsdl_resource_info_s	*resource_ptr = 0;
 
 
 
@@ -280,7 +280,15 @@ uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 	if((coap_header->msg_code == COAP_MSG_CODE_RESPONSE_CREATED) && !nsp_registered)
 	{
 		reg_location_len = coap_header->options_list_ptr->location_path_len;
+
+		if(reg_location)
+			free(reg_location);
+
 		reg_location = malloc(reg_location_len);
+
+		if(!reg_location)
+			return 0;
+
 		memcpy(reg_location, coap_header->options_list_ptr->location_path_ptr, reg_location_len);
 #ifdef HAVE_DEBUG
 		printf("Registered to NSP: ");
