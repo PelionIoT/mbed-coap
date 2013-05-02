@@ -29,7 +29,10 @@ extern int8_t 			   sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t
 extern int8_t 			   sn_coap_protocol_destroy(void);
 extern int16_t             sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
 extern sn_coap_hdr_s      *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
-extern sn_nsdl_transmit_s *sn_coap_protocol_exec(uint32_t current_time);
+extern int8_t 			   sn_coap_protocol_exec(uint32_t current_time);
+extern int8_t 			   sn_coap_protocol_set_block_size(uint16_t block_size);
+extern int8_t 			   sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count);
+extern int8_t 			   sn_coap_protocol_set_retransmission(uint8_t resending_count, uint8_t buffer_size);
 
 /* NSP registration functions */
 extern int8_t 			   sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr);

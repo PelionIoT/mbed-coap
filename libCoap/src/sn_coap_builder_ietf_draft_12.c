@@ -52,6 +52,10 @@ SN_MEM_ATTR_COAP_BUILDER_DECL static uint8_t global_previous_option_number = 0; 
 SN_MEM_ATTR_COAP_BUILDER_DECL void* (*sn_coap_malloc)(uint16_t); /* Function pointer for used malloc() function */
 SN_MEM_ATTR_COAP_BUILDER_DECL void  (*sn_coap_free)(void*);      /* Function pointer for used free()   function */
 
+SN_MEM_ATTR_COAP_PROTOCOL_DECL extern uint16_t 	sn_coap_block_data_size; 			/* From sn_coap_protocol_ieft_draft_12.c */
+SN_MEM_ATTR_COAP_PROTOCOL_DECL extern uint8_t 	sn_coap_resending_buffer_size;			/* From sn_coap_protocol_ieft_draft_12.c */
+SN_MEM_ATTR_COAP_PROTOCOL_DECL extern uint8_t	sn_coap_duplication_buffer_size;	/* From sn_coap_protocol_ieft_draft_12.c */
+
 /**
  * \fn void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
  * 											void (*used_free_func_ptr)(void*))
@@ -481,7 +485,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
         /* * * * * * * * * * * * * * * * * * * * * * * */
 
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
-        if (src_coap_msg_ptr->payload_len > SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE)
+        if ((src_coap_msg_ptr->payload_len > sn_coap_block_data_size) && (sn_coap_block_data_size > 0))
         {
         	/* Two bytes for Block option */
             returned_byte_count += 2;
@@ -495,7 +499,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
                 returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 2);
             }
 			/* Add maximum payload at one Blockwise message */
-			returned_byte_count += SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE;
+			returned_byte_count += sn_coap_block_data_size;
         }
         else
         {
@@ -1294,7 +1298,6 @@ static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, uin
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 static uint8_t sn_coap_builder_options_get_option_part_count(uint16_t query_len, uint8_t *query_ptr, sn_coap_option_numbers_e option)
 {
-    uint8_t  temp_char            = 0;
     uint8_t  returned_query_count = 0;
     uint16_t query_len_index      = 0;
     uint8_t  char_to_search		  = 0;
@@ -1304,26 +1307,17 @@ static uint8_t sn_coap_builder_options_get_option_part_count(uint16_t query_len,
     else if(option == COAP_OPTION_URI_PATH)
     	char_to_search = '/';
 
-    /* Loop whole query and search '\0' characters */
-    for (query_len_index = 0; query_len_index < query_len; query_len_index++)
+    /* Loop whole query and search '\0' characters (not first and last char) */
+    for (query_len_index = 1; query_len_index < query_len - 1; query_len_index++)
     {
-        /* Store character to temp_char for helping debugging */
-        temp_char = *query_ptr;
-
         /* If new query part starts */
-        if (temp_char == char_to_search && query_len_index > 0) /* query_len_index > 0 is for querys which start with "\0" */
+        if (*(query_ptr + query_len_index) == char_to_search) /* If match */
         {
             returned_query_count++;
         }
-
-        query_ptr++;
     }
 
-    /* If not yet added last query part */
-    if (temp_char != 0)
-    {
-        returned_query_count++;
-    }
+    returned_query_count++;
 
     return returned_query_count;
 }
@@ -1423,9 +1417,15 @@ static uint16_t sn_coap_builder_options_get_option_part_position(uint16_t query_
     uint16_t query_len_index            = 0;
     uint8_t	 char_to_search				= 0;
 
+    if(option == COAP_OPTION_URI_QUERY)
+    	char_to_search = '&';
+    else if(option == COAP_OPTION_URI_PATH)
+    	char_to_search = '/';
+
+
     if (query_index == 0)
     {
-        if (*query_ptr == 0)
+        if (*query_ptr == 0 || *query_ptr == char_to_search)
         {
             return 1;
         }
@@ -1434,11 +1434,6 @@ static uint16_t sn_coap_builder_options_get_option_part_position(uint16_t query_
             return 0;
         }
     }
-
-    if(option == COAP_OPTION_URI_QUERY)
-    	char_to_search = '&';
-    else if(option == COAP_OPTION_URI_PATH)
-    	char_to_search = '/';
 
     /* Loop whole query and search separator characters */
     for (query_len_index = 0; query_len_index < query_len; query_len_index++)

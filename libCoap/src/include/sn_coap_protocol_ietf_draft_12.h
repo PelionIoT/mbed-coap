@@ -17,7 +17,7 @@
 /* * * * * * * * * * * */
 
 /* CoAP Resending defines */
-#define MAX_RETRANSMIT          3   /* Maximum resending count, value is specified in IETF CoAP specification */
+//#define MAX_RETRANSMIT          3   /* Maximum resending count, value is specified in IETF CoAP specification */
 #define RESPONSE_TIMEOUT        2   /* Initial resending timeout as seconds, value is specified in IETF CoAP specification */
 #define RESPONSE_RANDOM_FACTOR  1   /* Resending random factor, value is specified in IETF CoAP specification */
 

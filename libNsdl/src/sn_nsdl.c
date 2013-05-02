@@ -393,6 +393,9 @@ extern int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_p
 	sn_coap_hdr_s 	*register_message_ptr;
 	int8_t			status 					= 0;
 
+	if(!endpoint_info_ptr)
+		return SN_NSDL_FAILURE;
+
 	/*** Build endpoint register message ***/
 
 	/* Allocate memory for header struct */
@@ -1540,7 +1543,7 @@ static uint8_t sn_nsdl_free_resource_list(sn_grs_resource_list_s  *grs_resources
  */
 int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port)
 {
-	if(nsp_address_ptr)
+	if(nsp_address_ptr && NSP_address)
 	{
 		if(nsp_address_ptr->addr_ptr)
 		{

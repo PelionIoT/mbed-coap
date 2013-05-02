@@ -207,35 +207,9 @@ SN_MEM_ATTR_GRS_FUNC
 extern int8_t sn_grs_exec(uint32_t time)
 {
 #if(SN_NSDL_HAVE_COAP_CAPABILITY)
-	/* Local variables */
-	sn_nsdl_transmit_s 	*packet_from_coap_ptr 	= NULL;
-	int8_t 				status 					= 0;
-
-	/********************************************/
-	/* Ask if CoAP have some packets to be sent */
-	/********************************************/
-	packet_from_coap_ptr = sn_coap_protocol_exec(time);
-
-	/* If no error occurs */
-	if(packet_from_coap_ptr)
-	{
-		/******************************/
-		/* If there is packet to send */
-		/******************************/
-		if(packet_from_coap_ptr->packet_ptr != 0)
-		{
-			/* Send message */
-			status = sn_grs_tx_callback(packet_from_coap_ptr->protocol,
-								packet_from_coap_ptr->packet_ptr,
-								packet_from_coap_ptr->packet_len,
-								packet_from_coap_ptr->dst_addr_ptr);
-
-		}
-		/* Free sent packet */
-		sn_coap_builder_release_allocated_send_msg_mem(packet_from_coap_ptr);
-	}
+	/* Call CoAP execution function */
+	return sn_coap_protocol_exec(time);
 #endif
-	/* No packet to send, return SN_NSDL_SUCCESS */
 	return SN_NSDL_SUCCESS;
 }
 
@@ -465,9 +439,10 @@ extern int8_t sn_grs_update_resource(sn_nsdl_resource_info_s *res)
  *					about the resource.
  *
  *	\return 		 0 success
- *					-1 Resource already exists
- *					-2 Invalid path
- *					-3 List adding failure
+ *					-1 Failure
+ *					-2 Resource already exists
+ *					-3 Invalid path
+ *					-4 List adding failure
 */
 SN_MEM_ATTR_GRS_FUNC
 extern int8_t sn_grs_create_resource(sn_nsdl_resource_info_s *res)
@@ -477,7 +452,7 @@ extern int8_t sn_grs_create_resource(sn_nsdl_resource_info_s *res)
 		return SN_NSDL_FAILURE;
 
 	/* Check path validity */
-	if(res->pathlen == 0)
+	if(!res->pathlen || !res->path)
 		return SN_GRS_INVALID_PATH;
 
 	/* Check if resource already exists */
@@ -488,9 +463,7 @@ extern int8_t sn_grs_create_resource(sn_nsdl_resource_info_s *res)
 
 	if(res->resource_parameters_ptr)
 	{
-
 		res->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_NOT_REGISTERED;
-
 	}
 
 	/* Create resource */
@@ -666,7 +639,7 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 					status = COAP_MSG_CODE_RESPONSE_CONTENT;
 				}
 				else
-					status = COAP_MSG_CODE_RESPONSE_FORBIDDEN;
+					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
 				break;
 			case (COAP_MSG_CODE_REQUEST_POST):
 				if(resource_temp_ptr->access & SN_GRS_POST_ALLOWED)
@@ -687,7 +660,7 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 					}
 				}
 				else
-					status = COAP_MSG_CODE_RESPONSE_FORBIDDEN;
+					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
 				break;
 			case (COAP_MSG_CODE_REQUEST_PUT):
 				if(resource_temp_ptr->access & SN_GRS_PUT_ALLOWED)
@@ -708,7 +681,7 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 					}
 				}
 				else
-					status = COAP_MSG_CODE_RESPONSE_FORBIDDEN;
+					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
 				break;
 
 			case (COAP_MSG_CODE_REQUEST_DELETE):
@@ -720,7 +693,7 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 						status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
 				}
 				else
-					status = COAP_MSG_CODE_RESPONSE_FORBIDDEN;
+					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
 				break;
 
 			default:
@@ -735,7 +708,8 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 
 		else
 		{
-			if(coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST)
+			if(coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST ||
+					coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT)
 			{
 				resource_temp_ptr = sn_grs_alloc(sizeof(sn_nsdl_resource_info_s));
 				if(!resource_temp_ptr)
@@ -744,6 +718,7 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 				}
 				else
 				{
+					memset(resource_temp_ptr, 0, sizeof(sn_nsdl_resource_info_s));
 
 					resource_temp_ptr->access = SN_GRS_DEFAULT_ACCESS;
 					resource_temp_ptr->mode = SN_GRS_STATIC;
@@ -1017,11 +992,13 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 	uint8_t 				i	 					= 0;
 	uint8_t 				*path_temp_ptr 			= NULL;
 
-	/* Remove '/' - marks from the end and beginning */
-	if(!pathlen)
+	/* Check parameters */
+	if(!pathlen || !path)
 	{
 		return (sn_nsdl_resource_info_s *)NULL;;
 	}
+
+	/* Remove '/' - marks from the end and beginning */
 	path_temp_ptr = sn_grs_convert_uri(&pathlen, path);
 
 	resource_search_temp = sn_linked_list_get_first_node(resource_root_list);
