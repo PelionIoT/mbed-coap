@@ -134,41 +134,41 @@ typedef struct sn_coap_options_list_
 	/* If-None-Match */
 	/* Size */
 
-    uint8_t     max_age_len;
+    uint8_t     max_age_len;		/* 0-4 bytes. */
     uint8_t    *max_age_ptr;        /* Must be set to NULL if not used */
 
-    uint16_t    proxy_uri_len;
+    uint16_t    proxy_uri_len;		/* 1-1034 bytes. */
     uint8_t    *proxy_uri_ptr;      /* Must be set to NULL if not used */
 
-    uint8_t     etag_len;
+    uint8_t     etag_len;			/* 1-8 bytes. Repeatable */
     uint8_t    *etag_ptr;           /* Must be set to NULL if not used */
 
-    uint16_t    uri_host_len;
+    uint16_t    uri_host_len;		/* 1-255 bytes. */
     uint8_t    *uri_host_ptr;       /* Must be set to NULL if not used */
 
-    uint16_t    location_path_len;
+    uint16_t    location_path_len;	/* 0-255 bytes. Repeatable */
     uint8_t    *location_path_ptr;  /* Must be set to NULL if not used */
 
-    uint8_t     uri_port_len;
+    uint8_t     uri_port_len;		/* 0-2 bytes. */
     uint8_t    *uri_port_ptr;       /* Must be set to NULL if not used */
 
-    uint16_t    location_query_len;
+    uint16_t    location_query_len; /* 0-255 bytes. Repeatable */
     uint8_t    *location_query_ptr; /* Must be set to NULL if not used */
 
     uint8_t     observe;
-    uint8_t     observe_len;
+    uint8_t     observe_len;		/* 0-2 bytes. */
     uint8_t    *observe_ptr;        /* Must be set to NULL if not used */
 
-    uint8_t     accept_len;   		/* Must be set to zero if not used */
+    uint8_t     accept_len;   		/* 0-2 bytes. Repeatable */
     uint8_t     *accept_ptr;   		/* Must be set to NULL if not used */
 
-    uint16_t    uri_query_len;
+    uint16_t    uri_query_len;		/* 1-255 bytes. Repeatable */
     uint8_t    *uri_query_ptr;      /* Must be set to NULL if not used */
 
-    uint8_t     block1_len;         /* Not for User */
+    uint8_t     block1_len;         /* 0-3 bytes. */
     uint8_t    *block1_ptr;         /* Not for User */
 
-    uint8_t     block2_len;         /* Not for User */
+    uint8_t     block2_len;         /* 0-3 bytes. */
     uint8_t    *block2_ptr;         /* Not for User */
 } sn_coap_options_list_s;
 
@@ -193,14 +193,14 @@ typedef struct sn_coap_hdr_
 
     /* Here are most often used Options */
 
-    uint16_t                uri_path_len;       /* Must be set to zero if not used */
+    uint16_t                uri_path_len;       /* 0-255 bytes. Repeatable. */
     uint8_t                *uri_path_ptr;       /* Must be set to NULL if not used. E.g: temp1/temp2 */
 
-    uint8_t                 token_len;          /* Must be set to zero if not used */
+    uint8_t                 token_len;          /* 1-8 bytes. */
     uint8_t                *token_ptr;          /* Must be set to NULL if not used */
 
     /* todo: COAP12 - content type ptr as a content_type_e */
-    uint8_t                 content_type_len;   /* Must be set to zero if not used */
+    uint8_t                 content_type_len;   /* 0-2 bytes. */
     uint8_t                *content_type_ptr;   /* Must be set to NULL if not used */
 
     /* Here are not so often used Options */

@@ -131,7 +131,7 @@ typedef struct sn_grs_version_
  *
 */
 extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
-		sn_nsdl_addr_s *), uint8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory);
+		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory);
 extern int8_t sn_grs_exec(uint32_t time);
 extern sn_grs_resource_list_s *sn_grs_list_resource(uint16_t pathlen, uint8_t *path);
 extern sn_nsdl_resource_info_s *sn_grs_get_first_resource(void);
@@ -159,7 +159,7 @@ extern int8_t sn_grs_process_http(uint8_t *packet, uint16_t *packet_len, sn_nsdl
 extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src);
 extern int16_t sn_grs_get_capability(void);
 extern uint32_t sn_grs_get_version(void);
-extern uint8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
+extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
 
 extern int8_t sn_grs_destroy(void);
 

@@ -42,7 +42,7 @@ SN_MEM_ATTR_GRS_DECL static sn_linked_list_t *resource_root_list = NULL;
 void 	*(*sn_grs_alloc)(uint16_t);
 void 	(*sn_grs_free)(void*);
 uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
-uint8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
+int8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
 
 /*
  * \brief This function may be used to flush GRS related stuff when a program exits.
@@ -132,7 +132,7 @@ SN_MEM_ATTR_GRS_FUNC extern int8_t sn_grs_destroy(void)
 */
 SN_MEM_ATTR_GRS_FUNC
 extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
-		sn_nsdl_addr_s *), uint8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory)
+		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory)
 {
 	/* If application tries to init GRS more than once.. */
 	if(!resource_root_list)
@@ -929,7 +929,7 @@ extern uint32_t sn_grs_get_version(void)
 }
 
 /**
- * \fn 	extern uint8_t sn_grs_send_coap_message(sn_nsdl_addr_s * address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
+ * \fn 	extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s * address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
  *
  * \brief Sends CoAP message
  *
@@ -942,7 +942,7 @@ extern uint32_t sn_grs_get_version(void)
  *	\return	0 = success, -1 = failed
  *
 */
-extern uint8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
+extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
 {
 	uint8_t 	*message_ptr = NULL;
 	uint16_t 	message_len	= 0;

@@ -66,10 +66,9 @@ static int8_t 			sn_nsdl_build_registration_body				(sn_coap_hdr_s *message_ptr,
 static uint16_t 		sn_nsdl_calculate_registration_body_size	(uint8_t updating_registeration);
 static uint8_t 			sn_nsdl_calculate_uri_query_option_len		(sn_nsdl_ep_parameters_s *endpoint_info_ptr, uint8_t msg_type);
 static int8_t 			sn_nsdl_fill_uri_query_options				(sn_nsdl_ep_parameters_s *parameter_ptr, sn_coap_hdr_s *source_msg_ptr, uint8_t msg_type);
-static uint8_t			sn_nsdl_local_rx_function					(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *address_ptr);
+static int8_t			sn_nsdl_local_rx_function					(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *address_ptr);
 static int8_t 			sn_nsdl_resolve_ep_information				(sn_coap_hdr_s *coap_packet_ptr);
-static uint8_t 			sn_nsdl_free_resource_list					(sn_grs_resource_list_s  *grs_resources_ptr);
-static void sn_nsdl_mark_resources_as_registered(void);
+static void 			sn_nsdl_mark_resources_as_registered		(void);
 
 //static const char version_array[] = {SVN_REV};
 //
@@ -239,7 +238,6 @@ extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *
 
 	return SN_NSDL_SUCCESS;
 }
-//#if 0
 
 extern int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port, char *query, uint8_t query_len)
 {
@@ -371,10 +369,6 @@ extern int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint
 	sn_coap_parser_release_allocated_coap_msg_mem(message_ptr);
 	return SN_NSDL_SUCCESS;
 }
-//#endif
-
-
-
 
 
 /**
@@ -876,7 +870,7 @@ sn_grs_resource_list_s *sn_nsdl_list_resource(uint8_t pathlen, uint8_t *path_ptr
 	return sn_grs_list_resource(pathlen, path_ptr);
 }
 
-uint8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
+int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
 {
 	return sn_grs_send_coap_message(address_ptr, coap_hdr_ptr);
 }
@@ -1246,9 +1240,11 @@ static uint8_t sn_nsdl_calculate_uri_query_option_len(sn_nsdl_ep_parameters_s *e
 static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_ptr, sn_coap_hdr_s *source_msg_ptr, uint8_t msg_type)
 {
 	uint8_t *temp_ptr = NULL;
-	uint8_t uri_query_len = sn_nsdl_calculate_uri_query_option_len(parameter_ptr, msg_type);
+	source_msg_ptr->options_list_ptr->uri_query_len  = sn_nsdl_calculate_uri_query_option_len(parameter_ptr, msg_type);
 
-	source_msg_ptr->options_list_ptr->uri_query_len 	= 	uri_query_len;
+	if(source_msg_ptr->options_list_ptr->uri_query_len == 0)
+		return 0;
+
 	source_msg_ptr->options_list_ptr->uri_query_ptr 	= 	sn_nsdl_alloc(source_msg_ptr->options_list_ptr->uri_query_len);
 
 	if (source_msg_ptr->options_list_ptr->uri_query_ptr == NULL)
@@ -1327,7 +1323,7 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
  *
  * \return		SN_NSDL_SUCCESS = 0, Failed = -1
  */
-static uint8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *address_ptr)
+static int8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *address_ptr)
 {
 	int8_t 						status = 0;
 	uint16_t					number_of_messages;
@@ -1510,31 +1506,6 @@ static int8_t sn_nsdl_resolve_ep_information(sn_coap_hdr_s *coap_packet_ptr)
 
 
 	return SN_NSDL_SUCCESS;
-}
-
-/**
- * \fn static uint8_t sn_nsdl_free_resource_list(sn_grs_resource_list_s  *grs_resources_ptr)
- *
- * \brief Frees GRS resource list structure
- *
- * \param *grs_resources_ptr Pointer to resource lit to be freed
- *
- * \return	SN_NSDL_SUCCESS = 0, Failed = -1
- */
-static uint8_t sn_nsdl_free_resource_list(sn_grs_resource_list_s  *grs_resources_ptr)
-{
-        int i = 0;
-        if(!grs_resources_ptr)
-                return SN_NSDL_FAILURE;
- 
-        for(i = 0;i < grs_resources_ptr->res_count; i++)
-        {
-                if(grs_resources_ptr->res[i].path)
-                        sn_nsdl_free(grs_resources_ptr->res[i].path);
-        }
-        sn_nsdl_free(grs_resources_ptr->res);
-        sn_nsdl_free(grs_resources_ptr);
-        return SN_NSDL_SUCCESS;
 }
 
 /*

@@ -57,8 +57,6 @@ SN_MEM_ATTR_COAP_PARSER_DECL extern void  (*sn_coap_free)(void*);      /* Functi
 /* * * * * * * * * * * * * * * * * * * * * * */
 
 extern int8_t         	sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_version_e coap_version);
-extern int8_t         	sn_coap_header_validity_check_options_count(uint8_t value);
-extern int8_t         	sn_coap_builder_options_check_validity_option_len(uint16_t value);
 extern uint8_t 		 	sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_coap_msg_ptr, uint8_t block_option);
 extern uint16_t 		sn_coap_parser_option_jump_parse(uint8_t **packet_data_pptr);
 extern uint16_t 		sn_coap_parser_option_number_len_parse(uint8_t **packet_data_pptr);
