@@ -18,7 +18,8 @@
 /* Maximum time in seconds of messages to be stored for Acknowledging. This time tells */
 /* how long time User of CoAP C-library have time to send Piggy-backed acknowledgement */
 /* message to Request sender. */
-#define SN_COAP_ACK_INFO_MAX_TIME_MSGS_STORED    10
+#define SN_COAP_ACK_INFO_MAX_TIME_MSGS_STORED    	10
+#define SN_COAP_ACK_INFO_MAX_COUNT_MESSAGES_SAVED   10
 
 /* * * * * * * * * * * * * * * * * * * * * * */
 /* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */

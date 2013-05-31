@@ -21,8 +21,6 @@
 #define RESPONSE_TIMEOUT        2   /* Initial resending timeout as seconds, value is specified in IETF CoAP specification */
 #define RESPONSE_RANDOM_FACTOR  1   /* Resending random factor, value is specified in IETF CoAP specification */
 
-#define COAP_SEND_MSG_ONCE      ((uint32_t)0xFFFFFFFF) /* Sends CoAP message once from Linked list, no resendins */
-
 /* * * * * * * * * * * * * * */
 /* * * * ENUMERATIONS  * * * */
 /* * * * * * * * * * * * * * */
@@ -72,11 +70,7 @@ typedef struct coap_blockwise_msg_
 {
     uint32_t            timestamp;  /* Tells when Blockwise message is stored to Linked list */
 
-    uint8_t             send_flag;  /* Tells if message can be sent */
-
-    uint8_t             header_len; /* Tells length of Packet data header in send_msg_ptr */
-
-    sn_nsdl_transmit_s *send_msg_ptr;
+    sn_coap_hdr_s		*coap_msg_ptr;
 } coap_blockwise_msg_s;
 
 /* Structure which is stored to Linked list for blockwise messages receiving purposes */

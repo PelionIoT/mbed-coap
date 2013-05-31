@@ -411,8 +411,40 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
         }
 
 /* * * * * PAYLOAD * * * * */
+#if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+        if ((src_coap_msg_ptr->payload_len > sn_coap_block_data_size) && (sn_coap_block_data_size > 0))
+        {
+        	/* Two bytes for Block option */
+            returned_byte_count += 2;
+
+            if (src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED )
+            {
+                returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 1);
+            }
+            else /* Response message */
+            {
+                returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 2);
+            }
+			/* Add maximum payload at one Blockwise message */
+			returned_byte_count += sn_coap_block_data_size;
+        }
+        else
+        {
+        	if(src_coap_msg_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE)
+        	{
+                returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 0);
+        	}
+        	else
+        	{
+                returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 0);
+        	}
+        		/* Add wanted payload */
+        	returned_byte_count += src_coap_msg_ptr->payload_len;
+        }
+#else
         returned_byte_count += src_coap_msg_ptr->payload_len;
         returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 0);
+#endif
     }
 
     return returned_byte_count;

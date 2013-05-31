@@ -42,9 +42,9 @@
 /* Init value for maximum count of ongoing active resending messages 										*/
 /* This value depends on available memory: If there is restricted count of memory, use little value e.g. 1 	*/
 /* Setting of this value to 0 will disable re-sending and also reduce use of ROM memory						*/
-#define SN_COAP_RESENDING_BUFFER_MAX_SIZE           0
+#define SN_COAP_RESENDING_MAX_COUNT		            0
 /* Default value for count of re-sending */
-#define SN_COAP_RESENDING_MAX_COUNT		            4
+#define SN_COAP_RESENDING_BUFFER_MAX_SIZE           0
 
 /* Maximum allowed count of re-sending */
 #define SN_COAP_MAX_ALLOWED_RESENDING_COUNT 		6
@@ -65,7 +65,7 @@
 /* * For Message blockwising * */
 
 /* Init value for the maximum payload size to be sent and received at one blockwise message 						*/
-/* Setting of this value to 0 will diable this feature, and also reduce use of ROM memory							*/
+/* Setting of this value to 0 will disable this feature, and also reduce use of ROM memory							*/
 /* Note: Current Coap implementation supports Blockwise transfers specification version draft-ietf-core-block-03 	*/
 /* Note: This define is common for both received and sent Blockwise messages 										*/
 #ifndef SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
@@ -77,7 +77,7 @@
 
 /* Maximum time in seconds of data (messages and payload) to be stored for blockwising */
 #ifndef SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED
-#define SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED      120
+#define SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED      10
 #endif
 
 /* * * * * * * * * * * * * * */
