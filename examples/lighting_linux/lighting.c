@@ -46,8 +46,8 @@
 #define EP_LEN 11
 #define EP_TYPE (const char *)("Light")
 #define EP_TYPE_LEN 5
-#define LINKS (const char *)("</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</gps/loc>;rt=ns:gpsloc;ct=\"0\",</lt/0/on>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\"")
-#define LINKS_LEN 197
+#define LINKS (const char *)("</dev/mfg>;\"rt=ipso:dev-mfg\";ct=\"0\",</dev/mdl>;\"rt=ipso:dev-mdl\";ct=\"0\",</dev/bat>;\"rt=ipso:dev-bat\";ct=\"0\",</gps/loc>;\"rt=ns:gpsloc\";ct=\"0\",</lt/0/on>;\"rt=ipso:pwr-rel\";ct=\"0\",</sen/temp>;\"rt=ucum:Cel\";ct=\"0\"")
+#define LINKS_LEN 209
 #define RD_PATH (const char *)("rd")
 
 extern void stop_pgm();
@@ -596,7 +596,8 @@ void own_free(void *ptr)
 		free(ptr);
 }
 
-/* Unused function needed for libCoap protocol initialization */
+/* Unused function needed for libCoap protocol initialization
+ * This in not needed if libCoap protocol part is not used*/
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr)
 {
 	return 0;

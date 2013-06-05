@@ -126,8 +126,7 @@ typedef struct sn_nsdl_resource_info_
 {
 	sn_nsdl_resource_parameters_s 	*resource_parameters_ptr;
 
-	//sn_nsdl_capab_e 				type;						// HTTP, HTTPS, COAP
-	sn_nsdl_resource_mode_e 			mode;						// STATIC etc..
+	sn_nsdl_resource_mode_e			mode;						// STATIC etc..
 
 	uint16_t 						pathlen;					// Address
 	uint8_t 						*path;
@@ -136,7 +135,6 @@ typedef struct sn_nsdl_resource_info_
 	uint8_t 						*resource;					// NULL if dynamic resource
 
 	sn_grs_resource_acl_e 			access;
-	//sn_grs_resource_mutable_e 		mutable;					// Get, post, put, delete
 
 	uint8_t (*sn_grs_dyn_res_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
 

@@ -63,7 +63,6 @@ static void coap_exec_poll_function(void);
 static uint8_t relay_resource_cb(sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto);
 static uint8_t general_resource_cb(sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto);
 static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare);
-void print_array(uint8_t *ptr, uint16_t len);
 
 /* Socket globals */
 static struct sockaddr_in6 sa_dst, sa_src;
@@ -73,7 +72,6 @@ static int sock_server, slen_sa_dst=sizeof(sa_dst);
 static	pthread_t 	coap_exec_thread 				= 0; /* Thread for coap_exec-function */
 
 /* CoAP related globals*/
-uint16_t current_mid = 0;
 uint8_t	 text_plain = COAP_CT_TEXT_PLAIN;
 uint8_t	 link_format = COAP_CT_LINK_FORMAT;
 
@@ -244,7 +242,7 @@ void own_free(void *ptr)
 		free(ptr);
 }
 
-/* Unused function needed for libCoap protocol initialization */
+/* TX callback function needed for libCoap protocol part */
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr)
 {
 
@@ -265,6 +263,7 @@ uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_l
 	return 1;
 }
 
+/* RX callback function needed for libNsdl */
 uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 {
 
@@ -320,6 +319,12 @@ static void ctrl_c_handle_function(void)
 	exit(1);
 }
 
+/* CoAP exec - function called once in a second.
+ * Handles re-sendings, clears linked lists from
+ * old saved data etc.
+ *
+ * Observation notification sending is also handled in this thread.
+ * */
 static void coap_exec_poll_function(void)
 {
 	static uint32_t ns_system_time = 1;
@@ -332,6 +337,9 @@ static void coap_exec_poll_function(void)
 	}
 }
 
+/* Dynamic resource callback function. When request received to res rel,
+ * libNsdl calls this function.
+ * */
 static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
 	sn_coap_hdr_s *coap_res_ptr = 0;
@@ -360,7 +368,6 @@ static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_
 		if (received_coap_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
 		{
 			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-			coap_res_ptr->msg_id = current_mid++;
 		}
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
 	}
@@ -381,6 +388,9 @@ static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_
 	return 0;
 }
 
+/* Dynamic resource callback functions. When request received to other dynamic resources,
+ * libNsdl calls this function.
+ * */
 static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
 	sn_coap_hdr_s *coap_res_ptr = 0;
@@ -429,6 +439,7 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 	return 0;
 }
 
+/* Helping functions */
 static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare)
 {
     if(memcmp(coap_header->uri_path_ptr,&uri_path_to_compare[0], coap_header->uri_path_len) == 0)
@@ -438,14 +449,3 @@ static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_pa
 	return 0;
 }
 
-void print_array(uint8_t *ptr, uint16_t len)
-{
-	uint16_t i = 0;
-
-	while(i < len)
-	{
-		printf("%x:", *(ptr+i));
-		i++;
-	}
-	printf("\n");
-}

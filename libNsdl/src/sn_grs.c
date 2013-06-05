@@ -56,7 +56,6 @@ SN_MEM_ATTR_GRS_FUNC extern int8_t sn_grs_destroy(void)
 		uint16_t i = 0;
 		sn_nsdl_resource_info_s*tmp;
 
-//		printf("orig GRS linked list size: %d \n", sn_linked_list_count_nodes(resource_root_list));
 		for(i=0;i<size;i++)
 		{
 			tmp = sn_linked_list_get_first_node(resource_root_list);
@@ -102,7 +101,6 @@ SN_MEM_ATTR_GRS_FUNC extern int8_t sn_grs_destroy(void)
 			}
 		}
 
-//		printf("later GRS linked list size: %d \n", sn_linked_list_count_nodes(resource_root_list));
 		if(!sn_linked_list_count_nodes(resource_root_list))
 		{
 			sn_linked_list_free(resource_root_list);

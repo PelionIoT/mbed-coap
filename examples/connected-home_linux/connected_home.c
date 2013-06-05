@@ -26,9 +26,8 @@
 #include "sn_coap_protocol.h"
 
 #ifdef USE_EDTLS
-#include "shalib.h"
 #include "sn_edtls_lib.h"
-#include "TI_aes.h"
+#include "sn_aes.h"
 #endif
 
 #define BUFLEN 1024
@@ -53,8 +52,10 @@
 #define EP_LEN 11
 #define EP_TYPE (const char *)("PowerNode")
 #define EP_TYPE_LEN 9
-#define LINKS (const char *)("</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\"")
-#define LINKS_LEN 200
+#define LINKS (const char *)("</dev/mfg>;rt=\"ipso:dev-mfg\";ct=\"0\",</dev/mdl>;rt=\"ipso:dev-mdl\";ct=\"0\",</dev/bat>;\"rt=ipso:dev-bat\";ct=\"0\",</pwr/0/w>;rt=\"ipso:pwr-w\";ct=\"0\",</pwr/0/rel>;\"rt=ipso:pwr-rel\";ct=\"0\",</sen/temp>;rt=\"ucum:Cel\";ct=\"0\"")
+#define LINKS_LEN 212
+
+
 #define RD_PATH (const char *)("rd")
 
 extern void stop_pgm();
@@ -72,12 +73,16 @@ void svr_handle_request_rel(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_temp(sn_coap_hdr_s *coap_packet_ptr);
 void svr_handle_request_wellknown(sn_coap_hdr_s *coap_packet_ptr);
 int nsp_register(registration_info_t *endpoint_info_ptr);
-int nsp_deregister(char *location, uint8_t length);
+int nsp_deregister(uint8_t *location, uint8_t length);
 void *own_alloc(uint16_t size);
 void own_free(void* ptr);
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr);
 static void ctrl_c_handle_function(void);
 typedef void (*signalhandler_t)(int); /* Function pointer type for ctrl-c */
+#ifdef USE_EDTLS
+uint8_t edtls_tx(uint8_t *data_ptr, uint16_t data_len, sn_edtls_address_t *dst_addr);
+void edtls_registration_status(uint8_t status, int16_t session_id);
+#endif
 
 /* Socket globals */
 static struct sockaddr_in6 sa_dst, sa_src;
@@ -89,8 +94,8 @@ uint8_t	 text_plain = COAP_CT_TEXT_PLAIN;
 uint8_t	 link_format = COAP_CT_LINK_FORMAT;
 
 /* Resource related globals*/
-char res_rel = '1';
-char *reg_location;
+uint8_t res_rel = '1';
+uint8_t *reg_location;
 int8_t reg_location_len;
 
 #ifdef USE_EDTLS
@@ -99,7 +104,6 @@ uint8_t edtls_connection_status;
 uint8_t edtls_session_id;
 static uint8_t 	edtls_psk_key[16] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6'};
 static uint16_t edtls_psk_key_id = 0x0f0f;
-
 #endif
 
 
@@ -161,7 +165,7 @@ int svr_ipv6(void)
 
 	edtls_pre_shared_key_set(edtls_psk_key, edtls_psk_key_id);
 	edtls_server_address_s.socket = sock_server;
-	edtls_session_id = sn_edtls_connect(&edtls_server_address_s);
+	edtls_session_id = sn_edtls_connect(&edtls_server_address_s, &edtls_tx, &edtls_registration_status);
 #ifdef HAVE_DEBUG
 			printf("Waiting for eDTLS to connect..\n");
 #endif
@@ -296,7 +300,6 @@ void svr_send_msg(sn_coap_hdr_s *coap_hdr_ptr)
 				stop_pgm("sendto() failed");
 #endif
 
-
 	own_free(message_ptr);
 	own_free(coap_hdr_ptr->payload_ptr);
 	if(coap_hdr_ptr->options_list_ptr)
@@ -330,7 +333,6 @@ int nsp_register(registration_info_t *endpoint_info_ptr)
 		stop_pgm("inet_ntop() failed");
 
 	/* Build CoAP request */
-
 	sn_coap_hdr_s *coap_hdr_ptr;
 	coap_hdr_ptr = own_alloc(sizeof(sn_coap_hdr_s));
 	if(!coap_hdr_ptr)
@@ -376,6 +378,8 @@ int nsp_register(registration_info_t *endpoint_info_ptr)
 		if (coap_packet_ptr->options_list_ptr && coap_packet_ptr->options_list_ptr->location_path_ptr)
 		{
 			reg_location_len = coap_packet_ptr->options_list_ptr->location_path_len;
+			if(reg_location)
+				own_free(reg_location);
 			reg_location = own_alloc(coap_packet_ptr->options_list_ptr->location_path_len);
 			if (reg_location)
 				memcpy(reg_location, (char *)coap_packet_ptr->options_list_ptr->location_path_ptr, reg_location_len);
@@ -397,7 +401,7 @@ int nsp_register(registration_info_t *endpoint_info_ptr)
 	return 0;
 }
 
-int nsp_deregister(char *location, uint8_t length)
+int nsp_deregister(uint8_t *location, uint8_t length)
 {
 #ifdef HAVE_DEBUG
 	printf("Deregistering from NSP\n");
@@ -699,7 +703,8 @@ void own_free(void *ptr)
 		free(ptr);
 }
 
-/* Unused function needed for libCoap protocol initialization */
+/* Unused function needed for libCoap protocol initialization
+ * This in not needed if libCoap protocol part is not used*/
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr)
 {
 	return 0;

@@ -63,30 +63,26 @@ static void coap_exec_poll_function(void);
 static uint8_t relay_resource_cb(sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto);
 static uint8_t general_resource_cb(sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto);
 static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare);
-void print_array(uint8_t *ptr, uint16_t len);
 
 /* Socket globals */
 static struct sockaddr_in6 sa_dst, sa_src;
 static int sock_server, slen_sa_dst=sizeof(sa_dst);
 
 /* Thread globals */
-static	pthread_t 	coap_exec_thread 				= 0; /* Thread for coap_exec-function */
+static	pthread_t 	coap_exec_thread = 0; /* Thread for coap_exec-function */
 
 /* CoAP related globals*/
-uint16_t current_mid = 0;
 uint8_t	 text_plain = COAP_CT_TEXT_PLAIN;
 uint8_t	 link_format = COAP_CT_LINK_FORMAT;
-
 uint8_t nsp_registered = 0;
 
 /* Resource related globals*/
-char relay_state = '1';
+uint8_t relay_state = '1';
 uint8_t *reg_location = 0;
 int8_t reg_location_len;
 uint8_t nsp_addr[16];
 uint8_t obs_token[8];
 uint8_t obs_token_len = 0;
-
 uint8_t obs_number = 0;
 
 /* Common globals */
@@ -105,8 +101,6 @@ int svr_ipv6(void)
 	sn_nsdl_mem_s memory_struct;
 	sn_nsdl_ep_parameters_s *endpoint_ptr = 0;
 	sn_nsdl_resource_info_s	*resource_ptr = 0;
-
-
 
 	/* Catch ctrl-c */
 	if (signal(SIGINT, (signalhandler_t)ctrl_c_handle_function) == SIG_ERR)
@@ -134,21 +128,21 @@ int svr_ipv6(void)
 	if (bind(sock_server, (struct sockaddr *) &sa_src, sizeof(sa_src))==-1)
 		stop_pgm("bind() error");
 
-
 	/* Initialize the libNsdl */
 	memory_struct.sn_nsdl_alloc = &own_alloc;
 	memory_struct.sn_nsdl_free = &own_free;
 
 	sn_nsdl_init(&tx_function ,&rx_function, &memory_struct);
 
+	/* Set the NSP address to libNsdl */
 	inet_pton(AF_INET6, arg_dst, &nsp_addr);
 
 	set_NSP_address(nsp_addr, arg_dport);
 
+	/* Create thread for CoAP execution function calling */
 	pthread_create(&coap_exec_thread, NULL, (void *)coap_exec_poll_function, NULL);
 
 	/* Create resources */
-
 	resource_ptr = own_alloc(sizeof(sn_nsdl_resource_info_s));
 	if(!resource_ptr)
 		return 0;
@@ -248,10 +242,9 @@ void own_free(void *ptr)
 		free(ptr);
 }
 
-/* Unused function needed for libCoap protocol initialization */
+/* TX callback function needed for libCoap protocol part */
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr)
 {
-
 	/* Set NSP address and port */
 	sa_dst.sin6_family = AF_INET6;
 	sa_dst.sin6_port = htons(address_ptr->port);
@@ -269,9 +262,9 @@ uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_l
 	return 1;
 }
 
+/* RX callback function needed for libNsdl */
 uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 {
-
 	uint8_t i;
 
 	if(!coap_header)
@@ -279,6 +272,9 @@ uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 
 	if((coap_header->msg_code == COAP_MSG_CODE_RESPONSE_CREATED) && !nsp_registered)
 	{
+		if(!coap_header->options_list_ptr)
+			return 0;
+
 		reg_location_len = coap_header->options_list_ptr->location_path_len;
 
 		if(reg_location)
@@ -298,15 +294,6 @@ uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 #endif
 		nsp_registered = 1;
 	}
-	else if(coap_header->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED)
-	{
-#ifdef HAVE_DEBUG
-		printf("rx callback %d bytes:" ,coap_header->payload_len);
-		for(i = 0; i < coap_header->payload_len; i++)
-			printf("%c", *(coap_header->payload_ptr + i));
-		printf("\n");
-#endif
-	}
 
 	return 0;
 }
@@ -325,6 +312,12 @@ static void ctrl_c_handle_function(void)
 	exit(1);
 }
 
+/* CoAP exec - function called once in a second.
+ * Handles re-sendings, clears linked lists from
+ * old saved data etc.
+ *
+ * Observation notification sending is also handled in this thread.
+ * */
 static void coap_exec_poll_function(void)
 {
 	static uint32_t ns_system_time = 1;
@@ -356,19 +349,23 @@ static void coap_exec_poll_function(void)
 	}
 }
 
+/* Dynamic resource callback function. When request received to res rel,
+ * libNsdl calls this function.
+ * */
 static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
 	sn_coap_hdr_s *coap_res_ptr = 0;
 
-
+#ifdef HAVE_DEBUG
 	printf("Relay callback\n");
+#endif
 
 	if (received_coap_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
 		coap_res_ptr = sn_coap_build_response(received_coap_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
-		coap_res_ptr->payload_len = sizeof(relay_state);
+		coap_res_ptr->payload_len = 1;
 		coap_res_ptr->payload_ptr = &relay_state;
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
 
@@ -384,14 +381,15 @@ static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_
 		if (received_coap_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
 		{
 			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-			coap_res_ptr->msg_id = current_mid++;
 		}
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
 	}
 	 /* Method not supported */
 	else
 	{
+#ifdef HAVE_DEBUG
 		printf("Method not supported\n");
+#endif
 		coap_res_ptr = sn_coap_build_response(coap_res_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
 	}
@@ -405,13 +403,17 @@ static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_
 	return 0;
 }
 
+/* Dynamic resource callback functions. When request received to other dynamic resources,
+ * libNsdl calls this function.
+ * */
 static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
 	sn_coap_hdr_s *coap_res_ptr = 0;
 	uint8_t i = 0;
 
+#ifdef HAVE_DEBUG
 	printf("General callback\n");
-
+#endif
 
 	if (received_coap_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
@@ -437,13 +439,17 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 			coap_res_ptr->payload_len = sizeof(res_bat_val);
 			coap_res_ptr->payload_ptr = res_bat_val;
 
+#ifdef HAVE_DEBUG
 			if(received_coap_ptr->options_list_ptr)
 			{
 				if(received_coap_ptr->options_list_ptr->observe)
 					printf("Observe\n");
 			}
+#endif
+
 			if(received_coap_ptr->token_ptr)
 			{
+#ifdef HAVE_DEBUG
 				printf("token:");
 				while(i < received_coap_ptr->token_len)
 				{
@@ -451,6 +457,7 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 					i++;
 				}
 				printf("\n");
+#endif
 				memset(obs_token, 0, 8);
 				memcpy(obs_token, received_coap_ptr->token_ptr, received_coap_ptr->token_len);
 				obs_token_len = received_coap_ptr->token_len;
@@ -494,7 +501,9 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 	 /* Method not supported */
 	else
 	{
+#ifdef HAVE_DEBUG
 		printf("Method not supported\n");
+#endif
 		coap_res_ptr = sn_coap_build_response(coap_res_ptr, COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED);
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
 	}
@@ -511,6 +520,7 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 	return 0;
 }
 
+/* Helping functions */
 static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare)
 {
     if(memcmp(coap_header->uri_path_ptr,&uri_path_to_compare[0], coap_header->uri_path_len) == 0)
@@ -520,14 +530,3 @@ static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_pa
 	return 0;
 }
 
-void print_array(uint8_t *ptr, uint16_t len)
-{
-	uint16_t i = 0;
-
-	while(i < len)
-	{
-		printf("%x:", *(ptr+i));
-		i++;
-	}
-	printf("\n");
-}

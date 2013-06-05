@@ -89,7 +89,6 @@ extern int8_t sn_nsdl_destroy(void)
 		sn_nsdl_sent_messages_s*tmp;
 
 
-	//	printf("orig nsdl linked list size: %d \n", sn_linked_list_count_nodes(message_list_ptr));
 		for(i=0;i<size;i++)
 		{
 			tmp = sn_linked_list_get_first_node(message_list_ptr);
@@ -102,7 +101,6 @@ extern int8_t sn_nsdl_destroy(void)
 			}
 		}
 
-	//	printf("later nsdl linked list size: %d \n", sn_linked_list_count_nodes(message_list_ptr));
 		if(!sn_linked_list_count_nodes(message_list_ptr))
 		{
 			sn_linked_list_free(message_list_ptr);
