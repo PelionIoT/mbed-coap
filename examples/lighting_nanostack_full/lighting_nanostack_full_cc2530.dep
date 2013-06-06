@@ -6,14 +6,139 @@
   <configuration>
     <name>Debug</name>
     <outputs>
+      <file>$PROJ_DIR$\Debug\Obj\main.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\uart_sn.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\hal_sleep.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\ns_debug.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\hal_sleep.r51</file>
+      <file>$PROJ_DIR$\Debug\Exe\lighting_nanostack_full_cc2530.d51</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\hal_sn.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\ns_debug.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\lighting_nanostack_full_cc2530.pbd</file>
+      <file>$PROJ_DIR$\Debug\Obj\uart_sn.pbi</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\system_event.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\tasklet.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\pl_types.h</file>
+      <file>$TOOLKIT_DIR$\inc\ioCC2530.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\cc2530_sfr.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\ns_debug.h</file>
       <file>$PROJ_DIR$\hal_sleep.c</file>
-      <file>$PROJ_DIR$\..\..\libNsdl\cc2530\Debug\Exe\cc2530_libNsdl.r51</file>
-      <file>$PROJ_DIR$\ns_debug.c</file>
-      <file>$PROJ_DIR$\main.c</file>
-      <file>$PROJ_DIR$\..\..\NanoStack\NanoStack_Library_CC2530_fix.lib</file>
-      <file>$PROJ_DIR$\uart_sn.c</file>
       <file>$PROJ_DIR$\..\..\libCoap\cc2530_iar\Debug\Exe\cc2530_libCoap.r51</file>
+      <file>$PROJ_DIR$\main.c</file>
+      <file>$PROJ_DIR$\ns_debug.c</file>
+      <file>$PROJ_DIR$\uart_sn.c</file>
+      <file>$PROJ_DIR$\..\..\libNsdl\cc2530\Debug\Exe\cc2530_libNsdl.r51</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\NanoStack_Library_CC2530_fix.lib</file>
+      <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdlib.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdio.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\socket_api.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\net.h</file>
+      <file>$PROJ_DIR$\..\..\libNsdl\src\Include\resource_generation_help.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdarg.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_nsdl.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\ns_platform.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\string.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\cc2530_include\ns_address.h</file>
+      <file>$PROJ_DIR$\..\..\libNsdl\src\Include\sn_nsdl_lib.h</file>
     </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 5</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Obj\lighting_nanostack_full_cc2530.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 2 7 8 10</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\hal_sleep.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 2</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 4</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 6 13 15 14 11 12</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\main.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 7</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 0</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 25 24 26 30 27 34 13 15 14 36 28 11 12 35 31 32 33 37 29</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\ns_debug.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 8</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 3</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 35 24 11 13 15 14 12 16 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\uart_sn.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 10</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 1</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 27 34 13 15 14 36 11 12 35 24 16 6</file>
+        </tool>
+      </inputs>
+    </file>
   </configuration>
   <configuration>
     <name>Release</name>

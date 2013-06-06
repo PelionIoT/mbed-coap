@@ -44,7 +44,8 @@ void 	(*sn_grs_free)(void*);
 uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
 int8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
 
-/*
+/**
+ * \fn int8_t sn_grs_destroy(void)
  * \brief This function may be used to flush GRS related stuff when a program exits.
  * @return always 0.
  */
@@ -112,20 +113,19 @@ SN_MEM_ATTR_GRS_FUNC extern int8_t sn_grs_destroy(void)
 
 
 /**
- *	\fn extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
- *									sn_nsdl_addr_s *), uint8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
- *									sn_grs_mem_s *sn_memory)
+ * \fn int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
+ *		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory)
  *
- *  \brief GRS library initialize function.
+ * \brief GRS library initialize function.
  *
- *	This function initializes GRS, CoAP and HTTP libraries.
+ * This function initializes GRS and CoAP libraries.
  *
- *	\param 	sn_grs_tx_callback 		A function pointer to a transmit callback function.
- *	\param  *sn_grs_rx_callback_ptr A function pointer to a receiving callback function. If received packet is not for GRS, it will be passed to
+ * \param 	sn_grs_tx_callback 		A function pointer to a transmit callback function.
+ * \param  *sn_grs_rx_callback_ptr A function pointer to a receiving callback function. If received packet is not for GRS, it will be passed to
  *									upper level (NSDL) to be proceed.
- *	\param 	sn_memory 				A pointer to a structure containing the platform specific functions for memory allocation and free.
+ * \param 	sn_memory 				A pointer to a structure containing the platform specific functions for memory allocation and free.
  *
- *	\return success = 0, failure = -1
+ * \return success = 0, failure = -1
  *
 */
 SN_MEM_ATTR_GRS_FUNC
@@ -718,7 +718,7 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 				{
 					memset(resource_temp_ptr, 0, sizeof(sn_nsdl_resource_info_s));
 
-					resource_temp_ptr->access = SN_GRS_DEFAULT_ACCESS;
+					resource_temp_ptr->access = (sn_grs_resource_acl_e)SN_GRS_DEFAULT_ACCESS;
 					resource_temp_ptr->mode = SN_GRS_STATIC;
 
 					resource_temp_ptr->pathlen = coap_packet_ptr->uri_path_len;

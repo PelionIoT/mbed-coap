@@ -73,11 +73,12 @@ void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
 }
 
 /**
- * \fn sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr)
+ * \fn sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
  *
  * \brief Prepares generic response packet from a request packet. This function allocates memory for the resulting sn_coap_hdr_s
  *
  * \param *coap_packet_ptr The request packet pointer
+ * \param msg_code response messages code
  *
  * \return *coap_packet_ptr The allocated and pre-filled response packet pointer
  * 			NULL	Error in parsing the request
@@ -100,14 +101,14 @@ sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t ms
 	if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
 	{
 		coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
-		coap_res_ptr->msg_code = msg_code;
+		coap_res_ptr->msg_code = (sn_coap_msg_code_e)msg_code;
 		coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
 	}
 
 	else if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
 	{
 		coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
-		coap_res_ptr->msg_code = msg_code;
+		coap_res_ptr->msg_code = (sn_coap_msg_code_e)msg_code;
 		/* msg_id needs to be set by the caller in this case */
 	}
 
@@ -133,7 +134,7 @@ sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t ms
 
 /**
  * \fn int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr,
- * 									sn_coap_hdr_s *src_coap_msg_ptr, uint16_t msg_id)
+ * 									sn_coap_hdr_s *src_coap_msg_ptr)
  *
  * \brief Builds Packet data from given CoAP header structure
  *
@@ -485,7 +486,7 @@ void sn_coap_builder_release_allocated_send_msg_mem(sn_nsdl_transmit_s *freed_se
 }
 
 /**
- * \fn uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_coap_msg_ptr)
+ * \fn uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_coap_msg_ptr, uint8_t block_option)
  *
  * \brief Checks if there is need for option jump
  *
@@ -652,8 +653,7 @@ uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_coap_msg_
  * \return Return value is 0 in ok case and -1 in failure case
  **************************************************************************** */
 SN_MEM_ATTR_COAP_BUILDER_FUNC
-static int8_t sn_coap_builder_header_build(uint8_t **dst_packet_data_pptr,
-                                           sn_coap_hdr_s *src_coap_msg_ptr)
+static int8_t sn_coap_builder_header_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr)
 {
     /* * * * Check validity of Header values * * * */
 	if(!*dst_packet_data_pptr || !src_coap_msg_ptr)
@@ -694,8 +694,7 @@ static int8_t sn_coap_builder_header_build(uint8_t **dst_packet_data_pptr,
  * \return Return value is 0 in ok case and -1 in failure case
  */
 SN_MEM_ATTR_COAP_BUILDER_FUNC
-static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr,
-                                            sn_coap_hdr_s *src_coap_msg_ptr)
+static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr)
 {
 	if(!*dst_packet_data_pptr || !src_coap_msg_ptr)
 		return -1;

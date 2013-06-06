@@ -6,29 +6,16 @@
   <configuration>
     <name>Debug</name>
     <outputs>
-      <file>$PROJ_DIR$\..\..\NanoStack\NanoMesh106_NanoStack202-14432.lib</file>
-      <file>$PROJ_DIR$\..\..\libCoap\msp430_iar\Debug\Exe\msp_430_libCoap.r43</file>
-      <file>$PROJ_DIR$\main.c</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
       <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\tasklet.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\socket_api.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\stdio.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
       <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_nsdl.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
       <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
-      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\socket_api.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
-      <file>$PROJ_DIR$\MSP430\Debug\Obj\main.pbi</file>
-      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
-      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\ns_platform.h</file>
-      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\ns_address.h</file>
-      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\system_event.h</file>
-      <file>$PROJ_DIR$\MSP430\Debug\Obj\connected-home_nanostack_msp_430.pbd</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
-      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
       <file>$TOOLKIT_DIR$\inc\msp430x54x.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
       <file>$TOOLKIT_DIR$\inc\in430.h</file>
       <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\net.h</file>
@@ -37,13 +24,35 @@
       <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
       <file>$PROJ_DIR$\MSP430\Debug\Obj\main.r43</file>
       <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\pl_types.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\system_event.h</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\ns_platform.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
+      <file>$PROJ_DIR$\MSP430\Debug\Obj\main.pbi</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\MSP430_include\ns_address.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
+      <file>$PROJ_DIR$\MSP430\Debug\Obj\connected-home_nanostack_msp_430.pbd</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\msp430_iar\Debug\Exe\msp_430_libCoap.r43</file>
+      <file>$PROJ_DIR$\main.c</file>
+      <file>$PROJ_DIR$\..\..\NanoStack\NanoMesh106_NanoStack202-14432.lib</file>
     </outputs>
+    <file>
+      <name>$PROJ_DIR$\MSP430\Debug\Obj\connected-home_nanostack_msp_430.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 22</file>
+        </tool>
+      </inputs>
+    </file>
     <file>
       <name>[ROOT_NODE]</name>
       <outputs>
         <tool>
           <name>XLINK</name>
-          <file> 26</file>
+          <file> 13</file>
         </tool>
       </outputs>
     </file>
@@ -52,26 +61,17 @@
       <outputs>
         <tool>
           <name>ICC430</name>
-          <file> 29</file>
+          <file> 16</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 11</file>
+          <file> 22</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 18 5 7 20 10 28 17 19 4 27 9 13 30 22 24 8 14 25 15 3 23 6 12 21</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\MSP430\Debug\Obj\connected-home_nanostack_msp_430.pbd</name>
-      <inputs>
-        <tool>
-          <name>BILINK</name>
-          <file> 11</file>
+          <file> 24 4 0 26 7 15 21 27 3 14 2 19 17 8 11 6 23 12 18 1 10 5 20 9</file>
         </tool>
       </inputs>
     </file>

@@ -23,7 +23,6 @@
 #include "sn_coap_protocol.h"
 
 #ifdef USE_EDTLS
-	#include "shalib.h"
 	#include "sn_edtls_lib.h"
 #endif
 
@@ -51,6 +50,11 @@ void *own_alloc(uint16_t size);
 void own_free(void *ptr);
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr);
 static int8_t main_compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare);
+
+#ifdef USE_EDTLS
+uint8_t 	edtls_tx(uint8_t *message_ptr, uint16_t message_len, sn_edtls_address_t *address_ptr);
+void 	edtls_registration_status(uint8_t received_status, int16_t session_id);
+#endif
 
 /*INPUT INDEX MAX*/
 #define INPUT_INDEX_MAX 60
@@ -109,8 +113,8 @@ PL_LARGE static uint8_t EP[] = {"nsdlc-power"};
 #define EP_LEN 11
 PL_LARGE static uint8_t EP_TYPE[] = {"PowerNode"};
 #define EP_TYPE_LEN 9
-PL_LARGE static uint8_t LINKS[] = {"</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</pwr/0/w>;rt=ipso:pwr-w;ct=\"0\",</pwr/0/rel>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\""};
-#define LINKS_LEN 200
+PL_LARGE static uint8_t LINKS[] = {"</dev/mfg>;rt=\"ipso:dev-mfg\";ct=\"0\",</dev/mdl>;rt=\"ipso:dev-mdl\";ct=\"0\",</dev/bat>;\"rt=ipso:dev-bat\";ct=\"0\",</pwr/0/w>;rt=\"ipso:pwr-w\";ct=\"0\",</pwr/0/rel>;\"rt=ipso:pwr-rel\";ct=\"0\",</sen/temp>;rt=\"ucum:Cel\";ct=\"0\""};
+#define LINKS_LEN 212
 #define RD_PATH (const uint8_t *)("rd")
 
 /*Global variables*/
@@ -153,10 +157,10 @@ __root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00
 //PL_LARGE static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xdc};
 PL_LARGE static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81, 0x8e};
 #else
-PL_LARGE static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xde};
+PL_LARGE static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81, 0x8e};
 
 #endif
-static uint16_t nsp_port = 5683;
+static uint16_t nsp_port = 5689;
 
 /*Configurable channel list for beacon scan*/
 PL_LARGE static uint32_t channel_list = 0x07FFF800;
@@ -443,7 +447,7 @@ void app_parse_network_event(uint8_t event)
 			edtls_address.socket = app_udp_socket;
 			memcpy(edtls_address.address, nsp_addr, 16);
 
-			edtls_session_id = sn_edtls_connect(&edtls_address);
+			edtls_session_id = sn_edtls_connect(&edtls_address, &edtls_tx, &edtls_registration_status);
 #endif
 
 			timer_sys_event((uint8_t)REG_TIMER, 1000);

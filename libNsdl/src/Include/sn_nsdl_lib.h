@@ -1,9 +1,5 @@
-
-/* Debug--> */
-
 #define SN_NSDL_CONST_MEMORY_ATTRIBUTE
 
-/* <-- Debug */
 
 #define RESOURCE_DIR_LEN				2
 #define RESOURCE_DIR_PATH				{'r','d'}
@@ -115,11 +111,6 @@ typedef enum sn_grs_resource_acl_
 typedef struct sn_proto_info_
 {
 	sn_nsdl_capab_e proto;
-	//union inf
-	//{
-		//sn_http_options_list_s http_opts;
-//		sn_coap_options_list_s coap_opts;
-	//}
 }sn_proto_info_s;
 
 typedef struct sn_nsdl_resource_info_
@@ -140,31 +131,6 @@ typedef struct sn_nsdl_resource_info_
 
 } sn_nsdl_resource_info_s;
 
-///*
-// * \brief This function can be used to create a simple static resource of any type.
-// * This resource is non-observable, static (meaning that it wont change and NSDL library replies to GET requests.
-// * @param A simple resource structure used often in application.
-// * @return 0 in case of success,
-// * @return -1 in case of being unable to allocate memory for the structure.
-// * @return -2 in case of being unable to allocate memory for the resource parameters
-// * @return -11 Resource already exists
-// * @return -12 Invalid path
-// * @return -13 List adding failure
-// *
-// * NOTE: DOES NOT FREE "resource" parameter.
-// */
-//typedef struct sn_nsdl_static_resource_struct_t
-//{
-//	uint8_t * resource_path;
-//	uint16_t resource_path_len;
-//
-//	uint8_t * resource_type;
-//	uint16_t resource_type_len;
-//
-//	uint8_t * resource_value;
-//	uint16_t resource_value_len;
-//}sn_nsdl_static_resource_struct_t;
-//int8_t sn_nsdl_create_simple_static_resource(sn_nsdl_static_resource_struct_t *resource);
 /**
  * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
  *							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),

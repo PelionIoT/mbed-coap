@@ -104,8 +104,8 @@ PL_LARGE uint8_t EP[] = {"nsdlc-light"};
 #define EP_LEN 11
 PL_LARGE uint8_t EP_TYPE[] = {"light"};
 #define EP_TYPE_LEN 5
-PL_LARGE uint8_t LINKS[] = {"</dev/mfg>;rt=ipso:dev-mfg;ct=\"0\",</dev/mdl>;rt=ipso:dev-mdl;ct=\"0\",</dev/bat>;rt=ipso:dev-bat;ct=\"0\",</gps/loc>;rt=ns:gpsloc;ct=\"0\",</lt/0/on>;rt=ipso:pwr-rel;ct=\"0\",</sen/temp>;rt=ucum:Cel;ct=\"0\""};
-#define LINKS_LEN 197
+PL_LARGE uint8_t LINKS[] = {"</dev/mfg>;\"rt=ipso:dev-mfg\";ct=\"0\",</dev/mdl>;\"rt=ipso:dev-mdl\";ct=\"0\",</dev/bat>;\"rt=ipso:dev-bat\";ct=\"0\",</gps/loc>;\"rt=ns:gpsloc\";ct=\"0\",</lt/0/on>;\"rt=ipso:pwr-rel\";ct=\"0\",</sen/temp>;\"rt=ucum:Cel\";ct=\"0\""};
+#define LINKS_LEN 209
 #define RD_PATH (const uint8_t *)("rd")
 
 /*Global variables*/
@@ -134,7 +134,7 @@ int8_t reg_location_len;
 #ifdef MSP430
 __root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xB0}; //0xfd80 = {0x04, 0x02, 0x00, 0xde, 0xad, 0x00, 0x00, 0x01};  // need if hardware debugger is used
 #endif
-static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xac, 0xde};
+static uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81, 0x8e};
 static uint16_t nsp_port = 5683;
 
 /*Configurable channel list for beacon scan*/

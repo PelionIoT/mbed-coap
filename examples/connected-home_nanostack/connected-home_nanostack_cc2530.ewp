@@ -2070,7 +2070,7 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\..\..\libEdtls\cc2530\cc2530_eDTLS_lib.r51</name>
+    <name>$PROJ_DIR$\..\..\libEdtls\cc2530_eDTLS_lib.r51</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\libCoap\cc2530_iar\Debug\Exe\cc2530_libCoap.r51</name>

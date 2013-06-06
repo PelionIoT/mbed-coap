@@ -223,6 +223,13 @@ int8_t 	sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8
 	return 0;
 }
 
+/**
+ * \fn int8_t sn_coap_protocol_destroy(void)
+ *
+ * \brief Frees all memory from CoAP protocol part
+ *
+ * \return Return value is always 0
+ */
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_destroy(void)
 {
@@ -555,11 +562,12 @@ int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
 }
 
 /**************************************************************************//**
- * \fn int8_t sn_coap_protocol_set_max_saved_duplicate_messages(uint8_t message_count)
+ * \fn int8_t sn_coap_protocol_set_retransmission(uint8_t resending_count, uint8_t buffer_size)
  *
- * \brief Sets max number of messages saved for message duplication checks
+ * \brief Sets message retransmission parameters
  *
- * \param uint8_t message_count max number of messages saved for duplicate control
+ * \param uint8_t resending_count max number of resendings for message
+ * \param uint8_t buffer_size max number of messages saved for duplicate control
  * \return 	0 = success
  * 			-1 = failure
  */
@@ -1014,11 +1022,8 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
  *
  *        This function can be called e.g. once in a second but also more frequently.
  *
- *        Messages are sent from following Linked lists:
- *         -global_linked_list_resent_msgs_ptr
- *
  * \param current_time is System time in seconds. This time is
- *        used for message re-sending timing.
+ *        used for message re-sending timing and to identify old saved data.
  *
  * \return 	0 if success
  * 			-1 if failed

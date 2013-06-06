@@ -240,7 +240,6 @@ extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *
 extern int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port, char *query, uint8_t query_len)
 {
 	sn_coap_hdr_s 	*message_ptr;
-	int8_t			status 					= 0;
 	sn_nsdl_addr_s *dst = 0;
 
 	message_ptr = sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
@@ -288,7 +287,7 @@ extern int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destin
 			memcpy(dst->addr_ptr, destination, 16);
 		}
 	}
-	status = sn_nsdl_internal_coap_send(message_ptr, dst, SN_NSDL_MSG_NO_TYPE);
+	sn_nsdl_internal_coap_send(message_ptr, dst, SN_NSDL_MSG_NO_TYPE);
 
 	if(dst->addr_ptr)
 		sn_nsdl_free(dst->addr_ptr);
@@ -306,7 +305,6 @@ extern int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destin
 extern int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port)
 {
 	sn_coap_hdr_s 	*message_ptr;
-	int8_t			status 	= 0;
 	sn_nsdl_addr_s *dst = 0;
 
 
@@ -355,7 +353,7 @@ extern int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint
 			memcpy(dst->addr_ptr, destination, 16);
 		}
 	}
-	status = sn_nsdl_internal_coap_send(message_ptr, dst, SN_NSDL_MSG_NO_TYPE);
+	sn_nsdl_internal_coap_send(message_ptr, dst, SN_NSDL_MSG_NO_TYPE);
 
 	if(dst->addr_ptr)
 		sn_nsdl_free(dst->addr_ptr);
@@ -581,7 +579,6 @@ extern int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_inf
 {
 	/* Local variables */
 	sn_coap_hdr_s 	*register_message_ptr;
-	int8_t			status 					= 0;
 	uint8_t			*temp_ptr;
 
 	/*** Build endpoint register update message ***/
@@ -635,16 +632,8 @@ extern int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_inf
 	/* Fill Uri-query options */
 	sn_nsdl_fill_uri_query_options(endpoint_info_ptr, register_message_ptr, SN_NSDL_EP_UPDATE_MESSAGE);
 
-	/* Build message body */
-	//status = sn_nsdl_build_registration_body(register_message_ptr, 1);
-	//if(status == SN_NSDL_FAILURE)
-	//{
-		//sn_coap_parser_release_allocated_coap_msg_mem(register_message_ptr);
-		//return SN_NSDL_FAILURE;
-	//}
-
 	/* Build and send coap message to NSP */
-	status = sn_nsdl_internal_coap_send(register_message_ptr, nsp_address_ptr, SN_NSDL_MSG_UPDATE);
+	sn_nsdl_internal_coap_send(register_message_ptr, nsp_address_ptr, SN_NSDL_MSG_UPDATE);
 
 	if(register_message_ptr->payload_ptr)
 		sn_nsdl_free(register_message_ptr->payload_ptr);

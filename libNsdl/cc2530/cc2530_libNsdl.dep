@@ -6,72 +6,43 @@
   <configuration>
     <name>Debug</name>
     <outputs>
+      <file>$PROJ_DIR$\..\src\Include\sn_linked_list.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_grs.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdlib.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
+      <file>$PROJ_DIR$\..\src\Include\nsdl_types.h</file>
+      <file>$PROJ_DIR$\..\src\Include\sn_nsdl.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.r51</file>
+      <file>$PROJ_DIR$\..\src\Include\sn_nsdl_lib.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.r51</file>
       <file>$PROJ_DIR$\..\src\Include\sn_grs.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\string.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_grs.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.pbi</file>
+      <file>$PROJ_DIR$\Debug\Exe\cc2530_libNsdl.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\cc2530_libNsdl.pbd</file>
+      <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
       <file>$PROJ_DIR$\..\src\sn_grs.c</file>
       <file>$PROJ_DIR$\..\src\sn_nsdl.c</file>
-      <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
-      <file>$PROJ_DIR$\Debug\Exe\cc2530_libNsdl.r51</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.pbi</file>
-      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
-      <file>$PROJ_DIR$\..\src\Include\sn_linked_list.h</file>
-      <file>$TOOLKIT_DIR$\inc\clib\string.h</file>
-      <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
-      <file>$PROJ_DIR$\..\src\Include\sn_nsdl_lib.h</file>
-      <file>$TOOLKIT_DIR$\inc\clib\stdlib.h</file>
-      <file>$PROJ_DIR$\..\src\Include\nsdl_types.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_grs.pbi</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.r51</file>
-      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
-      <file>$PROJ_DIR$\..\src\Include\sn_nsdl.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_grs.r51</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.r51</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.pbi</file>
-      <file>$PROJ_DIR$\Debug\Obj\cc2530_libNsdl.pbd</file>
     </outputs>
     <file>
       <name>[ROOT_NODE]</name>
       <outputs>
         <tool>
           <name>XAR</name>
-          <file> 4</file>
+          <file> 16</file>
         </tool>
       </outputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\src\sn_grs.c</name>
-      <outputs>
-        <tool>
-          <name>ICC8051</name>
-          <file> 17</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 13</file>
-        </tool>
-      </outputs>
+      <name>$PROJ_DIR$\Debug\Obj\cc2530_libNsdl.pbd</name>
       <inputs>
         <tool>
-          <name>BICOMP</name>
-          <file> 12 7 16 6 15 10 0 11 9 8</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_nsdl.c</name>
-      <outputs>
-        <tool>
-          <name>ICC8051</name>
-          <file> 14</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 19</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 8 9 12 16 6 15 10 0 7</file>
+          <name>BILINK</name>
+          <file> 1 9 15</file>
         </tool>
       </inputs>
     </file>
@@ -79,27 +50,56 @@
       <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
       <outputs>
         <tool>
-          <name>ICC8051</name>
-          <file> 18</file>
+          <name>BICOMP</name>
+          <file> 9</file>
         </tool>
         <tool>
-          <name>BICOMP</name>
-          <file> 5</file>
+          <name>ICC8051</name>
+          <file> 10</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 12 7</file>
+          <file> 4 0</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\Debug\Obj\cc2530_libNsdl.pbd</name>
+      <name>$PROJ_DIR$\..\src\sn_grs.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 14</file>
+        </tool>
+      </outputs>
       <inputs>
         <tool>
-          <name>BILINK</name>
-          <file> 13 5 19</file>
+          <name>BICOMP</name>
+          <file> 4 0 5 12 3 7 11 2 8 13</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sn_nsdl.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 15</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 6</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 13 8 4 5 12 3 7 11 0</file>
         </tool>
       </inputs>
     </file>

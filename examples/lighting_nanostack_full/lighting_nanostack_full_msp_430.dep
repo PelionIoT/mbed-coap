@@ -6,8 +6,8 @@
   <configuration>
     <name>Debug</name>
     <outputs>
-      <file>$PROJ_DIR$\main.c</file>
       <file>$PROJ_DIR$\..\..\libCoap\msp430_iar\Debug\Exe\msp_430_libCoap.r43</file>
+      <file>$PROJ_DIR$\main.c</file>
       <file>$PROJ_DIR$\..\..\libNsdl\msp430_iar\Debug\Exe\msp_430_libNsdl.r43</file>
       <file>$PROJ_DIR$\..\..\NanoStack\NanoMesh106_NanoStack202-14432.lib</file>
     </outputs>
