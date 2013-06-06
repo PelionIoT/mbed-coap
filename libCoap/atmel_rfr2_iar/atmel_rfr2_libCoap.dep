@@ -6,15 +6,19 @@
   <configuration>
     <name>Debug</name>
     <outputs>
-      <file>$TOOLKIT_DIR$\lib\dlib\dlAVR-5s-ec_mul-f.h</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</file>
+      <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_nsdl.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_header.h</file>
-      <file>$PROJ_DIR$\..\src\include\nsdl_types.h</file>
       <file>$PROJ_DIR$\..\src\include\sn_coap_header_ietf_draft_12.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol_ietf_draft_12.h</file>
+      <file>$PROJ_DIR$\..\src\include\nsdl_types.h</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_header.h</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol.h</file>
+      <file>$PROJ_DIR$\..\src\include\sn_nsdl.h</file>
       <file>$PROJ_DIR$\Debug\Obj\atmel_rfr2_libCoap.pbd</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol_ietf_draft_12.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
       <file>$TOOLKIT_DIR$\inc\dlib\c\ystdio.h</file>
@@ -39,82 +43,23 @@
       <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder_ietf_draft_12.r90</file>
       <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder_ietf_draft_12.pbi</file>
       <file>$PROJ_DIR$\Debug\Obj\sn_coap_parser_ietf_draft_12.r90</file>
-      <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</file>
     </outputs>
     <file>
-      <name>[ROOT_NODE]</name>
+      <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</name>
       <outputs>
         <tool>
-          <name>XAR</name>
+          <name>BICOMP</name>
           <file> 28</file>
         </tool>
-      </outputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\Debug\Obj\atmel_rfr2_libCoap.pbd</name>
-      <inputs>
-        <tool>
-          <name>BILINK</name>
-          <file> 31 25 24 23 26</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\Debug\Exe\atmel_rfr2_libCoap.r90</name>
-      <inputs>
-        <tool>
-          <name>XAR</name>
-          <file> 30 29 32 27 22</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
-      <outputs>
         <tool>
           <name>ICCAVR</name>
-          <file> 22</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 26</file>
+          <file> 36</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
-          <name>ICCAVR</name>
-          <file> 13 10 14 16 0 17 12 15 18 11 19 5 21</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
-          <file> 13 10 14 16 17 12 15 18 11 19 5 21</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</name>
-      <outputs>
-        <tool>
-          <name>ICCAVR</name>
-          <file> 27</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 23</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>ICCAVR</name>
-          <file> 13 10 14 16 0 17 12 15 18 11 9 1 20 5 2 4 3 6 7 21</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 13 10 14 16 17 12 15 18 11 9 1 20 5 2 4 3 6 7 21</file>
+          <file> 17 14 18 20 21 16 19 22 15 23 5 7 10 8 9 6 12</file>
         </tool>
       </inputs>
     </file>
@@ -122,45 +67,18 @@
       <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</name>
       <outputs>
         <tool>
-          <name>ICCAVR</name>
-          <file> 30</file>
+          <name>BICOMP</name>
+          <file> 35</file>
         </tool>
         <tool>
-          <name>BICOMP</name>
-          <file> 31</file>
+          <name>ICCAVR</name>
+          <file> 34</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
-          <name>ICCAVR</name>
-          <file> 9 10 14 16 0 17 12 15 18 1 5 2 4 3 6 7</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
-          <file> 9 10 14 16 17 12 15 18 1 5 2 4 3 6 7</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</name>
-      <outputs>
-        <tool>
-          <name>ICCAVR</name>
-          <file> 32</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 24</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>ICCAVR</name>
-          <file> 13 10 14 16 0 17 12 15 18 11 19 1 5 2 4 3 6 7</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 13 10 14 16 17 12 15 18 11 19 1 5 2 4 3 6 7</file>
+          <file> 5 14 18 20 21 16 19 22 7 10 8 9 6 12</file>
         </tool>
       </inputs>
     </file>
@@ -168,24 +86,76 @@
       <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</name>
       <outputs>
         <tool>
-          <name>ICCAVR</name>
+          <name>BICOMP</name>
           <file> 29</file>
         </tool>
         <tool>
-          <name>BICOMP</name>
-          <file> 25</file>
+          <name>ICCAVR</name>
+          <file> 33</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
-          <name>ICCAVR</name>
-          <file> 5 2 4 3 6 7</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
-          <file> 5 2 4 3 6 7</file>
+          <file> 7 10 8 9 6 12</file>
         </tool>
       </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 27</file>
+        </tool>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 31</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 17 14 18 20 21 16 19 22 15 13 5 24 7 10 8 9 6 12 25</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 30</file>
+        </tool>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 26</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 17 14 18 20 21 16 19 22 15 23 7 25</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Obj\atmel_rfr2_libCoap.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 35 29 28 27 30</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XAR</name>
+          <file> 32</file>
+        </tool>
+      </outputs>
     </file>
     <forcedrebuild>
       <name>[REBUILD_ALL]</name>
