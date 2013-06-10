@@ -1054,7 +1054,7 @@ static uint8_t sn_coap_builder_options_get_option_part_count(uint16_t query_len,
     uint16_t query_len_index      = 0;
     uint8_t  char_to_search		  = '&';
 
-    if(option == COAP_OPTION_URI_PATH || COAP_OPTION_LOCATION_PATH)
+    if(option == COAP_OPTION_URI_PATH || option == COAP_OPTION_LOCATION_PATH)
     	char_to_search = '/';
 
     /* Loop whole query and search '\0' characters (not first and last char) */
