@@ -62,13 +62,15 @@ static uint8_t sn_nsdl_endpoint_registered = 0;
 /* Function prototypes */
 static int8_t 			sn_nsdl_internal_coap_send					(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description);
 static void				sn_nsdl_resolve_nsp_address					(void);
-static int8_t 			sn_nsdl_build_registration_body				(sn_coap_hdr_s *message_ptr, uint8_t updating_registeration);
+int8_t 					sn_nsdl_build_registration_body				(sn_coap_hdr_s *message_ptr, uint8_t updating_registeration);
 static uint16_t 		sn_nsdl_calculate_registration_body_size	(uint8_t updating_registeration);
 static uint8_t 			sn_nsdl_calculate_uri_query_option_len		(sn_nsdl_ep_parameters_s *endpoint_info_ptr, uint8_t msg_type);
 static int8_t 			sn_nsdl_fill_uri_query_options				(sn_nsdl_ep_parameters_s *parameter_ptr, sn_coap_hdr_s *source_msg_ptr, uint8_t msg_type);
 static int8_t			sn_nsdl_local_rx_function					(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *address_ptr);
 static int8_t 			sn_nsdl_resolve_ep_information				(sn_coap_hdr_s *coap_packet_ptr);
 static void 			sn_nsdl_mark_resources_as_registered		(void);
+static uint8_t 			sn_nsdl_itoa_len							(uint8_t value);
+static uint8_t 			*sn_nsdl_itoa								(uint8_t *ptr, uint8_t value);
 
 //static const char version_array[] = {SVN_REV};
 //
@@ -731,7 +733,8 @@ extern int8_t sn_nsdl_is_ep_registered(void)
 /**
  * \fn extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
  *															uint8_t *payload_ptr, uint16_t payload_len,
- *															uint8_t *observe_ptr, uint8_t observe_len)
+ *															uint8_t *observe_ptr, uint8_t observe_len,
+ *															sn_coap_msg_type_e message_type)
  *
  *
  * \brief Sends observation message to NSP server
@@ -742,12 +745,15 @@ extern int8_t sn_nsdl_is_ep_registered(void)
  * \param payload_len	Payload length
  * \param *observe_ptr	Pointer to observe number to be sent
  * \param observe_len	Observe number len
+ * \param message_type	Observation message type (confirmable or non-confirmable)
+ * \param contetnt_type	Observation message payload contetnt type
  *
  * \return		SN_NSDL_SUCCESS = 0, Failed = -1
  */
 extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
 													uint8_t *payload_ptr, uint16_t payload_len,
-													uint8_t *observe_ptr, uint8_t observe_len)
+													uint8_t *observe_ptr, uint8_t observe_len,
+													sn_coap_msg_type_e message_type, uint8_t content_type)
 {
 	sn_coap_hdr_s 	*notification_message_ptr;
 	int8_t			status = 0;
@@ -769,7 +775,7 @@ extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t 
 	memset(notification_message_ptr->options_list_ptr , 0, sizeof(sn_coap_options_list_s));
 
 	/* Fill header */
-	notification_message_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+	notification_message_ptr->msg_type = message_type;
 	notification_message_ptr->msg_code = COAP_MSG_CODE_RESPONSE_CONTENT;
 
 	/* Fill token */
@@ -784,6 +790,13 @@ extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t 
 	notification_message_ptr->options_list_ptr->observe_len = observe_len;
 	notification_message_ptr->options_list_ptr->observe_ptr = observe_ptr;
 
+	/* Fill content type */
+	if(content_type)
+	{
+		notification_message_ptr->content_type_len = 1;
+		notification_message_ptr->content_type_ptr = &content_type;
+	}
+
 	/* Send message */
 	status = sn_nsdl_internal_coap_send(notification_message_ptr, nsp_address_ptr, SN_NSDL_MSG_NO_TYPE);
 
@@ -792,6 +805,7 @@ extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t 
 	notification_message_ptr->payload_ptr = NULL;
 	notification_message_ptr->options_list_ptr->observe_ptr = NULL;
 	notification_message_ptr->token_ptr = NULL;
+	notification_message_ptr->content_type_ptr = NULL;
 
 	sn_coap_parser_release_allocated_coap_msg_mem(notification_message_ptr);
 
@@ -975,7 +989,7 @@ static void sn_nsdl_resolve_nsp_address(void)
  *
  * \return	SN_NSDL_SUCCESS = 0, Failed = -1
  */
-static int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updating_registeration)
+int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updating_registeration)
 {
 	/* Local variables */
 	uint8_t					*temp_ptr;
@@ -1056,16 +1070,14 @@ static int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_
 				*temp_ptr++ = '"';
 			}
 
-			if(resource_temp_ptr->resource_parameters_ptr->coap_content_type_len)
+			if(resource_temp_ptr->resource_parameters_ptr->coap_content_type != 0)
 			{
 				*temp_ptr++ = ';';
 				memcpy(temp_ptr, coap_con_type_parameter, COAP_CON_PARAMETER_LEN);
 				temp_ptr += COAP_CON_PARAMETER_LEN;
 				*temp_ptr++ = '"';
-				memcpy(temp_ptr, resource_temp_ptr->resource_parameters_ptr->coap_content_type_ptr, resource_temp_ptr->resource_parameters_ptr->coap_content_type_len);
-				temp_ptr += resource_temp_ptr->resource_parameters_ptr->coap_content_type_len;
+				temp_ptr = sn_nsdl_itoa(temp_ptr, resource_temp_ptr->resource_parameters_ptr->coap_content_type);
 				*temp_ptr++ = '"';
-
 			}
 
 			if(resource_temp_ptr->resource_parameters_ptr->observable)
@@ -1138,15 +1150,17 @@ static uint16_t sn_nsdl_calculate_registration_body_size(uint8_t updating_regist
 				/* ;if="iftype" */
 				return_value += (6 + resource_temp_ptr->resource_parameters_ptr->interface_description_len);
 			}
-			if(resource_temp_ptr->resource_parameters_ptr->coap_content_type_len)
+
+			if(resource_temp_ptr->resource_parameters_ptr->coap_content_type != 0)
 			{
 				/* ;if="content" */
-				return_value += (6 + resource_temp_ptr->resource_parameters_ptr->coap_content_type_len);
+				return_value += 6; // all but not content
+				return_value += sn_nsdl_itoa_len(resource_temp_ptr->resource_parameters_ptr->coap_content_type);
 			}
 
 			if(resource_temp_ptr->resource_parameters_ptr->observable)
 			{
-				/* ;obs="1" */
+				/* ;obs */
 				return_value += 4;
 			}
 
@@ -1511,4 +1525,50 @@ int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port)
 		}
 	}
 	return -1;
+}
+
+
+static uint8_t sn_nsdl_itoa_len(uint8_t value)
+{
+	uint8_t i = 0;
+
+	do
+	{
+		i++;
+	}while((value /= 10) > 0);
+
+	return i;
+}
+
+static uint8_t *sn_nsdl_itoa(uint8_t *ptr, uint8_t value)
+{
+
+	uint8_t start = 0;
+	uint8_t end = 0;
+	uint8_t i;
+
+	i = 0;
+
+	/* ITOA */
+	do
+	{
+		ptr[i++] = (value % 10) + '0';
+	}while((value /= 10) > 0);
+
+	end = i - 1;
+
+	/* reverse (part of ITOA) */
+	while(start < end)
+	{
+		uint8_t chr;
+
+		chr = ptr[start];
+		ptr[start] = ptr[end];
+		ptr[end] = chr;
+
+		start++;
+		end--;
+
+	}
+	return (ptr + i);
 }

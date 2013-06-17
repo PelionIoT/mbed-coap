@@ -1,6 +1,5 @@
 #define SN_NSDL_CONST_MEMORY_ATTRIBUTE
 
-
 #define RESOURCE_DIR_LEN				2
 #define RESOURCE_DIR_PATH				{'r','d'}
 
@@ -27,6 +26,9 @@
 
 #define EVENT_PATH_LEN					6
 #define EVENT_PATH						{'e','v','e','n','t','/'}
+
+#define WELLKNOWN_PATH_LEN				16
+#define WELLKNOWN_PATH					(".well-known/core")
 
 #define SN_NSDL_EP_REGISTER_MESSAGE		1
 #define SN_NSDL_EP_UPDATE_MESSAGE		2
@@ -112,6 +114,24 @@ typedef struct sn_proto_info_
 {
 	sn_nsdl_capab_e proto;
 }sn_proto_info_s;
+
+typedef struct sn_nsdl_resource_parameters_
+{
+	uint8_t		*resource_type_ptr;
+	uint16_t	resource_type_len;
+
+	uint8_t		*interface_description_ptr;
+	uint16_t	interface_description_len;
+
+	uint8_t		coap_content_type;
+
+	uint8_t		mime_content_type;
+
+	uint8_t		observable;
+
+	uint8_t		registered;
+
+}sn_nsdl_resource_parameters_s;
 
 typedef struct sn_nsdl_resource_info_
 {
@@ -208,7 +228,7 @@ void sn_nsdl_nsp_lost(void);
  *
  * \return		SN_NSDL_SUCCESS = 0, Failed = -1
  */
-extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len, uint8_t *payload_ptr, uint16_t payload_len, uint8_t *observe_ptr, uint8_t observe_len);
+extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len, uint8_t *payload_ptr, uint16_t payload_len, uint8_t *observe_ptr, uint8_t observe_len, sn_coap_msg_type_e message_type, uint8_t content_type);
 int16_t sn_nsdl_get_capability(void);
 uint32_t sn_nsdl_get_version(void);
 int8_t sn_nsdl_process_http(uint8_t *packet, uint16_t *packet_len, sn_nsdl_addr_s *src);

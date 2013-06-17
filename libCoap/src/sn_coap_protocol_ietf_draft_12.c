@@ -774,7 +774,8 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
 #if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE/* If Message resending is not used at all, this part of code will not be compiled */
 
     /* Check if built Message type was confirmable, only these messages are resent */
-    if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
+    if ((src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
+    		&& (src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED))
     {
         /* * * * * * * * * * * * * * * * * * * * * */
         /* * * * Manage CoAP message resending * * */
@@ -1498,23 +1499,24 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
 
             if (stored_ack_info_ptr->port == addr_ptr->port)
             {
-
-				/* If message's Address is same than is searched */
-				if (!memcmp(addr_ptr->addr_ptr, stored_ack_info_ptr->addr_ptr, addr_ptr->addr_len))
+				if(stored_ack_info_ptr->addr_ptr)
 				{
-					/* * * * Correct Acknowledgement info found, remove it from Linked list * * * */
-					stored_ack_info_ptr = sn_linked_list_remove_current_node(global_linked_list_ack_info_ptr);
+					/* If message's Address is same than is searched */
+					if (!memcmp(addr_ptr->addr_ptr, stored_ack_info_ptr->addr_ptr, addr_ptr->addr_len))
+					{
+						/* * * * Correct Acknowledgement info found, remove it from Linked list * * * */
+						stored_ack_info_ptr = sn_linked_list_remove_current_node(global_linked_list_ack_info_ptr);
 
-					/* Free memory of stored Acknowledgement info */
-					if(stored_ack_info_ptr->token_ptr)
-						sn_coap_protocol_free(stored_ack_info_ptr->token_ptr);
+						/* Free memory of stored Acknowledgement info */
+						if(stored_ack_info_ptr->token_ptr)
+							sn_coap_protocol_free(stored_ack_info_ptr->token_ptr);
 
-					sn_coap_protocol_free(stored_ack_info_ptr->addr_ptr);
-					sn_coap_protocol_free(stored_ack_info_ptr);
+						sn_coap_protocol_free(stored_ack_info_ptr->addr_ptr);
+						sn_coap_protocol_free(stored_ack_info_ptr);
 
-					return;
-				}
-
+						return;
+					}
+            	}
             }
 
         }

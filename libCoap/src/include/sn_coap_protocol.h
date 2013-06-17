@@ -21,6 +21,48 @@
 #define SN_COAP_ACK_INFO_MAX_TIME_MSGS_STORED    	10
 #define SN_COAP_ACK_INFO_MAX_COUNT_MESSAGES_SAVED   10
 
+/* * For Message resending * */
+
+/* Init value for maximum count of ongoing active resending messages 										*/
+/* This value depends on available memory: If there is restricted count of memory, use little value e.g. 1 	*/
+/* Setting of this value to 0 will disable re-sending and also reduce use of ROM memory						*/
+#define SN_COAP_RESENDING_MAX_COUNT		            0
+/* Default value for count of re-sending */
+#define SN_COAP_RESENDING_BUFFER_MAX_SIZE           1
+
+/* Maximum allowed count of re-sending */
+#define SN_COAP_MAX_ALLOWED_RESENDING_COUNT 		6
+/* Maximum allowed number of saved re-sending messages */
+#define SN_COAP_MAX_ALLOWED_RESENDING_BUFF_SIZE 	6
+
+/* * For Message duplication detecting * */
+
+/* Init value for the maximum count of messages to be stored for duplication detection 			*/
+/* Setting of this value to 0 will disable duplication check, also reduce use of ROM memory	 	*/
+#define SN_COAP_DUPLICATION_MAX_MSGS_COUNT          	0
+/* Maximum allowed number of saved messages for duplicate searching */
+#define SN_COAP_MAX_ALLOWED_DUPLICATION_MESSAGE_COUNT 	6
+
+/* Maximum time in seconds of messages to be stored for duplication detection */
+#define SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED    60 /* RESPONSE_TIMEOUT * RESPONSE_RANDOM_FACTOR * (2 ^ MAX_RETRANSMIT - 1) + the expected maximum round trip time */
+
+/* * For Message blockwising * */
+
+/* Init value for the maximum payload size to be sent and received at one blockwise message 						*/
+/* Setting of this value to 0 will disable this feature, and also reduce use of ROM memory							*/
+/* Note: Current Coap implementation supports Blockwise transfers specification version draft-ietf-core-block-03 	*/
+/* Note: This define is common for both received and sent Blockwise messages 										*/
+#ifndef SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
+#define SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE 			0 /* Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
+#endif
+
+
+/* Maximum time in seconds of data (messages and payload) to be stored for blockwising */
+#ifndef SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED
+#define SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED      10
+#endif
+
+
 /* * * * * * * * * * * * * * * * * * * * * * */
 /* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */
 /* * * * * * * * * * * * * * * * * * * * * * */

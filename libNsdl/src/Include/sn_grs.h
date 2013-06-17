@@ -11,9 +11,19 @@
 
 #endif /* GRS_H_ */
 
+#define SN_GRS_VERSION	                	0x0101
 
-//#define SUCCESS 				 0
-//#define FAILURE 				-1
+#ifndef SN_NSDL_HAVE_HTTP_CAPABILITY
+#define SN_NSDL_HAVE_HTTP_CAPABILITY		0
+#endif
+
+#ifndef SN_NSDL_HAVE_HTTPS_CAPABILITY
+#define SN_NSDL_HAVE_HTTPS_CAPABILITY		0
+#endif
+
+#ifndef SN_NSDL_HAVE_COAP_CAPABILITY
+#define SN_NSDL_HAVE_COAP_CAPABILITY		1
+#endif
 
 #define SN_GRS_RESOURCE_ALREADY_EXISTS	-2
 #define SN_GRS_INVALID_PATH 			-3
@@ -27,32 +37,6 @@
 
 #define SN_GRS_DEFAULT_ACCESS	0x0F
 
-/***** Enumerations *****/
-
-//typedef enum sn_grs_resource_mode_
-//{
-//	SN_GRS_STATIC,
-//	SN_GRS_DYNAMIC,
-//	SN_GRS_DIRECTORY
-//}sn_grs_resource_mode_e;
-
-//typedef enum sn_grs_resource_mutable_
-//{
-//	SN_GRS_GET		= 0x01,
-//	SN_GRS_POST		= 0x02,
-//	SN_GRS_PUT		= 0x04,
-//	SN_GRS_DELETE	= 0x08
-//}sn_grs_resource_mutable_e;
-//
-//typedef enum sn_grs_resource_acl_
-//{
-//	SN_GRS_GET_ALLOWED 	= 0x01 ,
-//	SN_GRS_PUT_ALLOWED 	= 0x02,
-//	SN_GRS_POST_ALLOWED	= 0x04,
-//	SN_GRS_DELETE_ALLOWED 	= 0x08
-//}sn_grs_resource_acl_e;
-
-
 
 /***** Structs *****/
 
@@ -64,53 +48,6 @@ typedef struct sn_grs_version_
 }sn_grs_version_s;
 
 
-//typedef struct sn_proto_info_
-//{
-//	sn_nsdl_capab_e proto;
-//	//union inf
-//	//{
-//		//sn_http_options_list_s http_opts;
-//		sn_coap_options_list_s coap_opts;
-//	//}
-//}sn_proto_info_s;
-
-//typedef struct sn_grs_resource_info_
-//{
-//	sn_nsdl_resource_parameters_s 	*resource_parameters_ptr;
-//
-//	//sn_nsdl_capab_e 				type;						// HTTP, HTTPS, COAP
-//	sn_grs_resource_mode_e 			mode;						// STATIC etc..
-//
-//	uint16_t 						pathlen;					// Address
-//	uint8_t 						*path;
-//
-//	uint8_t 						resourcelen;				// 0 if dynamic resource, resource information in static resource
-//	uint8_t 						*resource;					// NULL if dynamic resource
-//
-//	sn_grs_resource_acl_e 			access;
-//	//sn_grs_resource_mutable_e 		mutable;					// Get, post, put, delete
-//
-//	uint8_t (*sn_grs_dyn_res_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
-//
-//} sn_grs_resource_info_s;
-
-//typedef struct sn_grs_resource_
-//{
-//	uint8_t pathlen;
-//	uint8_t *path;
-//}sn_grs_resource_s;
-//
-//typedef struct sn_grs_resource_list_
-//{
-//	uint8_t res_count;				/* Number of resources */
-//	sn_grs_resource_s *res;
-//}sn_grs_resource_list_s;
-
-//typedef struct sn_grs_mem_
-//{
-//	void *(*sn_grs_alloc)(uint16_t);
-//	void (*sn_grs_free)(void *);
-//}sn_grs_mem_s;
 
 /***** Function prototypes *****/
 /**

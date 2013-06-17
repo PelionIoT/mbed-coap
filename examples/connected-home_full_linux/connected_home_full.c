@@ -334,7 +334,7 @@ static void coap_exec_poll_function(void)
 			{
 				if(i >= 10)
 				{
-					sn_nsdl_send_observation_notification(obs_token, obs_token_len, res_bat_val, sizeof(res_bat_val), &obs_number, 1);
+					sn_nsdl_send_observation_notification(obs_token, obs_token_len, res_bat_val, sizeof(res_bat_val), &obs_number, 1, COAP_MSG_TYPE_NON_CONFIRMABLE, 0);
 					if(res_bat_val[0] >= '4')
 						res_bat_val[0] = '0';
 					else

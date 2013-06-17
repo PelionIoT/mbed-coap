@@ -86,8 +86,5 @@ typedef struct coap_blockwise_payload_
     uint8_t            *payload_ptr;
 } coap_blockwise_payload_s;
 
-/* * * * * * * * * * * * * * * * * * * * * * */
-/* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */
-/* * * * * * * * * * * * * * * * * * * * * * */
 
 #endif /* SN_COAP_PROTOCOL_IETF_DRAFT_09_H_ */

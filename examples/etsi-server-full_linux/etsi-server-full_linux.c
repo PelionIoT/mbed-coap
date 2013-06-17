@@ -6,7 +6,6 @@
  * \author 	Tero Heinonen <tero.heinonen@sensinode.com>
  *
  */
-#if 0
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -54,9 +53,6 @@ static uint8_t res_alternate[] = {"alternate"};
 static uint8_t resource_payload[20] = {"this is the payload!"};
 static uint8_t block_payload[243] = {"Ensin lähes tuntemattoman miesporukan mökissä, joita voisi kutsua lähinnä maaalaisjunteiksi, mutta onneksi tajusin hyvissä ajoin ennakoida tilanteen ja ostin meille hotellihuoneen Levin keskustasta, jossa vietimme Juhan kanssa loppuajan."};
 
-//static uint8_t ep[] = {"nsdl-c-plugtest"};
-//static uint8_t ep_type[] = {"PlugtestServer"};
-//static uint8_t lifetime_ptr[] = {"1200"};
 static uint8_t res_type_test[] = {"test"};
 
 extern void stop_pgm();
@@ -71,7 +67,8 @@ static void ctrl_c_handle_function(void);
 typedef void (*signalhandler_t)(int); /* Function pointer type for ctrl-c */
 static void coap_exec_poll_function(void);
 static uint8_t general_resource_cb(sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto);
-static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare);
+static uint8_t delayed_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto);
+//static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare);
 void print_array(uint8_t *ptr, uint16_t len);
 
 /* Socket globals */
@@ -97,8 +94,18 @@ uint16_t nsp_port;
 uint8_t obs_token[8];
 uint8_t obs_token_len = 0;
 
+uint8_t separate_token[8];
+uint8_t separate_token_len = 0;
+uint8_t delayed_response_cnt = 0;
+uint8_t separate_msg_type;
+
 uint8_t obs_number = 0;
 uint8_t obs_set = 0;
+uint8_t obs_msg_type;
+int8_t 	obs_counter;
+uint8_t obs_content = 0;
+static uint8_t resource_exist = 1;
+
 uint8_t *dynamic_res_payload;
 uint16_t dynamic_res_payload_len = 20;
 
@@ -117,6 +124,9 @@ int svr_ipv6(void)
 	int16_t rcv_size=0;
 	sn_nsdl_mem_s memory_struct;
 	sn_nsdl_resource_info_s	*resource_ptr = 0;
+#ifdef TD_COAP_CORE_15_16
+static uint8_t rx_loss_cnt = 1;
+#endif
 
 
 
@@ -172,16 +182,17 @@ int svr_ipv6(void)
 		return 0;
 	}
 	memset(resource_ptr->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
+	resource_ptr->resource_parameters_ptr->coap_content_type = 40;
 
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_test)-1, (uint8_t*)res_test, sizeof(res_type_test)-1, (uint8_t*)res_type_test, resource_payload, sizeof(resource_payload));
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_long_path)-1, (uint8_t*)res_long_path, sizeof(res_type_test)-1, (uint8_t*)res_type_test, resource_payload, sizeof(resource_payload));
-	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_location_path)-1, (uint8_t*)res_location_path, sizeof(res_type_test)-1, (uint8_t*)res_type_test, resource_payload, sizeof(resource_payload));
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_location_query)-1, (uint8_t*)res_location_query, sizeof(res_type_test)-1, (uint8_t*)res_type_test, resource_payload, sizeof(resource_payload));
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_query)-1, (uint8_t*)res_query, sizeof(res_type_test)-1, (uint8_t*)res_type_test, resource_payload, sizeof(resource_payload));
-	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_separate)-1, (uint8_t*)res_separate, sizeof(res_type_test)-1, (uint8_t*)res_type_test, resource_payload, sizeof(resource_payload));
+	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_separate)-1, (uint8_t*)res_separate, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &delayed_resource_cb);
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_large)-1, (uint8_t*)res_large, sizeof(res_type_test)-1, (uint8_t*)res_type_test, block_payload, sizeof(block_payload));
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_large_update)-1, (uint8_t*)res_large_update, sizeof(res_type_test)-1, (uint8_t*)res_type_test, block_payload, sizeof(block_payload));
 	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_obs)-1, (uint8_t*) res_obs, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 1, &general_resource_cb) /* Observable resource */
+	resource_ptr->resource_parameters_ptr->observable = 0;
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_multi_format)-1, (uint8_t*)res_multi_format, sizeof(res_type_test)-1, (uint8_t*)res_type_test, resource_payload, sizeof(resource_payload));
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_link1)-1, (uint8_t*)res_link1, sizeof(res_type_test)-1, (uint8_t*)res_type_test, resource_payload, sizeof(resource_payload));
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_link2)-1, (uint8_t*)res_link2, sizeof(res_type_test)-1, (uint8_t*)res_type_test, resource_payload, sizeof(resource_payload));
@@ -215,9 +226,24 @@ int svr_ipv6(void)
 		rcv_size = svr_receive_msg(buf);
 		if(rcv_size > 0)
 		{
+#ifdef TD_COAP_CORE_15_16
+			if(rx_loss_cnt)
+			{
+				printf("rx packet lost!\n");
+				rx_loss_cnt --;
+			}
+			else
+			{
+				received_packet_address.port = ntohs(sa_dst.sin6_port);
+				nsp_port = received_packet_address.port;
+				sn_nsdl_process_coap(buf, rcv_size, &received_packet_address);
+			}
+
+#else
 			received_packet_address.port = ntohs(sa_dst.sin6_port);
 			nsp_port = received_packet_address.port;
 			sn_nsdl_process_coap(buf, rcv_size, &received_packet_address);
+#endif
 		}
 	}
 	return 0;
@@ -279,6 +305,19 @@ uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_l
 {
 	uint16_t i = 0;
 	uint8_t temp_len;
+#ifdef TD_COAP_CORE_15_16
+static uint8_t tx_loss_cnt = 1;
+
+	if(tx_loss_cnt)
+	{
+		printf("tx packet lost!\n");
+		tx_loss_cnt --;
+		return 1;
+	}
+	else
+		tx_loss_cnt = 1;
+#endif
+
 	/* Set NSP address and port */
 	sa_dst.sin6_family = AF_INET6;
 	sa_dst.sin6_port = htons(address_ptr->port);
@@ -307,8 +346,12 @@ uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 	if(!coap_header)
 		return 0;
 #ifdef HAVE_DEBUG
-		printf("rx callback %d bytes:" ,coap_header->payload_len);
+		printf("rx callback, payload %d bytes:" ,coap_header->payload_len);
 #endif
+		if((obs_msg_type == COAP_MSG_TYPE_CONFIRMABLE)&&(obs_set == 1))
+		{
+			obs_counter--;
+		}
 	return 0;
 }
 
@@ -324,28 +367,88 @@ static void coap_exec_poll_function(void)
 {
 	static uint32_t ns_system_time = 1;
 	static uint8_t i = 0;
+	sn_coap_hdr_s coap_header;
 
 	while(1)
 	{
-		sleep(1);
+		sleep(2);
 		sn_nsdl_exec(ns_system_time);
 		ns_system_time++;
 
 		/* If observation received, start sending notifications */
 		if(obs_set)
 		{
-			if(i >= 5)
+			if(i >= 2)
 			{
-				if(obs_token_len)
-					sn_nsdl_send_observation_notification(obs_token, obs_token_len, dynamic_res_payload, dynamic_res_payload_len, &obs_number, 1);
+				if(resource_exist)
+				{
+					if(obs_token_len)
+						sn_nsdl_send_observation_notification(obs_token, obs_token_len, dynamic_res_payload, dynamic_res_payload_len, &obs_number, 1, obs_msg_type, obs_content);
+					else
+						sn_nsdl_send_observation_notification(0, obs_token_len, dynamic_res_payload, dynamic_res_payload_len, &obs_number, 1, obs_msg_type, obs_content);
+					obs_number++;
+					if(obs_msg_type == COAP_MSG_TYPE_CONFIRMABLE)
+					{
+						obs_counter++;
+						if(obs_counter >= 5)
+							obs_set = 0;
+					}
+					i = 0;
+				}
 				else
-					sn_nsdl_send_observation_notification(0, obs_token_len, dynamic_res_payload, dynamic_res_payload_len, &obs_number, 1);
-				obs_number++;
-				i = 0;
+				{
+					//send 404 not found
+					memset(&coap_header, 0, sizeof(sn_coap_hdr_s));
+					coap_header.msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+					coap_header.msg_code = COAP_MSG_CODE_RESPONSE_NOT_FOUND;
+					if(obs_token_len)
+					{
+						coap_header.token_len = obs_token_len;
+						coap_header.token_ptr = obs_token;
+					}
+					coap_header.options_list_ptr = own_alloc(sizeof(sn_coap_options_list_s));
+					memset(coap_header.options_list_ptr, 0,sizeof(sn_coap_options_list_s));
+					coap_header.options_list_ptr->observe_len = 1;
+					coap_header.options_list_ptr->observe_ptr = &obs_number;
+
+					sn_nsdl_send_coap_message(&received_packet_address, &coap_header);
+
+					own_free(coap_header.options_list_ptr);
+					obs_set = 0;
+				}
 			}
 			else
 				i++;
 		}
+
+		if(delayed_response_cnt == 1)
+		{
+			printf("deleyed response!\n");
+			memset(&coap_header, 0, sizeof(sn_coap_hdr_s));
+
+			if(separate_msg_type == COAP_MSG_TYPE_CONFIRMABLE)
+				coap_header.msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+			else if(separate_msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
+				coap_header.msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+
+			coap_header.msg_code = COAP_MSG_CODE_RESPONSE_CONTENT;
+
+			if(separate_token_len)
+			{
+				coap_header.token_len = separate_token_len;
+				coap_header.token_ptr = separate_token;
+				separate_token_len = 0;
+			}
+
+			coap_header.payload_len = sizeof(resource_payload);
+			coap_header.payload_ptr = resource_payload;
+
+			sn_nsdl_send_coap_message(&received_packet_address, &coap_header);
+
+			delayed_response_cnt = 0;
+		}
+		else if(delayed_response_cnt > 1)
+			delayed_response_cnt--;
 	}
 }
 
@@ -353,8 +456,6 @@ static void coap_exec_poll_function(void)
 static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
 	sn_coap_hdr_s *coap_res_ptr = 0;
-	uint8_t i = 0;
-	static uint8_t resource_exist = 1;
 
 	printf("General callback\n");
 
@@ -365,8 +466,8 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 			coap_res_ptr = sn_coap_build_response(received_coap_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
 			if(coap_res_ptr->msg_id == 0)
 				coap_res_ptr->msg_id = message_id++;
-			coap_res_ptr->content_type_ptr = &text_plain;
-			coap_res_ptr->content_type_len = sizeof(text_plain);
+			coap_res_ptr->content_type_ptr = &obs_content;
+			coap_res_ptr->content_type_len = 1;
 
 			/* Obs */
 			coap_res_ptr->options_list_ptr = own_alloc(sizeof(sn_coap_options_list_s));
@@ -388,6 +489,8 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 					printf("Observe\n");
 					set_NSP_address(nsp_addr, nsp_port);
 					obs_set = 1;
+					obs_msg_type = received_coap_ptr->msg_type;
+					obs_counter = 1;
 				}
 				else
 					obs_set = 0;
@@ -411,6 +514,9 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 			dynamic_res_payload = malloc(dynamic_res_payload_len);
 			memcpy(dynamic_res_payload, received_coap_ptr->payload_ptr, received_coap_ptr->payload_len);
 
+			if(received_coap_ptr->content_type_ptr)
+				obs_content = *received_coap_ptr->content_type_ptr;
+
 			if(received_coap_ptr->token_ptr)
 			{
 				memset(obs_token, 0, 8);
@@ -424,7 +530,6 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 		{
 			coap_res_ptr = sn_coap_build_response(received_coap_ptr, COAP_MSG_CODE_RESPONSE_DELETED);
 
-			obs_set = 0;
 			resource_exist = 0;
 		}
 
@@ -436,6 +541,9 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 			free(dynamic_res_payload);
 			dynamic_res_payload = malloc(dynamic_res_payload_len);
 			memcpy(dynamic_res_payload, received_coap_ptr->payload_ptr, received_coap_ptr->payload_len);
+
+			if(received_coap_ptr->content_type_ptr)
+				obs_content = *received_coap_ptr->content_type_ptr;
 
 			if(received_coap_ptr->token_ptr)
 			{
@@ -458,6 +566,9 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 			free(dynamic_res_payload);
 			dynamic_res_payload = malloc(dynamic_res_payload_len);
 			memcpy(dynamic_res_payload, received_coap_ptr->payload_ptr, received_coap_ptr->payload_len);
+
+			if(received_coap_ptr->content_type_ptr)
+				obs_content = *received_coap_ptr->content_type_ptr;
 
 			if(received_coap_ptr->token_ptr)
 			{
@@ -493,14 +604,78 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 	return 0;
 }
 
-static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare)
+static uint8_t delayed_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
-    if(memcmp(coap_header->uri_path_ptr,&uri_path_to_compare[0], coap_header->uri_path_len) == 0)
+	sn_coap_hdr_s *coap_res_ptr = 0;
+	uint16_t message_len = 0;
+	uint8_t *message_ptr;
+
+	if (received_coap_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
-		return 1;
+		if (received_coap_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
+		{
+			coap_res_ptr = own_alloc(sizeof(sn_coap_hdr_s));
+			if(!coap_res_ptr)
+				return 0;
+			memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
+
+			coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+			coap_res_ptr->msg_code = COAP_MSG_CODE_EMPTY;
+			coap_res_ptr->msg_id = received_coap_ptr->msg_id;
+
+			coap_res_ptr->content_type_ptr = &text_plain;
+			coap_res_ptr->content_type_len = sizeof(text_plain);
+
+			separate_msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+		}
+		else
+		{
+			separate_msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+		}
+
+
+		if(received_coap_ptr->token_len)
+		{
+			memset(separate_token, 0, 8);
+			separate_token_len = received_coap_ptr->token_len;
+			memcpy(separate_token, received_coap_ptr->token_ptr, received_coap_ptr->token_len);
+		}
+
+		delayed_response_cnt = 4;
 	}
+
+
+	if(coap_res_ptr)
+	{
+		message_len = sn_coap_builder_calc_needed_packet_data_size(coap_res_ptr);
+		message_ptr = own_alloc(message_len);
+		if(!message_ptr)
+			return 0;
+
+		sn_coap_builder(message_ptr, coap_res_ptr);
+
+		tx_function(SN_NSDL_PROTOCOL_COAP, message_ptr, message_len, &received_packet_address);
+
+		/* Free memory */
+		if(coap_res_ptr)
+		{
+			own_free(coap_res_ptr);
+		}
+		own_free(message_ptr);
+	}
+
 	return 0;
 }
+
+/* Not needed ATM */
+//static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare)
+//{
+//    if(memcmp(coap_header->uri_path_ptr,&uri_path_to_compare[0], coap_header->uri_path_len) == 0)
+//	{
+//		return 1;
+//	}
+//	return 0;
+//}
 
 void print_array(uint8_t *ptr, uint16_t len)
 {
@@ -513,4 +688,3 @@ void print_array(uint8_t *ptr, uint16_t len)
 	}
 	printf("\n");
 }
-#endif
