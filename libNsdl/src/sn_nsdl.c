@@ -81,7 +81,14 @@ static uint8_t 			*sn_nsdl_itoa								(uint8_t *ptr, uint8_t value);
 //}
 
 
-
+/**
+ * \fn extern int8_t sn_nsdl_destroy(void)
+ *
+ *
+ * \brief Initialization function for NSDL library. Initializes NSDL, GRS, HTTP and CoAP.
+ *
+ * \return Returns always  SN_NSDL_SUCCESS (0)
+ */
 extern int8_t sn_nsdl_destroy(void)
 {
 	if(message_list_ptr)
@@ -108,7 +115,6 @@ extern int8_t sn_nsdl_destroy(void)
 			sn_linked_list_free(message_list_ptr);
 			message_list_ptr = 0;
 		}
-
 	}
 
 	if(ep_information_ptr)
@@ -162,7 +168,11 @@ extern int8_t sn_nsdl_destroy(void)
 		nsp_address_ptr = 0;
 	}
 
-	return sn_grs_destroy();
+	/* Destroy also libCoap and grs part of libNsdl */
+	sn_grs_destroy();
+	sn_coap_protocol_destroy();
+
+	return 0;
 }
 
 /**
@@ -748,20 +758,20 @@ extern int8_t sn_nsdl_is_ep_registered(void)
  * \param message_type	Observation message type (confirmable or non-confirmable)
  * \param contetnt_type	Observation message payload contetnt type
  *
- * \return		SN_NSDL_SUCCESS = 0, Failed = -1
+ * \return		If success, returns observation messages message ID = 0, if failed, returns 0.
  */
-extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
+extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
 													uint8_t *payload_ptr, uint16_t payload_len,
 													uint8_t *observe_ptr, uint8_t observe_len,
 													sn_coap_msg_type_e message_type, uint8_t content_type)
 {
 	sn_coap_hdr_s 	*notification_message_ptr;
-	int8_t			status = 0;
+	uint16_t		return_msg_id = 0;
 
 	/* Allocate and initialize memory for header struct */
 	notification_message_ptr = sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
 	if(notification_message_ptr == NULL)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	memset(notification_message_ptr, 0, sizeof(sn_coap_hdr_s));
 
@@ -769,7 +779,7 @@ extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t 
 	if(notification_message_ptr->options_list_ptr  == NULL)
 	{
 		sn_nsdl_free(notification_message_ptr);
-		return SN_NSDL_FAILURE;
+		return 0;
 	}
 
 	memset(notification_message_ptr->options_list_ptr , 0, sizeof(sn_coap_options_list_s));
@@ -798,7 +808,10 @@ extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t 
 	}
 
 	/* Send message */
-	status = sn_nsdl_internal_coap_send(notification_message_ptr, nsp_address_ptr, SN_NSDL_MSG_NO_TYPE);
+	if(sn_nsdl_internal_coap_send(notification_message_ptr, nsp_address_ptr, SN_NSDL_MSG_NO_TYPE) == SN_NSDL_FAILURE)
+		return_msg_id = 0;
+	else
+		return_msg_id = notification_message_ptr->msg_id;
 
 	/* Free memory */
 
@@ -809,7 +822,7 @@ extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t 
 
 	sn_coap_parser_release_allocated_coap_msg_mem(notification_message_ptr);
 
-	return status;
+	return return_msg_id;
 }
 
 
@@ -975,9 +988,8 @@ static void sn_nsdl_resolve_nsp_address(void)
 			nsp_address_ptr->addr_ptr = sn_nsdl_alloc(nsp_address_ptr->addr_len);
 		}
 	}
-//	memcpy(nsp_address_ptr->addr_ptr, nsp_ipv6_addr, nsp_address_ptr->addr_len);
-	/* This was only for version 0.5 */
 
+	/* Todo: get NSP address */
 }
 
 /**

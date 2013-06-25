@@ -228,7 +228,7 @@ void sn_nsdl_nsp_lost(void);
  *
  * \return		SN_NSDL_SUCCESS = 0, Failed = -1
  */
-extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len, uint8_t *payload_ptr, uint16_t payload_len, uint8_t *observe_ptr, uint8_t observe_len, sn_coap_msg_type_e message_type, uint8_t content_type);
+extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len, uint8_t *payload_ptr, uint16_t payload_len, uint8_t *observe_ptr, uint8_t observe_len, sn_coap_msg_type_e message_type, uint8_t content_type);
 int16_t sn_nsdl_get_capability(void);
 uint32_t sn_nsdl_get_version(void);
 int8_t sn_nsdl_process_http(uint8_t *packet, uint16_t *packet_len, sn_nsdl_addr_s *src);
