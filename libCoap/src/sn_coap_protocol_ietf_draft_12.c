@@ -619,12 +619,11 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
 #endif
 
     /* * * * Check given pointers  * * * */
-    if (dst_addr_ptr == NULL || dst_addr_ptr->addr_ptr == NULL ||
-        dst_packet_data_ptr == NULL ||
-        src_coap_msg_ptr == NULL)
-    {
+    if ((dst_addr_ptr == NULL) || (dst_packet_data_ptr == NULL) || (src_coap_msg_ptr == NULL))
         return -2;
-    }
+
+    if(dst_addr_ptr->addr_ptr == NULL)
+    	return -2;
 
     /* Check if built Message type is Reset message or Message code is some of response messages */
     /* (for these messages CoAP writes same Message ID which was stored earlier from request message) */
@@ -1418,6 +1417,9 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
     if(!addr_ptr)
     	return -1;
 
+    if(!addr_ptr->addr_ptr)
+    	return -1;
+
     /* Loop all nodes in Linked list for searching Message ID */
     for (i = 0; i < stored_ack_info_count; i++)
     {
@@ -1427,38 +1429,40 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
         /* If message's Token option is same than is searched */
         if(msg_id == stored_ack_info_ptr->msg_id)
         {
-            mem_cmp_result = memcmp(addr_ptr->addr_ptr, stored_ack_info_ptr->addr_ptr, addr_ptr->addr_len);
+        	if(stored_ack_info_ptr->addr_ptr)
+        	{
+				mem_cmp_result = memcmp(addr_ptr->addr_ptr, stored_ack_info_ptr->addr_ptr, addr_ptr->addr_len);
 
-            /* If message's Source address is same than is searched */
-            if (mem_cmp_result == 0)
-            {
-                /* If message's Source address port is same than is searched */
-                if (stored_ack_info_ptr->port == addr_ptr->port)
-                {
-                	if(stored_ack_info_ptr->token_ptr && token_ptr)
-                	{
-                		if(stored_ack_info_ptr->token_len == token_len)
-                		{
-                			mem_cmp_result = memcmp(token_ptr, stored_ack_info_ptr->token_ptr, token_len);
+				/* If message's Source address is same than is searched */
+				if (mem_cmp_result == 0)
+				{
+					/* If message's Source address port is same than is searched */
+					if (stored_ack_info_ptr->port == addr_ptr->port)
+					{
+						if(stored_ack_info_ptr->token_ptr && token_ptr)
+						{
+							if(stored_ack_info_ptr->token_len == token_len)
+							{
+								mem_cmp_result = memcmp(token_ptr, stored_ack_info_ptr->token_ptr, token_len);
 
-                			if (mem_cmp_result == 0)
-                			{
-                				/* ACK found and token match */
-                				return stored_ack_info_ptr->msg_id;
-                			}
+								if (mem_cmp_result == 0)
+								{
+									/* ACK found and token match */
+									return stored_ack_info_ptr->msg_id;
+								}
 
-                		}
-                		return (-2); /* Token does not match */
-                	}
-                	else
-                	{
-                		/* * * Correct Acknowledgement info found * * * */
-                		return stored_ack_info_ptr->msg_id;
-                	}
-                }
-            }
+							}
+							return (-2); /* Token does not match */
+						}
+						else
+						{
+							/* * * Correct Acknowledgement info found * * * */
+							return stored_ack_info_ptr->msg_id;
+						}
+					}
+				}
+			}
         }
-
         /* Get next stored Acknowledgement info to be searched */
         stored_ack_info_ptr = sn_linked_list_get_previous_node(global_linked_list_ack_info_ptr);
     }
@@ -1485,6 +1489,9 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
     uint8_t          i                     = 0;
 
     if(!addr_ptr)
+    	return;
+
+    if(!addr_ptr->addr_ptr)
     	return;
 
     /* Loop all stored Acknowledgement infos in Linked list */
