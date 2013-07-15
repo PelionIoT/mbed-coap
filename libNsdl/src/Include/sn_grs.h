@@ -5,6 +5,10 @@
  *      Author: Tero
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef GRS_H_
 #define GRS_H_
 
@@ -100,7 +104,9 @@ extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_
 
 extern int8_t sn_grs_destroy(void);
 
-
+#ifdef __cplusplus
+}
+#endif
 
 
 

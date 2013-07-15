@@ -8,6 +8,10 @@
  *
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef SN_NSDL_H_
 #define SN_NSDL_H_
 
@@ -103,3 +107,7 @@ typedef struct registration_info_
 }registration_info_t;
 
 #endif /* SN_NSDL_H_ */
+
+#ifdef __cplusplus
+}
+#endif

@@ -9,6 +9,10 @@
  * \note Supports draft-ietf-core-coap-12
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef SN_COAP_PROTOCOL_IETF_DRAFT_09_H_
 #define SN_COAP_PROTOCOL_IETF_DRAFT_09_H_
 
@@ -88,3 +92,7 @@ typedef struct coap_blockwise_payload_
 
 
 #endif /* SN_COAP_PROTOCOL_IETF_DRAFT_09_H_ */
+
+#ifdef __cplusplus
+}
+#endif
