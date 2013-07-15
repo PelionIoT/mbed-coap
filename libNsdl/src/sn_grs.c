@@ -1059,6 +1059,7 @@ extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_
 {
 	uint8_t 	*message_ptr = NULL;
 	uint16_t 	message_len	= 0;
+	uint8_t		ret_val = 0;
 
 	/* Calculate message length */
 	message_len = sn_coap_builder_calc_needed_packet_data_size(coap_hdr_ptr);
@@ -1072,13 +1073,16 @@ extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_
 	sn_coap_protocol_build(address_ptr, message_ptr, coap_hdr_ptr);
 
 	/* Call tx callback function to send message */
-	sn_grs_tx_callback(SN_NSDL_PROTOCOL_COAP, message_ptr, message_len, address_ptr);
+	ret_val = sn_grs_tx_callback(SN_NSDL_PROTOCOL_COAP, message_ptr, message_len, address_ptr);
 
 	/* Free allocated memory */
 	sn_grs_free(message_ptr);
 	message_ptr = 0;
 
-	return SN_NSDL_SUCCESS;
+	if(ret_val == 0)
+		return SN_NSDL_FAILURE;
+	else
+		return SN_NSDL_SUCCESS;
 }
 
 /**
@@ -1102,8 +1106,8 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 {
 	/* Local variables */
 	sn_nsdl_resource_info_s 	*resource_search_temp 	= NULL;
-	uint8_t 				i	 					= 0;
-	uint8_t 				*path_temp_ptr 			= NULL;
+	uint8_t 					i	 					= 0;
+	uint8_t 					*path_temp_ptr 			= NULL;
 
 	/* Check parameters */
 	if(!pathlen || !path)

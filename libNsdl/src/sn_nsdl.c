@@ -1459,7 +1459,6 @@ static int8_t sn_nsdl_resolve_ep_information(sn_coap_hdr_s *coap_packet_ptr)
 	uint8_t		*temp_ptr;
 	uint8_t		parameter_count 	= 0;
 	uint16_t	parameter_len 		= 0;
-	uint8_t		end_found = 0;
 
 	if(!coap_packet_ptr)
 		return SN_NSDL_FAILURE;
@@ -1468,25 +1467,13 @@ static int8_t sn_nsdl_resolve_ep_information(sn_coap_hdr_s *coap_packet_ptr)
 	if(!coap_packet_ptr->options_list_ptr->location_path_ptr)
 		return SN_NSDL_FAILURE;
 
-	//i = coap_packet_ptr->options_list_ptr->location_path_len;
 	temp_ptr = coap_packet_ptr->options_list_ptr->location_path_ptr;
 
 	while(temp_ptr <= (coap_packet_ptr->options_list_ptr->location_path_ptr + coap_packet_ptr->options_list_ptr->location_path_len))
 	{
 
-		if(temp_ptr == (coap_packet_ptr->options_list_ptr->location_path_ptr + coap_packet_ptr->options_list_ptr->location_path_len))
+		if((temp_ptr == (coap_packet_ptr->options_list_ptr->location_path_ptr + coap_packet_ptr->options_list_ptr->location_path_len)) || (*temp_ptr == '/'))
 		{
-			end_found = 1;
-		}
-		else if(*temp_ptr == 0)
-		{
-			end_found = 1;
-		}
-
-		if(end_found)
-		{
-
-			end_found = 0;
 
 			parameter_count++;
 			if(parameter_count == 2)
@@ -1499,6 +1486,7 @@ static int8_t sn_nsdl_resolve_ep_information(sn_coap_hdr_s *coap_packet_ptr)
 						return SN_NSDL_FAILURE;
 					memcpy(ep_information_ptr->domain_name_ptr, temp_ptr - ep_information_ptr->domain_name_len, ep_information_ptr->domain_name_len);
 				}
+
 			}
 			if(parameter_count == 3)
 			{

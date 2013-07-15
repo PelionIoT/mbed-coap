@@ -59,7 +59,7 @@ typedef struct sn_grs_version_
  *
  *	This function initializes GRS, CoAP and HTTP libraries.
  *
- *	\param 	sn_grs_tx_callback 		A function pointer to a transmit callback function.
+ *	\param 	sn_grs_tx_callback 		A function pointer to a transmit callback function. Should return 1 when succeed, 0 when failed
  *	\param  *sn_grs_rx_callback_ptr A function pointer to a receiving callback function. If received packet is not for GRS, it will be passed to
  *									upper level (NSDL) to be proceed.
  *	\param 	sn_memory 				A pointer to a structure containing the platform specific functions for memory allocation and free.
