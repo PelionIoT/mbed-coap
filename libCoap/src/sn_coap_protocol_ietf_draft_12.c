@@ -39,7 +39,7 @@
 static void                  sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr);
 static int32_t               sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr);
 static void                  sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr);
-static void                  sn_coap_protocol_linked_list_ack_info_remove_old_ones();
+static void                  sn_coap_protocol_linked_list_ack_info_remove_old_ones(void);
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
 static void                  sn_coap_protocol_linked_list_duplication_info_store(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static int8_t                sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_s *scr_addr_ptr, uint16_t msg_id);
@@ -54,7 +54,7 @@ static void                  sn_coap_protocol_linked_list_blockwise_payload_remo
 static uint16_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(sn_nsdl_addr_s *src_addr_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_remove_old_data(void);
 static sn_coap_hdr_s 		*sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr);
-static uint8_t 				 sn_coap_convert_block_size(uint16_t block_size);
+static int8_t 				 sn_coap_convert_block_size(uint16_t block_size);
 static sn_coap_hdr_s 		*sn_coap_protocol_copy_header(sn_coap_hdr_s *source_header_ptr);
 #endif
 #if SN_COAP_RESENDING_MAX_COUNT
@@ -2748,7 +2748,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 	return received_coap_msg_ptr;
 }
 
-static uint8_t sn_coap_convert_block_size(uint16_t block_size)
+static int8_t sn_coap_convert_block_size(uint16_t block_size)
 {
 	if(block_size == 16)
 		return 0;
@@ -2765,7 +2765,7 @@ static uint8_t sn_coap_convert_block_size(uint16_t block_size)
 	else if(block_size == 1024)
 		return 6;
 
-	return -1;
+	return 0;
 }
 
 static sn_coap_hdr_s *sn_coap_protocol_copy_header(sn_coap_hdr_s *source_header_ptr)

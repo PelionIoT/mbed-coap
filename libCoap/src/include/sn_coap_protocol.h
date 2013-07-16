@@ -31,9 +31,10 @@ extern "C" {
 /* This value depends on available memory: If there is restricted count of memory, use little value e.g. 1 	*/
 /* Setting of this value to 0 will disable re-sending and also reduce use of ROM memory						*/
 #define SN_COAP_RESENDING_MAX_COUNT		            0
-/* Default value for count of re-sending */
+/* Default value for re-sending buffer size */
 #define SN_COAP_RESENDING_BUFFER_MAX_SIZE           1
 
+/* These parameters sets maximum values application can set with API */
 /* Maximum allowed count of re-sending */
 #define SN_COAP_MAX_ALLOWED_RESENDING_COUNT 		6
 /* Maximum allowed number of saved re-sending messages */

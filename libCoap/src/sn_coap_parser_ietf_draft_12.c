@@ -31,7 +31,7 @@
 /* * * * * * * * * * * * * * * * * * * * */
 
 static void     sn_coap_parser_header_parse(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, coap_version_e *coap_version_ptr);
-static uint8_t  sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, uint16_t packet_len);
+static int8_t   sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, uint16_t packet_len);
 static int8_t   sn_coap_parser_options_parse_multiple_options(uint8_t **packet_data_pptr, uint8_t options_count_left, uint8_t *previous_option_number_ptr, uint8_t **dst_ptr, uint16_t *dst_len_ptr, sn_coap_option_numbers_e option, uint16_t option_number_len);
 static int16_t  sn_coap_parser_options_count_needed_memory_multiple_option(uint8_t *packet_data_ptr, uint8_t options_count_left, uint8_t previous_option_number, sn_coap_option_numbers_e option, uint16_t option_number_len);
 static void     sn_coap_parser_payload_parse(uint16_t packet_data_len, uint8_t *packet_data_ptr, uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr);
@@ -237,7 +237,7 @@ static void sn_coap_parser_header_parse(uint8_t **packet_data_pptr, sn_coap_hdr_
  * \return Return value is 0 in ok case and -1 in failure case
  */
 SN_MEM_ATTR_COAP_PARSER_FUNC
-static uint8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, uint16_t packet_len)
+static int8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, uint16_t packet_len)
 {
     uint8_t options_count          = 0;
     uint8_t previous_option_number = 0;
@@ -615,7 +615,7 @@ static int8_t sn_coap_parser_options_parse_multiple_options(uint8_t **packet_dat
 
     if(uri_query_needed_heap)
     {
-    	*dst_pptr = sn_coap_malloc(uri_query_needed_heap);
+    	*dst_pptr = (uint8_t*) sn_coap_malloc(uri_query_needed_heap);
 
     	if (*dst_pptr == NULL)
     		return -1;

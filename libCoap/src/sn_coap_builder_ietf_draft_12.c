@@ -34,7 +34,7 @@ static int8_t   sn_coap_builder_options_increase_count_in_header(uint8_t increas
 static int16_t  sn_coap_builder_options_add_option_value_len(uint16_t option_value_len, uint8_t **dst_packet_data_pptr);
 static uint8_t 	sn_coap_builder_options_get_option_part_count(uint16_t query_len, uint8_t *query_ptr, sn_coap_option_numbers_e option);
 static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option_string(uint16_t query_len, uint8_t *query_ptr, uint8_t query_index, sn_coap_option_numbers_e option);
-static uint16_t sn_coap_builder_options_get_option_part_position(uint16_t query_len, uint8_t *query_ptr, uint8_t query_index, sn_coap_option_numbers_e option);
+static int16_t sn_coap_builder_options_get_option_part_position(uint16_t query_len, uint8_t *query_ptr, uint8_t query_index, sn_coap_option_numbers_e option);
 static void     sn_coap_builder_payload_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr);
 
 /* * * * GLOBAL DECLARATIONS * * * */
@@ -699,7 +699,7 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
 	if(!*dst_packet_data_pptr || !src_coap_msg_ptr)
 		return -1;
 
-    uint16_t ret_status = 0;
+    int16_t ret_status = 0;
 
     /* * * * Check if Options are used at all  * * * */
     if (src_coap_msg_ptr->uri_path_ptr == NULL && src_coap_msg_ptr->token_ptr == NULL &&
@@ -883,7 +883,7 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
         (*dst_packet_data_pptr) += option_value_len;
 
         /* * * * Increase Options count info in Header * * * * */
-                ret_status = sn_coap_builder_options_increase_count_in_header(1);
+        ret_status = sn_coap_builder_options_increase_count_in_header(1);
 
         if (ret_status != 0)
             return -1;
@@ -1155,7 +1155,7 @@ static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option
  *         fail cases -1 is returned.
  */
 SN_MEM_ATTR_COAP_BUILDER_FUNC
-static uint16_t sn_coap_builder_options_get_option_part_position(uint16_t query_len, uint8_t *query_ptr,
+static int16_t sn_coap_builder_options_get_option_part_position(uint16_t query_len, uint8_t *query_ptr,
                                                                uint8_t query_index, sn_coap_option_numbers_e option)
 {
     uint16_t returned_query_part_offset = 0;
