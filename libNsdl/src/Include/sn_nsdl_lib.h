@@ -248,7 +248,7 @@ int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coa
  * \brief This function is used to set the NSP address given by an application.
  * @return 0 on success, -1 on false to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
  */
-int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port);
+int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type);
 
 /**
  * \brief This function releases all allocated memory in nsdl and grs modules.

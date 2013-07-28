@@ -969,7 +969,7 @@ static int8_t sn_nsdl_internal_coap_send(sn_coap_hdr_s *coap_header_ptr, sn_nsdl
  *
  * \brief Resolves NSP server address.
  *
- * \note this is only for testing purposes - NSP address is hardcoded
+ * \note Application must set NSP address with set_nsp_address
  */
 static void sn_nsdl_resolve_nsp_address(void)
 {
@@ -984,13 +984,7 @@ static void sn_nsdl_resolve_nsp_address(void)
 	{
 		memset(nsp_address_ptr, 0, sizeof(sn_nsdl_addr_s));
 		/* This is only for version 0.5 */
-		nsp_address_ptr->type = SN_NSDL_ADDRESS_TYPE_IPV6;
-		nsp_address_ptr->port = 5683;
-		nsp_address_ptr->addr_len = 16;
-		if(!nsp_address_ptr->addr_ptr)
-		{
-			nsp_address_ptr->addr_ptr = sn_nsdl_alloc(nsp_address_ptr->addr_len);
-		}
+		nsp_address_ptr->type = SN_NSDL_ADDRESS_TYPE_NONE;
 	}
 
 	/* Todo: get NSP address */
@@ -1522,19 +1516,53 @@ static int8_t sn_nsdl_resolve_ep_information(sn_coap_hdr_s *coap_packet_ptr)
 /*
  * \brief This function is used to set the NSP address given by an application.
  * @return 0 on success, -1 on false to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
+ * Note! IPv6 address must always be 16 bytes long and IPv4 address must always be 4 bytes long!
  */
-int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port)
+int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type)
 {
-	if(nsp_address_ptr && NSP_address)
+
+	/* Check parameters and source pointers */
+	if(!nsp_address_ptr || !NSP_address)
+	{
+		return -1;
+	}
+
+	nsp_address_ptr->type = address_type;
+
+	if(address_type == SN_NSDL_ADDRESS_TYPE_IPV4)
 	{
 		if(nsp_address_ptr->addr_ptr)
 		{
-			memcpy(nsp_address_ptr->addr_ptr, NSP_address, 16);
-			nsp_address_ptr->port = port;
-			return 0;
+			sn_nsdl_free(nsp_address_ptr->addr_ptr);
 		}
+
+		nsp_address_ptr->addr_len = 4;
+
+		nsp_address_ptr->addr_ptr = sn_nsdl_alloc(nsp_address_ptr->addr_len);
+		if(!nsp_address_ptr->addr_ptr)
+			return -1;
+
+		memcpy(nsp_address_ptr->addr_ptr, NSP_address, nsp_address_ptr->addr_len);
+		nsp_address_ptr->port = port;
 	}
-	return -1;
+
+	else if(address_type == SN_NSDL_ADDRESS_TYPE_IPV6)
+	{
+		if(nsp_address_ptr->addr_ptr)
+		{
+			sn_nsdl_free(nsp_address_ptr->addr_ptr);
+		}
+
+		nsp_address_ptr->addr_len = 16;
+
+		nsp_address_ptr->addr_ptr = sn_nsdl_alloc(nsp_address_ptr->addr_len);
+		if(!nsp_address_ptr->addr_ptr)
+			return -1;
+
+		memcpy(nsp_address_ptr->addr_ptr, NSP_address, nsp_address_ptr->addr_len);
+		nsp_address_ptr->port = port;
+	}
+	return 0;
 }
 
 

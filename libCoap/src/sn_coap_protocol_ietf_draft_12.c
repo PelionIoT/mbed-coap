@@ -1556,7 +1556,12 @@ static void sn_coap_protocol_linked_list_ack_info_remove_old_ones(void)
             {
             	sn_coap_protocol_free(removed_ack_info_ptr->token_ptr);
             }
-            sn_coap_protocol_free(removed_ack_info_ptr->addr_ptr);
+
+            if(removed_ack_info_ptr->addr_ptr)
+            {
+            	sn_coap_protocol_free(removed_ack_info_ptr->addr_ptr);
+            }
+
             sn_coap_protocol_free(removed_ack_info_ptr);
 
             /* Remove current node moved list automatically to next node. That is why we can fetch it now by calling get current node. */
