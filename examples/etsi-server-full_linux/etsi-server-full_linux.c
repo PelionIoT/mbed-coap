@@ -1,3 +1,4 @@
+
 /**
  * \file 	etsi-server_full-linux.c
  *
@@ -165,7 +166,7 @@ static uint8_t rx_loss_cnt = 1;
 
 	inet_pton(AF_INET6, arg_dst, &nsp_addr);
 
-	set_NSP_address(nsp_addr, arg_dport);
+	set_NSP_address(nsp_addr, arg_dport, SN_NSDL_ADDRESS_TYPE_IPV6);
 
 	pthread_create(&coap_exec_thread, NULL, (void *)coap_exec_poll_function, NULL);
 
@@ -346,7 +347,7 @@ uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 	if(!coap_header)
 		return 0;
 #ifdef HAVE_DEBUG
-		printf("rx callback, payload %d bytes:" ,coap_header->payload_len);
+		printf("rx callback, payload %d bytes:\n" ,coap_header->payload_len);
 #endif
 		if((obs_msg_type == COAP_MSG_TYPE_CONFIRMABLE)&&(obs_set == 1))
 		{
@@ -368,6 +369,7 @@ static void coap_exec_poll_function(void)
 	static uint32_t ns_system_time = 1;
 	static uint8_t i = 0;
 	sn_coap_hdr_s coap_header;
+	uint16_t message_id = 0;
 
 	while(1)
 	{
@@ -383,9 +385,11 @@ static void coap_exec_poll_function(void)
 				if(resource_exist)
 				{
 					if(obs_token_len)
-						sn_nsdl_send_observation_notification(obs_token, obs_token_len, dynamic_res_payload, dynamic_res_payload_len, &obs_number, 1, obs_msg_type, obs_content);
+						message_id = sn_nsdl_send_observation_notification(obs_token, obs_token_len, dynamic_res_payload, dynamic_res_payload_len, &obs_number, 1, obs_msg_type, obs_content);
 					else
-						sn_nsdl_send_observation_notification(0, obs_token_len, dynamic_res_payload, dynamic_res_payload_len, &obs_number, 1, obs_msg_type, obs_content);
+						message_id = sn_nsdl_send_observation_notification(0, obs_token_len, dynamic_res_payload, dynamic_res_payload_len, &obs_number, 1, obs_msg_type, obs_content);
+
+					printf("message_id = %d", message_id);
 					obs_number++;
 					if(obs_msg_type == COAP_MSG_TYPE_CONFIRMABLE)
 					{
@@ -487,7 +491,7 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 				if(received_coap_ptr->options_list_ptr->observe)
 				{
 					printf("Observe\n");
-					set_NSP_address(nsp_addr, nsp_port);
+					set_NSP_address(nsp_addr, nsp_port, 2);
 					obs_set = 1;
 					obs_msg_type = received_coap_ptr->msg_type;
 					obs_counter = 1;
@@ -667,15 +671,6 @@ static uint8_t delayed_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 	return 0;
 }
 
-/* Not needed ATM */
-//static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare)
-//{
-//    if(memcmp(coap_header->uri_path_ptr,&uri_path_to_compare[0], coap_header->uri_path_len) == 0)
-//	{
-//		return 1;
-//	}
-//	return 0;
-//}
 
 void print_array(uint8_t *ptr, uint16_t len)
 {

@@ -137,7 +137,7 @@ int svr_ipv6(void)
 	/* Set the NSP address to libNsdl */
 	inet_pton(AF_INET6, arg_dst, &nsp_addr);
 
-	set_NSP_address(nsp_addr, arg_dport);
+	set_NSP_address(nsp_addr, arg_dport, SN_NSDL_ADDRESS_TYPE_IPV6);
 
 	/* Create thread for CoAP execution function calling */
 	pthread_create(&coap_exec_thread, NULL, (void *)coap_exec_poll_function, NULL);
