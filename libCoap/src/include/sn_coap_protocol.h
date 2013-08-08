@@ -8,6 +8,10 @@
  *
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef SN_COAP_PROTOCOL_H_
 #define SN_COAP_PROTOCOL_H_
 
@@ -83,3 +87,7 @@ extern int8_t 			   sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t
 extern int8_t 			   sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length);
 
 #endif /* SN_COAP_PROTOCOL_H_ */
+
+#ifdef __cplusplus
+}
+#endif

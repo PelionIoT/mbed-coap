@@ -9,6 +9,10 @@
  * \note Supports draft-ietf-core-coap-12
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef SN_COAP_HEADER_IETF_DRAFT_09_H_
 #define SN_COAP_HEADER_IETF_DRAFT_09_H_
 
@@ -62,3 +66,7 @@ extern uint16_t 		sn_coap_parser_option_jump_parse(uint8_t **packet_data_pptr);
 extern uint16_t 		sn_coap_parser_option_number_len_parse(uint8_t **packet_data_pptr);
 
 #endif /* SN_COAP_HEADER_IETF_DRAFT_09_H_ */
+
+#ifdef __cplusplus
+}
+#endif

@@ -12,6 +12,10 @@
 #ifndef SN_COAP_HEADER_H_
 #define SN_COAP_HEADER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
 /* * * * * * * * * * * */
@@ -228,3 +232,7 @@ extern void           sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_
 extern void 		  sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr);
 
 #endif /* SN_COAP_HEADER_H_ */
+
+#ifdef __cplusplus
+}
+#endif
