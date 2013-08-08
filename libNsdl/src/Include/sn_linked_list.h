@@ -5,6 +5,10 @@
  *      Author: user
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef SN_LINKED_LIST_H_
 #define SN_LINKED_LIST_H_
 
@@ -80,3 +84,7 @@ extern int8_t sn_linked_list_update_current_node(sn_linked_list_t *linked_list, 
 extern uint16_t sn_linked_list_count_nodes(sn_linked_list_t *linked_list);
 
 #endif /* SN_LINKED_LIST_H_ */
+
+#ifdef __cplusplus
+}
+#endif

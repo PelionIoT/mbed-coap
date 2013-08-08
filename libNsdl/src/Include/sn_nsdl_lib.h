@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SN_NSDL_CONST_MEMORY_ATTRIBUTE
 
 #define RESOURCE_DIR_LEN				2
@@ -256,3 +260,7 @@ extern int8_t sn_nsdl_destroy(void);
  * @return A string with \0 in the end. A human readable format. Please deliver this item to Sensinode in case if you're to report of errors.
  */
 //extern const char __code * sn_nsdl_get_library_version_info(void);
+
+#ifdef __cplusplus
+}
+#endif

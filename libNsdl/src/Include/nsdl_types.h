@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef _PL_TYPES_
 #define _PL_TYPES_
 #ifdef CC8051_PLAT
@@ -134,3 +138,7 @@ typedef  signed long int prog_int32_t;
 #define SN_HTTP_FUNCTION_MEMORY_ATTRIBUTE
 
 #endif /*_NSDL_TYPES_*/
+
+#ifdef __cplusplus
+}
+#endif
