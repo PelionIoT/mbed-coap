@@ -460,6 +460,7 @@ static void coap_exec_poll_function(void)
 
 		}
 
+		/* Send delayed response to request */
 		if(delayed_response_cnt == 1)
 		{
 			printf("deleyed response!\n");

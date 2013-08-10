@@ -625,9 +625,10 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
     if(dst_addr_ptr->addr_ptr == NULL)
     	return -2;
 
-    /* Check if built Message type is Reset message or Message code is some of response messages */
-    /* (for these messages CoAP writes same Message ID which was stored earlier from request message) */
-    if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_RESET || src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_RESPONSE_CREATED)
+    /* Check if built Message type is Reset message or Message code is some of response messages or empty	*/
+    /* (for these messages CoAP writes same Message ID which was stored earlier from request message) 		*/
+    if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_RESET ||
+    		(src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_RESPONSE_CREATED || src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_EMPTY))
     {
         /* Check if there is Token option in built CoAP message */
         /* (only these messages can be acknowledged because Token option is used as key for stored messages) */
@@ -675,25 +676,16 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
     /* Check if built Message type is else than Acknowledgement or Reset i.e. message type is Confirmable or Non-confirmable */
     /* (for Acknowledgement and  Reset messages is written same Message ID than was in the Request message) */
     if (src_coap_msg_ptr->msg_type != COAP_MSG_TYPE_ACKNOWLEDGEMENT &&
-        src_coap_msg_ptr->msg_type != COAP_MSG_TYPE_RESET)
+        src_coap_msg_ptr->msg_type != COAP_MSG_TYPE_RESET &&
+        src_coap_msg_ptr->msg_id == 0)
     {
         /* * * * Generate new Message ID and increase it by one  * * * */
 		if(0 > message_id)
 		{
-			message_id = global_message_id;
+			src_coap_msg_ptr->msg_id = global_message_id;
 			global_message_id++;
 		}
     }
-#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
-    else /* Acknowledgement or Reset */
-    {
-        /* Remove duplication message, if found, from Linked list */
-        sn_coap_protocol_linked_list_duplication_info_remove(dst_addr_ptr->addr_ptr, dst_addr_ptr->port, message_id);
-    }
-#endif
-
-    /* Set message ID to coap Header */
-    src_coap_msg_ptr->msg_id = (uint16_t)message_id;
 
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 
@@ -760,8 +752,6 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     /* * * * Build Packet data from CoAP message by using CoAP Header builder  * * * */
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    src_coap_msg_ptr->msg_id = (uint16_t)message_id;
 
     byte_count_built = sn_coap_builder(dst_packet_data_ptr, src_coap_msg_ptr);
 
