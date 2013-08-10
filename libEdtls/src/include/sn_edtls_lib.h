@@ -26,6 +26,15 @@
 
 #define CERTI_CHAIN_MAX_SUP 2
 
+typedef enum sn_edtls_address_type_
+{
+	SN_EDTLS_ADDRESS_TYPE_NOT_DEFINED 	= 0x00,
+    SN_EDTLS_ADDRESS_TYPE_IPV6       	= 0x01,
+    SN_EDTLS_ADDRESS_TYPE_IPV4       	= 0x02,
+    SN_EDTLS_ADDRESS_TYPE_HOSTNAME   	= 0x03,
+    SN_EDTLS_ADDRESS_TYPE_NONE       	= 0xFF
+}sn_edtls_address_type_t;
+
 /**************/
 /* Structures */
 /**************/
@@ -45,6 +54,7 @@ typedef struct sn_edtls_address_
 {
 	uint16_t port;
 	uint8_t address[16];
+	sn_edtls_address_type_t address_type;
 	uint8_t socket;
 }sn_edtls_address_t;
 
