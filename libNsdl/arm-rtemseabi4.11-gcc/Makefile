@@ -14,7 +14,7 @@ $(TARGET): $(OBJECTS)
 	ar rcs $(TARGET) $(AR_OBJECTS)
 	
 .c.o:
-	$(PLATFORM) /opt/rtems-4.11/bin/arm-rtemseabi4.11-gcc -g -c -O2 -Wall $(CFLAGS) $<
+	$(PLATFORM) /opt/rtems-4.11/bin/arm-rtemseabi4.11-gcc -march=armv7-m -mthumb -g -c -O2 -Wall $(CFLAGS) $<
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)
