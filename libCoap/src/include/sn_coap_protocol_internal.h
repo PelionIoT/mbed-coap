@@ -1,27 +1,26 @@
 /**
- * \file sn_coap_protocol_ietf_draft_12.h
+ * \file sn_coap_protocol_internal.h
  *
  * \brief Header file for CoAP Protocol part
  *
  *  Created on: Jun 30, 2011
  *      Author: tero
  *
- * \note Supports draft-ietf-core-coap-12
+ * \note Supports draft-ietf-core-coap-18
  */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef SN_COAP_PROTOCOL_IETF_DRAFT_09_H_
-#define SN_COAP_PROTOCOL_IETF_DRAFT_09_H_
+#ifndef SN_COAP_PROTOCOL_INTERNAL_H_
+#define SN_COAP_PROTOCOL_INTERNAL_H_
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
 /* * * * * * * * * * * */
 
 /* CoAP Resending defines */
-//#define MAX_RETRANSMIT          3   /* Maximum resending count, value is specified in IETF CoAP specification */
 #define RESPONSE_TIMEOUT        2   /* Initial resending timeout as seconds, value is specified in IETF CoAP specification */
 #define RESPONSE_RANDOM_FACTOR  1   /* Resending random factor, value is specified in IETF CoAP specification */
 
@@ -91,7 +90,7 @@ typedef struct coap_blockwise_payload_
 } coap_blockwise_payload_s;
 
 
-#endif /* SN_COAP_PROTOCOL_IETF_DRAFT_09_H_ */
+#endif /* SN_COAP_PROTOCOL_INTERNAL_H_ */
 
 #ifdef __cplusplus
 }

@@ -19,45 +19,43 @@
 
 /* Constants */
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t 	ep_name_parameter_string[] 	= EP_NAME_PARAMETERS;
+static uint8_t 	ep_name_parameter_string[] 	= EP_NAME_PARAMETERS;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		resource_path_ptr[]			= RESOURCE_DIR_PATH;
-
-uint8_t 	nsp_ipv6_addr[16]			= {0x20,0x01,0x04,0x70,0x10,0x02,0x00,0x11,0x00,0x00,0x00,0x00,0x00,0x54,0x20,0x01};
+static uint8_t		resource_path_ptr[]			= RESOURCE_DIR_PATH;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		resource_type_parameter[]	= RT_PARAMETER;
+static uint8_t		resource_type_parameter[]	= RT_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		obs_parameter[]				= OBS_PARAMETER;
+static uint8_t		obs_parameter[]				= OBS_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		if_description_parameter[]	= IF_PARAMETER;
+static uint8_t		if_description_parameter[]	= IF_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		ep_contex_parameter[]		= CON_PARAMETER;
+static uint8_t		ep_contex_parameter[]		= CON_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		ep_lifetime_parameter[]		= LT_PARAMETER;
+static uint8_t		ep_lifetime_parameter[]		= LT_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t 	coap_con_type_parameter[]	= COAP_CON_PARAMETER;
+static uint8_t 	coap_con_type_parameter[]	= COAP_CON_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t 	event_path_parameter[]		= EVENT_PATH;
+static uint8_t 	event_path_parameter[]		= EVENT_PATH;
 
 /* Global function pointers */
-void 	*(*sn_nsdl_alloc)(uint16_t)  = 0;
-void 	(*sn_nsdl_free)(void*) = 0;
-uint8_t (*sn_nsdl_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *) = 0;
-uint8_t (*sn_nsdl_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *) = 0;
+static void 	*(*sn_nsdl_alloc)(uint16_t)  = 0;
+static void 	(*sn_nsdl_free)(void*) = 0;
+static uint8_t (*sn_nsdl_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *) = 0;
+static uint8_t (*sn_nsdl_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *) = 0;
 
 /* Global variables */
-sn_nsdl_ep_parameters_s		*ep_information_ptr  = 0; 	// Endpoint parameters, Name, Domain etc..
-sn_nsdl_addr_s 				*nsp_address_ptr = 0;		// NSP server address information
-sn_linked_list_t			*message_list_ptr = 0;		//
-static uint8_t sn_nsdl_endpoint_registered = 0;
+static sn_nsdl_ep_parameters_s		*ep_information_ptr  = 0; 	// Endpoint parameters, Name, Domain etc..
+static sn_nsdl_addr_s 				*nsp_address_ptr = 0;		// NSP server address information
+static sn_linked_list_t				*message_list_ptr = 0;		//
+static uint8_t 						sn_nsdl_endpoint_registered = 0;
 
 /* Function prototypes */
 static int8_t 			sn_nsdl_internal_coap_send					(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description);
@@ -71,14 +69,6 @@ static int8_t 			sn_nsdl_resolve_ep_information				(sn_coap_hdr_s *coap_packet_p
 static void 			sn_nsdl_mark_resources_as_registered		(void);
 static uint8_t 			sn_nsdl_itoa_len							(uint8_t value);
 static uint8_t 			*sn_nsdl_itoa								(uint8_t *ptr, uint8_t value);
-
-//static const char version_array[] = {SVN_REV};
-//
-//extern const char __code* sn_nsdl_get_library_version_info(void)
-//{
-//
-//	return (const char __code*) version_array;
-//}
 
 
 /**
@@ -744,7 +734,7 @@ extern int8_t sn_nsdl_is_ep_registered(void)
  * \fn extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
  *															uint8_t *payload_ptr, uint16_t payload_len,
  *															uint8_t *observe_ptr, uint8_t observe_len,
- *															sn_coap_msg_type_e message_type)
+ *															sn_coap_msg_type_e message_type, uint8_t content_type)
  *
  *
  * \brief Sends observation message to NSP server
@@ -758,7 +748,7 @@ extern int8_t sn_nsdl_is_ep_registered(void)
  * \param message_type	Observation message type (confirmable or non-confirmable)
  * \param contetnt_type	Observation message payload contetnt type
  *
- * \return		If success, returns observation messages message ID = 0, if failed, returns 0.
+ * \return		If success, returns observation messages message ID, if failed, returns 0.
  */
 extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
 													uint8_t *payload_ptr, uint16_t payload_len,

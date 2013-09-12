@@ -1,5 +1,5 @@
 /**
- * \file sn_coap_protocol_ietf_draft_12.c
+ * \file sn_coap_protocol.c
  *
  * \brief CoAP Protocol implementation
  *
@@ -8,7 +8,7 @@
  *  Created on: Jul 19, 2011
  *      Author: tero
  *
- * \note Supports draft-ietf-core-coap-12
+ * \note Supports draft-ietf-core-coap-18
  */
 
 
@@ -27,8 +27,8 @@
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
-#include "sn_coap_header_ietf_draft_12.h"
-#include "sn_coap_protocol_ietf_draft_12.h"
+#include "sn_coap_header_internal.h"
+#include "sn_coap_protocol_internal.h"
 #include "sn_linked_list.h"
 
 /* * * * * * * * * * * * * * * * * * * * */

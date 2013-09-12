@@ -1,5 +1,5 @@
 /**
- * \file sn_coap_header_validity_check_ietf_draft_12.c
+ * \file sn_coap_header_validity_check.c
  *
  * \brief CoAP Header validity checker
  *
@@ -8,7 +8,7 @@
  *  Created on: Aug 22, 2011
  *      Author: tero
  *
- * \note Supports draft-ietf-core-coap-12
+ * \note Supports draft-ietf-core-coap-18
  */
 
 /* * * * INCLUDE FILES * * * */
@@ -16,8 +16,8 @@
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
-#include "sn_coap_header_ietf_draft_12.h"
-#include "sn_coap_protocol_ietf_draft_12.h"
+#include "sn_coap_header_internal.h"
+#include "sn_coap_protocol_internal.h"
 
 /**
  * \fn int8_t sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_version_e coap_version)

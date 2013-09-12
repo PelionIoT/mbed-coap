@@ -44,10 +44,10 @@ SN_MEM_ATTR_GRS_DECL static sn_linked_list_t *resource_root_list = NULL;
 
 
 /* Local global function pointers */
-void 	*(*sn_grs_alloc)(uint16_t);
-void 	(*sn_grs_free)(void*);
-uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
-int8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
+static void 	*(*sn_grs_alloc)(uint16_t);
+static void 	(*sn_grs_free)(void*);
+static uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
+static int8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
 
 /**
  * \fn int8_t sn_grs_destroy(void)

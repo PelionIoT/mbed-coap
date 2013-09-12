@@ -6,7 +6,7 @@
  *  Created on: Jun 30, 2011
  *      Author: tero
  *
- * \note Supports draft-ietf-core-coap-12
+ * \note Supports draft-ietf-core-coap-18
  */
 
 #ifndef SN_COAP_HEADER_H_
@@ -87,13 +87,13 @@ typedef enum sn_coap_option_numbers_
 	COAP_OPTION_CONTENT_FORMAT	= 12,
 	COAP_OPTION_MAX_AGE			= 14,
 	COAP_OPTION_URI_QUERY		= 15,
-	COAP_OPTION_ACCEPT			= 16,
-	COAP_OPTION_TOKEN			= 19,
+	COAP_OPTION_ACCEPT			= 17,
 	COAP_OPTION_LOCATION_QUERY	= 20,
 	COAP_OPTION_BLOCK2			= 23,
 	COAP_OPTION_BLOCK1			= 27,
-	COAP_OPTION_SIZE			= 28,
 	COAP_OPTION_PROXY_URI		= 35,
+	COAP_OPTION_PROXY_SCHEME	= 39,
+	COAP_OPTION_SIZE1			= 60
 //	128 =  	(Reserved)
 //	132 =  	(Reserved)
 //	136 =  	(Reserved)
