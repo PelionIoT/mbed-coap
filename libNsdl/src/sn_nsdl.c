@@ -1503,10 +1503,14 @@ static int8_t sn_nsdl_resolve_ep_information(sn_coap_hdr_s *coap_packet_ptr)
 	return SN_NSDL_SUCCESS;
 }
 
-/*
+/**
+ * \fn int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type)
  * \brief This function is used to set the NSP address given by an application.
- * @return 0 on success, -1 on false to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
- * Note! IPv6 address must always be 16 bytes long and IPv4 address must always be 4 bytes long!
+ * \param uint8_t *NSP_address Pointer to NSP address Note! IPv6 address must always be 16 bytes long and IPv4 address must always be 4 bytes long!
+ * \param uint16_t port NSP port
+ * \param sn_nsdl_addr_type_e address_type NSP address type (SN_NSDL_ADDRESS_TYPE_IPV6 or SN_NSDL_ADDRESS_TYPE_IPV4)
+ * \return 0 on success, -1 on false to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
+ *
  */
 int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type)
 {

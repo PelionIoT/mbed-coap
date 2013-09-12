@@ -776,6 +776,7 @@ static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_
 		}
 		else if (option_number_len == 15)
 			return -1;
+		i++;
 
     }
 

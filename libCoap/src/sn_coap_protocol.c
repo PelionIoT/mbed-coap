@@ -763,8 +763,7 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
 #if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE/* If Message resending is not used at all, this part of code will not be compiled */
 
     /* Check if built Message type was confirmable, only these messages are resent */
-    if ((src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
-    		&& (src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED))
+    if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
     {
         /* * * * * * * * * * * * * * * * * * * * * */
         /* * * * Manage CoAP message resending * * */
