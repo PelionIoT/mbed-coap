@@ -864,17 +864,13 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
         /* Now option length extensions, if needed */
         if(option_len > 12 && option_len < 269)
 		{
-        	option_len -= 13;
-
-        	**dst_packet_data_pptr = (uint8_t)option_len;
+        	**dst_packet_data_pptr = (uint8_t)(option_len - 13);
         	*dst_packet_data_pptr += 1;
 		}
 
 		else if(option_len >= 269 && option_len <= 65804)
 		{
-			option_len -= 269;
-
-        	*(*dst_packet_data_pptr + 1) = (uint8_t)option_len;
+        	*(*dst_packet_data_pptr + 1) = (uint8_t)(option_len - 269);
         	**dst_packet_data_pptr = (option_len >> 8);
         	*dst_packet_data_pptr += 2;
 		}
