@@ -613,7 +613,7 @@ static int8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_h
         if((*packet_data_pptr - packet_data_start_ptr) > packet_len)
         	return -1;
 
-        message_left = packet_len - (*packet_data_pptr - packet_data_start_ptr);
+        message_left = packet_len - (*packet_data_pptr - packet_data_start_ptr);	//todo: if(*packet_data_pptr < packet_data_start_ptr) message_left = 0; else
 
 
     }
@@ -661,7 +661,7 @@ static int8_t sn_coap_parser_options_parse_multiple_options(uint8_t **packet_dat
    	temp_parsed_uri_query_ptr = *dst_pptr;
 
     /* Loop all Uri-Query options */
-    while ((temp_parsed_uri_query_ptr - *dst_pptr) < packet_left_len)
+    while ((temp_parsed_uri_query_ptr - *dst_pptr) < uri_query_needed_heap)
     {
         /* Check if this is first Uri-Query option */
         if (returned_option_counter > 0)
@@ -688,7 +688,7 @@ static int8_t sn_coap_parser_options_parse_multiple_options(uint8_t **packet_dat
         (*packet_data_pptr) += option_number_len;
         temp_parsed_uri_query_ptr += option_number_len;
 
-        if((**packet_data_pptr >> COAP_OPTIONS_OPTION_NUMBER_SHIFT) != 0)
+        if(((**packet_data_pptr >> COAP_OPTIONS_OPTION_NUMBER_SHIFT) != 0) || (temp_parsed_uri_query_ptr - *dst_pptr) >= uri_query_needed_heap)
         {
             return returned_option_counter;
         }
