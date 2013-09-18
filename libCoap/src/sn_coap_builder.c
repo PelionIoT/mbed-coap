@@ -832,7 +832,7 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
     	else if(option_len > 12 && option_len < 269)
     		**dst_packet_data_pptr = 0x0D;
 
-    	else if(option_len >= 269 && option_len <= 65804)
+    	else if(option_len >= 269)
     		**dst_packet_data_pptr = 0x0E;
 
     	/* Then option delta with extensions, and move pointer */
@@ -851,7 +851,7 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
         	 *dst_packet_data_pptr += 2;
         }
 
-        else if(option_delta >= 269 && option_delta <= 65804)
+        else if(option_delta >= 269)
         {
         	**dst_packet_data_pptr += 0xE0;
         	option_delta -= 269;
@@ -868,7 +868,7 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
         	*dst_packet_data_pptr += 1;
 		}
 
-		else if(option_len >= 269 && option_len <= 65804)
+		else if(option_len >= 269)
 		{
         	*(*dst_packet_data_pptr + 1) = (uint8_t)(option_len - 269);
         	**dst_packet_data_pptr = (option_len >> 8);

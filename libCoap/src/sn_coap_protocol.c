@@ -628,7 +628,7 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
     /* Check if built Message type is Reset message or Message code is some of response messages or empty	*/
     /* (for these messages CoAP writes same Message ID which was stored earlier from request message) 		*/
     if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_RESET ||
-    		(src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_RESPONSE_CREATED || src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_EMPTY))
+    		(src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_RESPONSE_CREATED || src_coap_msg_ptr->msg_code == COAP_MSG_CODE_EMPTY))
     {
         /* Check if there is Token option in built CoAP message */
         /* (only these messages can be acknowledged because Token option is used as key for stored messages) */

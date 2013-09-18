@@ -137,6 +137,7 @@ typedef struct sn_coap_options_list_
 	/* If-Match */
 	/* If-None-Match */
 	/* Size */
+	/* Proxy-Scheme */
 
     uint8_t     max_age_len;		/* 0-4 bytes. */
     uint8_t    *max_age_ptr;        /* Must be set to NULL if not used */

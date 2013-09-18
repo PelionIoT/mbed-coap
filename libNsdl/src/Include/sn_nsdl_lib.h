@@ -146,7 +146,7 @@ typedef struct sn_nsdl_resource_info_
 	uint16_t 						pathlen;					// Address
 	uint8_t 						*path;
 
-	uint8_t 						resourcelen;				// 0 if dynamic resource, resource information in static resource
+	uint16_t 						resourcelen;				// 0 if dynamic resource, resource information in static resource
 	uint8_t 						*resource;					// NULL if dynamic resource
 
 	sn_grs_resource_acl_e 			access;
