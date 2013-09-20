@@ -871,7 +871,7 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
 		else if(option_len >= 269)
 		{
         	*(*dst_packet_data_pptr + 1) = (uint8_t)(option_len - 269);
-        	**dst_packet_data_pptr = (option_len >> 8);
+        	**dst_packet_data_pptr = ((option_len - 269) >> 8);
         	*dst_packet_data_pptr += 2;
 		}
 

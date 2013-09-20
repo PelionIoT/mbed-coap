@@ -40,6 +40,7 @@ static void                  sn_coap_protocol_linked_list_ack_info_store(uint16_
 static int32_t               sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr);
 static void                  sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr);
 static void                  sn_coap_protocol_linked_list_ack_info_remove_old_ones(void);
+static void 				 sn_coap_protocol_send_rst(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr);
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
 static void                  sn_coap_protocol_linked_list_duplication_info_store(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static int8_t                sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_s *scr_addr_ptr, uint16_t msg_id);
@@ -871,11 +872,41 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
     /* If failure in parsed message validity check */
     if (ret_status != 0)
     {
+    	/* If message code is in a reserved class (1, 6 or 7), send reset. Message code class is 3 MSB of the message code byte 	*/
+    	if(((returned_dst_coap_msg_ptr->msg_code >> 5) == 1) ||			// if class == 1
+    			((returned_dst_coap_msg_ptr->msg_code >> 5) == 6) ||	// if class == 6
+    			((returned_dst_coap_msg_ptr->msg_code >> 5) == 7))		// if class == 7
+    	{
+    		sn_coap_protocol_send_rst(msg_id, src_addr_ptr);
+    	}
+
 		 /* Release memory of CoAP message */
 		sn_coap_parser_release_allocated_coap_msg_mem(returned_dst_coap_msg_ptr);
 
 		/* Return NULL because Header validity check failed */
 		return NULL;
+    }
+
+    /* Check if we need to send reset message */
+    /*  A recipient MUST acknowledge a Confirmable message with an Acknowledgement
+   		message or, if it lacks context to process the message properly
+   	   	(including the case where the message is Empty, uses a code with a
+   	   	reserved class (1, 6 or 7), or has a message format error), MUST
+   	   	reject it; rejecting a Confirmable message is effected by sending a
+   	   	matching Reset message and otherwise ignoring it. */
+    if(returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
+    {
+    	/* CoAP ping */
+    	if(returned_dst_coap_msg_ptr->msg_code == COAP_MSG_CODE_EMPTY)
+    	{
+    		sn_coap_protocol_send_rst(msg_id, src_addr_ptr);
+
+    		/* Release memory of CoAP message */
+    		sn_coap_parser_release_allocated_coap_msg_mem(returned_dst_coap_msg_ptr);
+
+    		/* Return NULL because Header validity check failed */
+    		return NULL;
+    	}
     }
 
 #if !SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is used, this part of code will not be compiled */
@@ -1564,6 +1595,25 @@ static void sn_coap_protocol_linked_list_ack_info_remove_old_ones(void)
     }
 }
 
+static void sn_coap_protocol_send_rst(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr)
+{
+	uint8_t packet_ptr[4];
+
+	/* Add CoAP version and message type */
+	packet_ptr[0] = COAP_VERSION_1;
+	packet_ptr[0] |= COAP_MSG_TYPE_RESET;
+
+	/* Add message code */
+	packet_ptr[1] = COAP_MSG_CODE_EMPTY;
+
+	/* Add message ID */
+	packet_ptr[2] = msg_id >> 8;
+	packet_ptr[3] = (uint8_t)msg_id;
+
+	/* Send RST */
+	sn_coap_tx_callback(SN_NSDL_PROTOCOL_COAP, packet_ptr, 4, addr_ptr);
+
+}
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
 
 /**************************************************************************//**

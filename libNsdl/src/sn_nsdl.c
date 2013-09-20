@@ -285,7 +285,8 @@ extern int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destin
 			memcpy(dst->addr_ptr, destination, 16);
 		}
 	}
-	sn_nsdl_internal_coap_send(message_ptr, dst, SN_NSDL_MSG_NO_TYPE);
+
+	sn_grs_send_coap_message(dst, message_ptr);
 
 	if(dst->addr_ptr)
 		sn_nsdl_free(dst->addr_ptr);
@@ -351,7 +352,7 @@ extern int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint
 			memcpy(dst->addr_ptr, destination, 16);
 		}
 	}
-	sn_nsdl_internal_coap_send(message_ptr, dst, SN_NSDL_MSG_NO_TYPE);
+	sn_grs_send_coap_message(dst, message_ptr);
 
 	if(dst->addr_ptr)
 		sn_nsdl_free(dst->addr_ptr);
@@ -798,7 +799,7 @@ extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_
 	}
 
 	/* Send message */
-	if(sn_nsdl_internal_coap_send(notification_message_ptr, nsp_address_ptr, SN_NSDL_MSG_NO_TYPE) == SN_NSDL_FAILURE)
+	if(sn_grs_send_coap_message(nsp_address_ptr,notification_message_ptr) == SN_NSDL_FAILURE)
 		return_msg_id = 0;
 	else
 		return_msg_id = notification_message_ptr->msg_id;
@@ -1347,8 +1348,6 @@ static int8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_
 				{
 					switch(sent_message_temp_ptr->message_type)
 					{
-					case SN_NSDL_MSG_EVENT:
-						break;
 					case SN_NSDL_MSG_REGISTER:
 						if(coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CREATED)
 						{
@@ -1383,6 +1382,7 @@ static int8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_
 
 						}
 						break;
+					case SN_NSDL_MSG_EVENT:
 					case SN_NSDL_MSG_UPDATE:
 						break;
 					}

@@ -683,99 +683,113 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 			/* If dynamic resource, go to callback */
 			if(resource_temp_ptr->mode == SN_GRS_DYNAMIC)
 			{
-				resource_temp_ptr->sn_grs_dyn_res_callback(coap_packet_ptr, src_addr_ptr,0);
-				if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
+				/* Check accesses */
+				if(((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET) && !(resource_temp_ptr->access & SN_GRS_GET_ALLOWED)) 			||
+						((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST) && !(resource_temp_ptr->access & SN_GRS_POST_ALLOWED)) 	||
+						((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT) && !(resource_temp_ptr->access & SN_GRS_PUT_ALLOWED))   	||
+						((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_DELETE) && !(resource_temp_ptr->access & SN_GRS_DELETE_ALLOWED)))
 				{
-					sn_grs_free(coap_packet_ptr->payload_ptr);
-					coap_packet_ptr->payload_ptr = 0;
+
+					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
 				}
-				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
-				return SN_NSDL_SUCCESS;
+				else
+				{
+					resource_temp_ptr->sn_grs_dyn_res_callback(coap_packet_ptr, src_addr_ptr,0);
+					if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
+					{
+						sn_grs_free(coap_packet_ptr->payload_ptr);
+						coap_packet_ptr->payload_ptr = 0;
+					}
+					sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+					return SN_NSDL_SUCCESS;
+				}
 			}
-
-			/* Static resource handling */
-			switch (coap_packet_ptr->msg_code)
+			else
 			{
-			case (COAP_MSG_CODE_REQUEST_GET):
-				if(resource_temp_ptr->access & SN_GRS_GET_ALLOWED)
+				/* Static resource handling */
+				switch (coap_packet_ptr->msg_code )
 				{
-					status = COAP_MSG_CODE_RESPONSE_CONTENT;
-				}
-				else
-					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-				break;
-			case (COAP_MSG_CODE_REQUEST_POST):
-				if(resource_temp_ptr->access & SN_GRS_POST_ALLOWED)
-				{
-					resource_temp_ptr->resourcelen = coap_packet_ptr->payload_len;
-					sn_grs_free(resource_temp_ptr->resource);
-					resource_temp_ptr->resource = 0;
-					if(resource_temp_ptr->resourcelen)
+				case (COAP_MSG_CODE_REQUEST_GET):
+					if(resource_temp_ptr->access & SN_GRS_GET_ALLOWED)
 					{
-						resource_temp_ptr->resource = sn_grs_alloc(resource_temp_ptr->resourcelen);
-						if(!resource_temp_ptr->resource)
-						{
-							status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-							break;
-						}
-						memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
+						status = COAP_MSG_CODE_RESPONSE_CONTENT;
 					}
-					if(coap_packet_ptr->content_type_ptr)
-					{
-						if(resource_temp_ptr->resource_parameters_ptr)
-						{
-							resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
-						}
-					}
-					status = COAP_MSG_CODE_RESPONSE_CHANGED;
-				}
-				else
-					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-				break;
-			case (COAP_MSG_CODE_REQUEST_PUT):
-				if(resource_temp_ptr->access & SN_GRS_PUT_ALLOWED)
-				{
-					resource_temp_ptr->resourcelen = coap_packet_ptr->payload_len;
-					sn_grs_free(resource_temp_ptr->resource);
-					resource_temp_ptr->resource = 0;
-					if(resource_temp_ptr->resourcelen)
-					{
-						resource_temp_ptr->resource = sn_grs_alloc(resource_temp_ptr->resourcelen);
-						if(!resource_temp_ptr->resource)
-						{
-							status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-							break;
-						}
-						memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
-					}
-					if(coap_packet_ptr->content_type_ptr)
-					{
-						if(resource_temp_ptr->resource_parameters_ptr)
-						{
-							resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
-						}
-					}
-					status = COAP_MSG_CODE_RESPONSE_CHANGED;
-				}
-				else
-					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-				break;
-
-			case (COAP_MSG_CODE_REQUEST_DELETE):
-				if(resource_temp_ptr->access & SN_GRS_DELETE_ALLOWED)
-				{
-					if(sn_grs_delete_resource(coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr) == SN_NSDL_SUCCESS)
-						status = COAP_MSG_CODE_RESPONSE_DELETED;
 					else
-						status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-				}
-				else
-					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-				break;
+						status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
+					break;
+				case (COAP_MSG_CODE_REQUEST_POST):
+					if(resource_temp_ptr->access & SN_GRS_POST_ALLOWED)
+					{
+						resource_temp_ptr->resourcelen = coap_packet_ptr->payload_len;
+						sn_grs_free(resource_temp_ptr->resource);
+						resource_temp_ptr->resource = 0;
+						if(resource_temp_ptr->resourcelen)
+						{
+							resource_temp_ptr->resource = sn_grs_alloc(resource_temp_ptr->resourcelen);
+							if(!resource_temp_ptr->resource)
+							{
+								status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
+								break;
+							}
+							memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
+						}
+						if(coap_packet_ptr->content_type_ptr)
+						{
+							if(resource_temp_ptr->resource_parameters_ptr)
+							{
+								resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
+							}
+						}
+						status = COAP_MSG_CODE_RESPONSE_CHANGED;
+					}
+					else
+						status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
+					break;
+				case (COAP_MSG_CODE_REQUEST_PUT):
+					if(resource_temp_ptr->access & SN_GRS_PUT_ALLOWED)
+					{
+						resource_temp_ptr->resourcelen = coap_packet_ptr->payload_len;
+						sn_grs_free(resource_temp_ptr->resource);
+						resource_temp_ptr->resource = 0;
+						if(resource_temp_ptr->resourcelen)
+						{
+							resource_temp_ptr->resource = sn_grs_alloc(resource_temp_ptr->resourcelen);
+							if(!resource_temp_ptr->resource)
+							{
+								status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
+								break;
+							}
+							memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
+						}
+						if(coap_packet_ptr->content_type_ptr)
+						{
+							if(resource_temp_ptr->resource_parameters_ptr)
+							{
+								resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
+							}
+						}
+						status = COAP_MSG_CODE_RESPONSE_CHANGED;
+					}
+					else
+						status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
+					break;
 
-			default:
-				status = COAP_MSG_CODE_RESPONSE_FORBIDDEN;
-				break;
+				case (COAP_MSG_CODE_REQUEST_DELETE):
+					if(resource_temp_ptr->access & SN_GRS_DELETE_ALLOWED)
+					{
+						if(sn_grs_delete_resource(coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr) == SN_NSDL_SUCCESS)
+							status = COAP_MSG_CODE_RESPONSE_DELETED;
+						else
+							status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
+					}
+					else
+						status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
+					break;
+
+				default:
+					status = COAP_MSG_CODE_RESPONSE_FORBIDDEN;
+					break;
+				}
 			}
 		}
 
