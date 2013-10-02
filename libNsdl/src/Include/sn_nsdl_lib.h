@@ -25,6 +25,9 @@ extern "C" {
 #define OBS_PARAMETER_LEN				3
 #define OBS_PARAMETER					{'o','b','s'}
 
+#define AOBS_PARAMETER_LEN				8
+#define AOBS_PARAMETER					{'a','o','b','s',';','i','d','='}
+
 #define COAP_CON_PARAMETER_LEN			3
 #define COAP_CON_PARAMETER				{'c','t','='}
 
@@ -132,6 +135,9 @@ typedef struct sn_nsdl_resource_parameters_
 	uint8_t		mime_content_type;
 
 	uint8_t		observable;
+
+	uint8_t		*auto_obs_ptr;
+	uint8_t		auto_obs_len;		// 1-8 bytes
 
 	uint8_t		registered;
 

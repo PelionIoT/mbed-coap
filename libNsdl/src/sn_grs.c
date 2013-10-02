@@ -1084,7 +1084,12 @@ extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_
 		return SN_NSDL_FAILURE;
 
 	/* Build CoAP message */
-	sn_coap_protocol_build(address_ptr, message_ptr, coap_hdr_ptr);
+	if(sn_coap_protocol_build(address_ptr, message_ptr, coap_hdr_ptr) < 0)
+	{
+		sn_grs_free(message_ptr);
+		message_ptr = 0;
+		return SN_NSDL_FAILURE;
+	}
 
 	/* Call tx callback function to send message */
 	ret_val = sn_grs_tx_callback(SN_NSDL_PROTOCOL_COAP, message_ptr, message_len, address_ptr);
@@ -1302,6 +1307,19 @@ static int8_t sn_grs_add_resource_to_list(sn_linked_list_t *list_ptr, sn_nsdl_re
 			memcpy(resource_copy_ptr->resource_parameters_ptr->interface_description_ptr, resource_ptr->resource_parameters_ptr->interface_description_ptr, resource_ptr->resource_parameters_ptr->interface_description_len);
 		}
 
+		/* Copy auto observation parameter */
+		if(resource_ptr->resource_parameters_ptr->auto_obs_ptr && resource_ptr->resource_parameters_ptr->auto_obs_len)
+		{
+			resource_copy_ptr->resource_parameters_ptr->auto_obs_ptr = sn_grs_alloc(resource_ptr->resource_parameters_ptr->auto_obs_len);
+			if(!resource_copy_ptr->resource_parameters_ptr->auto_obs_ptr)
+			{
+				sn_grs_resource_info_free(resource_copy_ptr);
+				return SN_NSDL_FAILURE;
+			}
+			memcpy(resource_copy_ptr->resource_parameters_ptr->auto_obs_ptr, resource_ptr->resource_parameters_ptr->auto_obs_ptr, resource_ptr->resource_parameters_ptr->auto_obs_len);
+			resource_copy_ptr->resource_parameters_ptr->auto_obs_len = resource_ptr->resource_parameters_ptr->auto_obs_len;
+		}
+
 		resource_copy_ptr->resource_parameters_ptr->coap_content_type = resource_ptr->resource_parameters_ptr->coap_content_type;
 	}
 
@@ -1383,6 +1401,12 @@ static int8_t sn_grs_resource_info_free(sn_nsdl_resource_info_s *resource_ptr)
 			{
 				sn_grs_free(resource_ptr->resource_parameters_ptr->resource_type_ptr);
 				resource_ptr->resource_parameters_ptr->resource_type_ptr = 0;
+			}
+
+			if(resource_ptr->resource_parameters_ptr->auto_obs_ptr)
+			{
+				sn_grs_free(resource_ptr->resource_parameters_ptr->auto_obs_ptr);
+				resource_ptr->resource_parameters_ptr->auto_obs_ptr = 0;
 			}
 
 			sn_grs_free(resource_ptr->resource_parameters_ptr);

@@ -307,6 +307,7 @@ int8_t sn_coap_protocol_destroy(void)
 					sn_coap_protocol_free(tmp->addr_ptr);
 					tmp->addr_ptr = 0;
 				}
+				sn_linked_list_remove_current_node(global_linked_list_ack_info_ptr);
 				sn_coap_protocol_free(tmp);
 				tmp = 0;
 			}

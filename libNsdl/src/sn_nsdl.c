@@ -31,6 +31,9 @@ SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t		obs_parameter[]				= OBS_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
+static uint8_t		aobs_parameter[]			= AOBS_PARAMETER;
+
+SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t		if_description_parameter[]	= IF_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
@@ -724,15 +727,12 @@ extern void sn_nsdl_nsp_lost(void)
  */
 extern int8_t sn_nsdl_is_ep_registered(void)
 {
-//	if(ep_information_ptr->endpoint_name_ptr)
-//		return 1;
-//	else
-//		return 0;
+
 	return sn_nsdl_endpoint_registered;
 }
 
 /**
- * \fn extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
+ * \fn extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
  *															uint8_t *payload_ptr, uint16_t payload_len,
  *															uint8_t *observe_ptr, uint8_t observe_len,
  *															sn_coap_msg_type_e message_type, uint8_t content_type)
@@ -1081,11 +1081,29 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 				*temp_ptr++ = '"';
 			}
 
+			/* ;obs */
 			if(resource_temp_ptr->resource_parameters_ptr->observable)
 			{
 				*temp_ptr++ = ';';
 				memcpy(temp_ptr, obs_parameter, OBS_PARAMETER_LEN);
 				temp_ptr += OBS_PARAMETER_LEN;
+			}
+
+			/* ;aobs;id= */
+			if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
+					resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
+			{
+				uint8_t i = 0;
+
+				*temp_ptr++ = ';';
+				memcpy(temp_ptr, aobs_parameter, AOBS_PARAMETER_LEN);
+				temp_ptr += AOBS_PARAMETER_LEN;
+
+				while(i < resource_temp_ptr->resource_parameters_ptr->auto_obs_len)
+				{
+					temp_ptr = sn_nsdl_itoa(temp_ptr, *(resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr + i));
+					i++;
+				}
 			}
 
 		}
@@ -1163,6 +1181,17 @@ static uint16_t sn_nsdl_calculate_registration_body_size(uint8_t updating_regist
 			{
 				/* ;obs */
 				return_value += 4;
+			}
+			if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
+					resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
+			{
+				uint8_t i = resource_temp_ptr->resource_parameters_ptr->auto_obs_len;
+				/* ;aobs;id= */
+				return_value += 9;
+				while(i--)
+				{
+					return_value += sn_nsdl_itoa_len(*(resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr + i));
+				}
 			}
 
 		}
