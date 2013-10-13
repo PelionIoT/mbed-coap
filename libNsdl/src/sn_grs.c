@@ -25,6 +25,10 @@
 #include <stdlib.h>
 #include <string.h>			// for memcomp
 
+/* Defines */
+#define WELLKNOWN_PATH_LEN				16
+#define WELLKNOWN_PATH					(".well-known/core")
+
 /* Local static function prototypes */
 static sn_nsdl_resource_info_s *	sn_grs_search_resource				(uint16_t pathlen, uint8_t *path, uint8_t search_method);
 static int8_t 						sn_grs_resource_info_free			(sn_nsdl_resource_info_s *resource_ptr);
@@ -949,7 +953,7 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 				{
 					response_message_hdr_ptr->content_type_len = 1;
 					response_message_hdr_ptr->content_type_ptr = sn_grs_alloc(response_message_hdr_ptr->content_type_len);
-					if(!response_message_hdr_ptr)
+					if(!response_message_hdr_ptr->content_type_ptr)
 					{
 						sn_coap_parser_release_allocated_coap_msg_mem(response_message_hdr_ptr);
 
@@ -1062,9 +1066,9 @@ extern uint32_t sn_grs_get_version(void)
  *
  *	Sends CoAP message
  *
- *	\param  *coap_hdr_ptr	Length of the path to be search
+ *	\param  *coap_hdr_ptr	Pointer to CoAP message to be sent
  *
- *	\param 	*address_ptr	Pointer to the path string to be search
+ *	\param 	*address_ptr	Pointer to source address struct
  *
  *	\return	0 = success, -1 = failed
  *
@@ -1308,7 +1312,8 @@ static int8_t sn_grs_add_resource_to_list(sn_linked_list_t *list_ptr, sn_nsdl_re
 		}
 
 		/* Copy auto observation parameter */
-		if(resource_ptr->resource_parameters_ptr->auto_obs_ptr && resource_ptr->resource_parameters_ptr->auto_obs_len)
+		/* todo: aobs not supported ATM - needs fixing */
+/*		if(resource_ptr->resource_parameters_ptr->auto_obs_ptr && resource_ptr->resource_parameters_ptr->auto_obs_len)
 		{
 			resource_copy_ptr->resource_parameters_ptr->auto_obs_ptr = sn_grs_alloc(resource_ptr->resource_parameters_ptr->auto_obs_len);
 			if(!resource_copy_ptr->resource_parameters_ptr->auto_obs_ptr)
@@ -1321,6 +1326,7 @@ static int8_t sn_grs_add_resource_to_list(sn_linked_list_t *list_ptr, sn_nsdl_re
 		}
 
 		resource_copy_ptr->resource_parameters_ptr->coap_content_type = resource_ptr->resource_parameters_ptr->coap_content_type;
+		*/
 	}
 
 	/* Add copied resource to the linked list */
@@ -1403,11 +1409,14 @@ static int8_t sn_grs_resource_info_free(sn_nsdl_resource_info_s *resource_ptr)
 				resource_ptr->resource_parameters_ptr->resource_type_ptr = 0;
 			}
 
+			/* Todo: aobs not supported ATM - needs fixing */
+			/*
 			if(resource_ptr->resource_parameters_ptr->auto_obs_ptr)
 			{
 				sn_grs_free(resource_ptr->resource_parameters_ptr->auto_obs_ptr);
 				resource_ptr->resource_parameters_ptr->auto_obs_ptr = 0;
 			}
+			*/
 
 			sn_grs_free(resource_ptr->resource_parameters_ptr);
 			resource_ptr->resource_parameters_ptr = 0;

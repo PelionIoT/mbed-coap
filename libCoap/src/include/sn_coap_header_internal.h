@@ -48,6 +48,19 @@ SN_MEM_ATTR_COAP_PARSER_DECL extern void  (*sn_coap_free)(void*);      /* Functi
 /* * * * STRUCTURES  * * * */
 /* * * * * * * * * * * * * */
 
+/**
+ * \brief This structure is returned by sn_coap_exec() for sending
+ */
+typedef struct sn_nsdl_transmit_
+{
+    sn_nsdl_addr_s         *dst_addr_ptr;
+
+    sn_nsdl_capab_e         protocol;
+
+    uint16_t                packet_len;
+    uint8_t                *packet_ptr;
+} sn_nsdl_transmit_s;
+
 /* * * * * * * * * * * * * * * * * * * * * * */
 /* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */
 /* * * * * * * * * * * * * * * * * * * * * * */

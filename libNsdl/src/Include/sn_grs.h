@@ -41,6 +41,9 @@ extern "C" {
 
 #define SN_GRS_DEFAULT_ACCESS	0x0F
 
+#define SN_NDSL_RESOURCE_NOT_REGISTERED	0
+#define SN_NDSL_RESOURCE_REGISTERING	1
+#define SN_NDSL_RESOURCE_REGISTERED		2
 
 /***** Structs *****/
 
