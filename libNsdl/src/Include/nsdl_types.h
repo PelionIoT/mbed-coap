@@ -68,7 +68,7 @@ typedef  signed long int prog_int32_t;
 
 #ifndef ATXMEGA256
 #define __code
-//typedef signed long int          int32_t;
+typedef signed long int          int32_t;
 typedef unsigned long int        uint32_t;
 
 typedef  unsigned char const prog_uint8_t;
