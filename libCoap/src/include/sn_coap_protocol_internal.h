@@ -66,8 +66,8 @@ extern "C" {
 #endif
 
 /* CoAP Resending defines */
-#define RESPONSE_TIMEOUT        2   /* Initial resending timeout as seconds, value is specified in IETF CoAP specification */
-#define RESPONSE_RANDOM_FACTOR  1   /* Resending random factor, value is specified in IETF CoAP specification */
+#define DEFAULT_RESPONSE_TIMEOUT	10   /* Initial resending timeout as seconds, value is specified in IETF CoAP specification */
+#define RESPONSE_RANDOM_FACTOR  	1   /* Resending random factor, value is specified in IETF CoAP specification */
 
 /* * * * * * * * * * * * * * */
 /* * * * ENUMERATIONS  * * * */

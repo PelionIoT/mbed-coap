@@ -93,6 +93,7 @@ SN_MEM_ATTR_COAP_PROTOCOL_DECL uint16_t 				sn_coap_block_data_size 							= 0;
 SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t 					sn_coap_resending_buffer_size 						= 0;
 SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t 					sn_coap_resending_count		 						= 0;
 SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_duplication_buffer_size						= 0;
+SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_resending_intervall							= 0;
 
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              *(*sn_coap_protocol_malloc)(uint16_t)              = NULL; /* Function pointer for used malloc() function */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              (*sn_coap_protocol_free)(void*)                    = NULL; /* Function pointer for used free()   function */
@@ -422,6 +423,7 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
     sn_coap_resending_buffer_size = SN_COAP_RESENDING_BUFFER_MAX_SIZE;
     sn_coap_resending_count = SN_COAP_RESENDING_MAX_COUNT;
     sn_coap_block_data_size = SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE;
+    sn_coap_resending_intervall = DEFAULT_RESPONSE_TIMEOUT;
 
     /* Check that Linked list is not already created */
     if (global_linked_list_resent_msgs_ptr == NULL)
@@ -574,13 +576,14 @@ int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
  * 			-1 = failure
  */
 
-int8_t sn_coap_protocol_set_retransmission(uint8_t resending_count, uint8_t buffer_size)
+int8_t sn_coap_protocol_set_retransmission(uint8_t resending_count, uint8_t buffer_size, uint8_t resending_intervall)
 {
 #if SN_COAP_RESENDING_MAX_COUNT && SN_COAP_RESENDING_MAX_COUNT
 	if(resending_count <= SN_COAP_MAX_ALLOWED_RESENDING_COUNT && resending_count <= SN_COAP_MAX_ALLOWED_RESENDING_BUFF_SIZE)
 	{
 		sn_coap_resending_count = resending_count;
 		sn_coap_resending_buffer_size = buffer_size;
+		sn_coap_resending_intervall = resending_intervall;
 		return 0;
 	}
 #endif
@@ -773,7 +776,7 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
 
         /* Store message to Linked list for resending purposes */
         sn_coap_protocol_linked_list_send_msg_store(dst_addr_ptr, byte_count_built, dst_packet_data_ptr,
-                                                    global_system_time + (uint32_t)(RESPONSE_TIMEOUT * RESPONSE_RANDOM_FACTOR));
+                                                    global_system_time + (uint32_t)(sn_coap_resending_intervall * RESPONSE_RANDOM_FACTOR));
     }
 
 #endif /* SN_COAP_RESENDING_MAX_COUNT */
@@ -1006,7 +1009,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
 #if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE/* If Message resending is not used at all, this part of code will not be compiled */
 
     /* Check if received Message type was acknowledgement */
-    if (returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT)
+    if ((returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT) || (returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_RESET))
     {
         /* * * * Manage CoAP message resending by removing active resending message from Linked list * * */
 
@@ -1112,7 +1115,7 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
 				else
 				{
 					/* * * Count new Resending time  * * */
-					stored_msg_ptr->resending_time = current_time + (((uint32_t)(RESPONSE_TIMEOUT * RESPONSE_RANDOM_FACTOR)) <<
+					stored_msg_ptr->resending_time = current_time + (((uint32_t)(sn_coap_resending_intervall * RESPONSE_RANDOM_FACTOR)) <<
 																	 stored_msg_ptr->resending_counter);
 				}
 
@@ -1163,6 +1166,7 @@ static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr
     if (stored_resending_msgs_count >= sn_coap_resending_buffer_size && sn_coap_block_data_size == 0)
     {
         /* Not allowed to add more Resending messages to Linked list */
+    	// todo: remove latest!!
         return;
     }
 
@@ -2631,7 +2635,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 				sn_coap_protocol_linked_list_send_msg_store(src_addr_ptr,
 															dst_packed_data_needed_mem,
 															dst_ack_packet_data_ptr,
-															global_system_time + (uint32_t)(RESPONSE_TIMEOUT * RESPONSE_RANDOM_FACTOR));
+															global_system_time + (uint32_t)(sn_coap_resending_intervall * RESPONSE_RANDOM_FACTOR));
 
 				sn_coap_protocol_free(dst_ack_packet_data_ptr);
             }

@@ -59,7 +59,7 @@ extern int8_t 			   sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_c
 /**
  * \brief If re-transmissions are enabled, this function changes resending count and buffer size.
  */
-extern int8_t 			   sn_coap_protocol_set_retransmission(uint8_t resending_count, uint8_t buffer_size);
+extern int8_t 			   sn_coap_protocol_set_retransmission(uint8_t resending_count, uint8_t buffer_size, uint8_t resending_intervall);
 
 /* NSP manual registration functions */
 
