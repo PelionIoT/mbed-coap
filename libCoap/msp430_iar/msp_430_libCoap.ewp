@@ -1870,16 +1870,16 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_builder.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_header_check.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_parser.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_protocol.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>

@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 #ifndef SN_NSDL_HAVE_HTTPS_CAPABILITY
-#define SN_NSDL_HAVE_HTTPS_CAPABILITY	0
+#define SN_NSDL_HAVE_HTTPS_CAPABILITY		0
 #endif
 
 #ifndef SN_NSDL_HAVE_COAP_CAPABILITY
@@ -43,18 +43,24 @@ extern "C" {
 /* * * * * * * * * * * * * * */
 
 
+/**
+ * \brief Used protocol
+ */
 typedef enum sn_nsdl_capab_
 {
-    SN_NSDL_PROTOCOL_HTTP           = 0x01,
-    SN_NSDL_PROTOCOL_HTTPS          = 0x02,
-    SN_NSDL_PROTOCOL_COAP           = 0x04
+    SN_NSDL_PROTOCOL_HTTP           = 0x01,			/**< Unsupported */
+    SN_NSDL_PROTOCOL_HTTPS          = 0x02,			/**< Unsupported */
+    SN_NSDL_PROTOCOL_COAP           = 0x04			/**< Supported */
 } sn_nsdl_capab_e;
 
+/**
+ * \brief Address type of given address
+ */
 typedef enum sn_nsdl_addr_type_
 {
-    SN_NSDL_ADDRESS_TYPE_IPV6       = 0x01,
-    SN_NSDL_ADDRESS_TYPE_IPV4       = 0x02,
-    SN_NSDL_ADDRESS_TYPE_HOSTNAME   = 0x03,
+    SN_NSDL_ADDRESS_TYPE_IPV6       = 0x01,			/**< Supported */
+    SN_NSDL_ADDRESS_TYPE_IPV4       = 0x02,			/**< Supported */
+    SN_NSDL_ADDRESS_TYPE_HOSTNAME   = 0x03,			/**< Unsupported */
     SN_NSDL_ADDRESS_TYPE_NONE       = 0xFF
 } sn_nsdl_addr_type_e;
 
@@ -68,7 +74,9 @@ typedef enum sn_nsdl_addr_type_
 /* * * * STRUCTURES  * * * */
 /* * * * * * * * * * * * * */
 
-/* Address structure of Packet data */
+/**
+ * \brief Address structure of Packet data
+ */
 typedef struct sn_nsdl_addr_
 {
     sn_nsdl_addr_type_e     type;
@@ -82,29 +90,21 @@ typedef struct sn_nsdl_addr_
 
 } sn_nsdl_addr_s;
 
-/* This structure is returned by sn_coap_exec() for sending */
-typedef struct sn_nsdl_transmit_
-{
-    sn_nsdl_addr_s         *dst_addr_ptr;
-
-    sn_nsdl_capab_e         protocol;
-
-    uint16_t                packet_len;
-    uint8_t                *packet_ptr;
-} sn_nsdl_transmit_s;
-
+/**
+ * \brief Used for creating manually nsdl registration message with sn_coap_register()
+ */
 typedef struct registration_info_
 {
-	uint8_t *endpoint_ptr;
+	uint8_t *endpoint_ptr;			/**< Endpoint name */
 	uint8_t endpoint_len;
 
-	uint8_t *endpoint_type_ptr;
+	uint8_t *endpoint_type_ptr;		/**< Endpoint type */
 	uint8_t endpoint_type_len;
 
-	uint8_t *links_ptr;
+	uint8_t *links_ptr;				/**< Resource registration string */
 	uint16_t links_len;
 
-}registration_info_t;
+} registration_info_t;
 
 #endif /* SN_NSDL_H_ */
 

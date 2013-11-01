@@ -25,6 +25,10 @@
 #include <stdlib.h>
 #include <string.h>			// for memcomp
 
+/* Defines */
+#define WELLKNOWN_PATH_LEN				16
+#define WELLKNOWN_PATH					(".well-known/core")
+
 /* Local static function prototypes */
 static sn_nsdl_resource_info_s *	sn_grs_search_resource				(uint16_t pathlen, uint8_t *path, uint8_t search_method);
 static int8_t 						sn_grs_resource_info_free			(sn_nsdl_resource_info_s *resource_ptr);
@@ -44,10 +48,10 @@ SN_MEM_ATTR_GRS_DECL static sn_linked_list_t *resource_root_list = NULL;
 
 
 /* Local global function pointers */
-void 	*(*sn_grs_alloc)(uint16_t);
-void 	(*sn_grs_free)(void*);
-uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
-int8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
+static void 	*(*sn_grs_alloc)(uint16_t);
+static void 	(*sn_grs_free)(void*);
+static uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
+static int8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
 
 /**
  * \fn int8_t sn_grs_destroy(void)
@@ -683,99 +687,113 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 			/* If dynamic resource, go to callback */
 			if(resource_temp_ptr->mode == SN_GRS_DYNAMIC)
 			{
-				resource_temp_ptr->sn_grs_dyn_res_callback(coap_packet_ptr, src_addr_ptr,0);
-				if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
+				/* Check accesses */
+				if(((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET) && !(resource_temp_ptr->access & SN_GRS_GET_ALLOWED)) 			||
+						((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST) && !(resource_temp_ptr->access & SN_GRS_POST_ALLOWED)) 	||
+						((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT) && !(resource_temp_ptr->access & SN_GRS_PUT_ALLOWED))   	||
+						((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_DELETE) && !(resource_temp_ptr->access & SN_GRS_DELETE_ALLOWED)))
 				{
-					sn_grs_free(coap_packet_ptr->payload_ptr);
-					coap_packet_ptr->payload_ptr = 0;
+
+					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
 				}
-				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
-				return SN_NSDL_SUCCESS;
+				else
+				{
+					resource_temp_ptr->sn_grs_dyn_res_callback(coap_packet_ptr, src_addr_ptr,0);
+					if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
+					{
+						sn_grs_free(coap_packet_ptr->payload_ptr);
+						coap_packet_ptr->payload_ptr = 0;
+					}
+					sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+					return SN_NSDL_SUCCESS;
+				}
 			}
-
-			/* Static resource handling */
-			switch (coap_packet_ptr->msg_code)
+			else
 			{
-			case (COAP_MSG_CODE_REQUEST_GET):
-				if(resource_temp_ptr->access & SN_GRS_GET_ALLOWED)
+				/* Static resource handling */
+				switch (coap_packet_ptr->msg_code )
 				{
-					status = COAP_MSG_CODE_RESPONSE_CONTENT;
-				}
-				else
-					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-				break;
-			case (COAP_MSG_CODE_REQUEST_POST):
-				if(resource_temp_ptr->access & SN_GRS_POST_ALLOWED)
-				{
-					resource_temp_ptr->resourcelen = coap_packet_ptr->payload_len;
-					sn_grs_free(resource_temp_ptr->resource);
-					resource_temp_ptr->resource = 0;
-					if(resource_temp_ptr->resourcelen)
+				case (COAP_MSG_CODE_REQUEST_GET):
+					if(resource_temp_ptr->access & SN_GRS_GET_ALLOWED)
 					{
-						resource_temp_ptr->resource = sn_grs_alloc(resource_temp_ptr->resourcelen);
-						if(!resource_temp_ptr->resource)
-						{
-							status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-							break;
-						}
-						memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
+						status = COAP_MSG_CODE_RESPONSE_CONTENT;
 					}
-					if(coap_packet_ptr->content_type_ptr)
-					{
-						if(resource_temp_ptr->resource_parameters_ptr)
-						{
-							resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
-						}
-					}
-					status = COAP_MSG_CODE_RESPONSE_CHANGED;
-				}
-				else
-					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-				break;
-			case (COAP_MSG_CODE_REQUEST_PUT):
-				if(resource_temp_ptr->access & SN_GRS_PUT_ALLOWED)
-				{
-					resource_temp_ptr->resourcelen = coap_packet_ptr->payload_len;
-					sn_grs_free(resource_temp_ptr->resource);
-					resource_temp_ptr->resource = 0;
-					if(resource_temp_ptr->resourcelen)
-					{
-						resource_temp_ptr->resource = sn_grs_alloc(resource_temp_ptr->resourcelen);
-						if(!resource_temp_ptr->resource)
-						{
-							status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-							break;
-						}
-						memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
-					}
-					if(coap_packet_ptr->content_type_ptr)
-					{
-						if(resource_temp_ptr->resource_parameters_ptr)
-						{
-							resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
-						}
-					}
-					status = COAP_MSG_CODE_RESPONSE_CHANGED;
-				}
-				else
-					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-				break;
-
-			case (COAP_MSG_CODE_REQUEST_DELETE):
-				if(resource_temp_ptr->access & SN_GRS_DELETE_ALLOWED)
-				{
-					if(sn_grs_delete_resource(coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr) == SN_NSDL_SUCCESS)
-						status = COAP_MSG_CODE_RESPONSE_DELETED;
 					else
-						status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-				}
-				else
-					status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-				break;
+						status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
+					break;
+				case (COAP_MSG_CODE_REQUEST_POST):
+					if(resource_temp_ptr->access & SN_GRS_POST_ALLOWED)
+					{
+						resource_temp_ptr->resourcelen = coap_packet_ptr->payload_len;
+						sn_grs_free(resource_temp_ptr->resource);
+						resource_temp_ptr->resource = 0;
+						if(resource_temp_ptr->resourcelen)
+						{
+							resource_temp_ptr->resource = sn_grs_alloc(resource_temp_ptr->resourcelen);
+							if(!resource_temp_ptr->resource)
+							{
+								status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
+								break;
+							}
+							memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
+						}
+						if(coap_packet_ptr->content_type_ptr)
+						{
+							if(resource_temp_ptr->resource_parameters_ptr)
+							{
+								resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
+							}
+						}
+						status = COAP_MSG_CODE_RESPONSE_CHANGED;
+					}
+					else
+						status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
+					break;
+				case (COAP_MSG_CODE_REQUEST_PUT):
+					if(resource_temp_ptr->access & SN_GRS_PUT_ALLOWED)
+					{
+						resource_temp_ptr->resourcelen = coap_packet_ptr->payload_len;
+						sn_grs_free(resource_temp_ptr->resource);
+						resource_temp_ptr->resource = 0;
+						if(resource_temp_ptr->resourcelen)
+						{
+							resource_temp_ptr->resource = sn_grs_alloc(resource_temp_ptr->resourcelen);
+							if(!resource_temp_ptr->resource)
+							{
+								status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
+								break;
+							}
+							memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
+						}
+						if(coap_packet_ptr->content_type_ptr)
+						{
+							if(resource_temp_ptr->resource_parameters_ptr)
+							{
+								resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
+							}
+						}
+						status = COAP_MSG_CODE_RESPONSE_CHANGED;
+					}
+					else
+						status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
+					break;
 
-			default:
-				status = COAP_MSG_CODE_RESPONSE_FORBIDDEN;
-				break;
+				case (COAP_MSG_CODE_REQUEST_DELETE):
+					if(resource_temp_ptr->access & SN_GRS_DELETE_ALLOWED)
+					{
+						if(sn_grs_delete_resource(coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr) == SN_NSDL_SUCCESS)
+							status = COAP_MSG_CODE_RESPONSE_DELETED;
+						else
+							status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
+					}
+					else
+						status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
+					break;
+
+				default:
+					status = COAP_MSG_CODE_RESPONSE_FORBIDDEN;
+					break;
+				}
 			}
 		}
 
@@ -935,7 +953,7 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 				{
 					response_message_hdr_ptr->content_type_len = 1;
 					response_message_hdr_ptr->content_type_ptr = sn_grs_alloc(response_message_hdr_ptr->content_type_len);
-					if(!response_message_hdr_ptr)
+					if(!response_message_hdr_ptr->content_type_ptr)
 					{
 						sn_coap_parser_release_allocated_coap_msg_mem(response_message_hdr_ptr);
 
@@ -1048,9 +1066,9 @@ extern uint32_t sn_grs_get_version(void)
  *
  *	Sends CoAP message
  *
- *	\param  *coap_hdr_ptr	Length of the path to be search
+ *	\param  *coap_hdr_ptr	Pointer to CoAP message to be sent
  *
- *	\param 	*address_ptr	Pointer to the path string to be search
+ *	\param 	*address_ptr	Pointer to source address struct
  *
  *	\return	0 = success, -1 = failed
  *
@@ -1070,7 +1088,12 @@ extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_
 		return SN_NSDL_FAILURE;
 
 	/* Build CoAP message */
-	sn_coap_protocol_build(address_ptr, message_ptr, coap_hdr_ptr);
+	if(sn_coap_protocol_build(address_ptr, message_ptr, coap_hdr_ptr) < 0)
+	{
+		sn_grs_free(message_ptr);
+		message_ptr = 0;
+		return SN_NSDL_FAILURE;
+	}
 
 	/* Call tx callback function to send message */
 	ret_val = sn_grs_tx_callback(SN_NSDL_PROTOCOL_COAP, message_ptr, message_len, address_ptr);
@@ -1288,7 +1311,22 @@ static int8_t sn_grs_add_resource_to_list(sn_linked_list_t *list_ptr, sn_nsdl_re
 			memcpy(resource_copy_ptr->resource_parameters_ptr->interface_description_ptr, resource_ptr->resource_parameters_ptr->interface_description_ptr, resource_ptr->resource_parameters_ptr->interface_description_len);
 		}
 
+		/* Copy auto observation parameter */
+		/* todo: aobs not supported ATM - needs fixing */
+/*		if(resource_ptr->resource_parameters_ptr->auto_obs_ptr && resource_ptr->resource_parameters_ptr->auto_obs_len)
+		{
+			resource_copy_ptr->resource_parameters_ptr->auto_obs_ptr = sn_grs_alloc(resource_ptr->resource_parameters_ptr->auto_obs_len);
+			if(!resource_copy_ptr->resource_parameters_ptr->auto_obs_ptr)
+			{
+				sn_grs_resource_info_free(resource_copy_ptr);
+				return SN_NSDL_FAILURE;
+			}
+			memcpy(resource_copy_ptr->resource_parameters_ptr->auto_obs_ptr, resource_ptr->resource_parameters_ptr->auto_obs_ptr, resource_ptr->resource_parameters_ptr->auto_obs_len);
+			resource_copy_ptr->resource_parameters_ptr->auto_obs_len = resource_ptr->resource_parameters_ptr->auto_obs_len;
+		}
+
 		resource_copy_ptr->resource_parameters_ptr->coap_content_type = resource_ptr->resource_parameters_ptr->coap_content_type;
+		*/
 	}
 
 	/* Add copied resource to the linked list */
@@ -1370,6 +1408,15 @@ static int8_t sn_grs_resource_info_free(sn_nsdl_resource_info_s *resource_ptr)
 				sn_grs_free(resource_ptr->resource_parameters_ptr->resource_type_ptr);
 				resource_ptr->resource_parameters_ptr->resource_type_ptr = 0;
 			}
+
+			/* Todo: aobs not supported ATM - needs fixing */
+			/*
+			if(resource_ptr->resource_parameters_ptr->auto_obs_ptr)
+			{
+				sn_grs_free(resource_ptr->resource_parameters_ptr->auto_obs_ptr);
+				resource_ptr->resource_parameters_ptr->auto_obs_ptr = 0;
+			}
+			*/
 
 			sn_grs_free(resource_ptr->resource_parameters_ptr);
 			resource_ptr->resource_parameters_ptr = 0;

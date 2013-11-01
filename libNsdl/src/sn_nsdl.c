@@ -17,47 +17,87 @@
 #include "sn_grs.h"
 #include "sn_linked_list.h"
 
+/* Defines */
+#define RESOURCE_DIR_LEN				2
+#define RESOURCE_DIR_PATH				{'r','d'}
+
+#define EP_NAME_PARAMETERS_LEN			2
+#define EP_NAME_PARAMETERS				{'h','='}
+
+#define RT_PARAMETER_LEN				3
+#define RT_PARAMETER					{'r','t','='}
+
+#define IF_PARAMETER_LEN				3
+#define IF_PARAMETER					{'i','f','='}
+
+#define CON_PARAMETER_LEN				4
+#define CON_PARAMETER					{'c','o','n','='}
+
+#define LT_PARAMETER_LEN				3
+#define LT_PARAMETER					{'l','t','='}
+
+#define OBS_PARAMETER_LEN				3
+#define OBS_PARAMETER					{'o','b','s'}
+
+#define AOBS_PARAMETER_LEN				8
+#define AOBS_PARAMETER					{'a','o','b','s',';','i','d','='}
+
+#define COAP_CON_PARAMETER_LEN			3
+#define COAP_CON_PARAMETER				{'c','t','='}
+
+#define EVENT_PATH_LEN					6
+#define EVENT_PATH						{'e','v','e','n','t','/'}
+
+#define SN_NSDL_EP_REGISTER_MESSAGE		1
+#define SN_NSDL_EP_UPDATE_MESSAGE		2
+
+#define	SN_NSDL_MSG_NO_TYPE				0
+#define	SN_NSDL_MSG_REGISTER			1
+#define SN_NSDL_MSG_UNREGISTER			2
+#define SN_NSDL_MSG_UPDATE				3
+#define SN_NSDL_MSG_EVENT				4
+
+#define	SN_NSDL_MAX_MESSAGE_COUNT		1
+
 /* Constants */
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t 	ep_name_parameter_string[] 	= EP_NAME_PARAMETERS;
+static uint8_t 	ep_name_parameter_string[] 	= EP_NAME_PARAMETERS;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		resource_path_ptr[]			= RESOURCE_DIR_PATH;
-
-uint8_t 	nsp_ipv6_addr[16]			= {0x20,0x01,0x04,0x70,0x10,0x02,0x00,0x11,0x00,0x00,0x00,0x00,0x00,0x54,0x20,0x01};
+static uint8_t		resource_path_ptr[]			= RESOURCE_DIR_PATH;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		resource_type_parameter[]	= RT_PARAMETER;
+static uint8_t		resource_type_parameter[]	= RT_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		obs_parameter[]				= OBS_PARAMETER;
+static uint8_t		obs_parameter[]				= OBS_PARAMETER;
+
+//SN_NSDL_CONST_MEMORY_ATTRIBUTE
+//static uint8_t		aobs_parameter[]			= AOBS_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		if_description_parameter[]	= IF_PARAMETER;
+static uint8_t		if_description_parameter[]	= IF_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		ep_contex_parameter[]		= CON_PARAMETER;
+static uint8_t		ep_lifetime_parameter[]		= LT_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t		ep_lifetime_parameter[]		= LT_PARAMETER;
+static uint8_t 	coap_con_type_parameter[]	= COAP_CON_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t 	coap_con_type_parameter[]	= COAP_CON_PARAMETER;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-uint8_t 	event_path_parameter[]		= EVENT_PATH;
+static uint8_t 	event_path_parameter[]		= EVENT_PATH;
 
 /* Global function pointers */
-void 	*(*sn_nsdl_alloc)(uint16_t)  = 0;
-void 	(*sn_nsdl_free)(void*) = 0;
-uint8_t (*sn_nsdl_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *) = 0;
-uint8_t (*sn_nsdl_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *) = 0;
+static void 	*(*sn_nsdl_alloc)(uint16_t)  = 0;
+static void 	(*sn_nsdl_free)(void*) = 0;
+static uint8_t (*sn_nsdl_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *) = 0;
+static uint8_t (*sn_nsdl_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *) = 0;
 
 /* Global variables */
-sn_nsdl_ep_parameters_s		*ep_information_ptr  = 0; 	// Endpoint parameters, Name, Domain etc..
-sn_nsdl_addr_s 				*nsp_address_ptr = 0;		// NSP server address information
-sn_linked_list_t			*message_list_ptr = 0;		//
-static uint8_t sn_nsdl_endpoint_registered = 0;
+static sn_nsdl_ep_parameters_s		*ep_information_ptr  = 0; 	// Endpoint parameters, Name, Domain etc..
+static sn_nsdl_addr_s 				*nsp_address_ptr = 0;		// NSP server address information
+static sn_linked_list_t				*message_list_ptr = 0;		//
+static uint8_t 						sn_nsdl_endpoint_registered = 0;
 
 /* Function prototypes */
 static int8_t 			sn_nsdl_internal_coap_send					(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description);
@@ -72,24 +112,8 @@ static void 			sn_nsdl_mark_resources_as_registered		(void);
 static uint8_t 			sn_nsdl_itoa_len							(uint8_t value);
 static uint8_t 			*sn_nsdl_itoa								(uint8_t *ptr, uint8_t value);
 
-//static const char version_array[] = {SVN_REV};
-//
-//extern const char __code* sn_nsdl_get_library_version_info(void)
-//{
-//
-//	return (const char __code*) version_array;
-//}
 
-
-/**
- * \fn extern int8_t sn_nsdl_destroy(void)
- *
- *
- * \brief Initialization function for NSDL library. Initializes NSDL, GRS, HTTP and CoAP.
- *
- * \return Returns always  SN_NSDL_SUCCESS (0)
- */
-extern int8_t sn_nsdl_destroy(void)
+int8_t sn_nsdl_destroy(void)
 {
 	if(message_list_ptr)
 	{
@@ -135,11 +159,7 @@ extern int8_t sn_nsdl_destroy(void)
 			sn_nsdl_free(ep_information_ptr->type_ptr);
 			ep_information_ptr->type_ptr = 0;
 		}
-		if(ep_information_ptr->contex_ptr)
-		{
-			sn_nsdl_free(ep_information_ptr->contex_ptr);
-			ep_information_ptr->contex_ptr = 0;
-		}
+
 		if(ep_information_ptr->lifetime_ptr)
 
 		{
@@ -175,25 +195,7 @@ extern int8_t sn_nsdl_destroy(void)
 	return 0;
 }
 
-/**
- * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
- *							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
- *							sn_nsdl_mem_s *sn_memory)
- *
- *
- * \brief Initialization function for NSDL library. Initializes NSDL, GRS, HTTP and CoAP.
- *
- * \param *sn_nsdl_tx_callback 	A callback function for sending messages.
- *
- * \param *sn_nsdl_rx_callback 	A callback function for parsed messages. If received message is not CoAP protocol message (eg. ACK), message for GRS (GET, PUT, POST, DELETE) or
- * 								reply for some NSDL message (register message etc.), rx callback will be called.
- *
- * \param *sn_memory			Memory structure which includes function pointers to the allocation and free functions.
- *
- * \return						SN_NSDL_SUCCESS = 0, Failed = -1
- */
-
-extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
 							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
 							sn_nsdl_mem_s *sn_memory)
 {
@@ -245,7 +247,7 @@ extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *
 	return SN_NSDL_SUCCESS;
 }
 
-extern int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port, char *query, uint8_t query_len)
+int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port, char *query, uint8_t query_len)
 {
 	sn_coap_hdr_s 	*message_ptr;
 	sn_nsdl_addr_s *dst = 0;
@@ -295,7 +297,8 @@ extern int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destin
 			memcpy(dst->addr_ptr, destination, 16);
 		}
 	}
-	sn_nsdl_internal_coap_send(message_ptr, dst, SN_NSDL_MSG_NO_TYPE);
+
+	sn_grs_send_coap_message(dst, message_ptr);
 
 	if(dst->addr_ptr)
 		sn_nsdl_free(dst->addr_ptr);
@@ -310,7 +313,7 @@ extern int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destin
 	return SN_NSDL_SUCCESS;
 }
 
-extern int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port)
+int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port)
 {
 	sn_coap_hdr_s 	*message_ptr;
 	sn_nsdl_addr_s *dst = 0;
@@ -361,7 +364,7 @@ extern int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint
 			memcpy(dst->addr_ptr, destination, 16);
 		}
 	}
-	sn_nsdl_internal_coap_send(message_ptr, dst, SN_NSDL_MSG_NO_TYPE);
+	sn_grs_send_coap_message(dst, message_ptr);
 
 	if(dst->addr_ptr)
 		sn_nsdl_free(dst->addr_ptr);
@@ -375,17 +378,8 @@ extern int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint
 }
 
 
-/**
- * \fn extern uint8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
- *
- *
- * \brief Registers endpoint to NSP server.
- *
- * \param *endpoint_info_ptr	Contains endpoint information.
- *
- * \return						SN_NSDL_SUCCESS = 0, Failed = -1
- */
-extern int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
+
+int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 {
 	/* Local variables */
 	sn_coap_hdr_s 	*register_message_ptr;
@@ -515,15 +509,7 @@ extern int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_p
 	return status;
 }
 
-/**
- * \fn extern int8_t sn_nsdl_unregister_endpoint(void)
- *
- *
- * \brief Sends unregister-message to NSP server.
- *
- * \return		SN_NSDL_SUCCESS = 0, Failed = -1
- */
-extern int8_t sn_nsdl_unregister_endpoint(void)
+int8_t sn_nsdl_unregister_endpoint(void)
 {
 	/* Local variables */
 	sn_coap_hdr_s  	*unregister_message_ptr;
@@ -577,17 +563,7 @@ extern int8_t sn_nsdl_unregister_endpoint(void)
 	return SN_NSDL_SUCCESS;
 }
 
-/**
- * \fn extern int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
- *
- *
- * \brief Sends endpoint registration update to NSP server.
- *
- * \param *endpoint_info_ptr	Contains endpoint information
- *
- * \return		SN_NSDL_SUCCESS = 0, Failed = -1
- */
-extern int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
+int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 {
 	/* Local variables */
 	sn_coap_hdr_s 	*register_message_ptr;
@@ -654,20 +630,7 @@ extern int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_inf
 	return SN_NSDL_SUCCESS;
 }
 
-/**
- * \fn extern int8_t sn_nsdl_send_eventing_message (uint8_t *event_name_ptr, uint16_t event_name_len, uint8_t *message_body_ptr, uint16_t message_body_len)
- *
- *
- * \brief Send eventing message to NSP server.
- *
- * \param *event_name_ptr	Event name pointer. The event name is added to the URL /event/{event-name}
- * \param event_name_len	Event name length.
- * \param *message_body_ptr	Event content pointer. Event content is delivered in the message body.
- * \param message_body_len	Event content length.
- *
- * \return		SN_NSDL_SUCCESS = 0, Failed = -1
- */
-extern int8_t sn_nsdl_send_eventing_message (uint8_t *event_name_ptr, uint16_t event_name_len, uint8_t *message_body_ptr, uint16_t message_body_len)
+int8_t sn_nsdl_send_eventing_message (uint8_t *event_name_ptr, uint16_t event_name_len, uint8_t *message_body_ptr, uint16_t message_body_len)
 {
 	sn_coap_hdr_s 	*eventing_message_ptr;
 	int8_t			status = 0;
@@ -710,57 +673,19 @@ extern int8_t sn_nsdl_send_eventing_message (uint8_t *event_name_ptr, uint16_t e
 	return status;
 }
 
-/**
- * \fn extern void sn_nsdl_nsp_lost(void)
- *
- *
- * \brief Sets endpoint registration status to SN_NSDL_ENDPOINT_NOT_REGISTERED.
- *
- */
-extern void sn_nsdl_nsp_lost(void)
+void sn_nsdl_nsp_lost(void)
 {
 	sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_NOT_REGISTERED;
 	return;
 }
 
-/**
- * \fn extern int8_t sn_nsdl_is_ep_registered(void)
- *
- *
- * \brief Checks if endpoint is registered.
- *
- * \return 1 if endpointi registration is done SN_NSDL_SUCCESSfully, 0 if endpoint is not registered
- */
-extern int8_t sn_nsdl_is_ep_registered(void)
+int8_t sn_nsdl_is_ep_registered(void)
 {
-//	if(ep_information_ptr->endpoint_name_ptr)
-//		return 1;
-//	else
-//		return 0;
+
 	return sn_nsdl_endpoint_registered;
 }
 
-/**
- * \fn extern int8_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
- *															uint8_t *payload_ptr, uint16_t payload_len,
- *															uint8_t *observe_ptr, uint8_t observe_len,
- *															sn_coap_msg_type_e message_type)
- *
- *
- * \brief Sends observation message to NSP server
- *
- * \param *token_ptr	Pointer to token to be used
- * \param token_len		Token length
- * \param *payload_ptr	Pointer to payload to be sent
- * \param payload_len	Payload length
- * \param *observe_ptr	Pointer to observe number to be sent
- * \param observe_len	Observe number len
- * \param message_type	Observation message type (confirmable or non-confirmable)
- * \param contetnt_type	Observation message payload contetnt type
- *
- * \return		If success, returns observation messages message ID = 0, if failed, returns 0.
- */
-extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
+uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
 													uint8_t *payload_ptr, uint16_t payload_len,
 													uint8_t *observe_ptr, uint8_t observe_len,
 													sn_coap_msg_type_e message_type, uint8_t content_type)
@@ -808,7 +733,7 @@ extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_
 	}
 
 	/* Send message */
-	if(sn_nsdl_internal_coap_send(notification_message_ptr, nsp_address_ptr, SN_NSDL_MSG_NO_TYPE) == SN_NSDL_FAILURE)
+	if(sn_grs_send_coap_message(nsp_address_ptr,notification_message_ptr) == SN_NSDL_FAILURE)
 		return_msg_id = 0;
 	else
 		return_msg_id = notification_message_ptr->msg_id;
@@ -874,12 +799,12 @@ int8_t sn_nsdl_delete_resource(uint8_t pathlen, uint8_t *path_ptr)
 	return sn_grs_delete_resource(pathlen, path_ptr);
 }
 
-sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint8_t pathlen, uint8_t *path_ptr)
+sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *path_ptr)
 {
 	return sn_grs_get_resource(pathlen, path_ptr);
 }
 
-sn_grs_resource_list_s *sn_nsdl_list_resource(uint8_t pathlen, uint8_t *path_ptr)
+sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path_ptr)
 {
 	return sn_grs_list_resource(pathlen, path_ptr);
 }
@@ -1090,12 +1015,33 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 				*temp_ptr++ = '"';
 			}
 
+			/* ;obs */
 			if(resource_temp_ptr->resource_parameters_ptr->observable)
 			{
 				*temp_ptr++ = ';';
 				memcpy(temp_ptr, obs_parameter, OBS_PARAMETER_LEN);
 				temp_ptr += OBS_PARAMETER_LEN;
 			}
+
+			/* ;aobs;id= */
+			/* todo: aosb not supported ATM - needs fixing */
+			/*
+			if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
+					resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
+			{
+				uint8_t i = 0;
+
+				*temp_ptr++ = ';';
+				memcpy(temp_ptr, aobs_parameter, AOBS_PARAMETER_LEN);
+				temp_ptr += AOBS_PARAMETER_LEN;
+
+				while(i < resource_temp_ptr->resource_parameters_ptr->auto_obs_len)
+				{
+					temp_ptr = sn_nsdl_itoa(temp_ptr, *(resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr + i));
+					i++;
+				}
+			}
+			*/
 
 		}
 
@@ -1173,6 +1119,20 @@ static uint16_t sn_nsdl_calculate_registration_body_size(uint8_t updating_regist
 				/* ;obs */
 				return_value += 4;
 			}
+			/*todo: aobs not supported ATM - needs fixing*/
+			/*
+			if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
+					resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
+			{
+				uint8_t i = resource_temp_ptr->resource_parameters_ptr->auto_obs_len;
+				// ;aobs;id=
+				return_value += 9;
+				while(i--)
+				{
+					return_value += sn_nsdl_itoa_len(*(resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr + i));
+				}
+			}
+			*/
 
 		}
 
@@ -1212,13 +1172,6 @@ static uint8_t sn_nsdl_calculate_uri_query_option_len(sn_nsdl_ep_parameters_s *e
 	{
 		return_value+=endpoint_info_ptr->type_len;
 		return_value += 3;
-		number_of_parameters++;
-	}
-
-	if((endpoint_info_ptr->contex_len != 0) && (endpoint_info_ptr->contex_ptr != 0))
-	{
-		return_value+=endpoint_info_ptr->contex_len;
-		return_value += 4;
 		number_of_parameters++;
 	}
 
@@ -1290,20 +1243,6 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
 		temp_ptr += parameter_ptr->type_len;
 	}
 
-	/******************************************************/
-	/* If Contex is configured, fill needed fields */
-	/******************************************************/
-
-	if((parameter_ptr->contex_len != 0) && (parameter_ptr->contex_ptr != 0))
-	{
-		if(temp_ptr != source_msg_ptr->options_list_ptr->uri_query_ptr)
-			*temp_ptr++ = '&';
-
-		memcpy(temp_ptr, ep_contex_parameter, sizeof(ep_contex_parameter));
-		temp_ptr += CON_PARAMETER_LEN;
-		memcpy(temp_ptr, parameter_ptr->contex_ptr, parameter_ptr->contex_len);
-		temp_ptr += parameter_ptr->contex_len;
-	}
 
 	/******************************************************/
 	/* If lifetime is configured, fill needed fields */
@@ -1357,8 +1296,6 @@ static int8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_
 				{
 					switch(sent_message_temp_ptr->message_type)
 					{
-					case SN_NSDL_MSG_EVENT:
-						break;
 					case SN_NSDL_MSG_REGISTER:
 						if(coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CREATED)
 						{
@@ -1393,6 +1330,7 @@ static int8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_
 
 						}
 						break;
+					case SN_NSDL_MSG_EVENT:
 					case SN_NSDL_MSG_UPDATE:
 						break;
 					}
@@ -1513,10 +1451,14 @@ static int8_t sn_nsdl_resolve_ep_information(sn_coap_hdr_s *coap_packet_ptr)
 	return SN_NSDL_SUCCESS;
 }
 
-/*
+/**
+ * \fn int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type)
  * \brief This function is used to set the NSP address given by an application.
- * @return 0 on success, -1 on false to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
- * Note! IPv6 address must always be 16 bytes long and IPv4 address must always be 4 bytes long!
+ * \param uint8_t *NSP_address Pointer to NSP address Note! IPv6 address must always be 16 bytes long and IPv4 address must always be 4 bytes long!
+ * \param uint16_t port NSP port
+ * \param sn_nsdl_addr_type_e address_type NSP address type (SN_NSDL_ADDRESS_TYPE_IPV6 or SN_NSDL_ADDRESS_TYPE_IPV4)
+ * \return 0 on success, -1 on false to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
+ *
  */
 int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type)
 {

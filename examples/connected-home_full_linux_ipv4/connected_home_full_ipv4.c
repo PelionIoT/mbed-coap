@@ -460,6 +460,7 @@ static void coap_exec_poll_function(void)
 
 		}
 
+		/* Send delayed response to request */
 		if(delayed_response_cnt == 1)
 		{
 			printf("deleyed response!\n");
@@ -695,9 +696,6 @@ void send_ack(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address)
 			coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
 			coap_res_ptr->msg_code = COAP_MSG_CODE_EMPTY;
 			coap_res_ptr->msg_id = received_coap_ptr->msg_id;
-
-			coap_res_ptr->content_type_ptr = &text_plain;
-			coap_res_ptr->content_type_len = sizeof(text_plain);
 
 			delayed_msg_type = COAP_MSG_TYPE_CONFIRMABLE;
 		}
