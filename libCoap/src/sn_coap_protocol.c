@@ -58,23 +58,24 @@ static sn_coap_hdr_s 		*sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_add
 static int8_t 				 sn_coap_convert_block_size(uint16_t block_size);
 static sn_coap_hdr_s 		*sn_coap_protocol_copy_header(sn_coap_hdr_s *source_header_ptr);
 #endif
-#if SN_COAP_RESENDING_MAX_COUNT
+#if ENABLE_RESENDINGS
 static sn_nsdl_transmit_s   *sn_coap_protocol_build_msg(void *src_msg_ptr);
 #endif
-#if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
+#if ENABLE_RESENDINGS || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
 static void                  sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time);
 static sn_nsdl_transmit_s   *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
-static int8_t                sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len, void *msg_ptr);
+static coap_send_msg_s      *sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len);
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *freed_send_msg_ptr);
 #endif
+static uint16_t				 sn_coap_count_linked_list_size(sn_linked_list_t *linked_list_ptr);
 static void 				 coap_protocol_free_lists(void);
 
 /* * * * * * * * * * * * * * * * * */
 /* * * * GLOBAL DECLARATIONS * * * */
 /* * * * * * * * * * * * * * * * * */
 
-#if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
+#if ENABLE_RESENDINGS || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static sn_linked_list_t *global_linked_list_resent_msgs_ptr                 = NULL; /* Active resending messages are stored to this Linked list */
 #endif
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static sn_linked_list_t *global_linked_list_ack_info_ptr                    = NULL; /* Message Acknowledgement info is stored to this Linked list */
@@ -89,11 +90,16 @@ SN_MEM_ATTR_COAP_PROTOCOL_DECL static sn_linked_list_t *global_linked_list_block
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t          global_message_id                                  	= 100;  /* Increasing Message ID which is written to CoAP message header in building */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint32_t          global_system_time                                 	= 0;    /* System time seconds */
 
+
 SN_MEM_ATTR_COAP_PROTOCOL_DECL uint16_t 				sn_coap_block_data_size 							= 0;
-SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t 					sn_coap_resending_buffer_size 						= 0;
+
+SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t 					sn_coap_resending_queue_msgs 						= 0;
+SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_resending_queue_bytes						= 0;
 SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t 					sn_coap_resending_count		 						= 0;
-SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_duplication_buffer_size						= 0;
 SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_resending_intervall							= 0;
+
+SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_duplication_buffer_size						= 0;
+
 
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              *(*sn_coap_protocol_malloc)(uint16_t)              = NULL; /* Function pointer for used malloc() function */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              (*sn_coap_protocol_free)(void*)                    = NULL; /* Function pointer for used free()   function */
@@ -235,7 +241,7 @@ int8_t 	sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_destroy(void)
 {
-#if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE/* If Message resending is not used at all, this part of code will not be compiled */
+#if ENABLE_RESENDINGS || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE/* If Message resending is not used at all, this part of code will not be compiled */
 	if(global_linked_list_resent_msgs_ptr)
 	{
 				uint16_t size =  sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr);
@@ -345,7 +351,7 @@ return 0;
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 void coap_protocol_free_lists(void)
 {
-#if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
+#if ENABLE_RESENDINGS || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
 	if(NULL != global_linked_list_resent_msgs_ptr)
 	{
 		sn_linked_list_free(global_linked_list_resent_msgs_ptr);
@@ -417,13 +423,16 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
 
     sn_linked_list_init(sn_coap_protocol_malloc, sn_coap_protocol_free);
 
-#if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
+#if ENABLE_RESENDINGS || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
 
     /* * * * Create Linked list for storing active resending messages  * * * */
-    sn_coap_resending_buffer_size = SN_COAP_RESENDING_BUFFER_MAX_SIZE;
-    sn_coap_resending_count = SN_COAP_RESENDING_MAX_COUNT;
-    sn_coap_block_data_size = SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE;
+    sn_coap_resending_queue_msgs = SN_COAP_RESENDING_QUEUE_SIZE_MSGS;
+    sn_coap_resending_queue_bytes = SN_COAP_RESENDING_QUEUE_SIZE_BYTES;
     sn_coap_resending_intervall = DEFAULT_RESPONSE_TIMEOUT;
+    sn_coap_resending_count = SN_COAP_RESENDING_MAX_COUNT;
+
+    sn_coap_block_data_size = SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE;
+
 
     /* Check that Linked list is not already created */
     if (global_linked_list_resent_msgs_ptr == NULL)
@@ -438,7 +447,7 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
 
     }
 
-#endif /* SN_COAP_RESENDING_MAX_COUNT */
+#endif /* ENABLE_RESENDINGS */
 
     /* * * * Create Linked list for storing Acknowledgement info, if not already created * * * */
     if (global_linked_list_ack_info_ptr == NULL)
@@ -496,7 +505,7 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
         	return (-1);
         }
     }
-#endif /* SN_COAP_RESENDING_MAX_COUNT */
+#endif /* ENABLE_RESENDINGS */
 
     /* Randomize global message ID */
 #ifndef REAL_EMBEDDED
@@ -571,24 +580,36 @@ int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
  * \brief Sets message retransmission parameters
  *
  * \param uint8_t resending_count max number of resendings for message
- * \param uint8_t buffer_size max number of messages saved for duplicate control
+ * \param uint8_t resending_intervall message resending inervall
  * \return 	0 = success
  * 			-1 = failure
  */
 
-int8_t sn_coap_protocol_set_retransmission(uint8_t resending_count, uint8_t buffer_size, uint8_t resending_intervall)
+int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_intervall)
 {
-#if SN_COAP_RESENDING_MAX_COUNT && SN_COAP_RESENDING_MAX_COUNT
-	if(resending_count <= SN_COAP_MAX_ALLOWED_RESENDING_COUNT && resending_count <= SN_COAP_MAX_ALLOWED_RESENDING_BUFF_SIZE)
+#if ENABLE_RESENDINGS
+	if(resending_count <= SN_COAP_MAX_ALLOWED_RESENDING_COUNT &&
+			resending_intervall <= SN_COAP_MAX_ALLOWED_RESPONSE_TIMEOUT && resending_intervall > 0)
 	{
 		sn_coap_resending_count = resending_count;
-		sn_coap_resending_buffer_size = buffer_size;
 		sn_coap_resending_intervall = resending_intervall;
 		return 0;
 	}
 #endif
-
 	return -1;
+}
+
+int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
+{
+#if ENABLE_RESENDINGS
+	if(buffer_size_bytes <= SN_COAP_MAX_ALLOWED_RESENDING_BUFF_SIZE_BYTES)
+		sn_coap_resending_queue_bytes = buffer_size_bytes;
+	if(buffer_size_bytes <= SN_COAP_MAX_ALLOWED_RESENDING_BUFF_SIZE_MSGS)
+		sn_coap_resending_queue_msgs = buffer_size_messages;
+
+#endif
+	return -1;
+
 }
 
 /**************************************************************************//**
@@ -765,21 +786,17 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
         return byte_count_built;
     }
 
-#if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE/* If Message resending is not used at all, this part of code will not be compiled */
+#if ENABLE_RESENDINGS || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE/* If Message resending is not used at all, this part of code will not be compiled */
 
     /* Check if built Message type was confirmable, only these messages are resent */
     if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE)
     {
-        /* * * * * * * * * * * * * * * * * * * * * */
-        /* * * * Manage CoAP message resending * * */
-        /* * * * * * * * * * * * * * * * * * * * * */
-
         /* Store message to Linked list for resending purposes */
         sn_coap_protocol_linked_list_send_msg_store(dst_addr_ptr, byte_count_built, dst_packet_data_ptr,
                                                     global_system_time + (uint32_t)(sn_coap_resending_intervall * RESPONSE_RANDOM_FACTOR));
     }
 
-#endif /* SN_COAP_RESENDING_MAX_COUNT */
+#endif /* ENABLE_RESENDINGS */
 
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 
@@ -848,8 +865,6 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
 {
     sn_coap_hdr_s   *returned_dst_coap_msg_ptr = NULL;
     coap_version_e   coap_version              = COAP_VERSION_UNKNOWN;
-    uint16_t         msg_id                    = 0;
-    int8_t           ret_status                = 0;
 
     /* * * * Check given pointer * * * */
     if (src_addr_ptr == NULL || src_addr_ptr->addr_ptr == NULL ||
@@ -868,20 +883,15 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
     	return NULL;
     }
 
-    msg_id = returned_dst_coap_msg_ptr->msg_id;
-
     /* * * * Check validity of parsed Header values  * * * */
-    ret_status = sn_coap_header_validity_check(returned_dst_coap_msg_ptr, coap_version);
-
-    /* If failure in parsed message validity check */
-    if (ret_status != 0)
+    if (sn_coap_header_validity_check(returned_dst_coap_msg_ptr, coap_version) != 0)
     {
     	/* If message code is in a reserved class (1, 6 or 7), send reset. Message code class is 3 MSB of the message code byte 	*/
     	if(((returned_dst_coap_msg_ptr->msg_code >> 5) == 1) ||			// if class == 1
     			((returned_dst_coap_msg_ptr->msg_code >> 5) == 6) ||	// if class == 6
     			((returned_dst_coap_msg_ptr->msg_code >> 5) == 7))		// if class == 7
     	{
-    		sn_coap_protocol_send_rst(msg_id, src_addr_ptr);
+    		sn_coap_protocol_send_rst(returned_dst_coap_msg_ptr->msg_id, src_addr_ptr);
     	}
 
 		 /* Release memory of CoAP message */
@@ -903,7 +913,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
     	/* CoAP ping */
     	if(returned_dst_coap_msg_ptr->msg_code == COAP_MSG_CODE_EMPTY)
     	{
-    		sn_coap_protocol_send_rst(msg_id, src_addr_ptr);
+    		sn_coap_protocol_send_rst(returned_dst_coap_msg_ptr->msg_id, src_addr_ptr);
 
     		/* Release memory of CoAP message */
     		sn_coap_parser_release_allocated_coap_msg_mem(returned_dst_coap_msg_ptr);
@@ -921,6 +931,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
         {
             /* Set returned status to User */
             returned_dst_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_REJECTED;
+            //todo: send response -> not implemented
             return returned_dst_coap_msg_ptr;
         }
 #endif /* !SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE */
@@ -997,16 +1008,16 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
                                          User has written correct Token option to the response message. */
 
             /* Store message's Acknowledgement info to Linked list */
-            sn_coap_protocol_linked_list_ack_info_store(msg_id, returned_dst_coap_msg_ptr->token_len, returned_dst_coap_msg_ptr->token_ptr, src_addr_ptr);
+            sn_coap_protocol_linked_list_ack_info_store(returned_dst_coap_msg_ptr->msg_id, returned_dst_coap_msg_ptr->token_len, returned_dst_coap_msg_ptr->token_ptr, src_addr_ptr);
         }
         else
         {
-        	sn_coap_protocol_linked_list_ack_info_store(msg_id, 0, NULL, src_addr_ptr);
+        	sn_coap_protocol_linked_list_ack_info_store(returned_dst_coap_msg_ptr->msg_id, 0, NULL, src_addr_ptr);
         }
     }
 
 
-#if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE/* If Message resending is not used at all, this part of code will not be compiled */
+#if ENABLE_RESENDINGS || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE/* If Message resending is not used at all, this part of code will not be compiled */
 
     /* Check if received Message type was acknowledgement */
     if ((returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT) || (returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_RESET))
@@ -1023,16 +1034,16 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
 
             /* Check if received message was confirmation for some active resending message */
 
-            removed_msg_ptr = sn_coap_protocol_linked_list_send_msg_search(src_addr_ptr, msg_id);
+            removed_msg_ptr = sn_coap_protocol_linked_list_send_msg_search(src_addr_ptr, returned_dst_coap_msg_ptr->msg_id);
 
             if (removed_msg_ptr != NULL)
             {
                 /* Remove resending message from active message resending Linked list */
-                sn_coap_protocol_linked_list_send_msg_remove(src_addr_ptr, msg_id);
+                sn_coap_protocol_linked_list_send_msg_remove(src_addr_ptr, returned_dst_coap_msg_ptr->msg_id);
             }
         }
     }
-#endif /* SN_COAP_RESENDING_MAX_COUNT */
+#endif /* ENABLE_RESENDINGS */
 
     /* * * * Return parsed CoAP message  * * * */
     return (returned_dst_coap_msg_ptr);
@@ -1055,7 +1066,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_exec(uint32_t current_time)
 {
-#if SN_COAP_RESENDING_MAX_COUNT
+#if ENABLE_RESENDINGS
     uint8_t stored_resending_msgs_count;
 #endif
 
@@ -1075,7 +1086,7 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
     /* Remove old Acknowledgement infos */
     sn_coap_protocol_linked_list_ack_info_remove_old_ones();
 
-#if SN_COAP_RESENDING_MAX_COUNT
+#if ENABLE_RESENDINGS
     /* Check if there is ongoing active message sendings */
     stored_resending_msgs_count = sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr);
 
@@ -1133,12 +1144,12 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
         }
     }
 
-#endif /* SN_COAP_RESENDING_MAX_COUNT */
+#endif /* ENABLE_RESENDINGS */
 
     return 0;
 }
 
-#if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
+#if ENABLE_RESENDINGS || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
 
 /**************************************************************************//**
  * \fn static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time)
@@ -1159,39 +1170,33 @@ static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr
 {
 
     coap_send_msg_s *stored_msg_ptr              = NULL;
-    uint16_t         stored_resending_msgs_count = sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr);
-    int8_t           ret_status                  = 0;
 
-    /* Check if there is reached limit for active ongoing message resendings */
-    if (stored_resending_msgs_count >= sn_coap_resending_buffer_size && sn_coap_block_data_size == 0)
+    /* Blocking also needs this - to be removed... */
+    if(sn_coap_block_data_size == 0)
     {
-        /* Not allowed to add more Resending messages to Linked list */
-    	// todo: remove latest!!
-        return;
+    	/* If both parameters are "0", then resending is disabled */
+    	if((sn_coap_resending_queue_msgs == 0) && (sn_coap_resending_queue_bytes == 0))
+    		return;
+
+    	if (sn_coap_resending_queue_msgs > 0)
+		{
+    	    if(sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr) >= sn_coap_resending_queue_msgs)
+    	    	return;
+		}
+
+		/* Count resending queue size, if buffer size is defined */
+		if(sn_coap_resending_queue_bytes > 0)
+		{
+			if((sn_coap_count_linked_list_size(global_linked_list_resent_msgs_ptr) + send_packet_data_len) > sn_coap_resending_queue_bytes)
+				return;
+		}
     }
 
-    /* * * * Allocating memory for stored message  * * * */
+    /* Allocating memory for stored message */
+    stored_msg_ptr = sn_coap_protocol_allocate_mem_for_msg(dst_addr_ptr, send_packet_data_len);
 
-    /* Allocate memory for structures behind stored sending messages list pointers */
-
-    stored_msg_ptr = sn_coap_protocol_malloc(sizeof(coap_send_msg_s));
-
-    if (stored_msg_ptr == NULL)
-    {
+    if(stored_msg_ptr == 0)
         return;
-    }
-
-    ret_status = sn_coap_protocol_allocate_mem_for_msg(dst_addr_ptr, send_packet_data_len, stored_msg_ptr);
-
-    if (ret_status != 0)
-    {
-        sn_coap_protocol_free(stored_msg_ptr);
-        sn_coap_protocol_free(stored_msg_ptr->send_msg_ptr);
-
-        return;
-    }
-
-    /* * * * Filling fields of stored Resending message  * * * */
 
     /* Filling of coap_send_msg_s with initialization values */
     stored_msg_ptr->resending_counter = 0;
@@ -1208,10 +1213,9 @@ static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr
     memcpy(stored_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr, dst_addr_ptr->addr_ptr, dst_addr_ptr->addr_len);
     stored_msg_ptr->send_msg_ptr->dst_addr_ptr->port = dst_addr_ptr->port;
 
-    /* * * * Storing Resending message to Linked list  * * * */
-
-    sn_linked_list_add_node(global_linked_list_resent_msgs_ptr, stored_msg_ptr);
-
+    /* Storing Resending message to Linked list */
+    if(sn_linked_list_add_node(global_linked_list_resent_msgs_ptr, stored_msg_ptr) != 0)
+    	sn_coap_protocol_release_allocated_send_msg_mem(stored_msg_ptr);
 
 }
 
@@ -1315,7 +1319,7 @@ static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_add
         stored_msg_ptr = sn_linked_list_get_previous_node(global_linked_list_resent_msgs_ptr);
     }
 }
-#endif /* SN_COAP_RESENDING_MAX_COUNT */
+#endif /* ENABLE_RESENDINGS */
 
 /**************************************************************************//**
  * \fn static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr)
@@ -2074,7 +2078,7 @@ static void sn_coap_protocol_linked_list_blockwise_remove_old_data(void)
 
 #endif /* SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE */
 
-#if SN_COAP_RESENDING_MAX_COUNT
+#if ENABLE_RESENDINGS
 /**************************************************************************//**
  * \fn sn_nsdl_transmit_s *sn_coap_protocol_build_msg(void *src_msg_ptr)
  *
@@ -2131,57 +2135,70 @@ sn_nsdl_transmit_s *sn_coap_protocol_build_msg(void *src_msg_ptr)
 
     return returned_msg_ptr;
 }
-#endif /* SN_COAP_RESENDING_MAX_COUNT */
+#endif /* ENABLE_RESENDINGS */
 
 
-#if SN_COAP_RESENDING_MAX_COUNT || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
+#if ENABLE_RESENDINGS || SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message resending is not used at all, this part of code will not be compiled */
 /***************************************************************************//**
- * \fn int8_t sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len, void *msg_ptr)
+ * \fn int8_t sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len, coap_send_msg_s *msg_ptr)
  *
  * \brief Allocates memory for given message (send or blockwise message)
  *
  * \param *dst_addr_ptr is pointer to destination address where message will be sent
  * \param packet_data_len is length of allocated Packet data
- * \param *msg_ptr is pointer to allocated message
  *
- * \return Return value
+ * \return pointer to allocated struct
  *****************************************************************************/
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
-int8_t sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len, void *msg_ptr)
+coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len)
 {
-    ((coap_send_msg_s*)msg_ptr)->send_msg_ptr = sn_coap_protocol_malloc(sizeof(sn_nsdl_transmit_s));
 
-    if (((coap_send_msg_s*)msg_ptr)->send_msg_ptr == NULL)
+	coap_send_msg_s *msg_ptr = sn_coap_protocol_malloc(sizeof(coap_send_msg_s));
+
+    if (msg_ptr == NULL)
+        return 0;
+
+    memset(msg_ptr, 0, sizeof(coap_send_msg_s));
+
+    msg_ptr->send_msg_ptr = sn_coap_protocol_malloc(sizeof(sn_nsdl_transmit_s));
+
+    if (msg_ptr->send_msg_ptr == NULL)
     {
         sn_coap_protocol_release_allocated_send_msg_mem(msg_ptr);
-        return -1;
+        return 0;
     }
 
-    ((coap_send_msg_s*)msg_ptr)->send_msg_ptr->dst_addr_ptr = sn_coap_protocol_malloc(sizeof(sn_nsdl_addr_s));
+    memset(msg_ptr->send_msg_ptr, 0 ,sizeof(sn_nsdl_transmit_s));
 
-    if (((coap_send_msg_s*)msg_ptr)->send_msg_ptr->dst_addr_ptr == NULL)
+    msg_ptr->send_msg_ptr->dst_addr_ptr = sn_coap_protocol_malloc(sizeof(sn_nsdl_addr_s));
+
+    if (msg_ptr->send_msg_ptr->dst_addr_ptr == NULL)
     {
         sn_coap_protocol_release_allocated_send_msg_mem(msg_ptr);
-        return -1;
+        return 0;
     }
 
-    ((coap_send_msg_s*)msg_ptr)->send_msg_ptr->packet_ptr = sn_coap_protocol_malloc(packet_data_len);
+    memset(msg_ptr->send_msg_ptr->dst_addr_ptr, 0, sizeof(sn_nsdl_addr_s));
 
-    if (((coap_send_msg_s*)msg_ptr)->send_msg_ptr->packet_ptr == NULL)
+    msg_ptr->send_msg_ptr->packet_ptr = sn_coap_protocol_malloc(packet_data_len);
+
+    if (msg_ptr->send_msg_ptr->packet_ptr == NULL)
     {
         sn_coap_protocol_release_allocated_send_msg_mem(msg_ptr);
-        return -1;
+        return 0;
     }
 
-    ((coap_send_msg_s*)msg_ptr)->send_msg_ptr->dst_addr_ptr->addr_ptr = sn_coap_protocol_malloc(dst_addr_ptr->addr_len);
+    msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr = sn_coap_protocol_malloc(dst_addr_ptr->addr_len);
 
-    if (((coap_send_msg_s*)msg_ptr)->send_msg_ptr->dst_addr_ptr->addr_ptr == NULL)
+    if (msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr == NULL)
     {
         sn_coap_protocol_release_allocated_send_msg_mem(msg_ptr);
-        return - 1;
+        return 0;
     }
 
-    return 0;
+    memset(msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr, 0, dst_addr_ptr->addr_len);
+
+    return msg_ptr;
 }
 
 
@@ -2202,8 +2219,35 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *fre
     }
 }
 
+/**************************************************************************//**
+ * \fn static uint16_t sn_coap_count_linked_list_size(sn_linked_list_t *linked_list_ptr)
+ *
+ * \brief Counts total message size of all messages in linked list
+ *
+ * \param sn_linked_list_t *linked_list_ptr pointer to linked list
+ *****************************************************************************/
+static uint16_t sn_coap_count_linked_list_size(sn_linked_list_t *linked_list_ptr)
+{
+	uint16_t total_size = 0;
+	uint16_t message_count = sn_linked_list_count_nodes(linked_list_ptr);
+	coap_send_msg_s *stored_msg_ptr = sn_linked_list_get_first_node(linked_list_ptr);
+
+	while(message_count--)
+	{
+		if(stored_msg_ptr)
+		{
+			if(stored_msg_ptr->send_msg_ptr)
+				total_size += stored_msg_ptr->send_msg_ptr->packet_len;
+		}
+		stored_msg_ptr = sn_linked_list_get_next_node(linked_list_ptr);
+	}
+
+	return total_size;
+}
+
 #endif
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+
 /**************************************************************************//**
  * \fn static int8_t sn_coap_handle_blockwise_message(void)
  *

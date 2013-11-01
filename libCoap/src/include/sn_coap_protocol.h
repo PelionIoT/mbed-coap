@@ -57,11 +57,18 @@ extern int8_t 			   sn_coap_protocol_set_block_size(uint16_t block_size);
 extern int8_t 			   sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count);
 
 /**
- * \brief If re-transmissions are enabled, this function changes resending count and buffer size.
+ * \brief If re-transmissions are enabled, this function changes resending count and interval.
  */
-extern int8_t 			   sn_coap_protocol_set_retransmission(uint8_t resending_count, uint8_t buffer_size, uint8_t resending_intervall);
+extern int8_t 			   sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_interval);
+
+/**
+ * \brief If re-transmissions are enabled, this function changes resending buffer size.
+ */
+extern int8_t			   sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes);
+
 
 /* NSP manual registration functions */
+
 
 /**
  * \brief Create an NSP registration message.

@@ -23,21 +23,24 @@ extern "C" {
 /* Maximum time in seconds of messages to be stored for Acknowledging. This time tells */
 /* how long time User of CoAP C-library have time to send Piggy-backed acknowledgement */
 /* message to Request sender. */
-#define SN_COAP_ACK_INFO_MAX_TIME_MSGS_STORED    	20
-#define SN_COAP_ACK_INFO_MAX_COUNT_MESSAGES_SAVED   10
+#define SN_COAP_ACK_INFO_MAX_TIME_MSGS_STORED    		20
+#define SN_COAP_ACK_INFO_MAX_COUNT_MESSAGES_SAVED   	10
 
 /* * For Message resending * */
+#define ENABLE_RESENDINGS	0								/**< Enable / Disable resending from library in building */
 
-/* Init value for maximum count of ongoing active resending messages 										*/
-/* This value depends on available memory: If there is restricted count of memory, use little value e.g. 1 	*/
-/* Setting of this value to 0 will disable re-sending and also reduce use of ROM memory						*/
-#define SN_COAP_RESENDING_MAX_COUNT		            0
-/* Default value for re-sending buffer size */
-#define SN_COAP_RESENDING_BUFFER_MAX_SIZE           0
+#define SN_COAP_RESENDING_MAX_COUNT		            	3	/**< Default number of re-sendings  */
+#define SN_COAP_RESENDING_QUEUE_SIZE_MSGS 		    	2	/**< Default re-sending queue size - defines how many messages can be stored. Setting this to 0 disables feature */
+#define SN_COAP_RESENDING_QUEUE_SIZE_BYTES				0	/**< Default re-sending queue size - defines size of the re-sending buffer. Setting this to 0 disables feature */
+#define DEFAULT_RESPONSE_TIMEOUT						10	/**< Default re-sending timeout as seconds */
 
 /* These parameters sets maximum values application can set with API */
-#define SN_COAP_MAX_ALLOWED_RESENDING_COUNT 		6 /**< Maximum allowed count of re-sending */
-#define SN_COAP_MAX_ALLOWED_RESENDING_BUFF_SIZE 	6 /**< Maximum allowed number of saved re-sending messages */
+#define SN_COAP_MAX_ALLOWED_RESENDING_COUNT 			6 	/**< Maximum allowed count of re-sending */
+#define SN_COAP_MAX_ALLOWED_RESENDING_BUFF_SIZE_MSGS	6 	/**< Maximum allowed number of saved re-sending messages */
+#define SN_COAP_MAX_ALLOWED_RESENDING_BUFF_SIZE_BYTES	512 /**< Maximum allowed size of re-sending buffer */
+#define SN_COAP_MAX_ALLOWED_RESPONSE_TIMEOUT			40  /**< Maximum allowed re-sending timeout */
+
+#define RESPONSE_RANDOM_FACTOR  						1   /**< Resending random factor, value is specified in IETF CoAP specification */
 
 /* * For Message duplication detecting * */
 
@@ -60,14 +63,10 @@ extern "C" {
 #define SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE 			0 /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
 #endif
 
-
 #ifndef SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED
 #define SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED      10 /**< Maximum time in seconds of data (messages and payload) to be stored for blockwising */
 #endif
 
-/* CoAP Resending defines */
-#define DEFAULT_RESPONSE_TIMEOUT	10   /* Initial resending timeout as seconds, value is specified in IETF CoAP specification */
-#define RESPONSE_RANDOM_FACTOR  	1   /* Resending random factor, value is specified in IETF CoAP specification */
 
 /* * * * * * * * * * * * * * */
 /* * * * ENUMERATIONS  * * * */
