@@ -267,7 +267,7 @@
           <name>CCDefines</name>
           <state>SOCKET_CB</state>
           <state>CC2530</state>
-          <state>USE_NSP_ADDRESS</state>
+          <state>NOT_USE_NSP_ADDRESS</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -2069,10 +2069,10 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\..\..\libCoap\cc2530_iar\Debug\Exe\cc2530_libCoap.r51</name>
+    <name>$PROJ_DIR$\..\..\libCoap\cc2530_iar\cc2530_libCoap.r51</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\..\libNsdl\cc2530\Debug\Exe\cc2530_libNsdl.r51</name>
+    <name>$PROJ_DIR$\..\..\libNsdl\cc2530\cc2530_libNsdl.r51</name>
   </file>
   <file>
     <name>$PROJ_DIR$\hal_sleep.c</name>

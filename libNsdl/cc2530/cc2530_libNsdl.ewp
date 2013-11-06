@@ -126,7 +126,7 @@
         </option>
         <option>
           <name>ExePath</name>
-          <state>Debug\Exe</state>
+          <state></state>
         </option>
         <option>
           <name>ObjPath</name>
@@ -358,7 +358,7 @@
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>OCCProcessorVariant</name>
@@ -524,7 +524,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state></state>
+          <state>$FILE_BNAME$.r51</state>
         </option>
         <option>
           <name>ACaseSensitivity</name>
@@ -541,7 +541,7 @@
         </option>
         <option>
           <name>Debug</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>AList</name>
@@ -1024,7 +1024,7 @@
         </option>
         <option>
           <name>XAROutput</name>
-          <state>C:\Work\workspace\CoapCLibrary\libNsdl\cc2530\Debug\Exe\cc2530_libNsdl.r51</state>
+          <state>C:\Users\tero\git\nsdl-c\libNsdl\cc2530\cc2530_libNsdl.r51</state>
         </option>
       </data>
     </settings>

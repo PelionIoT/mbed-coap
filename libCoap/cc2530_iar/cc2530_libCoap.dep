@@ -2,132 +2,56 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>1248104193</fileChecksum>
+  <fileChecksum>2032453462</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
-      <file>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.pbi</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_protocol_ietf_draft_12.r51</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder_ietf_draft_12.pbi</file>
-      <file>$TOOLKIT_DIR$\inc\clib\stdarg.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_protocol_ietf_draft_12.pbi</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder_ietf_draft_12.r51</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.r51</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_nsdl.h</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_parser.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_builder.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_header_check.c</file>
+      <file>$PROJ_DIR$\..\src\sn_coap_protocol.c</file>
       <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
+      <file>$PROJ_DIR$\..\src\include\nsdl_types.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdlib.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdarg.h</file>
+      <file>$PROJ_DIR$\..\src\include\sn_linked_list.h</file>
       <file>$PROJ_DIR$\..\src\include\sn_coap_header.h</file>
       <file>$TOOLKIT_DIR$\inc\clib\string.h</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</file>
-      <file>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_header_validity_check_ietf_draft_12.pbi</file>
-      <file>$PROJ_DIR$\Debug\Exe\cc2530_libCoap.r51</file>
-      <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\cc2530_libCoap.pbd</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_parser_ietf_draft_12.pbi</file>
-      <file>$PROJ_DIR$\..\src\include\nsdl_types.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_header_validity_check_ietf_draft_12.r51</file>
-      <file>$TOOLKIT_DIR$\inc\clib\stdlib.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_coap_parser_ietf_draft_12.r51</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol_ietf_draft_12.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.r51</file>
+      <file>$PROJ_DIR$\cc2530_libCoap.r51</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.pbi</file>
+      <file>$PROJ_DIR$\..\src\include\sn_nsdl.h</file>
       <file>$TOOLKIT_DIR$\inc\clib\stdio.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_linked_list.h</file>
-      <file>$PROJ_DIR$\..\src\include\sn_coap_header_ietf_draft_12.h</file>
       <file>$TOOLKIT_DIR$\inc\clib\stddef.h</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_protocol_internal.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_header_check.pbi</file>
+      <file>$PROJ_DIR$\..\src\include\sn_coap_header_internal.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_protocol.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_parser.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_protocol.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_parser.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_builder.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\cc2530_libCoap.pbd</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_coap_header_check.r51</file>
+      <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
     </outputs>
     <file>
       <name>[ROOT_NODE]</name>
       <outputs>
         <tool>
           <name>XAR</name>
-          <file> 17</file>
+          <file> 12</file>
         </tool>
       </outputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</name>
+      <name>$PROJ_DIR$\..\src\sn_coap_parser.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 3</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 6</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 13 18 21 9 12 8 28 25</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 20</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 24</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 26 4 18 29 13 21 9 12 8 28 25</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 1</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 7</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 26 4 18 29 21 27</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 5</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 2</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 26 4 18 23 13 21 9 12 8 28 25 27</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 16</file>
+          <file> 25</file>
         </tool>
         <tool>
           <name>ICC8051</name>
@@ -137,7 +61,112 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 21 9 12 8 28 25</file>
+          <file> 16 7 29 10 5 15 9 13 20 18</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 16 7 29 10 5 15 9 13 20 18</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sn_coap_builder.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 26</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 24</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 10 29 5 15 9 20</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 10 29 5 15 9 20</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sn_coap_header_check.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 19</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 28</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 5 15 9 13 20 18</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 5 15 9 13 20 18</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sn_coap_protocol.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 23</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 21</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 16 7 29 6 10 5 15 9 13 20 18 8</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 16 7 29 6 10 5 15 9 13 20 18 8</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 14</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 11</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 16 7 29 17 5 8</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 16 7 29 17 5 8</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\cc2530_libCoap.r51</name>
+      <inputs>
+        <tool>
+          <name>XAR</name>
+          <file> 24 28 22 21 11</file>
         </tool>
       </inputs>
     </file>
@@ -146,7 +175,7 @@
       <inputs>
         <tool>
           <name>BILINK</name>
-          <file> 3 16 20 5 1</file>
+          <file> 26 19 25 23 14</file>
         </tool>
       </inputs>
     </file>

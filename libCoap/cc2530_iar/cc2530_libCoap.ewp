@@ -126,7 +126,7 @@
         </option>
         <option>
           <name>ExePath</name>
-          <state>Debug\Exe</state>
+          <state></state>
         </option>
         <option>
           <name>ObjPath</name>
@@ -360,7 +360,7 @@
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>OCCProcessorVariant</name>
@@ -543,7 +543,7 @@
         </option>
         <option>
           <name>Debug</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>AList</name>
@@ -1026,7 +1026,7 @@
         </option>
         <option>
           <name>XAROutput</name>
-          <state>C:\Work\workspace\CoapCLibrary\libCoap\cc2530_iar\Debug\Exe\cc2530_libCoap.r51</state>
+          <state>C:\Users\tero\git\nsdl-c\libCoap\cc2530_iar\cc2530_libCoap.r51</state>
         </option>
       </data>
     </settings>
@@ -2068,16 +2068,16 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_builder_ietf_draft_12.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_builder.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_header_validity_check_ietf_draft_12.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_header_check.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_parser_ietf_draft_12.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_parser.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_coap_protocol_ietf_draft_12.c</name>
+    <name>$PROJ_DIR$\..\src\sn_coap_protocol.c</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>

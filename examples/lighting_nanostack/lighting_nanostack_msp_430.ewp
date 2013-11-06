@@ -162,7 +162,7 @@
           <name>CCDefines</name>
           <state>MSP430</state>
           <state>SOCKET_CB</state>
-          <state>USE_NSP_ADDRESS</state>
+          <state>NOT_USE_NSP_ADDRESS</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1875,7 +1875,7 @@
     <name>$PROJ_DIR$\main.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\..\libCoap\msp430_iar\Debug\Exe\msp_430_libCoap.r43</name>
+    <name>$PROJ_DIR$\..\..\libCoap\msp430_iar\msp_430_libCoap.r43</name>
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\NanoStack\NanoMesh106_NanoStack202-14432.lib</name>

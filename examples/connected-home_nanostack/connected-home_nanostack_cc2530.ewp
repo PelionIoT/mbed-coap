@@ -267,8 +267,7 @@
           <name>CCDefines</name>
           <state>CC2530</state>
           <state>SOCKET_CB</state>
-          <state>USE_NSP_ADDRESS</state>
-          <state>USE_EDTLS</state>
+          <state>NOT_USE_NSP_ADDRESS</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -2070,10 +2069,7 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\..\..\libEdtls\cc2530_eDTLS_lib.r51</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\libCoap\cc2530_iar\Debug\Exe\cc2530_libCoap.r51</name>
+    <name>$PROJ_DIR$\..\..\libCoap\cc2530_iar\cc2530_libCoap.r51</name>
   </file>
   <file>
     <name>$PROJ_DIR$\hal_sleep.c</name>

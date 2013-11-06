@@ -2,67 +2,63 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>2303720429</fileChecksum>
+  <fileChecksum>827300081</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
-      <file>$PROJ_DIR$\..\..\examples\connected-home_nanostack\main.c</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
-      <file>$PROJ_DIR$\..\src\Include\sn_grs.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
-      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_grs.r43</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_grs.pbi</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.pbi</file>
-      <file>$PROJ_DIR$\Debug\Obj\msp_430_libNsdl.pbd</file>
-      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.r43</file>
-      <file>$PROJ_DIR$\..\src\Include\nsdl_types.h</file>
-      <file>$PROJ_DIR$\Debug\Exe\msp_430_libNsdl.r43</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
-      <file>$PROJ_DIR$\Debug\List\sn_nsdl.lst</file>
-      <file>$PROJ_DIR$\Debug\List\sn_grs.lst</file>
-      <file>$PROJ_DIR$\Debug\List\sn_linked_list.lst</file>
-      <file>$TOOLKIT_DIR$\lib\dlib\dl430xlff.h</file>
-      <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
+      <file>$PROJ_DIR$\..\src\Include\sn_nsdl_lib.h</file>
+      <file>$PROJ_DIR$\..\src\Include\sn_linked_list.h</file>
       <file>$PROJ_DIR$\..\src\sn_nsdl.c</file>
+      <file>$PROJ_DIR$\..\src\sn_linked_list.c</file>
       <file>$PROJ_DIR$\..\src\sn_grs.c</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_grs.r43</file>
+      <file>$PROJ_DIR$\..\src\Include\sn_grs.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\msp_430_libNsdl.pbd</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
+      <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_protocol.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_grs.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sn_nsdl.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
+      <file>$PROJ_DIR$\..\src\Include\nsdl_types.h</file>
       <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
       <file>$PROJ_DIR$\..\..\libCoap\src\include\sn_coap_header.h</file>
       <file>$PROJ_DIR$\..\src\Include\sn_nsdl.h</file>
       <file>$PROJ_DIR$\Debug\Obj\sn_linked_list.pbi</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
-      <file>$PROJ_DIR$\..\src\Include\sn_nsdl_lib.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
-      <file>$PROJ_DIR$\..\src\Include\sn_linked_list.h</file>
-      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+      <file>$PROJ_DIR$\msp_430_libNsdl.r43</file>
     </outputs>
     <file>
       <name>[ROOT_NODE]</name>
       <outputs>
         <tool>
           <name>XAR</name>
-          <file> 14</file>
+          <file> 26</file>
         </tool>
       </outputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\Debug\Obj\msp_430_libNsdl.pbd</name>
-      <inputs>
+      <name>$PROJ_DIR$\..\src\sn_nsdl.c</name>
+      <outputs>
         <tool>
-          <name>BILINK</name>
-          <file> 9 26 10</file>
+          <name>ICC430</name>
+          <file> 16</file>
         </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\Debug\Exe\msp_430_libNsdl.r43</name>
+        <tool>
+          <name>BICOMP</name>
+          <file> 14</file>
+        </tool>
+      </outputs>
       <inputs>
         <tool>
-          <name>XAR</name>
-          <file> 8 23 12</file>
+          <name>BICOMP</name>
+          <file> 12 5 22 20 17 21 13 9 18 24 23 10 0 7 1</file>
         </tool>
       </inputs>
     </file>
@@ -71,44 +67,17 @@
       <outputs>
         <tool>
           <name>ICC430</name>
-          <file> 18 23</file>
+          <file> 19</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 26</file>
+          <file> 25</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
-          <name>ICC430</name>
-          <file> 13 30</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
-          <file> 13 30</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\src\sn_nsdl.c</name>
-      <outputs>
-        <tool>
-          <name>ICC430</name>
-          <file> 16 12</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 10</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>ICC430</name>
-          <file> 4 1 31 27 19 15 29 3 7 13 25 24 6 28 2 30</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
-          <file> 4 1 31 27 15 29 3 7 13 25 24 6 28 2 30</file>
+          <file> 18 1</file>
         </tool>
       </inputs>
     </file>
@@ -117,21 +86,26 @@
       <outputs>
         <tool>
           <name>ICC430</name>
-          <file> 17 8</file>
+          <file> 6</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 9</file>
+          <file> 11</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
-          <name>ICC430</name>
-          <file> 13 30 25 24 6 28 2 5 1 31 27 19 15 29 3 7 4</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
-          <file> 13 30 25 24 6 28 2 5 1 31 27 15 29 3 7 4</file>
+          <file> 18 1 24 23 10 0 7 15 5 22 20 17 21 13 9 12</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Obj\msp_430_libNsdl.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 11 25 14</file>
         </tool>
       </inputs>
     </file>

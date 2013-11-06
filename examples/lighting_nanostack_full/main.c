@@ -124,7 +124,7 @@ int8_t reg_location_len;
 __root const uint8_t hard_mac[8] @ 0x21000 = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x19}; //0xfd80 = {0x04, 0x02, 0x00, 0xde, 0xad, 0x00, 0x00, 0x01};  // need if hardware debugger is used
 #endif
 static PL_LARGE uint8_t nsp_addr[] = {0x20, 0x01, 0x04, 0x70, 0x1F, 0x15, 0x16, 0xEA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81, 0x8e};
-static uint16_t nsp_port = 5683;
+static uint16_t nsp_port = 5684;
 
 /*Configurable channel list for beacon scan*/
 static PL_LARGE uint32_t channel_list = 0x07FFF800;
@@ -307,6 +307,8 @@ void tasklet_main(event_t *event)
 				sn_coap_protocol_init(&own_alloc, &own_free, &tx_function);
 				sn_nsdl_init(&tx_function ,&rx_function, &memory_struct);
 
+                                set_NSP_address(nsp_addr, nsp_port, SN_NSDL_ADDRESS_TYPE_IPV6);
+                                
 				timer_sys_event_cancel(START);
 				timer_sys_event(START, 1000);
 			}					
@@ -357,7 +359,7 @@ void tasklet_main(event_t *event)
 						return;
 					}
 					memset(resource_ptr->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
-
+          
 					// dev
 					CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mgf)-1, (uint8_t*) res_mgf, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mgf_val, sizeof(res_mgf_val)-1);
 					// model
