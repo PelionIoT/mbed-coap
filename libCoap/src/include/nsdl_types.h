@@ -22,7 +22,9 @@ extern "C" {
 #ifndef NULL
 #define NULL 0
 #endif
-
+#ifdef AVR_GCC
+#include <avr_compiler.h>
+#else
 /* Generic PART  to All platforms */
 typedef signed char 		int8_t;
 typedef signed short int    int16_t;
@@ -98,6 +100,7 @@ typedef  signed short int prog_int16_t;
 typedef  unsigned long int prog_uint32_t;
 typedef  signed long int prog_int32_t;
 
+#endif
 #endif
 #endif
 
