@@ -21,6 +21,7 @@
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_header_internal.h"
+#include "sn_coap_protocol_internal.h"
 
 /* * * * LOCAL FUNCTION PROTOTYPES * * * */
 static int8_t   sn_coap_builder_header_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr);
