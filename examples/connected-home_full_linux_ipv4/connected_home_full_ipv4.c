@@ -93,7 +93,7 @@ uint8_t nsp_registered = 0;
 #ifdef USE_EDTLS
 /* eDTLS related globals*/
 uint8_t edtls_connection_status;
-uint8_t edtls_session_id;
+int16_t edtls_session_id;
 static uint8_t 	edtls_psk_key[16] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6'};
 static uint16_t edtls_psk_key_id = 0x0f0f;
 #endif
@@ -171,18 +171,25 @@ int svr_ipv4(void)
 		stop_pgm("bind() error");
 
 	/* Initialize the libNsdl */
+
 	memory_struct.sn_nsdl_alloc = &own_alloc;
 	memory_struct.sn_nsdl_free = &own_free;
 
-	sn_nsdl_init(&tx_function ,&rx_function, &memory_struct);
+	/* This initializes libCoap and libNsdl */
+	/* Parameters are function pointers to used memory allocation and free functions in structure */
+	/* And used functions for TX and RX purposes. */
+	sn_nsdl_init(&tx_function, &rx_function, &memory_struct);
 
 	inet_pton(AF_INET, arg_dst, &nsp_addr);
 
+	/* Give used NSP address and port to libNsdl */
 	set_NSP_address(nsp_addr, arg_dport, SN_NSDL_ADDRESS_TYPE_IPV4);
 
 	pthread_create(&coap_exec_thread, NULL, (void *)coap_exec_poll_function, NULL);
 
 	/* Create resources */
+	/* Resource struct is used during this process. */
+	/* Libraries copies values to own list. resource_ptr can be free'd after resource creations */
 	resource_ptr = own_alloc(sizeof(sn_nsdl_resource_info_s));
 	if(!resource_ptr)
 		return 0;
@@ -196,9 +203,12 @@ int svr_ipv4(void)
 	}
 	memset(resource_ptr->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
 
+	/* Macro is used to help creating resources. Fills struct and calls sn_nsdl_create_resource() - function */
+	/* Static resources are handled in libNsdl, and application can give some value for them to add to responses */
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mgf)-1, (uint8_t*) res_mgf, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mgf_val, sizeof(res_mgf_val)-1);
 	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mdl)-1, (uint8_t*) res_mdl, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mdl_val, sizeof(res_mdl_val)-1);
 
+	/* Dynamic resources are processed in callback function that is given in resource creating */
 	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_bat)-1, (uint8_t*) res_bat, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 1, &general_resource_cb) /* Observable resource */
 	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_pwr)-1, (uint8_t*) res_pwr, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &general_resource_cb)
 	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_rel)-1, (uint8_t*) res_rel, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &relay_resource_cb)
@@ -208,7 +218,7 @@ int svr_ipv4(void)
 #ifdef USE_EDTLS
 	sn_edtls_libraray_initialize();
 
-	/* Set PSK key */
+	/* Set PSK key and key ID */
 	edtls_pre_shared_key_set(edtls_psk_key, edtls_psk_key_id);
 
 	/* Set eDTLS socket address - same as NSP address in this case */
@@ -216,13 +226,23 @@ int svr_ipv4(void)
 	edtls_server_address.address_type = SN_EDTLS_ADDRESS_TYPE_IPV4;
 	memcpy(edtls_server_address.address, nsp_addr, 16);
 
+	/* Start eDTLS connection */
+	/* Returns edtls session id. */
 	edtls_session_id = sn_edtls_connect(&edtls_server_address, &edtls_tx, &edtls_registration_status);
+
+	if(edtls_session_id == EDTLS_FAILURE)
+	{
+		printf("eDTLS session start failed!\n");
+		return 0;
+	}
 #ifdef HAVE_DEBUG
-			printf("Waiting for eDTLS to connect..\n");
+	printf("Waiting for eDTLS to connect..\n");
 #endif
 
 	/* Wait for the eDTLS to connect */
 	/* Push all packets to sn_edtls_parse_data - function until edtls_connection_status == EDTLS_CONNECTION_OK */
+	/* eDTLS library calls  */
+	/* This is just example - using proper state machine is better way to do this */
 	while((edtls_connection_status != EDTLS_CONNECTION_OK) && (i < MAX_CONNECTING_TIME))
 	{
 		usleep(5000);
@@ -251,28 +271,35 @@ int svr_ipv4(void)
 #endif
 
 	/* Register with NSP */
+	/* Macro to allocate edpoint_ptr structure for endpoint parameters (name, type and lifetime) */
 	INIT_REGISTER_NSDL_ENDPOINT(endpoint_ptr, ep, ep_type, lifetime_ptr);
 
-	sn_nsdl_register_endpoint(endpoint_ptr);
+	/* Call sn_nsdl_register_endpoint() to send NSP registration message */
+	if(sn_nsdl_register_endpoint(endpoint_ptr) == SN_NSDL_FAILURE)
+		printf("NSP registration failed\n");
 
+	/* Free endpoint_ptr */
 	CLEAN_REGISTER_NSDL_ENDPOINT(endpoint_ptr);
 
-	own_free(resource_ptr->resource_parameters_ptr);
-	own_free(resource_ptr);
+	/* Free resource_ptr */
+	if(resource_ptr->resource_parameters_ptr)
+		own_free(resource_ptr->resource_parameters_ptr);
+	if(resource_ptr)
+		own_free(resource_ptr);
 
 	/* 				Main loop.				*/
 	/* Listen and process incoming messages */
-
-	sleep(1);
 
 	while (1)
 	{
 		usleep(100);
 		memset(buf, 0, BUFLEN);
 		rcv_size = svr_receive_msg(buf);
+		/* If message received.. */
 		if(rcv_size > 0)
 		{
 #ifdef USE_EDTLS
+			/* Set data pointer and -length to edtls_buffer - struct */
 			edtls_buffer_s.buff = (uint8_t*)buf;
 			edtls_buffer_s.len = rcv_size;
 			/* Parse eDTLS data - this moves edtls_buffer_s.buff to the start of the payload and sets edtls_buffer_s.len */
@@ -281,9 +308,11 @@ int svr_ipv4(void)
 			/*		return value > 0, parsing was OK, payload ready process in NSDL */
 			if(sn_edtls_parse_data(edtls_session_id, &edtls_buffer_s) > 0)
 			{
+				/* If there is payload to process, call sn_nsdl_process_coap() - function */
 				sn_nsdl_process_coap(edtls_buffer_s.buff, edtls_buffer_s.len , &received_packet_address);
 			}
 #else
+			/* If eDTLS not used, just call sn_nsdl_process_coap() */
 			sn_nsdl_process_coap(buf, rcv_size, &received_packet_address);
 #endif
 		}
@@ -293,6 +322,7 @@ int svr_ipv4(void)
 
 /****************************/
 /* Message receive function */
+/* Reads socket				*/
 /****************************/
 int16_t svr_receive_msg(uint8_t *buf)
 {
@@ -316,9 +346,9 @@ int16_t svr_receive_msg(uint8_t *buf)
 	printf("\nRX %s.%d [%d B] - ", rcv_in_addr, ntohs(sa_dst.sin_port), rcv_size);
 #endif
 
-}
+  }
 
- return rcv_size;
+  return rcv_size;
 }
 
 
@@ -337,7 +367,7 @@ void own_free(void *ptr)
 		free(ptr);
 }
 
-/* Function needed for libCoap protocol */
+/* Function needed for libCoap protocol. */
 uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr)
 {
 
@@ -357,7 +387,13 @@ uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_l
 #ifdef USE_EDTLS
 	edtls_data_s.buff = data_ptr;
 	edtls_data_s.len = data_len;
-	sn_edtls_write_data(edtls_session_id, &edtls_data_s);
+
+	/* If eDTLS is in use, sn_edtls_write_data() - function handles sending with tx-callback function */
+	if(sn_edtls_write_data(edtls_session_id, &edtls_data_s) == EDTLS_FAILURE)
+	{
+		printf("eDTLS write failed\n");
+		return 0;
+	}
 
 #else
 	/* Send the message */
@@ -367,6 +403,7 @@ uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_l
 	return 1;
 }
 
+/* RX function for libNsdl. Passes CoAP responses sent from application to this function. Also response to registration message */
 uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 {
 
@@ -377,6 +414,7 @@ uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 
 	printf("RX callback mid:%d\n", coap_header->msg_id);
 
+	/* If message is response to NSP registration */
 	if((coap_header->msg_code == COAP_MSG_CODE_RESPONSE_CREATED) && !nsp_registered)
 	{
 		reg_location_len = coap_header->options_list_ptr->location_path_len;
@@ -425,10 +463,14 @@ static void coap_exec_poll_function(void)
 	while(1)
 	{
 		sleep(1);
+
+		/* nsdl execution function, must be called at least once / second. System time must be increased every second. */
+		/* Cleans saved and unused data from libraries. Recommend to run this in same thread with other nsdl - functions */
 		sn_nsdl_exec(ns_system_time);
 		ns_system_time++;
 
 		/* If observation received, start sending notifications */
+		/* This is just example to send notifications to NSP */
 		if(obs_token_len)
 		{
 			if(i >= 10)
@@ -461,6 +503,7 @@ static void coap_exec_poll_function(void)
 		}
 
 		/* Send delayed response to request */
+		/* This is just example. When receiving request to sen/temp, application send ack and after few seconds value for this resource */
 		if(delayed_response_cnt == 1)
 		{
 			printf("deleyed response!\n");
@@ -492,39 +535,52 @@ static void coap_exec_poll_function(void)
 	}
 }
 
+/* This is callback for relay resource. When receiving request to "pwr/0/rel" libNsdl calls this */
 static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
+	/* Pointer for response message to be sent */
 	sn_coap_hdr_s *coap_res_ptr = 0;
 
 
 	printf("Relay callback\n");
 
+	/* If GET request */
 	if (received_coap_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
 	{
+		/* Allocate memory for the response and fill msg ID, message code, mesasge type and token, if needed */
 		coap_res_ptr = sn_coap_build_response(received_coap_ptr, COAP_MSG_CODE_RESPONSE_CONTENT);
+
+		/* Give content type */
 		coap_res_ptr->content_type_ptr = &text_plain;
 		coap_res_ptr->content_type_len = sizeof(text_plain);
+		/* Add payload */
 		coap_res_ptr->payload_len = sizeof(relay_state);
 		coap_res_ptr->payload_ptr = &relay_state;
+		/* Then call sn_nsdl_send_coap_message() - function to build and send CoAP response to NSP */
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
-
 	}
+
+	/* If PUT to resource received */
 	else if (received_coap_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT)
 	{
+		/* Check if there is payload */
 		if (received_coap_ptr->payload_ptr && received_coap_ptr->payload_len < 2)
 		{
+			/* Change relay state */
 			relay_state = received_coap_ptr->payload_ptr[0];
 		}
 
+		/* Build response "Changed" */
 		coap_res_ptr = sn_coap_build_response(received_coap_ptr, COAP_MSG_CODE_RESPONSE_CHANGED);
 		if (received_coap_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE)
 		{
 			coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
 			coap_res_ptr->msg_id = current_mid++;
 		}
+		/* Build and send response */
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
 	}
-	 /* Method not supported */
+	 /* Method not supported - For delete and post requests */
 	else
 	{
 		printf("Method not supported\n");
@@ -532,6 +588,7 @@ static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_
 		sn_nsdl_send_coap_message(address, coap_res_ptr);
 	}
 
+	/* Now free allocated memory - Only response message must be released. */
 	if(coap_res_ptr->token_ptr)
 	{
 		own_free(coap_res_ptr->token_ptr);
@@ -541,6 +598,7 @@ static uint8_t relay_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_
 	return 0;
 }
 
+/* This is callback for other DYNAMIC resources */
 static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address, sn_proto_info_s * proto)
 {
 	sn_coap_hdr_s *coap_res_ptr = 0;
@@ -783,9 +841,9 @@ uint8_t edtls_random()
 
 /* eDTLS registration status function 				*/
 /* eDTLS library returns status during registration */
-/* EDTLS_CONNECTION_FAILED = 0						*/
 /* EDTLS_CONNECTION_OK = 1							*/
 /* EDTLS_CONNECTION_CLOSED = 2 						*/
+/* EDTLS_CONNECTION_FAILED = 3						*/
 /* EDTLS_ECC_CALCULATING = 4 (not used in PSK mode) */
 void edtls_registration_status(uint8_t status, int16_t session_id)
 {
