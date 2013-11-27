@@ -1,5 +1,5 @@
 /**
- * \file sn_coap_header_validity_check.c
+ * \file sn_coap_header_check.c
  *
  * \brief CoAP Header validity checker
  *

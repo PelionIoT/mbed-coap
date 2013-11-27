@@ -525,7 +525,7 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
  * \return 	0 = success
  * 			-1 = failure
  */
-
+SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_block_size(uint16_t block_size)
 {
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
@@ -558,7 +558,7 @@ int8_t sn_coap_protocol_set_block_size(uint16_t block_size)
  * \return 	0 = success
  * 			-1 = failure
  */
-
+SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
 {
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
@@ -572,16 +572,16 @@ int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
 }
 
 /**************************************************************************//**
- * \fn int8_t sn_coap_protocol_set_retransmission(uint8_t resending_count, uint8_t buffer_size)
+ * \fn int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_intervall)
  *
  * \brief Sets message retransmission parameters
  *
  * \param uint8_t resending_count max number of resendings for message
- * \param uint8_t resending_intervall message resending inervall
+ * \param uint8_t resending_intervall message resending inervall in seconds
  * \return 	0 = success
  * 			-1 = failure
  */
-
+SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_intervall)
 {
 #if ENABLE_RESENDINGS
@@ -596,6 +596,17 @@ int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, u
 	return -1;
 }
 
+/**************************************************************************//**
+ * \fn int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
+ *
+ * \brief Sets message retransmission queue. Set size to '0' to disable feature. If both are set to '0', then re-sendings are disabled.
+ *
+ * \param uint8_t buffer_size_messages queue size - maximum number of messages to be saved to queue
+ * \param uint8_t buffer_size_bytes queue size - maximum size of messages saved to queue
+ * \return 	0 = success
+ * 			-1 = failure
+ */
+SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
 {
 #if ENABLE_RESENDINGS
