@@ -1,5 +1,5 @@
 /**
- *\file sn_coap_parser_ietf_draft_12.c
+ *\file sn_coap_parser.c
  *
  * \brief CoAP Header parser
  *
