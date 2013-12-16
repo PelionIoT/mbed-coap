@@ -17,6 +17,7 @@
 /* * * * * * * * * * * * * * */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h> /* For libary malloc() */
 #include <string.h> /* For memset() and memcpy() */
 #ifndef REAL_EMBEDDED
