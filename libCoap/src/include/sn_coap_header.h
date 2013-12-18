@@ -233,32 +233,84 @@ typedef struct sn_coap_hdr_
 /* * * * * * * * * * * * * * * * * * * * * * */
 
 /**
- * \brief Sets the memory allocation and deallocation functions the library will use, and must be called first.
+ * \fn void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
+ * 											void (*used_free_func_ptr)(void*))
+ *
+ * \brief Initializes CoAP Builder and Parser parts. Sets the memory allocation and deallocation functions the library will use, and must be called first.
+ *
+ * \param void* used_malloc_func_ptr is function pointer for used malloc() function.
+ * \param void *used_free_func_ptr is function pointer for usef free() function.
  */
 extern void           sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*));
 
 /**
- * \brief Parses an incoming message buffer to a CoAP header structure.
+ * \fn sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr)
+ *
+ * \brief Parses CoAP message from given Packet data
+ *
+ * \param packet_data_len is length of given Packet data to be parsed to CoAP message
+ *
+ * \param *packet_data_ptr is source for Packet data to be parsed to CoAP message
+ *
+ * \param *coap_version_ptr is destination for parsed CoAP specification version
+ *
+ * \return Return value is pointer to parsed CoAP message.\n
+ *         In following failure cases NULL is returned:\n
+ *          -Failure in given pointer (= NULL)\n
+ *          -Failure in memory allocation (malloc() returns NULL)
  */
 extern sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr);
 
 /**
- * \brief Releases any memory allocated by a CoAP message structure.
+ * \fn void sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg_ptr)
+ *
+ * \brief Releases memory of given CoAP message
+ *
+ *        Note!!! Does not release Payload part
+ *
+ * \param *freed_coap_msg_ptr is pointer to released CoAP message
  */
 extern void           sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg_ptr);
 
 /**
+ * \fn int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
+ *
  * \brief Builds an outgoing message buffer from a CoAP header structure.
+ *
+ * \param *dst_packet_data_ptr is pointer to allocated destination to built CoAP packet
+ *
+ * \param *src_coap_msg_ptr is pointer to source structure for building Packet data
+ *
+ * \return Return value is byte count of built Packet data. In failure cases:\n
+ *          -1 = Failure in given CoAP header structure\n
+ *          -2 = Failure in given pointer (= NULL)
  */
 extern int16_t        sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
 
 /**
- * \brief Calculates the needed message buffer size from a CoAP message structure.
+ * \fn uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr)
+ *
+ * \brief Calculates needed Packet data memory size for given CoAP message
+ *
+ * \param *src_coap_msg_ptr is pointer to data which needed Packet
+ *  		data length is calculated
+ *
+ * \return Return value is count of needed memory as bytes for build Packet data
+ * 			Null if failed
  */
 extern uint16_t       sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr);
 
 /**
- * \brief Automates the building of a response to an incoming request.
+ * \fn sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
+ *
+ * \brief Prepares generic response packet from a request packet. This function allocates memory for the resulting sn_coap_hdr_s
+ *
+ * \param *coap_packet_ptr The request packet pointer
+ * \param msg_code response messages code
+ *
+ * \return *coap_packet_ptr The allocated and pre-filled response packet pointer
+ * 			NULL	Error in parsing the request
+ *
  */
 extern sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code);
 

@@ -49,15 +49,7 @@ SN_MEM_ATTR_COAP_PROTOCOL_DECL extern uint16_t 	sn_coap_block_data_size; 				/* 
 
 
 
-/**
- * \fn void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
- * 											void (*used_free_func_ptr)(void*))
- *
- * \brief Initializes CoAP Builder and Parser parts
- *
- * \param void* used_malloc_func_ptr is function pointer for used malloc() function.
- * \param void *used_free_func_ptr is function pointer for usef free() function.
- */
+
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
                                      void (*used_free_func_ptr)(void*))
@@ -69,18 +61,7 @@ void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
     sn_coap_free = used_free_func_ptr;
 }
 
-/**
- * \fn sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
- *
- * \brief Prepares generic response packet from a request packet. This function allocates memory for the resulting sn_coap_hdr_s
- *
- * \param *coap_packet_ptr The request packet pointer
- * \param msg_code response messages code
- *
- * \return *coap_packet_ptr The allocated and pre-filled response packet pointer
- * 			NULL	Error in parsing the request
- *
- */
+
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
 {
@@ -129,19 +110,7 @@ sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t ms
 }
 
 
-/**
- * \fn int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
- *
- * \brief Builds Packet data from given CoAP header structure
- *
- * \param *dst_packet_data_ptr is pointer to allocated destination to built CoAP packet
- *
- * \param *src_coap_msg_ptr is pointer to source structure for building Packet data
- *
- * \return Return value is byte count of built Packet data. In failure cases:\n
- *          -1 = Failure in given CoAP header structure\n
- *          -2 = Failure in given pointer (= NULL)
- */
+
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
 {
@@ -193,17 +162,7 @@ int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_ms
     return (dst_packet_data_ptr - base_packet_data_ptr);
 }
 
-/**
- * \fn uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr)
- *
- * \brief Calculates needed Packet data memory size for given CoAP message
- *
- * \param *src_coap_msg_ptr is pointer to data which needed Packet
- *  		data length is calculated
- *
- * \return Return value is count of needed memory as bytes for build Packet data
- * 			Null if failed
- */
+
 SN_MEM_ATTR_COAP_BUILDER_FUNC
 uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr)
 {

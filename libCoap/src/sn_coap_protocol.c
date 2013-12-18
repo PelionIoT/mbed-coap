@@ -17,7 +17,6 @@
 /* * * * * * * * * * * * * * */
 
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h> /* For libary malloc() */
 #include <string.h> /* For memset() and memcpy() */
 #ifndef REAL_EMBEDDED
@@ -109,17 +108,7 @@ static uint8_t 	resource_path_ptr[]			= {'r','d'};
 static uint8_t 	ep_name_parameter_string[]	= {'h','='};
 static uint8_t	resource_type_parameter[]	= {'r','t','='};
 
-/**
- * \fn int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr)
- *
- * \brief Builds RD registrtion request packet
- *
- * \param *coap_hdr_ptr is destination for built Packet data
- * \param *endpoint_info_ptr pointer to struct that contains endpoint info parameters
- *
- * \return Return value 0 given on success. In failure cases:\n
- *          -1 = Failure
- */
+
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr)
 {
@@ -182,18 +171,7 @@ int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoi
 	return 0;
 }
 
-/**
- * \fn int8_t sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
- *
- * \brief Builds RD update request packet
- *
- * \param *coap_hdr_ptr is destination for built Packet data
- * \param *location The location returned when registering with the RD
- * \param length length of the location
- *
- * \return Return value 0 given on success. In failure cases:\n
- *          -1 = Failure
- */
+
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t 	sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
 {
@@ -206,18 +184,7 @@ int8_t 	sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, 
 	return 0;
 }
 
-/**
- * \fn int8_t sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
- *
- * \brief Builds RD de-registrtion request packet
- *
- * \param *coap_hdr_ptr is destination for built Packet data
- * \param *location The location returned when registering with the RD
- * \param length length of the location
- *
- * \return Return value 0 given on success. In failure cases:\n
- *          -1 = Failure
- */
+
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t 	sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
 {
@@ -230,13 +197,7 @@ int8_t 	sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8
 	return 0;
 }
 
-/**
- * \fn int8_t sn_coap_protocol_destroy(void)
- *
- * \brief Frees all memory from CoAP protocol part
- *
- * \return Return value is always 0
- */
+
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_destroy(void)
 {
@@ -384,20 +345,6 @@ void coap_protocol_free_lists(void)
 
 }
 
-/**************************************************************************//**
- * \fn int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
-		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *))
- *
- * \brief Initializes CoAP Protocol part
- *
- * \param *used_malloc_func_ptr is function pointer for used malloc() function.
- *        If set to NULL, CoAP Protocol part uses standard C-library malloc() function.
- *
- * \param *used_free_func_ptr is function pointer for used free() function.
- *        If set to NULL, CoAP Protocol part uses standard C-library free() function.
- *
- * \param *used_tx_callback_ptr function callback pointer to tx function for sending coap messages
- *****************************************************************************/
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
 		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *))
@@ -517,15 +464,7 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
 	return 0;
 }
 
-/**************************************************************************//**
- * \fn int8_t sn_coap_protocol_set_block_size(uint16_t block_size)
- *
- * \brief Sets block size
- *
- * \param uint16_t block_size maximum size of CoAP payload. Valid sizes are 16, 32, 64, 128, 256, 512 and 1024 bytes
- * \return 	0 = success
- * 			-1 = failure
- */
+
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_block_size(uint16_t block_size)
 {
@@ -550,15 +489,7 @@ int8_t sn_coap_protocol_set_block_size(uint16_t block_size)
 
 }
 
-/**************************************************************************//**
- * \fn int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
- *
- * \brief Sets max number of messages saved for message duplication checks
- *
- * \param uint8_t message_count max number of messages saved for duplicate control
- * \return 	0 = success
- * 			-1 = failure
- */
+
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
 {
@@ -572,16 +503,7 @@ int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
 	return -1;
 }
 
-/**************************************************************************//**
- * \fn int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_intervall)
- *
- * \brief Sets message retransmission parameters
- *
- * \param uint8_t resending_count max number of resendings for message
- * \param uint8_t resending_intervall message resending inervall in seconds
- * \return 	0 = success
- * 			-1 = failure
- */
+
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_intervall)
 {
@@ -597,16 +519,7 @@ int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, u
 	return -1;
 }
 
-/**************************************************************************//**
- * \fn int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
- *
- * \brief Sets message retransmission queue. Set size to '0' to disable feature. If both are set to '0', then re-sendings are disabled.
- *
- * \param uint8_t buffer_size_messages queue size - maximum number of messages to be saved to queue
- * \param uint8_t buffer_size_bytes queue size - maximum size of messages saved to queue
- * \return 	0 = success
- * 			-1 = failure
- */
+
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
 {
@@ -621,27 +534,6 @@ int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, 
 
 }
 
-/**************************************************************************//**
- * \fn int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
- *
- * \brief Builds Packet data from given CoAP header structure to be sent
- *
- * \param *dst_addr_ptr is pointer to destination address where CoAP message
- *        will be sent (CoAP builder needs that information for message resending purposes)
- *
- * \param *dst_packet_data_ptr is pointer to destination of built Packet data
- *
- * \param *src_coap_msg_ptr is pointer to source of built Packet data
- *
- * \return Return value is byte count of built Packet data.\n
- *         Note: If message is blockwised, all payload is not sent at the same time\n
- *         In failure cases:\n
- *          -1 = Failure in CoAP header structure\n
- *          -2 = Failure in given pointer (= NULL)\n
- *          -3 = Failure in Reset message\ŋ
- *         If there is not enough memory (or User given limit exceeded) for storing
- *         resending messages, situation is ignored.
- *****************************************************************************/
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
                       uint8_t *dst_packet_data_ptr,
@@ -871,24 +763,6 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
     return byte_count_built;
 }
 
-/**************************************************************************//**
- * \fn sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
- *
- * \brief Parses received CoAP message from given Packet data
- *
- * \param *src_addr_ptr is pointer to source address of received CoAP message
- *        (CoAP parser needs that information for Message acknowledgement)
- *
- * \param packet_data_len is length of given Packet data to be parsed to CoAP message
- *
- * \param *packet_data_ptr is pointer to source of Packet data to be parsed to CoAP message
- *
- * \return Return value is pointer to parsed CoAP message structure. This structure includes also coap_status field.\n
- *         In following failure cases NULL is returned:\n
- *          -Given NULL pointer\n
- *          -Failure in parsed header of non-confirmable message\ŋ
- *          -Out of memory (malloc() returns NULL)
- *****************************************************************************/
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
 {
@@ -1100,20 +974,6 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
     return (returned_dst_coap_msg_ptr);
 }
 
-/**************************************************************************//**
- * \fn int8_t sn_coap_protocol_exec(uint32_t current_time)
- *
- * \brief Sends CoAP messages from re-sending queue, if there is any.
- * 		  Cleans also old messages from the duplication list and from block receiving list
- *
- *        This function can be called e.g. once in a second but also more frequently.
- *
- * \param current_time is System time in seconds. This time is
- *        used for message re-sending timing and to identify old saved data.
- *
- * \return 	0 if success
- * 			-1 if failed
- *****************************************************************************/
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_exec(uint32_t current_time)
 {

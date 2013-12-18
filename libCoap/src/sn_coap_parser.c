@@ -39,22 +39,7 @@ static int8_t   sn_coap_parser_payload_parse(uint16_t packet_data_len, uint8_t *
 /* * * * GLOBAL DECLARATIONS * * * */
 /* * * * * * * * * * * * * * * * * */
 
-/**
- * \fn sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr)
- *
- * \brief Parses CoAP message from given Packet data
- *
- * \param packet_data_len is length of given Packet data to be parsed to CoAP message
- *
- * \param *packet_data_ptr is source for Packet data to be parsed to CoAP message
- *
- * \param *coap_version_ptr is destination for parsed CoAP specification version
- *
- * \return Return value is pointer to parsed CoAP message.\n
- *         In following failure cases NULL is returned:\n
- *          -Failure in given pointer (= NULL)\n
- *          -Failure in memory allocation (malloc() returns NULL)
- */
+
 SN_MEM_ATTR_COAP_PARSER_FUNC
 sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr)
 {
@@ -97,15 +82,7 @@ sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr
     return parsed_and_returned_coap_msg_ptr;
 }
 
-/**
- * \fn void sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg_ptr)
- *
- * \brief Releases memory of given CoAP message
- *
- *        Note!!! Does not release Payload part
- *
- * \param *freed_coap_msg_ptr is pointer to released CoAP message
- */
+
 SN_MEM_ATTR_COAP_PARSER_FUNC
 void sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg_ptr)
 {
