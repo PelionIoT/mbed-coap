@@ -5,10 +5,10 @@ AR_OBJECTS = sn_coap_builder.o sn_coap_parser.o sn_coap_header_check.o sn_coap_p
 
 SOURCE = ../src
 
-CFLAGS	= -Wall -D_REENTRANT -I ../src/include -I ../src/x86_include -g -Dx86
+CFLAGS	= -Wall -D_REENTRANT -I ../src/include -I ../src/x86_include -g -Dx86 -std=c99
 LDFLAGS = -L. -D_REENTRANT -lpthread
 
-all: clean $(TARGET)
+all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
 	ar rcs $(TARGET) $(AR_OBJECTS)
