@@ -11,10 +11,10 @@ LDFLAGS = -L. -D_REENTRANT -lpthread
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	ar rcs $(TARGET) $(AR_OBJECTS)
+	$(PLATFORM)ar rcs $(TARGET) $(AR_OBJECTS)
 	
 .c.o:
-	$(PLATFORM) gcc -g -c -O2 -Wall $(CFLAGS) $<
+	$(PLATFORM)gcc -g -c -O2 -Wall $(CFLAGS) $<
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)
