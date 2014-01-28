@@ -5,36 +5,18 @@ extern "C" {
 #ifndef _PL_TYPES_
 #define _PL_TYPES_
 
+#ifndef NULL
+#define NULL 0
+#endif
+
+/* Platform specific parts */
+
 #ifdef CC8051_PLAT
 
 #define PL_LARGE __xdata
 #define PL_PROGMEM __code
 #define PL_REENTRANT __reentrant
 #define NEAR_FUNC __near_func
-#else
-
-#define PL_LARGE
-#define PL_REENTRANT
-#define NEAR_FUNC
-#define PL_PROGMEM
-#endif
-
-#ifndef NULL
-#define NULL 0
-#endif
-#ifdef AVR_GCC
-#include <avr_compiler.h>
-#else
-/* Generic PART  to All platforms */
-typedef signed char 		int8_t;
-typedef signed short int    int16_t;
-
-typedef unsigned char uint8_t;
-typedef unsigned short int uint16_t;
-
-
-
-#ifdef CC8051_PLAT
 
 typedef unsigned long int uint32_t;
 typedef signed long int int32_t;
@@ -56,55 +38,54 @@ typedef __code signed short int prog_int16_t;
 
 typedef __code unsigned long int prog_uint32_t;
 typedef __code signed long int prog_int32_t;
-
+/* end CC8051_PLAT */
 #elif x86
-typedef  unsigned long int        uint32_t;
-typedef  unsigned char const prog_uint8_t;
-typedef  signed char prog_int8_t;
 
-typedef  unsigned short int prog_uint16_t;
-typedef  signed short int prog_int16_t;
+#define PL_LARGE
+#define PL_REENTRANT
+#define NEAR_FUNC
+#define PL_PROGMEM
 
-typedef  unsigned long int prog_uint32_t;
-typedef  signed long int prog_int32_t;
+# if (__STDC_VERSION__ >= 199901L)
+#include <stdint.h> /* Use C99 types */
 #else
+typedef long int            int32_t
+typedef unsigned long int   uint32_t;
+typedef signed char 		int8_t;
+typedef unsigned char       uint8_t;
+typedef signed short int    int16_t;
+typedef unsigned short int  uint16_t;
+#endif /* non C99 */
 
-#ifndef ATXMEGA256
-#define __code
-typedef signed long int          int32_t;
-typedef unsigned long int        uint32_t;
+typedef  const uint8_t prog_uint8_t;
+typedef  const int8_t prog_int8_t;
+typedef  const uint16_t prog_uint16_t;
+typedef  const int16_t prog_int16_t;
+typedef  const uint32_t prog_uint32_t;
+typedef  const int32_t prog_int32_t;
 
-typedef  unsigned char const prog_uint8_t;
-typedef  signed char prog_int8_t;
+/* end x86 */
+#elif AVR_GCC
+#warning "Check nsdl_types.h for AVR compilers"
 
-typedef  unsigned short int prog_uint16_t;
-typedef  signed short int prog_int16_t;
+#define PL_LARGE
+#define PL_REENTRANT
+#define NEAR_FUNC
+#define PL_PROGMEM
 
-typedef  unsigned long int prog_uint32_t;
-typedef  signed long int prog_int32_t;
-//typedef unsigned long long uint64_t;
-//typedef signed long long int64_t;
-#else
+#include <avr_compiler.h>
+#include <stdint.h>
 
-#define __code
+typedef  const uint8_t prog_uint8_t;
+typedef  const int8_t prog_int8_t;
+typedef  const uint16_t prog_uint16_t;
+typedef  const int16_t prog_int16_t;
+typedef  const uint32_t prog_uint32_t;
+typedef  const int32_t prog_int32_t;
 
-typedef unsigned long int uint32_t;
-typedef signed long int int32_t;
-
-typedef  unsigned char const prog_uint8_t;
-typedef  signed char prog_int8_t;
-
-typedef  unsigned short int prog_uint16_t;
-typedef  signed short int prog_int16_t;
-
-typedef  unsigned long int prog_uint32_t;
-typedef  signed long int prog_int32_t;
-
+/* end AVR_GCC */
 #endif
-#endif
-#endif
 
-//#define printf(x,y)
 #endif /*_PL_TYPES_*/
 
 

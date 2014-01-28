@@ -12,6 +12,9 @@
 extern "C" {
 #endif
 
+#ifndef SN_NSDL_LIB_H_
+#define SN_NSDL_LIB_H_
+
 #define SN_NSDL_CONST_MEMORY_ATTRIBUTE
 
 #define SN_NSDL_ENDPOINT_NOT_REGISTERED  0
@@ -424,6 +427,8 @@ extern int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_
  * \brief This function releases all allocated memory in nsdl and grs modules.
  */
 extern int8_t sn_nsdl_destroy(void);
+
+#endif /* SN_NSDL_LIB_H_ */
 
 #ifdef __cplusplus
 }

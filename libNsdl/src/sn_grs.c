@@ -1129,7 +1129,6 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 {
 	/* Local variables */
 	sn_nsdl_resource_info_s 	*resource_search_temp 	= NULL;
-	uint8_t 					i	 					= 0;
 	uint8_t 					*path_temp_ptr 			= NULL;
 
 	/* Check parameters */
@@ -1152,11 +1151,8 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 			/* If length equals.. */
 			if(resource_search_temp->pathlen == pathlen)
 			{
-				/* Compare paths */
-				i = memcmp(resource_search_temp->path, path_temp_ptr, pathlen);
-
-				/* If same, return node pointer */
-				if(!i)
+				/* Compare paths, If same return node pointer*/
+				if(0 == memcmp(resource_search_temp->path, path_temp_ptr, pathlen))
 					return resource_search_temp;
 			}
 			/* If that was not what we needed, get next node.. */
@@ -1172,10 +1168,9 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 		{
 			uint8_t *temp_ptr = resource_search_temp->path;
 
-			i = memcmp(resource_search_temp->path, path_temp_ptr, pathlen);
-
 			/* If found, return pointer */
-			if((*(temp_ptr+(uint8_t)pathlen) == '/') && !i)
+			if((*(temp_ptr+(uint8_t)pathlen) == '/')
+					&& !memcmp(resource_search_temp->path, path_temp_ptr, pathlen))
 				return resource_search_temp;
 
 			/* else get next node */
