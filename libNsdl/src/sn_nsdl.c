@@ -21,11 +21,14 @@
 #define RESOURCE_DIR_LEN				2
 #define RESOURCE_DIR_PATH				{'r','d'}
 
-#define EP_NAME_PARAMETERS_LEN			2
-#define EP_NAME_PARAMETERS				{'h','='}
+#define EP_NAME_PARAMETERS_LEN			3
+#define EP_NAME_PARAMETERS				{'e','p','='}
 
 #define RT_PARAMETER_LEN				3
-#define RT_PARAMETER					{'r','t','='}
+#define RT_PARAMETER					{'e','t','='}
+
+#define DOMAIN_PARAMETER_LEN			2
+#define DOMAIN_PARAMETER				{'d','='}
 
 #define IF_PARAMETER_LEN				3
 #define IF_PARAMETER					{'i','f','='}
@@ -80,6 +83,9 @@ static uint8_t		if_description_parameter[]	= IF_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t		ep_lifetime_parameter[]		= LT_PARAMETER;
+
+SN_NSDL_CONST_MEMORY_ATTRIBUTE
+static uint8_t		ep_domain_parameter[]		= DOMAIN_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t 	coap_con_type_parameter[]	= COAP_CON_PARAMETER;
@@ -414,13 +420,6 @@ int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 
 	register_message_ptr->uri_path_len = sizeof(resource_path_ptr);
 	register_message_ptr->uri_path_ptr = resource_path_ptr;
-
-	/* If domain name is configured, fill needed fields */
-	if(endpoint_info_ptr->domain_name_len)
-	{
-		register_message_ptr->options_list_ptr->uri_host_len = endpoint_info_ptr->domain_name_len;
-		register_message_ptr->options_list_ptr->uri_host_ptr = endpoint_info_ptr->domain_name_ptr;
-	}
 
 	/* Fill Uri-query options */
 	sn_nsdl_fill_uri_query_options(endpoint_info_ptr, register_message_ptr, SN_NSDL_EP_REGISTER_MESSAGE);
@@ -1164,21 +1163,28 @@ static uint8_t sn_nsdl_calculate_uri_query_option_len(sn_nsdl_ep_parameters_s *e
 	if((endpoint_info_ptr->endpoint_name_len != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE) && endpoint_info_ptr->endpoint_name_ptr != 0)
 	{
 		return_value += endpoint_info_ptr->endpoint_name_len;
-		return_value += 2;		//h=
+		return_value += EP_NAME_PARAMETERS_LEN;	//ep=
 		number_of_parameters++;
 	}
 
 	if((endpoint_info_ptr->type_len != 0) && (endpoint_info_ptr->type_ptr != 0))
 	{
 		return_value+=endpoint_info_ptr->type_len;
-		return_value += 3;
+		return_value += RT_PARAMETER_LEN; 		//et=
 		number_of_parameters++;
 	}
 
 	if((endpoint_info_ptr->lifetime_len != 0) && (endpoint_info_ptr->lifetime_ptr != 0))
 	{
 		return_value+=endpoint_info_ptr->lifetime_len;
-		return_value += 3;
+		return_value += LT_PARAMETER_LEN;		//lt=
+		number_of_parameters++;
+	}
+
+	if((endpoint_info_ptr->domain_name_len != 0) && (endpoint_info_ptr->domain_name_ptr != 0))
+	{
+		return_value+=endpoint_info_ptr->domain_name_len;
+		return_value += DOMAIN_PARAMETER_LEN;		//d=
 		number_of_parameters++;
 	}
 
@@ -1221,7 +1227,7 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
 
 	if((parameter_ptr->endpoint_name_len != 0) && (parameter_ptr->endpoint_name_ptr != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE))
 	{
-		/* fill endpoint name, first ?h=, then endpoint name */
+		/* fill endpoint name, first ?ep=, then endpoint name */
 		memcpy(temp_ptr, ep_name_parameter_string, sizeof(ep_name_parameter_string));
 		temp_ptr += EP_NAME_PARAMETERS_LEN;
 		memcpy(temp_ptr, parameter_ptr->endpoint_name_ptr, parameter_ptr->endpoint_name_len);
@@ -1257,6 +1263,21 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
 		temp_ptr += LT_PARAMETER_LEN;
 		memcpy(temp_ptr, parameter_ptr->lifetime_ptr, parameter_ptr->lifetime_len);
 		temp_ptr += parameter_ptr->lifetime_len;
+	}
+
+	/******************************************************/
+	/* If domain is configured, fill needed fields */
+	/******************************************************/
+
+	if((parameter_ptr->domain_name_len != 0) && (parameter_ptr->domain_name_ptr != 0))
+	{
+		if(temp_ptr != source_msg_ptr->options_list_ptr->uri_query_ptr)
+			*temp_ptr++ = '&';
+
+		memcpy(temp_ptr, ep_domain_parameter, sizeof(ep_domain_parameter));
+		temp_ptr += DOMAIN_PARAMETER_LEN;
+		memcpy(temp_ptr, parameter_ptr->domain_name_ptr, parameter_ptr->domain_name_len);
+		temp_ptr += parameter_ptr->domain_name_len;
 	}
 
 	return SN_NSDL_SUCCESS;
