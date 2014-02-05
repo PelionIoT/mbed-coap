@@ -304,7 +304,7 @@ void tasklet_main(event_t *event)
 
 
 				sn_coap_builder_and_parser_init(&own_alloc, &own_free);
-				sn_coap_protocol_init(&own_alloc, &own_free, &tx_function);
+				sn_coap_protocol_init(&own_alloc, &own_free, &tx_function, NULL);
 				sn_nsdl_init(&tx_function ,&rx_function, &memory_struct);
 
                                 set_NSP_address(nsp_addr, nsp_port, SN_NSDL_ADDRESS_TYPE_IPV6);

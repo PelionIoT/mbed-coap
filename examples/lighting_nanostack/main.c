@@ -311,7 +311,7 @@ void tasklet_main(event_t *event)
 
 
 				sn_coap_builder_and_parser_init(&own_alloc, &own_free);
-				sn_coap_protocol_init(&own_alloc, &own_free, &tx_function);
+				sn_coap_protocol_init(&own_alloc, &own_free, &tx_function, NULL);
 
 				timer_sys_event_cancel(START);
 				timer_sys_event(START, 1000);

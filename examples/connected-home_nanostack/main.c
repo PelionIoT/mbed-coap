@@ -338,7 +338,7 @@ void tasklet_main(event_t *event)
 
 
 				sn_coap_builder_and_parser_init(&own_alloc, &own_free);
-				sn_coap_protocol_init(&own_alloc, &own_free, &tx_function);
+				sn_coap_protocol_init(&own_alloc, &own_free, &tx_function, NULL);
 #ifdef USE_EDTLS
 				sn_edtls_libraray_initialize();
                                 edtls_pre_shared_key_set(psk_key,psk_key_id);

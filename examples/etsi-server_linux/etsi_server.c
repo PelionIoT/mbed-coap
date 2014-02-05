@@ -123,7 +123,7 @@ int svr_ipv6(void)
 
 	/* Initialize the CoAP library */
 	sn_coap_builder_and_parser_init(&own_alloc, &own_free);
-	sn_coap_protocol_init(&own_alloc, &own_free, &tx_function);
+	sn_coap_protocol_init(&own_alloc, &own_free, &tx_function, NULL);
 
 	/* Initialize random MID */
 	srand (time(NULL));

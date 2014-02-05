@@ -22,9 +22,10 @@ extern "C" {
 
 /**
  * \fn int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
-		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *))
+		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+		int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *)
  *
- * \brief Initializes CoAP Protocol part
+ * \brief Initializes CoAP Protocol part. When using libNsdl, sn_nsdl_init() calls this function.
  *
  * \param *used_malloc_func_ptr is function pointer for used malloc() function.
  *        If set to NULL, CoAP Protocol part uses standard C-library malloc() function.
@@ -33,10 +34,14 @@ extern "C" {
  *        If set to NULL, CoAP Protocol part uses standard C-library free() function.
  *
  * \param *used_tx_callback_ptr function callback pointer to tx function for sending coap messages
+ *
+ * \param *used_rx_callback_ptr used to return CoAP header struct with status COAP_STATUS_BUILDER_MESSAGE_SENDING_FAILED
+ * 		  when re-sendings exceeded. If set to NULL, no error message is returned.
  */
 
-extern int8_t 			   sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
-										uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *));
+extern 	int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
+										uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+										int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *));
 
 /**
  * \fn int8_t sn_coap_protocol_destroy(void)
@@ -135,7 +140,7 @@ extern int8_t 			   sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_c
  * \brief  If re-transmissions are enabled, this function changes resending count and interval.
  *
  * \param uint8_t resending_count max number of resendings for message
- * \param uint8_t resending_intervall message resending inervall in seconds
+ * \param uint8_t resending_intervall message resending intervall in seconds
  * \return 	0 = success
  * 			-1 = failure
  */

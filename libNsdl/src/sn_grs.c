@@ -178,7 +178,7 @@ extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , u
 #if	SN_NSDL_HAVE_COAP_CAPABILITY
 		sn_coap_builder_and_parser_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free);
 
-		if(sn_coap_protocol_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free, sn_grs_tx_callback))
+		if(sn_coap_protocol_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free, sn_grs_tx_callback, sn_grs_rx_callback))
 		{
 			sn_linked_list_free(resource_root_list);
 			return SN_NSDL_FAILURE;
