@@ -25,7 +25,7 @@
 #define EP_NAME_PARAMETERS				{'e','p','='}
 
 #define RT_PARAMETER_LEN				3
-#define RT_PARAMETER					{'e','t','='}
+#define RT_PARAMETER					{'r','t','='}
 
 #define DOMAIN_PARAMETER_LEN			2
 #define DOMAIN_PARAMETER				{'d','='}
