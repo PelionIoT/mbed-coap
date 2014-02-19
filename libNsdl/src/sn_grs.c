@@ -845,8 +845,7 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 
 							memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
 
-							status = sn_linked_list_add_node(resource_root_list, resource_temp_ptr);
-							if(status == SN_LINKED_LIST_ERROR_NO_ERROR)
+							if(sn_linked_list_add_node(resource_root_list, resource_temp_ptr) == SN_LINKED_LIST_ERROR_NO_ERROR)
 							{
 								if(coap_packet_ptr->content_type_ptr)
 								{
