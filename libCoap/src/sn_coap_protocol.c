@@ -202,54 +202,11 @@ SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_destroy(void)
 {
 #if ENABLE_RESENDINGS /* If Message resending is not used at all, this part of code will not be compiled */
-	if(global_linked_list_resent_msgs_ptr)
-	{
-				uint16_t size =  sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr);
-				uint16_t i = 0;
-				coap_send_msg_s*tmp;
-				for(i=0;i<size;i++)
-				{
-					tmp = sn_linked_list_get_first_node(global_linked_list_resent_msgs_ptr);
 
-					if(tmp)
-					{
-						if(tmp->send_msg_ptr)
-						{
-							if(tmp->send_msg_ptr->dst_addr_ptr)
-							{
-								if(tmp->send_msg_ptr->dst_addr_ptr->addr_ptr)
-								{
-									sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr->addr_ptr);
-									tmp->send_msg_ptr->dst_addr_ptr->addr_ptr = 0;
-								}
-								if(tmp->send_msg_ptr->dst_addr_ptr->socket_information)
-								{
-									sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr->socket_information);
-									tmp->send_msg_ptr->dst_addr_ptr->socket_information = 0;
-								}
-								sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr);
-								tmp->send_msg_ptr->dst_addr_ptr = 0;
-							}
-							if(tmp->send_msg_ptr->packet_ptr)
-							{
-								sn_coap_protocol_free(tmp->send_msg_ptr->packet_ptr);
-								tmp->send_msg_ptr->packet_ptr = 0;
-							}
-							sn_coap_protocol_free(tmp->send_msg_ptr);
-							tmp->send_msg_ptr = 0;
-						}
-						sn_linked_list_remove_current_node(global_linked_list_resent_msgs_ptr);
-						sn_coap_protocol_free(tmp);
-						tmp = 0;
-					}
-				}
+	sn_coap_protocol_clear_retransmission_buffer();
+	sn_coap_protocol_free(global_linked_list_resent_msgs_ptr);
+	global_linked_list_resent_msgs_ptr = 0;
 
-				if(!sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr))
-				{
-					sn_coap_protocol_free(global_linked_list_resent_msgs_ptr);
-					global_linked_list_resent_msgs_ptr = 0;
-				}
-	}
 #endif
 
 	if(global_linked_list_ack_info_ptr)
@@ -542,6 +499,57 @@ int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, 
 	return -1;
 
 }
+
+SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+void sn_coap_protocol_clear_retransmission_buffer(void)
+{
+#if ENABLE_RESENDINGS /* If Message resending is not used at all, this part of code will not be compiled */
+	if(global_linked_list_resent_msgs_ptr)
+	{
+		uint16_t size =  sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr);
+		uint16_t i = 0;
+		coap_send_msg_s*tmp;
+		for(i=0;i<size;i++)
+		{
+			tmp = sn_linked_list_get_first_node(global_linked_list_resent_msgs_ptr);
+
+			if(tmp)
+			{
+				if(tmp->send_msg_ptr)
+				{
+					if(tmp->send_msg_ptr->dst_addr_ptr)
+					{
+						if(tmp->send_msg_ptr->dst_addr_ptr->addr_ptr)
+						{
+							sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr->addr_ptr);
+							tmp->send_msg_ptr->dst_addr_ptr->addr_ptr = 0;
+						}
+						if(tmp->send_msg_ptr->dst_addr_ptr->socket_information)
+						{
+							sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr->socket_information);
+							tmp->send_msg_ptr->dst_addr_ptr->socket_information = 0;
+						}
+						sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr);
+						tmp->send_msg_ptr->dst_addr_ptr = 0;
+					}
+					if(tmp->send_msg_ptr->packet_ptr)
+					{
+						sn_coap_protocol_free(tmp->send_msg_ptr->packet_ptr);
+						tmp->send_msg_ptr->packet_ptr = 0;
+					}
+					sn_coap_protocol_free(tmp->send_msg_ptr);
+					tmp->send_msg_ptr = 0;
+				}
+				sn_linked_list_remove_current_node(global_linked_list_resent_msgs_ptr);
+				sn_coap_protocol_free(tmp);
+				tmp = 0;
+			}
+		}
+	}
+#endif
+
+}
+
 
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
