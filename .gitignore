@@ -1,2 +1,5 @@
 *.o
 *.a
+*.eww
+developer_release*
+enterprise_release*

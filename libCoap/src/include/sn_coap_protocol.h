@@ -160,7 +160,7 @@ extern int8_t 			   sn_coap_protocol_set_retransmission_parameters(uint8_t resen
 extern int8_t			   sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes);
 
 /**
- * \fn void sn_coap_protocol_reset_retransmission_buffer(void)
+ * \fn void sn_coap_protocol_clear_retransmission_buffer(void)
  *
  * \brief If re-transmissions are enabled, this function removes all messages from the retransmission queue.
  */
