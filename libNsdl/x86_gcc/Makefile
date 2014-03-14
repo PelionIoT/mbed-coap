@@ -1,4 +1,3 @@
-PLATFORM =
 TARGET = libNsdl.a
 OBJECTS = ../src/sn_grs.o ../src/sn_nsdl.o ../src/sn_linked_list.o 
 AR_OBJECTS = sn_grs.o sn_nsdl.o sn_linked_list.o 
@@ -14,6 +13,6 @@ all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
 	$(PLATFORM)ar rcs $(TARGET) $(OBJECTS)
-	
+
 clean:
 	rm -f $(TARGET) $(OBJECTS)
