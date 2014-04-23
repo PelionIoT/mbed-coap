@@ -161,12 +161,6 @@ extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , u
 		/* Initialize linked list */
 		sn_linked_list_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free);
 
-		/* Initialize HTTP protocol library, if implemented to library*/
-#if	(SN_NSDL_HAVE_HTTP_CAPABILITY || SN_NSDL_HAVE_HTTPS_CAPABILITY)
-		sn_http_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_grs_free);
-#endif
-
-		/* Initialize CoAP protocol library, if implemented to library */
 
 		/* Initialize list for resources */
 		resource_root_list = sn_linked_list_create();
@@ -175,6 +169,7 @@ extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , u
 			return SN_NSDL_FAILURE;
 		}
 
+		/* Initialize CoAP protocol library, if implemented to library */
 #if	SN_NSDL_HAVE_COAP_CAPABILITY
 		sn_coap_builder_and_parser_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free);
 
@@ -478,67 +473,6 @@ extern int8_t sn_grs_create_resource(sn_nsdl_resource_info_s *res)
 
 
 /**
- * \fn 	extern int8_t sn_grs_process_http(uint8_t *packet, uint16_t *packet_len, sn_grs_addr_t *src)
- *
- * \brief To push HTTP packet to GRS library
- *
- *	Used to push an HTTP or unencrypted HTTPS packet to GRS library for processing.
- *
- *	\param 	*packet		Pointer to a uint8_t array containing the packet (including the HTTP headers).
- *						After SN_NSDL_SUCCESSful execution this array may contain the response packet.
- *
- *	\param 	*packet_len	Pointer to length of the packet. After successful execution this array may
- *						contain the length of the response packet.
- *
- *	\param 	*src		Pointer to packet source address information. After SN_NSDL_SUCCESSful execution
- *						this array may contain the destination address of the response packet.
- *
- *	\return				1 success, response packet to be sent.
- *						0 success, no response to be sent
- *						-1 failure
-*/
-SN_MEM_ATTR_GRS_FUNC
-extern int8_t sn_grs_process_http(uint8_t *packet, uint16_t *packet_len, sn_nsdl_addr_s *src)
-{
-#if(SN_NSDL_HAVE_HTTP_CAPABILITY && SN_NSDL_HAVE_HTTPS_CAPABILITY)
-	/* Local variables */
-	sn_http_hdr_t 	*http_packet_ptr 	= NULL;
-	int8_t 			status 				= 0;
-
-	/******************************************/
-	/* Parse HTTP packet and check if succeed */
-	/******************************************/
-	http_packet_ptr = sn_http_parse(*packet_len, packet);
-	if(!http_packet_ptr)
-		return SN_NSDL_FAILURE;
-
-	if(http_packet_ptr->status != SN_HTTP_STATUS_OK)
-		return SN_NSDL_FAILURE;			// Todo: other SN_NSDL_FAILUREs from HTTP
-
-	switch (http_packet_ptr->method)
-	{
-	case (SN_GRS_POST):
-		return status;
-
-	case (SN_GRS_PUT):
-		return status;
-
-	case (SN_GRS_GET):
-		return status;
-
-	case (SN_GRS_DELETE):
-		return status;
-
-	default:
-		return SN_NSDL_FAILURE;
-	}
-#endif
-	return SN_NSDL_FAILURE;
-}
-
-
-
-/**
  * \fn 	extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t *packet_len, sn_nsdl_addr_s *src)
  *
  * \brief To push CoAP packet to GRS library
@@ -557,14 +491,15 @@ extern int8_t sn_grs_process_http(uint8_t *packet, uint16_t *packet_len, sn_nsdl
  *	\return				0 = success, -1 = failure
 */
 SN_MEM_ATTR_GRS_FUNC
-extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src_addr_ptr)
+extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src_addr_ptr)
 {
-	sn_coap_hdr_s 			*coap_packet_ptr 	= NULL;
+
 	sn_nsdl_resource_info_s	*resource_temp_ptr	= NULL;
 	sn_coap_msg_code_e 		status 				= COAP_MSG_CODE_EMPTY;
 	sn_coap_hdr_s 			*response_message_hdr_ptr = NULL;
 
-
+#if 0
+	sn_coap_hdr_s 			*coap_packet_ptr 	= NULL;
 	/* Parse CoAP packet */
 	coap_packet_ptr = sn_coap_protocol_parse(src_addr_ptr, packet_len, packet);
 
@@ -606,11 +541,16 @@ extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_
 		return retval;
 	}
 
+
+
 	/* * * * * * * * * * * * * * * */
 	/* Other messages are for GRS  */
 	/* * * * * * * * * * * * * * * */
 
 	else if(coap_packet_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE && status == COAP_MSG_CODE_EMPTY)
+#else
+	if(coap_packet_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE)
+#endif
 	{
 		/* Check if .well-known/core */
 		if(coap_packet_ptr->uri_path_len == WELLKNOWN_PATH_LEN && sn_grs_compare_code(coap_packet_ptr->uri_path_ptr, (const uint8_t*)WELLKNOWN_PATH, WELLKNOWN_PATH_LEN) == 0)

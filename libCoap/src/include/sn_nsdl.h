@@ -86,8 +86,6 @@ typedef struct sn_nsdl_addr_
 
     uint16_t                port;
 
-    void					*socket_information;
-
 } sn_nsdl_addr_s;
 
 /**

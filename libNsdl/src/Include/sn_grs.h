@@ -99,8 +99,7 @@ extern int8_t sn_grs_update_resource(sn_nsdl_resource_info_s *res);
  *					-3 List adding failure
 */
 extern int8_t sn_grs_create_resource(sn_nsdl_resource_info_s *res);
-extern int8_t sn_grs_process_http(uint8_t *packet, uint16_t *packet_len, sn_nsdl_addr_s *src);
-extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src);
+extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src);
 extern int16_t sn_grs_get_capability(void);
 extern uint32_t sn_grs_get_version(void);
 extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);

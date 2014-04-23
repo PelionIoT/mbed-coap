@@ -20,6 +20,24 @@ extern "C" {
 #define SN_NSDL_ENDPOINT_NOT_REGISTERED  0
 #define SN_NSDL_ENDPOINT_IS_REGISTERED   1
 
+typedef enum omalw_server_security_
+{
+	SEC_NOT_SET = -1,
+	PSK = 0,
+	RPK = 1,
+	CERTIFICATE = 2,
+	NO_SEC = 3
+}omalw_server_security_t;
+
+typedef struct omalw_certificate_list_
+{
+	uint8_t certificate_chain_len;
+	uint8_t *certificate_ptr[2];
+	uint16_t certificate_len[2];
+	uint8_t *own_private_key_ptr;
+	uint16_t own_private_key_len;
+}omalw_certificate_list_t;
+
 /**
  * \brief Endpoint registration parameters
  */
@@ -145,6 +163,27 @@ typedef struct sn_nsdl_resource_info_
 	uint8_t (*sn_grs_dyn_res_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
 
 } sn_nsdl_resource_info_s;
+
+/**
+ * \brief Defines endpoint parameters to OMA bootstrap.
+ */
+typedef struct sn_nsdl_bs_ep_info_
+{
+	uint8_t *endpoint_name_ptr;
+	uint16_t endpoint_name_len;
+
+} sn_nsdl_bs_ep_info_t;
+
+/**
+ * \brief Defines OMAlw server information
+ */
+typedef struct sn_nsdl_oma_server_info_
+{
+	sn_nsdl_addr_s *omalw_address_ptr;
+	omalw_server_security_t omalw_server_security;
+
+}sn_nsdl_oma_server_info_t;
+
 
 /**
  * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
@@ -424,9 +463,20 @@ extern int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_
 /**
  * \fn extern int8_t sn_nsdl_destroy(void);
  *
- * \brief This function releases all allocated memory in nsdl and grs modules.
+ * \brief This function releases all allocated memory in nsdl library.
  */
 extern int8_t sn_nsdl_destroy(void);
+
+/**
+ * \fn extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
+ *
+ * \brief Starts OMA bootstrap
+ */
+extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr, void (*oma_bs_status_cb)(sn_nsdl_oma_server_info_t *server_info_ptr));
+
+extern omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain);
+
+extern uint8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
 
 #endif /* SN_NSDL_LIB_H_ */
 
