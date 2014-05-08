@@ -524,11 +524,6 @@ void sn_coap_protocol_clear_retransmission_buffer(void)
 							sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr->addr_ptr);
 							tmp->send_msg_ptr->dst_addr_ptr->addr_ptr = 0;
 						}
-						if(tmp->send_msg_ptr->dst_addr_ptr->socket_information)
-						{
-							sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr->socket_information);
-							tmp->send_msg_ptr->dst_addr_ptr->socket_information = 0;
-						}
 						sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr);
 						tmp->send_msg_ptr->dst_addr_ptr = 0;
 					}
