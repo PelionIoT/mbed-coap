@@ -1,59 +1,0 @@
-Dependencies for Project 'arm_keil_libNsdl', Target 'mbed NXP LPC1768': (DO NOT MODIFY !)
-F (..\..\..\..\git\nsdl-c\libCoap\src\sn_coap_builder.c)(0x523C20EE)(-c --cpu Cortex-M3 -D__EVAL -O0 --apcs=interwork -I..\..\..\..\git\nsdl-c\libCoap\src\include -I..\..\..\..\git\nsdl-c\libNsdl\src\Include --gnu-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.3\CMSIS\Include-I C:\Keil\ARM\Inc\NXP\LPC17xx-DTARGET_LPC1768 -DTARGET_M3 -DTARGET_NXP -DTARGET_LPC176X -DTOOLCHAIN_ARM_STD -DTOOLCHAIN_ARM -D__CORTEX_M3 -DARM_MATH_CM3 -o .\build\sn_coap_builder.o --depend .\build\sn_coap_builder.d)
-I (C:\Keil\ARM\ARMCC\include\string.h)(0x51C7FD94)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\nsdl_types.h)(0x5232D72B)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_nsdl.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header_internal.h)(0x525BC083)
-F (..\..\..\..\git\nsdl-c\libCoap\src\sn_coap_header_check.c)(0x5232D748)(-c --cpu Cortex-M3 -D__EVAL -O0 --apcs=interwork -I..\..\..\..\git\nsdl-c\libCoap\src\include -I..\..\..\..\git\nsdl-c\libNsdl\src\Include --gnu-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.3\CMSIS\Include-I C:\Keil\ARM\Inc\NXP\LPC17xx-DTARGET_LPC1768 -DTARGET_M3 -DTARGET_NXP -DTARGET_LPC176X -DTOOLCHAIN_ARM_STD -DTOOLCHAIN_ARM -D__CORTEX_M3 -DARM_MATH_CM3 -o .\build\sn_coap_header_check.o --depend .\build\sn_coap_header_check.d)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\nsdl_types.h)(0x5232D72B)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_nsdl.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_protocol.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header_internal.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_protocol_internal.h)(0x525BC083)
-F (..\..\..\..\git\nsdl-c\libCoap\src\sn_coap_parser.c)(0x525BC076)(-c --cpu Cortex-M3 -D__EVAL -O0 --apcs=interwork -I..\..\..\..\git\nsdl-c\libCoap\src\include -I..\..\..\..\git\nsdl-c\libNsdl\src\Include --gnu-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.3\CMSIS\Include-I C:\Keil\ARM\Inc\NXP\LPC17xx-DTARGET_LPC1768 -DTARGET_M3 -DTARGET_NXP -DTARGET_LPC176X -DTOOLCHAIN_ARM_STD -DTOOLCHAIN_ARM -D__CORTEX_M3 -DARM_MATH_CM3 -o .\build\sn_coap_parser.o --depend .\build\sn_coap_parser.d)
-I (C:\Keil\ARM\ARMCC\include\stdio.h)(0x51C7FD94)
-I (C:\Keil\ARM\ARMCC\include\string.h)(0x51C7FD94)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\nsdl_types.h)(0x5232D72B)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_nsdl.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_protocol.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header_internal.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_protocol_internal.h)(0x525BC083)
-F (..\..\..\..\git\nsdl-c\libCoap\src\sn_coap_protocol.c)(0x525BC083)(-c --cpu Cortex-M3 -D__EVAL -O0 --apcs=interwork -I..\..\..\..\git\nsdl-c\libCoap\src\include -I..\..\..\..\git\nsdl-c\libNsdl\src\Include --gnu-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.3\CMSIS\Include-I C:\Keil\ARM\Inc\NXP\LPC17xx-DTARGET_LPC1768 -DTARGET_M3 -DTARGET_NXP -DTARGET_LPC176X -DTOOLCHAIN_ARM_STD -DTOOLCHAIN_ARM -D__CORTEX_M3 -DARM_MATH_CM3 -o .\build\sn_coap_protocol.o --depend .\build\sn_coap_protocol.d)
-I (C:\Keil\ARM\ARMCC\include\stdio.h)(0x51C7FD94)
-I (C:\Keil\ARM\ARMCC\include\stdlib.h)(0x51C7FD94)
-I (C:\Keil\ARM\ARMCC\include\string.h)(0x51C7FD94)
-I (C:\Keil\ARM\ARMCC\include\time.h)(0x51C7FD94)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\nsdl_types.h)(0x5232D72B)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_nsdl.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_protocol.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header_internal.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_protocol_internal.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_linked_list.h)(0x5232D72B)
-F (..\..\..\..\git\nsdl-c\libCoap\src\sn_linked_list.c)(0x5232D72B)(-c --cpu Cortex-M3 -D__EVAL -O0 --apcs=interwork -I..\..\..\..\git\nsdl-c\libCoap\src\include -I..\..\..\..\git\nsdl-c\libNsdl\src\Include --gnu-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.3\CMSIS\Include-I C:\Keil\ARM\Inc\NXP\LPC17xx-DTARGET_LPC1768 -DTARGET_M3 -DTARGET_NXP -DTARGET_LPC176X -DTOOLCHAIN_ARM_STD -DTOOLCHAIN_ARM -D__CORTEX_M3 -DARM_MATH_CM3 -o .\build\sn_linked_list.o --depend .\build\sn_linked_list.d)
-I (C:\Keil\ARM\ARMCC\include\stdio.h)(0x51C7FD94)
-I (C:\Keil\ARM\ARMCC\include\stddef.h)(0x51C7FD94)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\nsdl_types.h)(0x5232D72B)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_linked_list.h)(0x5232D72B)
-F (..\..\..\..\git\nsdl-c\libNsdl\src\sn_grs.c)(0x525BC083)(-c --cpu Cortex-M3 -D__EVAL -O0 --apcs=interwork -I..\..\..\..\git\nsdl-c\libCoap\src\include -I..\..\..\..\git\nsdl-c\libNsdl\src\Include --gnu-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.3\CMSIS\Include-I C:\Keil\ARM\Inc\NXP\LPC17xx-DTARGET_LPC1768 -DTARGET_M3 -DTARGET_NXP -DTARGET_LPC176X -DTOOLCHAIN_ARM_STD -DTOOLCHAIN_ARM -D__CORTEX_M3 -DARM_MATH_CM3 -o .\build\sn_grs.o --depend .\build\sn_grs.d)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\nsdl_types.h)(0x5232D72B)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_linked_list.h)(0x5232D72B)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_nsdl.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_protocol.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libNsdl\src\Include\sn_nsdl_lib.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libNsdl\src\Include\sn_grs.h)(0x525BC083)
-I (C:\Keil\ARM\ARMCC\include\stdlib.h)(0x51C7FD94)
-I (C:\Keil\ARM\ARMCC\include\string.h)(0x51C7FD94)
-F (..\..\..\..\git\nsdl-c\libNsdl\src\sn_nsdl.c)(0x525BC083)(-c --cpu Cortex-M3 -D__EVAL -O0 --apcs=interwork -I..\..\..\..\git\nsdl-c\libCoap\src\include -I..\..\..\..\git\nsdl-c\libNsdl\src\Include --gnu-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.3\CMSIS\Include-I C:\Keil\ARM\Inc\NXP\LPC17xx-DTARGET_LPC1768 -DTARGET_M3 -DTARGET_NXP -DTARGET_LPC176X -DTOOLCHAIN_ARM_STD -DTOOLCHAIN_ARM -D__CORTEX_M3 -DARM_MATH_CM3 -o .\build\sn_nsdl.o --depend .\build\sn_nsdl.d)
-I (C:\Keil\ARM\ARMCC\include\string.h)(0x51C7FD94)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\nsdl_types.h)(0x5232D72B)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_nsdl.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_header.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_coap_protocol.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libNsdl\src\Include\sn_nsdl_lib.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libNsdl\src\Include\sn_grs.h)(0x525BC083)
-I (C:\Users\tero\git\nsdl-c\libCoap\src\include\sn_linked_list.h)(0x5232D72B)

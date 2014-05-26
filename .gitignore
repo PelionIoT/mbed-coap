@@ -1,5 +1,11 @@
 *.o
 *.a
+*.d
 *.eww
+*.bak
+*.dep
+*.Scr
+*.uvgui.*
+build/
 developer_release*
 enterprise_release*
