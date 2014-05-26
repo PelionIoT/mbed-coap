@@ -136,7 +136,7 @@ static uint8_t 			sn_nsdl_itoa_len							(uint8_t value);
 static uint8_t 			*sn_nsdl_itoa								(uint8_t *ptr, uint8_t value);
 static uint32_t 		sn_nsdl_atoi								(uint8_t *ptr, uint8_t len);
 static uint32_t 		sn_nsdl_ahextoi								(uint8_t *ptr, uint8_t len);
-static uint8_t			sn_nsdl_resolve_lwm2m_address				(uint8_t *uri, uint16_t uri_len);
+static int8_t			sn_nsdl_resolve_lwm2m_address				(uint8_t *uri, uint16_t uri_len);
 
 
 int8_t sn_nsdl_destroy(void)
@@ -880,7 +880,7 @@ omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain)
 
 }
 
-uint8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain)
+int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain)
 {
 	/* Check pointers */
 	if(!certificate_ptr)
@@ -893,7 +893,7 @@ uint8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint
 	resource_ptr = sn_nsdl_get_resource(5, "0/0/5");
 	if(!resource_ptr)
 	{
-		return NULL;
+		return SN_NSDL_FAILURE;
 	}
 	resource_ptr->resource = certificate_ptr->own_private_key_ptr;
 	resource_ptr->resourcelen = certificate_ptr->own_private_key_len;
@@ -902,7 +902,7 @@ uint8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint
 	resource_ptr = sn_nsdl_get_resource(5, "0/0/4");
 	if(!resource_ptr)
 	{
-		return NULL;
+		return SN_NSDL_FAILURE;
 	}
 	resource_ptr->resource = certificate_ptr->certificate_ptr[0];
 	resource_ptr->resourcelen = certificate_ptr->certificate_len[0];
@@ -911,7 +911,7 @@ uint8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint
 	resource_ptr = sn_nsdl_get_resource(5, "0/0/3");
 	if(!resource_ptr)
 	{
-		return NULL;
+		return SN_NSDL_FAILURE;
 	}
 	resource_ptr->resource = certificate_ptr->certificate_ptr[1];
 	resource_ptr->resourcelen = certificate_ptr->certificate_len[1];
@@ -996,7 +996,7 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 				/* Security mode */
 				if(*(coap_packet_ptr->uri_path_ptr + (coap_packet_ptr->uri_path_len - 1)) == '2')
 				{
-					nsp_address_ptr->omalw_server_security = sn_nsdl_atoi(coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
+					nsp_address_ptr->omalw_server_security = (omalw_server_security_t)sn_nsdl_atoi(coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
 				}
 
 				/* NSP address */
@@ -1899,7 +1899,7 @@ static uint32_t sn_nsdl_ahextoi(uint8_t *ptr, uint8_t len)
 
 }
 
-static uint8_t sn_nsdl_resolve_lwm2m_address(uint8_t *uri, uint16_t uri_len)
+static int8_t sn_nsdl_resolve_lwm2m_address(uint8_t *uri, uint16_t uri_len)
 {
 	uint8_t *temp_ptr = uri;
 	uint8_t i = 0;

@@ -205,8 +205,9 @@ extern int8_t sn_grs_exec(uint32_t time)
 #if(SN_NSDL_HAVE_COAP_CAPABILITY)
 	/* Call CoAP execution function */
 	return sn_coap_protocol_exec(time);
-#endif
+#else
 	return SN_NSDL_SUCCESS;
+#endif
 }
 
 /**

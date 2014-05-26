@@ -62,6 +62,12 @@ typedef  const int32_t prog_int32_t;
 #include <avr_compiler.h>
 #endif
 
+#if defined __CC_ARM || defined __GNUC__
+#define MAYBE_UNUSED __attribute__((unused))
+#else
+#define MAYBE_UNUSED
+#endif
+
 #endif /*_PL_TYPES_*/
 
 

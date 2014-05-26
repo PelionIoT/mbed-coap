@@ -476,7 +476,7 @@ extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_ns
 
 extern omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain);
 
-extern uint8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
+extern int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
 
 #endif /* SN_NSDL_LIB_H_ */
 
