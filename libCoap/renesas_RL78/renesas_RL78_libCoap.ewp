@@ -78,7 +78,7 @@
         </option>
         <option>
           <name>GenRTLibraryPath</name>
-          <state>$TOOLKIT_DIR$\LIB\dlrl78nn1f.r87</state>
+          <state>$TOOLKIT_DIR$\LIB\dlrl78fn1f.r87</state>
         </option>
         <option>
           <name>GenHwSupport</name>
@@ -216,7 +216,7 @@
         </option>
         <option>
           <name>IccOptLevel</name>
-          <state>3</state>
+          <state>2</state>
         </option>
         <option>
           <name>IccOptStrategy</name>
@@ -225,12 +225,12 @@
         </option>
         <option>
           <name>IccOptLevelSlave</name>
-          <state>3</state>
+          <state>2</state>
         </option>
         <option>
           <name>IccOptAllowList</name>
           <version>2</version>
-          <state>11111111</state>
+          <state>10010001</state>
         </option>
         <option>
           <name>IccWrksegEnable</name>
@@ -274,7 +274,7 @@
         </option>
         <option>
           <name>IccGenerateDebugInfo</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccOutputFile</name>
@@ -483,7 +483,8 @@
         </option>
         <option>
           <name>AsmDefines</name>
-          <state>###Uninitialized###</state>
+          <state>__FAR_MODEL__</state>
+          <state>__NEAR_DATA_MODEL__</state>
         </option>
         <option>
           <name>AsmPreprocOutput</name>
@@ -867,7 +868,7 @@
         <debug>1</debug>
         <option>
           <name>XarOutOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>XarInputs</name>
@@ -875,7 +876,7 @@
         </option>
         <option>
           <name>XarOutputFile</name>
-          <state>renesas_RL78_libCoap.r87</state>
+          <state>renesas_RL78_libCoap_debug.lib</state>
         </option>
       </data>
     </settings>
@@ -895,22 +896,22 @@
     <toolchain>
       <name>RL78</name>
     </toolchain>
-    <debug>0</debug>
+    <debug>1</debug>
     <settings>
       <name>General</name>
       <archiveVersion>5</archiveVersion>
       <data>
         <version>1</version>
         <wantNonLocal>1</wantNonLocal>
-        <debug>0</debug>
+        <debug>1</debug>
         <option>
           <name>GenDeviceSelect</name>
-          <state></state>
+          <state>R5F101GG	RL78 - R5F101GG</state>
         </option>
         <option>
           <name>GenCodeModel</name>
           <version>0</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>GenDataModel</name>
@@ -924,15 +925,15 @@
         </option>
         <option>
           <name>GenNearConstStart</name>
-          <state>0xF2000</state>
+          <state>0xf3000</state>
         </option>
         <option>
           <name>GenNearConstSize</name>
-          <state>16.00</state>
+          <state>39.75</state>
         </option>
         <option>
           <name>GOutputBinary</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>ExePath</name>
@@ -949,28 +950,28 @@
         <option>
           <name>GenRuntimeLibSelect</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>GenRuntimeLibSelectSlave</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>GenRTDescription</name>
-          <state></state>
+          <state>To be used with the full configuration of the C/EC++ runtime library.</state>
         </option>
         <option>
           <name>GenRTConfigPath</name>
-          <state></state>
+          <state>$TOOLKIT_DIR$\LIB\dlrl78fn1f.h</state>
         </option>
         <option>
           <name>GenRTLibraryPath</name>
-          <state></state>
+          <state>$TOOLKIT_DIR$\LIB\dlrl78fn1f.r87</state>
         </option>
         <option>
           <name>GenHwSupport</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>GenLibInFormatter</name>
@@ -979,7 +980,7 @@
         </option>
         <option>
           <name>GenLibInFormatterDescription</name>
-          <state></state>
+          <state>Automatic choice of formatter.</state>
         </option>
         <option>
           <name>GenLibOutFormatter</name>
@@ -988,7 +989,7 @@
         </option>
         <option>
           <name>GenLibOutFormatterDescription</name>
-          <state></state>
+          <state>Automatic choice of formatter.</state>
         </option>
         <option>
           <name>GenStackSize</name>
@@ -996,11 +997,11 @@
         </option>
         <option>
           <name>GenNearHeapSize</name>
-          <state>###Uninitialized###</state>
+          <state>256</state>
         </option>
         <option>
           <name>GenFarHeapSize</name>
-          <state>###Uninitialized###</state>
+          <state>4096</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1035,7 +1036,7 @@
         </option>
         <option>
           <name>GenMathFunctionDescription</name>
-          <state></state>
+          <state>Default variants of cos, sin, tan, log, log10, pow, and exp.</state>
         </option>
       </data>
     </settings>
@@ -1045,7 +1046,7 @@
       <data>
         <version>7</version>
         <wantNonLocal>1</wantNonLocal>
-        <debug>0</debug>
+        <debug>1</debug>
         <option>
           <name>IccCore</name>
           <state>0</state>
@@ -1113,7 +1114,7 @@
         </option>
         <option>
           <name>IccOptLevelSlave</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>IccOptAllowList</name>
@@ -1142,7 +1143,7 @@
         </option>
         <option>
           <name>IccModuleType</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccObjModuleNameOverride</name>
@@ -1166,11 +1167,11 @@
         </option>
         <option>
           <name>IccOutputFile</name>
-          <state></state>
+          <state>$FILE_BNAME$.r87</state>
         </option>
         <option>
           <name>CCDefines</name>
-          <state>NDEBUG</state>
+          <state>REAL_EMBEDDED</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1291,7 +1292,7 @@
       <data>
         <version>2</version>
         <wantNonLocal>1</wantNonLocal>
-        <debug>0</debug>
+        <debug>1</debug>
         <option>
           <name>AsmCore</name>
           <state>0</state>
@@ -1371,7 +1372,8 @@
         </option>
         <option>
           <name>AsmDefines</name>
-          <state>###Uninitialized###</state>
+          <state>__FAR_MODEL__</state>
+          <state>__NEAR_DATA_MODEL__</state>
         </option>
         <option>
           <name>AsmPreprocOutput</name>
@@ -1466,14 +1468,14 @@
       <data>
         <version>14</version>
         <wantNonLocal>1</wantNonLocal>
-        <debug>0</debug>
+        <debug>1</debug>
         <option>
           <name>XOutOverride</name>
           <state>0</state>
         </option>
         <option>
           <name>OutputFile</name>
-          <state></state>
+          <state>renesas_RL78_libCoap.d87</state>
         </option>
         <option>
           <name>OutputFormat</name>
@@ -1631,7 +1633,7 @@
         </option>
         <option>
           <name>DebugInformation</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>RuntimeControl</name>
@@ -1752,10 +1754,10 @@
       <data>
         <version>0</version>
         <wantNonLocal>1</wantNonLocal>
-        <debug>0</debug>
+        <debug>1</debug>
         <option>
           <name>XarOutOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>XarInputs</name>
@@ -1763,7 +1765,7 @@
         </option>
         <option>
           <name>XarOutputFile</name>
-          <state></state>
+          <state>renesas_RL78_libCoap_rel.lib</state>
         </option>
       </data>
     </settings>
