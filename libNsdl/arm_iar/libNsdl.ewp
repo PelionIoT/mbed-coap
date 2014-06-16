@@ -934,7 +934,7 @@
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>C:\Users\terhei01\git\nsdl-c\libNsdl\arm_iar\libNsdl_output\libNsdl.a</state>
+          <state>C:\Users\juhhei01\nsdl-c\libNsdl\arm_iar\libNsdl_output\libNsdl.a</state>
         </option>
       </data>
     </settings>
@@ -2507,7 +2507,7 @@
       <archiveVersion>1</archiveVersion>
       <data>
         <prebuild></prebuild>
-        <postbuild></postbuild>
+        <postbuild>$PROJ_DIR$\aclara_lib_copy.bat $PROJ_DIR$</postbuild>
       </data>
     </settings>
     <settings>
@@ -2813,11 +2813,11 @@
         </option>
         <option>
           <name>IarchiveOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>C:\Users\terhei01\git\nsdl-c\libNsdl\arm_iar\Aclara_MQX\Exe\libNsdl.a</state>
+          <state>$PROJ_DIR$\libNsdl.a</state>
         </option>
       </data>
     </settings>
