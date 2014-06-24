@@ -9,3 +9,14 @@
 build/
 developer_release*
 enterprise_release*
+*.dep
+*.ewd
+*.ewt
+Debug
+Release
+settings
+*_release
+Obj
+*_output
+Backup*
+*.r43
