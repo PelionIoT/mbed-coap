@@ -989,10 +989,6 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_exec(uint32_t current_time)
 {
-#if ENABLE_RESENDINGS
-    uint8_t stored_resending_msgs_count;
-#endif
-
     /* * * * Store current System time * * * */
     global_system_time = current_time;
 
@@ -1012,15 +1008,11 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
 
 #if ENABLE_RESENDINGS
     /* Check if there is ongoing active message sendings */
-    stored_resending_msgs_count = sn_linked_list_count_nodes(global_linked_list_resent_msgs_ptr);
-
-    if (stored_resending_msgs_count > 0)
+    if (sn_linked_list_get_last_node(global_linked_list_resent_msgs_ptr))
     {
-        coap_send_msg_s *stored_msg_ptr = sn_linked_list_get_last_node(global_linked_list_resent_msgs_ptr);
-        uint8_t i = 0;
-
+        coap_send_msg_s *stored_msg_ptr;
         /* Loop all resending messages */
-        for (i = 0; i < stored_resending_msgs_count; i++)
+        while (NULL != (stored_msg_ptr = sn_linked_list_get_current_node(global_linked_list_resent_msgs_ptr)))
         {
 			/* Check if it is time to send this message */
 			if (current_time >= stored_msg_ptr->resending_time)
@@ -1053,9 +1045,11 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
 							sn_coap_parser_release_allocated_coap_msg_mem(tmp_coap_hdr_ptr);
 						}
 					}
-
 					/* Remove message from Linked list */
 					sn_coap_protocol_linked_list_send_msg_remove(stored_msg_ptr->send_msg_ptr->dst_addr_ptr, temp_msg_id);
+					/* Iterator is now invalid, start to travel the list again. */
+					sn_linked_list_get_last_node(global_linked_list_resent_msgs_ptr);
+					continue;
 				}
 				else
 				{
@@ -1069,9 +1063,8 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
 				}
 
 			}
-
             /* Get next stored sending message from Linked list */
-            stored_msg_ptr = sn_linked_list_get_previous_node(global_linked_list_resent_msgs_ptr);
+            sn_linked_list_get_previous_node(global_linked_list_resent_msgs_ptr);
         }
     }
 
