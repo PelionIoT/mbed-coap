@@ -1175,10 +1175,8 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_
         /* If message's Message ID is same than is searched */
         if (temp_msg_id == msg_id)
         {
-            int8_t mem_cmp_result = memcmp(src_addr_ptr->addr_ptr, stored_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr, src_addr_ptr->addr_len);
-
             /* If message's Source address is same than is searched */
-            if (mem_cmp_result == 0)
+            if (0 == memcmp(src_addr_ptr->addr_ptr, stored_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr, src_addr_ptr->addr_len))
             {
                 /* If message's Source address port is same than is searched */
                 if (stored_msg_ptr->send_msg_ptr->dst_addr_ptr->port == src_addr_ptr->port)
@@ -1221,10 +1219,8 @@ static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_add
         /* If message's Message ID is same than is searched */
         if (temp_msg_id == msg_id)
         {
-            int8_t mem_cmp_result = memcmp(src_addr_ptr->addr_ptr, stored_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr, src_addr_ptr->addr_len);
-
             /* If message's Source address is same than is searched */
-            if (mem_cmp_result == 0)
+            if (0 == memcmp(src_addr_ptr->addr_ptr, stored_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr, src_addr_ptr->addr_len))
             {
                 /* If message's Source address port is same than is searched */
                 if (stored_msg_ptr->send_msg_ptr->dst_addr_ptr->port == src_addr_ptr->port)
@@ -1368,7 +1364,6 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
     coap_ack_info_s *stored_ack_info_ptr   = sn_linked_list_get_last_node(global_linked_list_ack_info_ptr);
     uint16_t         stored_ack_info_count = sn_linked_list_count_nodes(global_linked_list_ack_info_ptr);
     uint8_t          i                     = 0;
-    uint8_t mem_cmp_result = 0;
 
     if(!addr_ptr)
     	return -1;
@@ -1387,10 +1382,8 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
         {
         	if(stored_ack_info_ptr->addr_ptr)
         	{
-				mem_cmp_result = memcmp(addr_ptr->addr_ptr, stored_ack_info_ptr->addr_ptr, addr_ptr->addr_len);
-
 				/* If message's Source address is same than is searched */
-				if (mem_cmp_result == 0)
+				if (0 == memcmp(addr_ptr->addr_ptr, stored_ack_info_ptr->addr_ptr, addr_ptr->addr_len))
 				{
 					/* If message's Source address port is same than is searched */
 					if (stored_ack_info_ptr->port == addr_ptr->port)
@@ -1399,9 +1392,7 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
 						{
 							if(stored_ack_info_ptr->token_len == token_len)
 							{
-								mem_cmp_result = memcmp(token_ptr, stored_ack_info_ptr->token_ptr, token_len);
-
-								if (mem_cmp_result == 0)
+								if (0 == memcmp(token_ptr, stored_ack_info_ptr->token_ptr, token_len))
 								{
 									/* ACK found and token match */
 									return stored_ack_info_ptr->msg_id;
@@ -1465,7 +1456,7 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
 				if(stored_ack_info_ptr->addr_ptr)
 				{
 					/* If message's Address is same than is searched */
-					if (!memcmp(addr_ptr->addr_ptr, stored_ack_info_ptr->addr_ptr, addr_ptr->addr_len))
+					if (0 == memcmp(addr_ptr->addr_ptr, stored_ack_info_ptr->addr_ptr, addr_ptr->addr_len))
 					{
 						/* * * * Correct Acknowledgement info found, remove it from Linked list * * * */
 						stored_ack_info_ptr = sn_linked_list_remove_current_node(global_linked_list_ack_info_ptr);
@@ -1623,10 +1614,8 @@ static int8_t sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_
         /* If message's Message ID is same than is searched */
         if (stored_duplication_info_ptr->msg_id == msg_id)
         {
-            int8_t mem_cmp_result = memcmp(addr_ptr->addr_ptr, stored_duplication_info_ptr->addr_ptr, addr_ptr->addr_len);
-
             /* If message's Source address is same than is searched */
-            if (mem_cmp_result == 0)
+            if (0 == memcmp(addr_ptr->addr_ptr, stored_duplication_info_ptr->addr_ptr, addr_ptr->addr_len))
             {
                 /* If message's Source address port is same than is searched */
                 if (stored_duplication_info_ptr->port == addr_ptr->port)
@@ -1664,10 +1653,8 @@ static void sn_coap_protocol_linked_list_duplication_info_remove(uint8_t *addr_p
     /* Loop all stored duplication messages in Linked list */
     for (i = 0; i < stored_duplication_msgs_count; i++)
     {
-        int8_t mem_cmp_result = memcmp(addr_ptr, removed_duplication_info_ptr->addr_ptr, removed_duplication_info_ptr->addr_len);
-
         /* If message's Address is same than is searched */
-        if (mem_cmp_result == 0)
+        if (0 == memcmp(addr_ptr, removed_duplication_info_ptr->addr_ptr, removed_duplication_info_ptr->addr_len))
         {
             /* If message's Address prt is same than is searched */
             if (removed_duplication_info_ptr->port == port)
@@ -1833,10 +1820,8 @@ static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(sn_nsdl_ad
     /* Loop all stored blockwise payloads in Linked list */
     for (i = 0; i < stored_blockwise_payloads_count; i++)
     {
-        int8_t mem_cmp_result = memcmp(src_addr_ptr->addr_ptr, stored_payload_info_ptr->addr_ptr, src_addr_ptr->addr_len);
-
         /* If payload's Source address is same than is searched */
-        if (mem_cmp_result == 0)
+        if (0 == memcmp(src_addr_ptr->addr_ptr, stored_payload_info_ptr->addr_ptr, src_addr_ptr->addr_len))
         {
             /* If payload's Source address port is same than is searched */
             if (stored_payload_info_ptr->port == src_addr_ptr->port)
@@ -1938,10 +1923,8 @@ static uint16_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(sn_nsdl_
     /* Loop all stored blockwise payloads in Linked list */
     for (i = 0; i < stored_blockwise_payloads_count; i++)
     {
-        int8_t mem_cmp_result = memcmp(src_addr_ptr->addr_ptr, searched_payload_info_ptr->addr_ptr, src_addr_ptr->addr_len);
-
         /* If payload's Source address is same than is searched */
-        if (mem_cmp_result == 0)
+        if (0 == memcmp(src_addr_ptr->addr_ptr, searched_payload_info_ptr->addr_ptr, src_addr_ptr->addr_len))
         {
             /* If payload's Source address port is same than is searched */
             if (searched_payload_info_ptr->port == src_addr_ptr->port)
