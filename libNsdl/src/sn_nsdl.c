@@ -846,7 +846,7 @@ omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain)
 			return NULL;
 
 		/* Get private key resource */
-		resource_ptr = sn_nsdl_get_resource(5, "0/0/5");
+		resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/5");
 		if(!resource_ptr)
 		{
 			sn_nsdl_free(certi_list_ptr);
@@ -856,7 +856,7 @@ omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain)
 		certi_list_ptr->own_private_key_len = resource_ptr->resourcelen;
 
 		/* Get client certificate resource */
-		resource_ptr = sn_nsdl_get_resource(5, "0/0/4");
+		resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/4");
 		if(!resource_ptr)
 		{
 			sn_nsdl_free(certi_list_ptr);
@@ -866,7 +866,7 @@ omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain)
 		certi_list_ptr->certificate_len[0] = resource_ptr->resourcelen;
 
 		/* Get root certificate resource */
-		resource_ptr = sn_nsdl_get_resource(5, "0/0/3");
+		resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/3");
 		if(!resource_ptr)
 		{
 			sn_nsdl_free(certi_list_ptr);
@@ -890,7 +890,7 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 
 
 	/* Get private key resource */
-	resource_ptr = sn_nsdl_get_resource(5, "0/0/5");
+	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/5");
 	if(!resource_ptr)
 	{
 		return SN_NSDL_FAILURE;
@@ -899,7 +899,7 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	resource_ptr->resourcelen = certificate_ptr->own_private_key_len;
 
 	/* Get client certificate resource */
-	resource_ptr = sn_nsdl_get_resource(5, "0/0/4");
+	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/4");
 	if(!resource_ptr)
 	{
 		return SN_NSDL_FAILURE;
@@ -908,7 +908,7 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	resource_ptr->resourcelen = certificate_ptr->certificate_len[0];
 
 	/* Get root certificate resource */
-	resource_ptr = sn_nsdl_get_resource(5, "0/0/3");
+	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/3");
 	if(!resource_ptr)
 	{
 		return SN_NSDL_FAILURE;
@@ -1011,9 +1011,9 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 					sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
 				}
 				else if((nsp_address_ptr->omalw_server_security == CERTIFICATE) && (nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE)&&
-						((sn_nsdl_get_resource(5, "0/0/5") != 0) &&
-						(sn_nsdl_get_resource(5, "0/0/4") != 0) &&
-						(sn_nsdl_get_resource(5, "0/0/3") != 0)) )
+						((sn_nsdl_get_resource(5, (void*)"0/0/5") != 0) &&
+						(sn_nsdl_get_resource(5, (void*)"0/0/4") != 0) &&
+						(sn_nsdl_get_resource(5, (void*)"0/0/3") != 0)) )
 				{
 					sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
 				}
