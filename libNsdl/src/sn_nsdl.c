@@ -137,6 +137,7 @@ static uint8_t 			*sn_nsdl_itoa								(uint8_t *ptr, uint8_t value);
 static uint32_t 		sn_nsdl_atoi								(uint8_t *ptr, uint8_t len);
 static uint32_t 		sn_nsdl_ahextoi								(uint8_t *ptr, uint8_t len);
 static int8_t			sn_nsdl_resolve_lwm2m_address				(uint8_t *uri, uint16_t uri_len);
+static int8_t 			sn_nsdl_process_oma_tlv						(uint8_t *data_ptr, uint16_t data_len);
 
 
 int8_t sn_nsdl_destroy(void)
@@ -979,18 +980,36 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 	{
 		if(coap_packet_ptr->content_type_len == 1)
 		{
-			/* TLV not supported */
+			/* TLV */
 			if(*coap_packet_ptr->content_type_ptr == 99)
 			{
-				coap_response_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_ACCEPTABLE);
-				if(coap_response_ptr)
+				if(sn_nsdl_process_oma_tlv(coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len) == SN_NSDL_FAILURE)
 				{
-					sn_nsdl_send_coap_message(src_ptr, coap_response_ptr);
-					sn_coap_parser_release_allocated_coap_msg_mem(coap_response_ptr);
-					sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
-					return SN_NSDL_SUCCESS;
+					/* TLV parsing failed. Send response to get non-tlv messages */
+					coap_response_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_ACCEPTABLE);
+					if(coap_response_ptr)
+					{
+						sn_nsdl_send_coap_message(src_ptr, coap_response_ptr);
+						sn_coap_parser_release_allocated_coap_msg_mem(coap_response_ptr);
+						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+						return SN_NSDL_SUCCESS;
+					}
 				}
+				/* Todo: add success TLV parsing response & returning */
+				else
+				{
+					coap_response_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_ACCEPTABLE);
+					if(coap_response_ptr)
+					{
+						sn_nsdl_send_coap_message(src_ptr, coap_response_ptr);
+						sn_coap_parser_release_allocated_coap_msg_mem(coap_response_ptr);
+						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+						return SN_NSDL_SUCCESS;
+					}
+				}
+
 			}
+			/* Non - TLV */
 			else if(*coap_packet_ptr->content_type_ptr == 97)
 			{
 				/* Security mode */
@@ -1004,21 +1023,22 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 				{
 					sn_nsdl_resolve_lwm2m_address(coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
 				}
-
-				if((nsp_address_ptr->omalw_server_security == PSK) && (nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE))
-				{
-					/* call cb that oma bootstrap is done */
-					sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
-				}
-				else if((nsp_address_ptr->omalw_server_security == CERTIFICATE) && (nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE)&&
-						((sn_nsdl_get_resource(5, (void*)"0/0/5") != 0) &&
-						(sn_nsdl_get_resource(5, (void*)"0/0/4") != 0) &&
-						(sn_nsdl_get_resource(5, (void*)"0/0/3") != 0)) )
-				{
-					sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
-				}
-
 			}
+
+			/* Check OMA BS status */
+			if((nsp_address_ptr->omalw_server_security == PSK) && (nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE))
+			{
+				/* call cb that oma bootstrap is done */
+				sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
+			}
+			else if((nsp_address_ptr->omalw_server_security == CERTIFICATE) && (nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE)&&
+					((sn_nsdl_get_resource(5, (void*)"0/0/5") != 0) &&
+					(sn_nsdl_get_resource(5, (void*)"0/0/4") != 0) &&
+					(sn_nsdl_get_resource(5, (void*)"0/0/3") != 0)) )
+			{
+				sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
+			}
+
 		}
 	}
 
@@ -2049,4 +2069,95 @@ static int8_t sn_nsdl_resolve_lwm2m_address(uint8_t *uri, uint16_t uri_len)
 		return SN_NSDL_FAILURE;
 
 	return SN_NSDL_SUCCESS;
+}
+
+
+int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
+{
+	uint8_t *temp_ptr = data_ptr;
+	uint8_t type = 0;
+	uint16_t identifier = 0;
+	uint32_t length = 0;
+
+	while((temp_ptr - data_ptr) < data_len)
+	{
+		/* Save type for future use */
+		type = *temp_ptr++;
+
+		/* * Bit 5: Indicates the Length of the Identifier. * */
+		if(type & 0x20)
+		{
+			/* 1=The Identifier field of this TLV is 16 bits long */
+			identifier = (uint8_t)(*temp_ptr++) << 8;
+			identifier += (uint8_t)*temp_ptr++;
+		}
+		else
+		{
+			/* 0=The Identifier field of this TLV is 8 bits long */
+			identifier = (uint8_t)*temp_ptr++;
+		}
+
+		/* * Bit 4-3: Indicates the type of Length. * */
+		if((type & 0x18) == 0)
+		{
+			/* 00 = No length field, the value immediately follows the Identifier field in is of the length indicated by Bits 2-0 of this field */
+			length = (type & 0x07);
+		}
+		else if((type & 0x18) == 0x08)
+		{
+			/* 01 = The Length field is 8-bits and Bits 2-0 MUST be ignored */
+			length = *temp_ptr++;
+		}
+		else if((type & 0x18) == 0x10)
+		{
+			/* 10 = The Length field is 16-bits and Bits 2-0 MUST be ignored */
+			length = (uint8_t)(*temp_ptr++) << 8;
+			length += (uint8_t)*temp_ptr++;
+		}
+		else if((type & 0x18) == 0x18)
+		{
+			/* 11 = The Length field is 24-bits and Bits 2-0 MUST be ignored */
+			length = (uint8_t)(*temp_ptr++) << 16;
+			length += (uint8_t)(*temp_ptr++) << 8;
+			length += (uint8_t)*temp_ptr++;
+		}
+
+		/* * Bits 7-6: Indicates the type of Identifier. * */
+		if((type & 0xC0) == 0x00)
+		{
+			/* 00 = Object Instance in which case the Value contains one or more Resource TLVs */
+		}
+		else if((type & 0xC0) == 0xC0)
+		{
+			/* 11 = Resource with Value */
+			switch(identifier)
+			{
+			case 0:
+				//printf("LWM2M Server URI\n");
+				break;
+			case 2:
+				//printf("Security Mode\n");
+				break;
+			case 3:
+				//printf("Public Key or Identity\n");
+				break;
+			case 4:
+				//printf("Server Public Key or Identity\n");
+				break;
+			case 5:
+				//printf("Secret Key\n");
+				break;
+			default:
+				//printf("default - %d\n", identifier);
+				break;
+			}
+
+			temp_ptr += length;
+		}
+
+
+	}
+
+	return SN_NSDL_FAILURE;
+//	return SN_NSDL_SUCCESS;
 }
