@@ -35,7 +35,6 @@
 /* * * * LOCAL FUNCTION PROTOTYPES * * * */
 /* * * * * * * * * * * * * * * * * * * * */
 
-
 static void                  sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr);
 static int32_t               sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr);
 static void                  sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr);
@@ -76,7 +75,8 @@ static void 				 coap_protocol_free_lists(void);
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_send_msg_list_t          NS_LIST_NAME_INIT(global_linked_list_resent_msgs); /* Active resending messages are stored to this Linked list */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t                      global_count_resent_msgs                = 0;
 #endif
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static sn_linked_list_t *global_linked_list_ack_info_ptr                    = NULL; /* Message Acknowledgement info is stored to this Linked list */
+SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_ack_info_list_t          NS_LIST_NAME_INIT(global_linked_list_ack_info); /* Message Acknowledgement info is stored to this Linked list */
+SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t                      global_count_ack_info                   = 0;
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static sn_linked_list_t *global_linked_list_duplication_msgs_ptr            = NULL; /* Messages for duplicated messages detection is stored to this Linked list */
 #endif
@@ -208,39 +208,21 @@ int8_t sn_coap_protocol_destroy(void)
 
 #endif
 
-	if(global_linked_list_ack_info_ptr)
+	ns_list_foreach_safe(coap_ack_info_s, tmp, &global_linked_list_ack_info)
 	{
-		uint16_t size =  sn_linked_list_count_nodes(global_linked_list_ack_info_ptr);
-		uint16_t i = 0;
-		coap_ack_info_s*tmp;
-
-		for(i=0;i<size;i++)
+		if(tmp->token_ptr)
 		{
-			tmp = sn_linked_list_get_first_node(global_linked_list_ack_info_ptr);
-
-			if(tmp)
-			{
-				if(tmp->token_ptr)
-				{
-					sn_coap_protocol_free(tmp->token_ptr);
-					tmp->token_ptr = 0;
-				}
-				if(tmp->addr_ptr)
-				{
-					sn_coap_protocol_free(tmp->addr_ptr);
-					tmp->addr_ptr = 0;
-				}
-				sn_linked_list_remove_current_node(global_linked_list_ack_info_ptr);
-				sn_coap_protocol_free(tmp);
-				tmp = 0;
-			}
+			sn_coap_protocol_free(tmp->token_ptr);
+			tmp->token_ptr = 0;
 		}
-
-		if(!sn_linked_list_count_nodes(global_linked_list_ack_info_ptr))
+		if(tmp->addr_ptr)
 		{
-			sn_coap_protocol_free(global_linked_list_ack_info_ptr);
-			global_linked_list_ack_info_ptr = 0;
+			sn_coap_protocol_free(tmp->addr_ptr);
+			tmp->addr_ptr = 0;
 		}
+		ns_list_remove(&global_linked_list_ack_info, tmp);
+		--global_count_ack_info;
+		sn_coap_protocol_free(tmp);
 	}
 
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
@@ -267,11 +249,6 @@ return 0;
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 void coap_protocol_free_lists(void)
 {
-	if(NULL != global_linked_list_ack_info_ptr)
-	{
-		sn_linked_list_free(global_linked_list_ack_info_ptr);
-		global_linked_list_ack_info_ptr = NULL;
-	}
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
 	if(NULL != global_linked_list_duplication_msgs_ptr)
 	{
@@ -332,19 +309,6 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
     sn_coap_resending_count = SN_COAP_RESENDING_MAX_COUNT;
 
 #endif /* ENABLE_RESENDINGS */
-
-    /* * * * Create Linked list for storing Acknowledgement info, if not already created * * * */
-    if (global_linked_list_ack_info_ptr == NULL)
-    {
-        global_linked_list_ack_info_ptr = sn_linked_list_create();
-
-        if(global_linked_list_ack_info_ptr == NULL)
-        {
-        	coap_protocol_free_lists();
-        	return (-1);
-        }
-
-    }
 
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
     /* * * * Create Linked list for storing Duplication info * * * */
@@ -1206,13 +1170,14 @@ static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t
     coap_ack_info_s *stored_ack_info_ptr = NULL;
 
     /* Remove oldest ack infos from linked list */
-    if(sn_linked_list_count_nodes(global_linked_list_ack_info_ptr) >= SN_COAP_ACK_INFO_MAX_COUNT_MESSAGES_SAVED)
+    if(global_count_ack_info >= SN_COAP_ACK_INFO_MAX_COUNT_MESSAGES_SAVED)
     {
-    	stored_ack_info_ptr = sn_linked_list_get_last_node(global_linked_list_ack_info_ptr);
+    	stored_ack_info_ptr = ns_list_get_first(&global_linked_list_ack_info);
 
     	if(stored_ack_info_ptr)
     	{
-    		sn_linked_list_remove_current_node(global_linked_list_ack_info_ptr);
+    		ns_list_remove(&global_linked_list_ack_info, stored_ack_info_ptr);
+    		--global_count_ack_info;
 
     		if(stored_ack_info_ptr->addr_ptr)
     			sn_coap_protocol_free(stored_ack_info_ptr->addr_ptr);
@@ -1279,13 +1244,8 @@ static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t
 
     /* * * * Storing Acknowledgement info to Linked list * * * */
 
-    if(sn_linked_list_add_node(global_linked_list_ack_info_ptr, stored_ack_info_ptr) != 0)
-    {
-    	sn_coap_protocol_free(stored_ack_info_ptr->addr_ptr);
-        sn_coap_protocol_free(stored_ack_info_ptr->token_ptr);
-        sn_coap_protocol_free(stored_ack_info_ptr);
-        return;
-    }
+    ns_list_add_to_end(&global_linked_list_ack_info, stored_ack_info_ptr);
+    ++global_count_ack_info;
 }
 
 /**************************************************************************//**
@@ -1304,9 +1264,7 @@ static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr)
 {
-    coap_ack_info_s *stored_ack_info_ptr   = sn_linked_list_get_last_node(global_linked_list_ack_info_ptr);
-    uint16_t         stored_ack_info_count = sn_linked_list_count_nodes(global_linked_list_ack_info_ptr);
-    uint8_t          i                     = 0;
+    coap_ack_info_s *stored_ack_info_ptr;
 
     if(!addr_ptr)
     	return -1;
@@ -1315,11 +1273,8 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
     	return -1;
 
     /* Loop all nodes in Linked list for searching Message ID */
-    for (i = 0; i < stored_ack_info_count; i++)
+    ns_list_foreach_v(stored_ack_info_ptr, &global_linked_list_ack_info)
     {
-        if(!stored_ack_info_ptr)
-        	return -1;
-
         /* If message's Token option is same than is searched */
         if(msg_id == stored_ack_info_ptr->msg_id)
         {
@@ -1353,8 +1308,6 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
 				}
 			}
         }
-        /* Get next stored Acknowledgement info to be searched */
-        stored_ack_info_ptr = sn_linked_list_get_previous_node(global_linked_list_ack_info_ptr);
     }
 
     return -1;
@@ -1374,9 +1327,7 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr)
 {
-    uint16_t         stored_ack_info_count = sn_linked_list_count_nodes(global_linked_list_ack_info_ptr);
-    coap_ack_info_s *stored_ack_info_ptr   = sn_linked_list_get_last_node(global_linked_list_ack_info_ptr);
-    uint8_t          i                     = 0;
+    coap_ack_info_s *stored_ack_info_ptr;
 
     if(!addr_ptr)
     	return;
@@ -1385,11 +1336,8 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
     	return;
 
     /* Loop all stored Acknowledgement infos in Linked list */
-    for (i = 0; i < stored_ack_info_count; i++)
+    ns_list_foreach_v(stored_ack_info_ptr, &global_linked_list_ack_info)
     {
-        if(!stored_ack_info_ptr)
-        	return;
-
         /* If message's Token option is same than is searched */
         if (msg_id == stored_ack_info_ptr->msg_id)
         {
@@ -1402,7 +1350,8 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
 					if (0 == memcmp(addr_ptr->addr_ptr, stored_ack_info_ptr->addr_ptr, addr_ptr->addr_len))
 					{
 						/* * * * Correct Acknowledgement info found, remove it from Linked list * * * */
-						stored_ack_info_ptr = sn_linked_list_remove_current_node(global_linked_list_ack_info_ptr);
+						ns_list_remove(&global_linked_list_ack_info, stored_ack_info_ptr);
+						--global_count_ack_info;
 
 						/* Free memory of stored Acknowledgement info */
 						if(stored_ack_info_ptr->token_ptr)
@@ -1417,9 +1366,6 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
             }
 
         }
-
-        /* Get next stored message to be searched */
-        stored_ack_info_ptr = sn_linked_list_get_previous_node(global_linked_list_ack_info_ptr);
     }
 }
 
@@ -1431,15 +1377,16 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_ack_info_remove_old_ones(void)
 {
-    coap_ack_info_s *removed_ack_info_ptr   = sn_linked_list_get_first_node(global_linked_list_ack_info_ptr);
+    coap_ack_info_s *removed_ack_info_ptr;
 
     /* Loop all stored Acknowledgement infos in Linked list */
-    while(removed_ack_info_ptr)
+    ns_list_foreach_safe_v(removed_ack_info_ptr, &global_linked_list_ack_info)
     {
         if ((global_system_time - removed_ack_info_ptr->timestamp)  > SN_COAP_ACK_INFO_MAX_TIME_MSGS_STORED)
         {
             /* * * * Old Acknowledgement info found, remove it from Linked list * * * */
-            removed_ack_info_ptr = sn_linked_list_remove_current_node(global_linked_list_ack_info_ptr);
+            ns_list_remove(&global_linked_list_ack_info, removed_ack_info_ptr);
+            --global_count_ack_info;
 
             /* Free memory of stored Acknowledgement info */
             if(removed_ack_info_ptr->token_ptr)
@@ -1453,14 +1400,6 @@ static void sn_coap_protocol_linked_list_ack_info_remove_old_ones(void)
             }
 
             sn_coap_protocol_free(removed_ack_info_ptr);
-
-            /* Remove current node moved list automatically to next node. That is why we can fetch it now by calling get current node. */
-            removed_ack_info_ptr = sn_linked_list_get_current_node(global_linked_list_ack_info_ptr);
-        }
-        else
-        {
-            /* Get next stored message to be searched */
-            removed_ack_info_ptr = sn_linked_list_get_next_node(global_linked_list_ack_info_ptr);
         }
     }
 }

@@ -105,7 +105,11 @@ typedef struct coap_ack_info_
 
     uint8_t             token_len;
     uint8_t            *token_ptr;
+
+    ns_list_link_t     link;
 } coap_ack_info_s;
+
+typedef NS_LIST_HEAD(coap_ack_info_s, link) coap_ack_info_list_t;
 
 /* Structure which is stored to Linked list for message duplication detection purposes */
 typedef struct coap_duplication_info_
