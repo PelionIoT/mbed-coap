@@ -133,7 +133,11 @@ typedef struct coap_blockwise_msg_
     uint32_t            timestamp;  /* Tells when Blockwise message is stored to Linked list */
 
     sn_coap_hdr_s		*coap_msg_ptr;
+
+    ns_list_link_t     link;
 } coap_blockwise_msg_s;
+
+typedef NS_LIST_HEAD(coap_blockwise_msg_s, link) coap_blockwise_msg_list_t;
 
 /* Structure which is stored to Linked list for blockwise messages receiving purposes */
 typedef struct coap_blockwise_payload_

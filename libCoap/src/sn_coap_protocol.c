@@ -47,7 +47,7 @@ static void                  sn_coap_protocol_linked_list_duplication_info_remov
 static void                  sn_coap_protocol_linked_list_duplication_info_remove_old_ones(void);
 #endif
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
-static void                  sn_coap_protocol_linked_list_blockwise_msg_remove_current();
+static void                  sn_coap_protocol_linked_list_blockwise_msg_remove(coap_blockwise_msg_s *removed_msg_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_store(sn_nsdl_addr_s *addr_ptr, uint16_t stored_payload_len, uint8_t *stored_payload_ptr);
 static uint8_t              *sn_coap_protocol_linked_list_blockwise_payload_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_remove_oldest();
@@ -83,7 +83,7 @@ SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t                      global_count
 
 #endif
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static sn_linked_list_t *global_linked_list_blockwise_sent_msgs_ptr         = NULL; /* Blockwise message to to be sent is stored to this Linked list */
+SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_blockwise_msg_list_t     NS_LIST_NAME_INIT(global_linked_list_blockwise_sent_msgs); /* Blockwise message to to be sent is stored to this Linked list */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static sn_linked_list_t *global_linked_list_blockwise_received_payloads_ptr = NULL; /* Blockwise payload to to be received is stored to this Linked list */
 #endif
 
@@ -235,7 +235,7 @@ int8_t sn_coap_protocol_destroy(void)
 #endif
 
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
-	if(global_linked_list_blockwise_sent_msgs_ptr)
+	ns_list_foreach_safe(coap_blockwise_msg_s, tmp, &global_linked_list_blockwise_sent_msgs)
 	{
 
 	}
@@ -252,11 +252,6 @@ SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 void coap_protocol_free_lists(void)
 {
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
-	if(NULL != global_linked_list_blockwise_sent_msgs_ptr)
-	{
-		sn_linked_list_free(global_linked_list_blockwise_sent_msgs_ptr);
-		global_linked_list_blockwise_sent_msgs_ptr = NULL;
-	}
 	if(NULL != global_linked_list_blockwise_received_payloads_ptr)
 	{
 		sn_linked_list_free(global_linked_list_blockwise_received_payloads_ptr);
@@ -313,19 +308,6 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 
     sn_coap_block_data_size = SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE;
-
-    /* * * * Create Linked list for storing sent blockwise messages, if not already created  * * * */
-    if (global_linked_list_blockwise_sent_msgs_ptr == NULL)
-    {
-        global_linked_list_blockwise_sent_msgs_ptr = sn_linked_list_create();
-
-        if(global_linked_list_blockwise_sent_msgs_ptr == NULL)
-        {
-        	coap_protocol_free_lists();
-        	return (-1);
-        }
-
-    }
 
     /* * * * Create Linked list for storing received blockwise payload, if not already created * * * */
     if (global_linked_list_blockwise_received_payloads_ptr == NULL)
@@ -662,7 +644,7 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
     	}
     	memcpy(stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr, src_coap_msg_ptr->payload_ptr, stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
 
-    	sn_linked_list_add_node(global_linked_list_blockwise_sent_msgs_ptr, stored_blockwise_msg_ptr);
+    	ns_list_add_to_end(&global_linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
     }
 
     else if(src_coap_msg_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET)
@@ -682,7 +664,7 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
 
     	stored_blockwise_msg_ptr->coap_msg_ptr = sn_coap_protocol_copy_header(src_coap_msg_ptr);
 
-    	sn_linked_list_add_node(global_linked_list_blockwise_sent_msgs_ptr, stored_blockwise_msg_ptr);
+    	ns_list_add_to_end(&global_linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
     }
 
 #endif /* SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE */
@@ -821,17 +803,16 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
     }
     else
     {
-		stored_blockwise_msg_temp_ptr = sn_linked_list_get_last_node(global_linked_list_blockwise_sent_msgs_ptr);
-
 		/* Get ... */
-		while(stored_blockwise_msg_temp_ptr && (returned_dst_coap_msg_ptr->msg_id != stored_blockwise_msg_temp_ptr->coap_msg_ptr->msg_id))
+		ns_list_foreach_v(stored_blockwise_msg_temp_ptr, &global_linked_list_blockwise_sent_msgs)
 		{
-			stored_blockwise_msg_temp_ptr = sn_linked_list_get_previous_node(global_linked_list_blockwise_sent_msgs_ptr);
+			if (returned_dst_coap_msg_ptr->msg_id == stored_blockwise_msg_temp_ptr->coap_msg_ptr->msg_id)
+				break;
 		}
 
 		if(stored_blockwise_msg_temp_ptr)
 		{
-			sn_linked_list_remove_current_node(global_linked_list_blockwise_sent_msgs_ptr);
+			ns_list_remove(&global_linked_list_blockwise_sent_msgs, stored_blockwise_msg_temp_ptr);
 
 			if(stored_blockwise_msg_temp_ptr->coap_msg_ptr)
 				sn_coap_parser_release_allocated_coap_msg_mem(stored_blockwise_msg_temp_ptr->coap_msg_ptr);
@@ -1565,24 +1546,23 @@ static void sn_coap_protocol_linked_list_duplication_info_remove_old_ones(void)
 
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
 /**************************************************************************//**
- * \fn static void sn_coap_protocol_linked_list_blockwise_msg_remove_current()
+ * \fn static void sn_coap_protocol_linked_list_blockwise_msg_remove(coap_blockwise_msg_s *removed_msg_ptr)
  *
- * \brief Removes current stored blockwise message from Linked list
+ * \brief Removes stored blockwise message from Linked list
+ *
+ * \param removed_msg_ptr is message to be removed
  *****************************************************************************/
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
-static void sn_coap_protocol_linked_list_blockwise_msg_remove_current()
+static void sn_coap_protocol_linked_list_blockwise_msg_remove(coap_blockwise_msg_s *removed_msg_ptr)
 {
-    coap_blockwise_msg_s *removed_msg_ptr = sn_linked_list_remove_current_node(global_linked_list_blockwise_sent_msgs_ptr);
+	ns_list_remove(&global_linked_list_blockwise_sent_msgs, removed_msg_ptr);
 
-    if (removed_msg_ptr != NULL)
-    {
-        if(removed_msg_ptr->coap_msg_ptr->payload_ptr)
-        	sn_coap_protocol_free(removed_msg_ptr->coap_msg_ptr->payload_ptr);
+	if(removed_msg_ptr->coap_msg_ptr->payload_ptr)
+		sn_coap_protocol_free(removed_msg_ptr->coap_msg_ptr->payload_ptr);
 
-        sn_coap_parser_release_allocated_coap_msg_mem(removed_msg_ptr->coap_msg_ptr);
+	sn_coap_parser_release_allocated_coap_msg_mem(removed_msg_ptr->coap_msg_ptr);
 
-        sn_coap_protocol_free(removed_msg_ptr);
-    }
+	sn_coap_protocol_free(removed_msg_ptr);
 }
 
 /**************************************************************************//**
@@ -1799,22 +1779,15 @@ static uint16_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(sn_nsdl_
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_blockwise_remove_old_data(void)
 {
-    coap_blockwise_msg_s     *removed_blocwise_msg_ptr        = sn_linked_list_get_first_node(global_linked_list_blockwise_sent_msgs_ptr);
     coap_blockwise_payload_s *removed_blocwise_payload_ptr    = sn_linked_list_get_first_node(global_linked_list_blockwise_received_payloads_ptr);
 
     /* Loop all stored Blockwise messages in Linked list */
-    while(removed_blocwise_msg_ptr)
+    ns_list_foreach_safe(coap_blockwise_msg_s, removed_blocwise_msg_ptr, &global_linked_list_blockwise_sent_msgs)
     {
         if ((global_system_time - removed_blocwise_msg_ptr->timestamp)  > SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED)
         {
             /* * * * Old Blockise message found, remove it from Linked list * * * */
-            sn_coap_protocol_linked_list_blockwise_msg_remove_current();
-            removed_blocwise_msg_ptr = sn_linked_list_get_current_node(global_linked_list_blockwise_sent_msgs_ptr);
-        }
-        else
-        {
-            /* Get next stored message to be searched */
-            removed_blocwise_msg_ptr = sn_linked_list_get_next_node(global_linked_list_blockwise_sent_msgs_ptr);
+            sn_coap_protocol_linked_list_blockwise_msg_remove(removed_blocwise_msg_ptr);
         }
     }
 
@@ -1971,13 +1944,14 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 		{
 			if(*(received_coap_msg_ptr->options_list_ptr->block1_ptr + (received_coap_msg_ptr->options_list_ptr->block1_len - 1)) & 0x08)
 			{
-				coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr = sn_linked_list_get_last_node(global_linked_list_blockwise_sent_msgs_ptr);
+				coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr;
 
 				/* Get  */
-				while(stored_blockwise_msg_temp_ptr && (received_coap_msg_ptr->msg_id != stored_blockwise_msg_temp_ptr->coap_msg_ptr->msg_id))
-            	{
-            		stored_blockwise_msg_temp_ptr = sn_linked_list_get_previous_node(global_linked_list_blockwise_sent_msgs_ptr);
-            	}
+				ns_list_foreach_v(stored_blockwise_msg_temp_ptr, &global_linked_list_blockwise_sent_msgs)
+				{
+					if (received_coap_msg_ptr->msg_id == stored_blockwise_msg_temp_ptr->coap_msg_ptr->msg_id)
+						break;
+				}
 
 				if(stored_blockwise_msg_temp_ptr)
 				{
@@ -2118,7 +2092,8 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 			}
 			else
 			{
-				sn_coap_protocol_linked_list_blockwise_msg_remove_current();
+				// XXX what was this trying to free?
+				//sn_coap_protocol_linked_list_blockwise_msg_remove_current();
 				received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_ACK;
 			}
 		}
@@ -2267,12 +2242,11 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
             	//build and send ack
             	received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING;
 
-            	previous_blockwise_msg_ptr = sn_linked_list_get_first_node(global_linked_list_blockwise_sent_msgs_ptr);
-
-            	while(previous_blockwise_msg_ptr && (received_coap_msg_ptr->msg_id != previous_blockwise_msg_ptr->coap_msg_ptr->msg_id))
-            	{
-            		previous_blockwise_msg_ptr = sn_linked_list_get_next_node(global_linked_list_blockwise_sent_msgs_ptr);
-            	}
+				ns_list_foreach_v(previous_blockwise_msg_ptr, &global_linked_list_blockwise_sent_msgs)
+				{
+					if (received_coap_msg_ptr->msg_id == previous_blockwise_msg_ptr->coap_msg_ptr->msg_id)
+						break;
+				}
 
             	if(!previous_blockwise_msg_ptr || !previous_blockwise_msg_ptr->coap_msg_ptr)
             	{
@@ -2282,7 +2256,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 
             	src_coap_blockwise_ack_msg_ptr = previous_blockwise_msg_ptr->coap_msg_ptr;
 
-            	sn_linked_list_remove_current_node(global_linked_list_blockwise_sent_msgs_ptr);
+            	ns_list_remove(&global_linked_list_blockwise_sent_msgs, previous_blockwise_msg_ptr);
             	sn_coap_protocol_free(previous_blockwise_msg_ptr);
 
             	if(src_coap_blockwise_ack_msg_ptr->payload_ptr)
@@ -2406,8 +2380,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 
             	stored_blockwise_msg_ptr->coap_msg_ptr = src_coap_blockwise_ack_msg_ptr;
 
-            	sn_linked_list_add_node(global_linked_list_blockwise_sent_msgs_ptr, stored_blockwise_msg_ptr); // todo check return value
-
+            	ns_list_add_to_end(&global_linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
 
                 /* * * Then release memory of CoAP Acknowledgement message * * */
 				sn_coap_tx_callback(SN_NSDL_PROTOCOL_COAP, dst_ack_packet_data_ptr,
@@ -2462,7 +2435,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 		else
 		{
 			//Get message by using block number
-			coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr = sn_linked_list_get_last_node(global_linked_list_blockwise_sent_msgs_ptr);
+			coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr = ns_list_get_first(&global_linked_list_blockwise_sent_msgs);
 			if(stored_blockwise_msg_temp_ptr)
 			{
 				uint16_t block_size = 1;
@@ -2570,7 +2543,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 				stored_blockwise_msg_temp_ptr->coap_msg_ptr->payload_ptr = original_payload_ptr;
 
                 if((block_size * (block_number + 1)) > stored_blockwise_msg_temp_ptr->coap_msg_ptr->payload_len)
-                	sn_coap_protocol_linked_list_blockwise_msg_remove_current();
+                	sn_coap_protocol_linked_list_blockwise_msg_remove(stored_blockwise_msg_temp_ptr);
 
 				received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_ACK;
 			}
