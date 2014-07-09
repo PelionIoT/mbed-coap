@@ -150,7 +150,11 @@ typedef struct coap_blockwise_payload_
 
     uint16_t            payload_len;
     uint8_t            *payload_ptr;
+
+    ns_list_link_t     link;
 } coap_blockwise_payload_s;
+
+typedef NS_LIST_HEAD(coap_blockwise_payload_s, link) coap_blockwise_payload_list_t;
 
 /**
  * \brief Releases any memory allocated in sn_nsdl_transmit_s
