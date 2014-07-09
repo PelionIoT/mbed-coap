@@ -9,12 +9,14 @@
  * \note Supports draft-ietf-core-coap-18
  */
 
+#ifndef SN_COAP_PROTOCOL_INTERNAL_H_
+#define SN_COAP_PROTOCOL_INTERNAL_H_
+
+#include "ns_list.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef SN_COAP_PROTOCOL_INTERNAL_H_
-#define SN_COAP_PROTOCOL_INTERNAL_H_
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
@@ -84,7 +86,11 @@ typedef struct coap_send_msg_
     uint32_t            resending_time;     /* Tells next resending time */
 
     sn_nsdl_transmit_s *send_msg_ptr;
+
+    ns_list_link_t     link;
 } coap_send_msg_s;
+
+typedef NS_LIST_HEAD(coap_send_msg_s, link) coap_send_msg_list_t;
 
 /* Structure which is stored to Linked list for message acknowledgement purposes */
 typedef struct coap_ack_info_
@@ -139,8 +145,9 @@ typedef struct coap_blockwise_payload_
  */
 extern void           sn_coap_builder_release_allocated_send_msg_mem(sn_nsdl_transmit_s *freed_send_msg_ptr);
 
-#endif /* SN_COAP_PROTOCOL_INTERNAL_H_ */
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* SN_COAP_PROTOCOL_INTERNAL_H_ */
+
