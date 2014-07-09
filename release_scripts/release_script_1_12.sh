@@ -59,7 +59,6 @@ rm -f ../nsdl-c/developer_release_$VER/libCoap/src/*.c
 rm -f ../nsdl-c/developer_release_$VER/libCoap/src/include/avr_compiler.h
 rm -f ../nsdl-c/developer_release_$VER/libCoap/src/include/sn_coap_header_internal.h
 rm -f ../nsdl-c/developer_release_$VER/libCoap/src/include/sn_coap_protocol_internal.h
-rm -f ../nsdl-c/developer_release_$VER/libCoap/src/include/sn_linked_list.h
 rm -f ../nsdl-c/developer_release_$VER/.gitignore
 
 # Build and copy libNsdl

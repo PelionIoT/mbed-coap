@@ -2079,9 +2079,6 @@
   <file>
     <name>$PROJ_DIR$\..\src\sn_coap_protocol.c</name>
   </file>
-  <file>
-    <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
-  </file>
 </project>
 
 
