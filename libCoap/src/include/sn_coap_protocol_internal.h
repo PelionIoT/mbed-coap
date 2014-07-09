@@ -121,7 +121,11 @@ typedef struct coap_duplication_info_
     uint16_t            port;
 
     uint16_t            msg_id;
+
+    ns_list_link_t     link;
 } coap_duplication_info_s;
+
+typedef NS_LIST_HEAD(coap_duplication_info_s, link) coap_duplication_info_list_t;
 
 /* Structure which is stored to Linked list for blockwise messages sending purposes */
 typedef struct coap_blockwise_msg_

@@ -78,7 +78,9 @@ SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t                      global_count
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_ack_info_list_t          NS_LIST_NAME_INIT(global_linked_list_ack_info); /* Message Acknowledgement info is stored to this Linked list */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t                      global_count_ack_info                   = 0;
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static sn_linked_list_t *global_linked_list_duplication_msgs_ptr            = NULL; /* Messages for duplicated messages detection is stored to this Linked list */
+SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_duplication_info_list_t  NS_LIST_NAME_INIT(global_linked_list_duplication_msgs); /* Messages for duplicated messages detection is stored to this Linked list */
+SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t                      global_count_duplication_msgs           = 0;
+
 #endif
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static sn_linked_list_t *global_linked_list_blockwise_sent_msgs_ptr         = NULL; /* Blockwise message to to be sent is stored to this Linked list */
@@ -226,7 +228,7 @@ int8_t sn_coap_protocol_destroy(void)
 	}
 
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
-	if(global_linked_list_duplication_msgs_ptr)
+	ns_list_foreach_safe(coap_duplication_info_s, tmp, &global_linked_list_duplication_msgs)
 	{
 
 	}
@@ -249,13 +251,6 @@ return 0;
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 void coap_protocol_free_lists(void)
 {
-#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
-	if(NULL != global_linked_list_duplication_msgs_ptr)
-	{
-		sn_linked_list_free(global_linked_list_duplication_msgs_ptr);
-		global_linked_list_duplication_msgs_ptr = NULL;
-	}
-#endif
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
 	if(NULL != global_linked_list_blockwise_sent_msgs_ptr)
 	{
@@ -313,18 +308,6 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
     /* * * * Create Linked list for storing Duplication info * * * */
     sn_coap_duplication_buffer_size = SN_COAP_DUPLICATION_MAX_MSGS_COUNT;
-
-    /* Check that Linked list is not already created */
-    if (global_linked_list_duplication_msgs_ptr == NULL)
-    {
-        global_linked_list_duplication_msgs_ptr = sn_linked_list_create();
-
-        if(global_linked_list_duplication_msgs_ptr == NULL)
-        {
-        	coap_protocol_free_lists();
-        	return (-1);
-        }
-    }
 #endif
 
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
@@ -797,13 +780,13 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
         /* * * No Message duplication: Store received message for detecting later duplication * * */
 
         /* Get count of stored duplication messages */
-        uint16_t stored_duplication_msgs_count = sn_linked_list_count_nodes(global_linked_list_duplication_msgs_ptr);
+        uint16_t stored_duplication_msgs_count = global_count_duplication_msgs;
 
         /* Check if there is no room to store message for duplication detection purposes */
         if (stored_duplication_msgs_count >= sn_coap_duplication_buffer_size)
         {
             /* Get oldest stored duplication message */
-            coap_duplication_info_s *stored_duplication_info_ptr = sn_linked_list_get_last_node(global_linked_list_duplication_msgs_ptr);
+            coap_duplication_info_s *stored_duplication_info_ptr = ns_list_get_first(&global_linked_list_duplication_msgs);
 
             /* Remove oldest stored duplication message for getting room for new duplication message */
             sn_coap_protocol_linked_list_duplication_info_remove(stored_duplication_info_ptr->addr_ptr, stored_duplication_info_ptr->port, stored_duplication_info_ptr->msg_id);
@@ -1469,7 +1452,8 @@ static void sn_coap_protocol_linked_list_duplication_info_store(sn_nsdl_addr_s *
 
     /* * * * Storing Duplication info to Linked list * * * */
 
-    sn_linked_list_add_node(global_linked_list_duplication_msgs_ptr, stored_duplication_info_ptr);
+    ns_list_add_to_end(&global_linked_list_duplication_msgs, stored_duplication_info_ptr);
+    ++global_count_duplication_msgs;
 }
 
 /**************************************************************************//**
@@ -1486,12 +1470,10 @@ SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static int8_t sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_s *addr_ptr,
                                                                    uint16_t msg_id)
 {
-    coap_duplication_info_s *stored_duplication_info_ptr   = sn_linked_list_get_last_node(global_linked_list_duplication_msgs_ptr);
-    uint16_t                 stored_duplication_msgs_count = sn_linked_list_count_nodes(global_linked_list_duplication_msgs_ptr);
-    uint8_t                  i                             = 0;
+    coap_duplication_info_s *stored_duplication_info_ptr;
 
     /* Loop all nodes in Linked list for searching Message ID */
-    for (i = 0; i < stored_duplication_msgs_count; i++)
+    ns_list_foreach_v(stored_duplication_info_ptr, &global_linked_list_duplication_msgs)
     {
         /* If message's Message ID is same than is searched */
         if (stored_duplication_info_ptr->msg_id == msg_id)
@@ -1507,8 +1489,6 @@ static int8_t sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_
                 }
             }
         }
-        /* Get next stored Duplication info to be searched */
-        stored_duplication_info_ptr = sn_linked_list_get_previous_node(global_linked_list_duplication_msgs_ptr);
     }
 
     return -1;
@@ -1528,12 +1508,10 @@ static int8_t sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_duplication_info_remove(uint8_t *addr_ptr, uint16_t port, uint16_t msg_id)
 {
-    coap_duplication_info_s *removed_duplication_info_ptr  = sn_linked_list_get_last_node(global_linked_list_duplication_msgs_ptr);
-    uint16_t                 stored_duplication_msgs_count = sn_linked_list_count_nodes(global_linked_list_duplication_msgs_ptr);
-    uint8_t                  i                             = 0;
+    coap_duplication_info_s *removed_duplication_info_ptr;
 
     /* Loop all stored duplication messages in Linked list */
-    for (i = 0; i < stored_duplication_msgs_count; i++)
+    ns_list_foreach_v(removed_duplication_info_ptr, &global_linked_list_duplication_msgs)
     {
         /* If message's Address is same than is searched */
         if (0 == memcmp(addr_ptr, removed_duplication_info_ptr->addr_ptr, removed_duplication_info_ptr->addr_len))
@@ -1545,7 +1523,8 @@ static void sn_coap_protocol_linked_list_duplication_info_remove(uint8_t *addr_p
                 if (removed_duplication_info_ptr->msg_id == msg_id)
                 {
                     /* * * * Correct Duplication info found, remove it from Linked list * * * */
-                    removed_duplication_info_ptr = sn_linked_list_remove_current_node(global_linked_list_duplication_msgs_ptr);
+                    ns_list_remove(&global_linked_list_duplication_msgs, removed_duplication_info_ptr);
+                    --global_count_duplication_msgs;
 
                     /* Free memory of stored Duplication info */
                     sn_coap_protocol_free(removed_duplication_info_ptr->addr_ptr);
@@ -1555,9 +1534,6 @@ static void sn_coap_protocol_linked_list_duplication_info_remove(uint8_t *addr_p
                 }
             }
         }
-
-        /* Get next stored message to be searched */
-        removed_duplication_info_ptr = sn_linked_list_get_previous_node(global_linked_list_duplication_msgs_ptr);
     }
 }
 
@@ -1569,26 +1545,18 @@ static void sn_coap_protocol_linked_list_duplication_info_remove(uint8_t *addr_p
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_duplication_info_remove_old_ones(void)
 {
-    coap_duplication_info_s *removed_duplication_info_ptr  = sn_linked_list_get_first_node(global_linked_list_duplication_msgs_ptr);
-
     /* Loop all stored duplication messages in Linked list */
-    while(removed_duplication_info_ptr)
+    ns_list_foreach_safe(coap_duplication_info_s, removed_duplication_info_ptr, &global_linked_list_duplication_msgs)
     {
         if ((global_system_time - removed_duplication_info_ptr->timestamp)  > SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED)
         {
             /* * * * Old Duplication info found, remove it from Linked list * * * */
-            removed_duplication_info_ptr = sn_linked_list_remove_current_node(global_linked_list_duplication_msgs_ptr);
+            ns_list_remove(&global_linked_list_duplication_msgs, removed_duplication_info_ptr);
+            --global_count_duplication_msgs;
 
             /* Free memory of stored Duplication info */
             sn_coap_protocol_free(removed_duplication_info_ptr->addr_ptr);
             sn_coap_protocol_free(removed_duplication_info_ptr);
-
-            removed_duplication_info_ptr = sn_linked_list_get_current_node(global_linked_list_duplication_msgs_ptr);
-        }
-        else
-        {
-            /* Get next stored message to be searched */
-            removed_duplication_info_ptr = sn_linked_list_get_next_node(global_linked_list_duplication_msgs_ptr);
         }
     }
 }
