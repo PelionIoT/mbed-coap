@@ -56,7 +56,6 @@ rm -rf ../nsdl-c/enterprise_release_$VER/.gitignore
 cp -r ../nsdl-c/enterprise_release_$VER/libCoap ../nsdl-c/developer_release_$VER
 
 rm -f ../nsdl-c/developer_release_$VER/libCoap/src/*.c
-rm -f ../nsdl-c/developer_release_$VER/libCoap/src/include/avr_compiler.h
 rm -f ../nsdl-c/developer_release_$VER/libCoap/src/include/sn_coap_header_internal.h
 rm -f ../nsdl-c/developer_release_$VER/libCoap/src/include/sn_coap_protocol_internal.h
 rm -f ../nsdl-c/developer_release_$VER/.gitignore
