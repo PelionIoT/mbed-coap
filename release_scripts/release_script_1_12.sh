@@ -76,7 +76,6 @@ cp -r ../nsdl-c/enterprise_release_$VER/libNsdl ../nsdl-c/developer_release_$VER
 
 rm -f ../nsdl-c/developer_release_$VER/libNsdl/src/*.c
 rm -f ../nsdl-c/developer_release_$VER/libNsdl/src/Include/sn_grs.h
-rm -f ../nsdl-c/developer_release_$VER/libNsdl/src/Include/sn_linked_list.h
 
 # Remove git_temp 
 cd ..

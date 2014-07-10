@@ -434,11 +434,6 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\..\git\nsdl-c\libCoap\src\sn_coap_protocol.c</FilePath>
             </File>
-            <File>
-              <FileName>sn_linked_list.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\git\nsdl-c\libCoap\src\sn_linked_list.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
