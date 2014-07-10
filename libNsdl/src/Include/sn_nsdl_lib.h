@@ -8,12 +8,14 @@
  *
  */
 
+#ifndef SN_NSDL_LIB_H_
+#define SN_NSDL_LIB_H_
+
+#include "ns_list.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef SN_NSDL_LIB_H_
-#define SN_NSDL_LIB_H_
 
 #define SN_NSDL_CONST_MEMORY_ATTRIBUTE
 
@@ -161,6 +163,8 @@ typedef struct sn_nsdl_resource_info_
 	sn_grs_resource_acl_e 			access;
 
 	uint8_t (*sn_grs_dyn_res_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
+
+	ns_list_link_t					link;
 
 } sn_nsdl_resource_info_s;
 
@@ -437,6 +441,15 @@ extern sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *
 extern sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path);
 
 /**
+ * \fn extern void sn_nsdl_free_resource_list(sn_grs_resource_list_s *)
+ *
+ * \brief Free a resource list obtained from sn_nsdl_list_resource()
+ *
+ * \param	list	The list to free, or NULL.
+ */
+extern void sn_nsdl_free_resource_list(sn_grs_resource_list_s *list);
+
+/**
  * \fn extern int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
  *
  * \brief Send an outgoing CoAP request.
@@ -478,8 +491,8 @@ extern omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_ch
 
 extern int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
 
-#endif /* SN_NSDL_LIB_H_ */
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* SN_NSDL_LIB_H_ */

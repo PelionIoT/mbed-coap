@@ -1095,6 +1095,11 @@ sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path_pt
 	return sn_grs_list_resource(pathlen, path_ptr);
 }
 
+void sn_nsdl_free_resource_list(sn_grs_resource_list_s *list)
+{
+	return sn_grs_free_resource_list(list);
+}
+
 int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
 {
 	return sn_grs_send_coap_message(address_ptr, coap_hdr_ptr);
@@ -1219,7 +1224,7 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 {
 	/* Local variables */
 	uint8_t					*temp_ptr;
-	sn_nsdl_resource_info_s 	*resource_temp_ptr;
+	const sn_nsdl_resource_info_s 	*resource_temp_ptr;
 
 
 	/* Get list of resources */
@@ -1357,7 +1362,7 @@ static uint16_t sn_nsdl_calculate_registration_body_size(uint8_t updating_regist
 {
 	/* Local variables */
 	uint16_t return_value = 0;
-	sn_nsdl_resource_info_s *resource_temp_ptr;
+	const sn_nsdl_resource_info_s *resource_temp_ptr;
 
 	/* check pointer */
 
@@ -1668,7 +1673,7 @@ static int8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_
 void sn_nsdl_mark_resources_as_registered(void)
 {
 
-	sn_nsdl_resource_info_s *temp_resource;
+	const sn_nsdl_resource_info_s *temp_resource;
 
 	temp_resource = sn_grs_get_first_resource();
 

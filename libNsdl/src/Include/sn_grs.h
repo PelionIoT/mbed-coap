@@ -78,8 +78,9 @@ extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , u
 		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory);
 extern int8_t sn_grs_exec(uint32_t time);
 extern sn_grs_resource_list_s *sn_grs_list_resource(uint16_t pathlen, uint8_t *path);
-extern sn_nsdl_resource_info_s *sn_grs_get_first_resource(void);
-extern sn_nsdl_resource_info_s *sn_grs_get_next_resource(void);
+extern void sn_grs_free_resource_list(sn_grs_resource_list_s *list);
+extern const sn_nsdl_resource_info_s *sn_grs_get_first_resource(void);
+extern const sn_nsdl_resource_info_s *sn_grs_get_next_resource(void);
 extern sn_nsdl_resource_info_s *sn_grs_get_resource(uint16_t pathlen, uint8_t *path);
 extern int8_t sn_grs_delete_resource(uint16_t pathlen, uint8_t *path);
 extern int8_t sn_grs_update_resource(sn_nsdl_resource_info_s *res);
