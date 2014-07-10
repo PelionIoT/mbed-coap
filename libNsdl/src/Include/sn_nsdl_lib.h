@@ -66,6 +66,7 @@ typedef struct sn_nsdl_sent_messages_
 {
 	uint16_t	msg_id_number;
 	uint8_t		message_type;
+	ns_list_link_t	link;
 } sn_nsdl_sent_messages_s;
 
 /**
