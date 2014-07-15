@@ -354,10 +354,10 @@
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <VariousControls>
-              <MiscControls>--gnu</MiscControls>
+              <MiscControls>--c99</MiscControls>
               <Define>TARGET_LPC1768,  TARGET_M3,  TARGET_NXP,  TARGET_LPC176X,  TOOLCHAIN_ARM_STD,  TOOLCHAIN_ARM,  __CORTEX_M3,  ARM_MATH_CM3,</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\..\git\nsdl-c\libCoap\src\include;..\..\..\..\git\nsdl-c\libNsdl\src\Include</IncludePath>
+              <IncludePath>..\..\..\libService\include;..\..\libCoap\src\include;..\..\libNsdl\src\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
