@@ -1032,7 +1032,6 @@ SN_MEM_ATTR_GRS_FUNC
 static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t *path, uint8_t search_method)
 {
 	/* Local variables */
-	sn_nsdl_resource_info_s 	*resource_search_temp 	= NULL;
 	uint8_t 					*path_temp_ptr 			= NULL;
 
 	/* Check parameters */
@@ -1048,7 +1047,7 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 	if(search_method == SN_GRS_SEARCH_METHOD)
 	{
 		/* Scan all nodes on list */
-		ns_list_foreach_v(resource_search_temp, &resource_root_list)
+		ns_list_foreach(sn_nsdl_resource_info_s, resource_search_temp, &resource_root_list)
 		{
 			/* If length equals.. */
 			if(resource_search_temp->pathlen == pathlen)
@@ -1064,7 +1063,7 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 	else if(search_method == SN_GRS_DELETE_METHOD)
 	{
 		/* Scan all nodes on list */
-		ns_list_foreach_v(resource_search_temp, &resource_root_list)
+		ns_list_foreach(sn_nsdl_resource_info_s, resource_search_temp, &resource_root_list)
 		{
 			uint8_t *temp_ptr = resource_search_temp->path;
 

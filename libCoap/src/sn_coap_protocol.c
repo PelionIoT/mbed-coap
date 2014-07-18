@@ -385,8 +385,7 @@ SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 void sn_coap_protocol_clear_retransmission_buffer(void)
 {
 #if ENABLE_RESENDINGS /* If Message resending is not used at all, this part of code will not be compiled */
-	coap_send_msg_s *tmp;
-	ns_list_foreach_safe_v(tmp, &global_linked_list_resent_msgs)
+	ns_list_foreach_safe(coap_send_msg_s, tmp, &global_linked_list_resent_msgs)
 	{
 		if(tmp->send_msg_ptr)
 		{
@@ -766,8 +765,6 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
     /*** return to caller.								***/
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
 
-    coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr;
-
     if (returned_dst_coap_msg_ptr->options_list_ptr != NULL &&
         (returned_dst_coap_msg_ptr->options_list_ptr->block1_ptr != NULL ||
          returned_dst_coap_msg_ptr->options_list_ptr->block2_ptr != NULL))
@@ -777,10 +774,15 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
     else
     {
 		/* Get ... */
-		ns_list_foreach_v(stored_blockwise_msg_temp_ptr, &global_linked_list_blockwise_sent_msgs)
+		coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr = NULL;
+
+		ns_list_foreach(coap_blockwise_msg_s, msg, &global_linked_list_blockwise_sent_msgs)
 		{
-			if (returned_dst_coap_msg_ptr->msg_id == stored_blockwise_msg_temp_ptr->coap_msg_ptr->msg_id)
+			if (returned_dst_coap_msg_ptr->msg_id == msg->coap_msg_ptr->msg_id)
+			{
+				stored_blockwise_msg_temp_ptr = msg;
 				break;
+			}
 		}
 
 		if(stored_blockwise_msg_temp_ptr)
@@ -878,8 +880,7 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
 
 #if ENABLE_RESENDINGS
 	/* Check if there is ongoing active message sendings */
-	coap_send_msg_s *stored_msg_ptr;
-	ns_list_foreach_safe_v(stored_msg_ptr, &global_linked_list_resent_msgs)
+	ns_list_foreach_safe(coap_send_msg_s, stored_msg_ptr, &global_linked_list_resent_msgs)
 	{
 		/* Check if it is time to send this message */
 		if (current_time >= stored_msg_ptr->resending_time)
@@ -1014,10 +1015,8 @@ static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
 {
-    coap_send_msg_s *stored_msg_ptr;
-
-    /* Loop all stored resending messages Linked list */
-    ns_list_foreach_v(stored_msg_ptr, &global_linked_list_resent_msgs)
+     /* Loop all stored resending messages Linked list */
+    ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &global_linked_list_resent_msgs)
     {
         /* Get message ID from stored resending message */
         uint16_t temp_msg_id = (stored_msg_ptr->send_msg_ptr->packet_ptr[2] << 8);
@@ -1053,10 +1052,8 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
 {
-    coap_send_msg_s *stored_msg_ptr;
-
     /* Loop all stored resending messages in Linked list */
-    ns_list_foreach_v(stored_msg_ptr, &global_linked_list_resent_msgs)
+    ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &global_linked_list_resent_msgs)
     {
         /* Get message ID from stored resending message */
         uint16_t temp_msg_id = (stored_msg_ptr->send_msg_ptr->packet_ptr[2] << 8);
@@ -1201,8 +1198,6 @@ static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr)
 {
-    coap_ack_info_s *stored_ack_info_ptr;
-
     if(!addr_ptr)
     	return -1;
 
@@ -1210,7 +1205,7 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
     	return -1;
 
     /* Loop all nodes in Linked list for searching Message ID */
-    ns_list_foreach_v(stored_ack_info_ptr, &global_linked_list_ack_info)
+    ns_list_foreach(coap_ack_info_s, stored_ack_info_ptr, &global_linked_list_ack_info)
     {
         /* If message's Token option is same than is searched */
         if(msg_id == stored_ack_info_ptr->msg_id)
@@ -1264,8 +1259,6 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr)
 {
-    coap_ack_info_s *stored_ack_info_ptr;
-
     if(!addr_ptr)
     	return;
 
@@ -1273,7 +1266,7 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
     	return;
 
     /* Loop all stored Acknowledgement infos in Linked list */
-    ns_list_foreach_v(stored_ack_info_ptr, &global_linked_list_ack_info)
+    ns_list_foreach(coap_ack_info_s, stored_ack_info_ptr, &global_linked_list_ack_info)
     {
         /* If message's Token option is same than is searched */
         if (msg_id == stored_ack_info_ptr->msg_id)
@@ -1314,10 +1307,8 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_ack_info_remove_old_ones(void)
 {
-    coap_ack_info_s *removed_ack_info_ptr;
-
     /* Loop all stored Acknowledgement infos in Linked list */
-    ns_list_foreach_safe_v(removed_ack_info_ptr, &global_linked_list_ack_info)
+    ns_list_foreach_safe(coap_ack_info_s, removed_ack_info_ptr, &global_linked_list_ack_info)
     {
         if ((global_system_time - removed_ack_info_ptr->timestamp)  > SN_COAP_ACK_INFO_MAX_TIME_MSGS_STORED)
         {
@@ -1424,10 +1415,8 @@ SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static int8_t sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_s *addr_ptr,
                                                                    uint16_t msg_id)
 {
-    coap_duplication_info_s *stored_duplication_info_ptr;
-
     /* Loop all nodes in Linked list for searching Message ID */
-    ns_list_foreach_v(stored_duplication_info_ptr, &global_linked_list_duplication_msgs)
+    ns_list_foreach(coap_duplication_info_s, stored_duplication_info_ptr, &global_linked_list_duplication_msgs)
     {
         /* If message's Message ID is same than is searched */
         if (stored_duplication_info_ptr->msg_id == msg_id)
@@ -1462,10 +1451,8 @@ static int8_t sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static void sn_coap_protocol_linked_list_duplication_info_remove(uint8_t *addr_ptr, uint16_t port, uint16_t msg_id)
 {
-    coap_duplication_info_s *removed_duplication_info_ptr;
-
     /* Loop all stored duplication messages in Linked list */
-    ns_list_foreach_v(removed_duplication_info_ptr, &global_linked_list_duplication_msgs)
+    ns_list_foreach(coap_duplication_info_s, removed_duplication_info_ptr, &global_linked_list_duplication_msgs)
     {
         /* If message's Address is same than is searched */
         if (0 == memcmp(addr_ptr, removed_duplication_info_ptr->addr_ptr, removed_duplication_info_ptr->addr_len))
@@ -1616,10 +1603,8 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(sn_nsdl_addr_s 
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length)
 {
-    coap_blockwise_payload_s *stored_payload_info_ptr;
-
     /* Loop all stored blockwise payloads in Linked list */
-    ns_list_foreach_v(stored_payload_info_ptr, &global_linked_list_blockwise_received_payloads)
+    ns_list_foreach(coap_blockwise_payload_s, stored_payload_info_ptr, &global_linked_list_blockwise_received_payloads)
     {
         /* If payload's Source address is same than is searched */
         if (0 == memcmp(src_addr_ptr->addr_ptr, stored_payload_info_ptr->addr_ptr, src_addr_ptr->addr_len))
@@ -1695,11 +1680,10 @@ static void sn_coap_protocol_linked_list_blockwise_payload_remove(coap_blockwise
 SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 static uint16_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(sn_nsdl_addr_s *src_addr_ptr)
 {
-    coap_blockwise_payload_s *searched_payload_info_ptr;
     uint16_t                  ret_whole_payload_len           = 0;
 
     /* Loop all stored blockwise payloads in Linked list */
-    ns_list_foreach_v(searched_payload_info_ptr, &global_linked_list_blockwise_received_payloads)
+    ns_list_foreach(coap_blockwise_payload_s, searched_payload_info_ptr, &global_linked_list_blockwise_received_payloads)
     {
         /* If payload's Source address is same than is searched */
         if (0 == memcmp(src_addr_ptr->addr_ptr, searched_payload_info_ptr->addr_ptr, src_addr_ptr->addr_len))
@@ -1839,9 +1823,8 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *fre
 static uint16_t sn_coap_count_linked_list_size(const coap_send_msg_list_t *linked_list_ptr)
 {
 	uint16_t total_size = 0;
-	coap_send_msg_s *stored_msg_ptr;
 
-	ns_list_foreach_v(stored_msg_ptr, linked_list_ptr)
+	ns_list_foreach(coap_send_msg_s, stored_msg_ptr, linked_list_ptr)
 	{
 		if(stored_msg_ptr->send_msg_ptr)
 			total_size += stored_msg_ptr->send_msg_ptr->packet_len;
@@ -1880,13 +1863,16 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 		{
 			if(*(received_coap_msg_ptr->options_list_ptr->block1_ptr + (received_coap_msg_ptr->options_list_ptr->block1_len - 1)) & 0x08)
 			{
-				coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr;
+				coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr = NULL;
 
 				/* Get  */
-				ns_list_foreach_v(stored_blockwise_msg_temp_ptr, &global_linked_list_blockwise_sent_msgs)
+				ns_list_foreach(coap_blockwise_msg_s, msg, &global_linked_list_blockwise_sent_msgs)
 				{
-					if (received_coap_msg_ptr->msg_id == stored_blockwise_msg_temp_ptr->coap_msg_ptr->msg_id)
+					if (received_coap_msg_ptr->msg_id == msg->coap_msg_ptr->msg_id)
+					{
+						stored_blockwise_msg_temp_ptr = msg;
 						break;
+					}
 				}
 
 				if(stored_blockwise_msg_temp_ptr)
@@ -2166,7 +2152,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 		if(received_coap_msg_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE)
 		{
 			uint32_t block_number = 0;
-			coap_blockwise_msg_s     *previous_blockwise_msg_ptr = 0;
 
             /* Store blockwise payload to Linked list */
 			//todo: add block number to stored values - just to make sure all packets are in order
@@ -2175,13 +2160,18 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_
 			/* If not last block (more value is set) */
             if(*(received_coap_msg_ptr->options_list_ptr->block2_ptr + (received_coap_msg_ptr->options_list_ptr->block2_len - 1)) & 0x08)
             {
+				coap_blockwise_msg_s *previous_blockwise_msg_ptr = NULL;
+
             	//build and send ack
             	received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING;
 
-				ns_list_foreach_v(previous_blockwise_msg_ptr, &global_linked_list_blockwise_sent_msgs)
+				ns_list_foreach(coap_blockwise_msg_s, msg, &global_linked_list_blockwise_sent_msgs)
 				{
-					if (received_coap_msg_ptr->msg_id == previous_blockwise_msg_ptr->coap_msg_ptr->msg_id)
+					if (received_coap_msg_ptr->msg_id == msg->coap_msg_ptr->msg_id)
+					{
+						previous_blockwise_msg_ptr = msg;
 						break;
+					}
 				}
 
             	if(!previous_blockwise_msg_ptr || !previous_blockwise_msg_ptr->coap_msg_ptr)

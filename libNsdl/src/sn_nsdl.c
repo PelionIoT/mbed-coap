@@ -1567,13 +1567,12 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
 static int8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *address_ptr)
 {
 	int8_t 						status = 0;
-	sn_nsdl_sent_messages_s 	*sent_message_temp_ptr;
 
 	if((coap_packet_ptr == 0) || (address_ptr == 0))
 		return -1;
 
 	/* If we wait for a response to some message.. */
-	ns_list_foreach_v(sent_message_temp_ptr, &message_list)
+	ns_list_foreach(sn_nsdl_sent_messages_s, sent_message_temp_ptr, &message_list)
 	{
 		if(sent_message_temp_ptr->msg_id_number == coap_packet_ptr->msg_id)
 		{
