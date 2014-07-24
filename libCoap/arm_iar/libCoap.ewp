@@ -2050,7 +2050,7 @@
         <debug>1</debug>
         <option>
           <name>CCDefines</name>
-          <state></state>
+          <state>REAL_EMBEDDED</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
