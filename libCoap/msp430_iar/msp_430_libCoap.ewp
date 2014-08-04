@@ -97,7 +97,7 @@
         </option>
         <option>
           <name>OGChipSelectMenu</name>
-          <state>MSP430F5438A	MSP430F5438A</state>
+          <state>MSP430F5359	MSP430F5359</state>
         </option>
         <option>
           <name>GStackHeapOverride</name>
@@ -241,7 +241,7 @@
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IProcessor</name>
@@ -466,7 +466,7 @@
         </option>
         <option>
           <name>ACaseSensitivity</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>MacroChars</name>

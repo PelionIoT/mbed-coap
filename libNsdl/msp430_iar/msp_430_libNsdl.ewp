@@ -1014,7 +1014,7 @@
         </option>
         <option>
           <name>GOutputBinary</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>AssemblerOnly</name>
@@ -1027,19 +1027,19 @@
         <option>
           <name>GRuntimeLibSelect</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>RTDescription</name>
-          <state></state>
+          <state>To be used with the full configuration of the C/EC++ runtime library. Full locale interface, C locale, file descriptor support, multibytes in printf and scanf, and hex floats in strtod.</state>
         </option>
         <option>
           <name>RTConfigPath</name>
-          <state>xxx.h</state>
+          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430xsff.h</state>
         </option>
         <option>
           <name>RTLibraryPath</name>
-          <state>xxx.r43</state>
+          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430xsff.r43</state>
         </option>
         <option>
           <name>Input variant</name>
@@ -1048,7 +1048,7 @@
         </option>
         <option>
           <name>Input description</name>
-          <state></state>
+          <state>Automatic choice of formatter.</state>
         </option>
         <option>
           <name>Output variant</name>
@@ -1057,12 +1057,12 @@
         </option>
         <option>
           <name>Output description</name>
-          <state></state>
+          <state>Automatic choice of formatter.</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>OGCore</name>
@@ -1078,7 +1078,7 @@
         </option>
         <option>
           <name>OGChipSelectMenu</name>
-          <state></state>
+          <state>MSP430F5359	MSP430F5359</state>
         </option>
         <option>
           <name>GStackHeapOverride</name>
@@ -1086,11 +1086,11 @@
         </option>
         <option>
           <name>GStackSize2</name>
-          <state>###Uninitialized###</state>
+          <state>160</state>
         </option>
         <option>
           <name>GHeapSize2</name>
-          <state>###Uninitialized###</state>
+          <state>160</state>
         </option>
         <option>
           <name>RadioDataModelType</name>
@@ -1098,7 +1098,7 @@
         </option>
         <option>
           <name>GHeap20Size</name>
-          <state>###Uninitialized###</state>
+          <state>80</state>
         </option>
         <option>
           <name>GeneralMisraRules98</name>
@@ -1145,7 +1145,7 @@
         <debug>0</debug>
         <option>
           <name>CCDefines</name>
-          <state>NDEBUG</state>
+          <state>REG_TEMPLATE</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1258,7 +1258,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state></state>
+          <state>$FILE_BNAME$.r43</state>
         </option>
         <option>
           <name>CCLibConfigHeader</name>
@@ -1290,7 +1290,7 @@
         </option>
         <option>
           <name>CCRadioModuleType</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCRadioModuleTypeSlave</name>
@@ -1298,7 +1298,8 @@
         </option>
         <option>
           <name>newCCIncludePaths</name>
-          <state></state>
+          <state>$PROJ_DIR$\..\src\Include</state>
+          <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1335,7 +1336,7 @@
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CInput</name>
@@ -1563,7 +1564,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state></state>
+          <state>$FILE_BNAME$.r43</state>
         </option>
         <option>
           <name>AMultibyteSupport</name>
@@ -1633,7 +1634,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state></state>
+          <state>msp_430_libNsdl.txt</state>
         </option>
         <option>
           <name>OutputFormat</name>
@@ -1647,7 +1648,7 @@
         </option>
         <option>
           <name>SecondaryOutputFile</name>
-          <state></state>
+          <state>(None for the selected format)</state>
         </option>
         <option>
           <name>XDefines</name>
@@ -1687,7 +1688,7 @@
         </option>
         <option>
           <name>XIncludes</name>
-          <state>###Uninitialized###</state>
+          <state>$TOOLKIT_DIR$\LIB\</state>
         </option>
         <option>
           <name>ModuleStatus</name>
@@ -1699,7 +1700,7 @@
         </option>
         <option>
           <name>XclFile</name>
-          <state>lnk0t.xcl</state>
+          <state>$TOOLKIT_DIR$\CONFIG\lnk430F5359.xcl</state>
         </option>
         <option>
           <name>XclFileSlave</name>
@@ -1787,7 +1788,7 @@
         </option>
         <option>
           <name>xcProgramEntryLabel</name>
-          <state></state>
+          <state>__program_start</state>
         </option>
         <option>
           <name>DebugInformation</name>
@@ -1827,7 +1828,7 @@
         </option>
         <option>
           <name>ExtraOutputFile</name>
-          <state></state>
+          <state>msp_430_libNsdl.a43</state>
         </option>
         <option>
           <name>ExtraOutputFormat</name>
@@ -1923,7 +1924,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state></state>
+          <state>msp_430_libNsdl.r43</state>
         </option>
       </data>
     </settings>
