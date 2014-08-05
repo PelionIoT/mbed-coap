@@ -10,10 +10,6 @@
 #include "sn_linked_list.h"
 #include "sn_nsdl.h"
 
-#if(SN_NSDL_HAVE_HTTPS_CAPABILITY&&SN_NSDL_HAVE_HTTP_CAPABILITY)
-#include "sn_http.h"
-#endif
-
 #if(SN_NSDL_HAVE_COAP_CAPABILITY)
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
@@ -499,59 +495,7 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 	sn_coap_msg_code_e 		status 				= COAP_MSG_CODE_EMPTY;
 	sn_coap_hdr_s 			*response_message_hdr_ptr = NULL;
 
-#if 0
-	sn_coap_hdr_s 			*coap_packet_ptr 	= NULL;
-	/* Parse CoAP packet */
-	coap_packet_ptr = sn_coap_protocol_parse(src_addr_ptr, packet_len, packet);
-
-	/* Check if parsing was successfull */
-	if(coap_packet_ptr == (sn_coap_hdr_s *)NULL)
-		return SN_NSDL_FAILURE;
-
-	/* Check, if coap itself sends response, or block receiving is ongoing... */
-	if(coap_packet_ptr->coap_status != COAP_STATUS_OK && coap_packet_ptr->coap_status != COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED)
-	{
-		sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
-		return SN_NSDL_SUCCESS;
-	}
-
-	/* If proxy options added, return not supported */
-	if (coap_packet_ptr->options_list_ptr)
-	{
-		if(coap_packet_ptr->options_list_ptr->proxy_uri_len)
-		{
-			status = COAP_MSG_CODE_RESPONSE_PROXYING_NOT_SUPPORTED;
-		}
-
-	}
-
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * */
-	/* If message is response message, call RX callback  */
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-	if((coap_packet_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE && status == COAP_MSG_CODE_EMPTY) ||
-			(coap_packet_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT && status == COAP_MSG_CODE_EMPTY))
-	{
-		int8_t retval = sn_grs_rx_callback(coap_packet_ptr, src_addr_ptr);
-		if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
-		{
-			sn_grs_free(coap_packet_ptr->payload_ptr);
-			coap_packet_ptr->payload_ptr = 0;
-		}
-		sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
-		return retval;
-	}
-
-
-
-	/* * * * * * * * * * * * * * * */
-	/* Other messages are for GRS  */
-	/* * * * * * * * * * * * * * * */
-
-	else if(coap_packet_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE && status == COAP_MSG_CODE_EMPTY)
-#else
 	if(coap_packet_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE)
-#endif
 	{
 		/* Check if .well-known/core */
 		if(coap_packet_ptr->uri_path_len == WELLKNOWN_PATH_LEN && sn_grs_compare_code(coap_packet_ptr->uri_path_ptr, (const uint8_t*)WELLKNOWN_PATH, WELLKNOWN_PATH_LEN) == 0)

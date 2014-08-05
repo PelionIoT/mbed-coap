@@ -96,9 +96,6 @@ SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t 	coap_con_type_parameter[]	= COAP_CON_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t 	event_path_parameter[]		= EVENT_PATH;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t bs_uri[] 					= BS_PATH;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
@@ -648,49 +645,6 @@ int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 	return SN_NSDL_SUCCESS;
 }
 
-int8_t sn_nsdl_send_eventing_message (uint8_t *event_name_ptr, uint16_t event_name_len, uint8_t *message_body_ptr, uint16_t message_body_len)
-{
-	sn_coap_hdr_s 	*eventing_message_ptr;
-	int8_t			status = 0;
-
-	/* Allocate and initialize memory for header struct */
-	eventing_message_ptr = sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
-	if(eventing_message_ptr == NULL)
-		return SN_NSDL_FAILURE;
-
-	memset(eventing_message_ptr, 0, sizeof(sn_coap_hdr_s));
-
-	/* Fill header */
-	eventing_message_ptr->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
-	eventing_message_ptr->msg_code = COAP_MSG_CODE_REQUEST_POST;
-
-	/* Fill uri path option */
-	eventing_message_ptr->uri_path_len = sizeof(event_path_parameter) + event_name_len;
-	eventing_message_ptr->uri_path_ptr = sn_nsdl_alloc(eventing_message_ptr->uri_path_len);
-
-	if(!eventing_message_ptr->uri_path_ptr)
-	{
-		sn_coap_parser_release_allocated_coap_msg_mem(eventing_message_ptr);
-		return SN_NSDL_FAILURE;
-	}
-
-	memcpy(eventing_message_ptr->uri_path_ptr, event_path_parameter, sizeof(event_path_parameter));
-	memcpy(eventing_message_ptr->uri_path_ptr + sizeof(event_path_parameter), event_name_ptr, event_name_len);
-
-	/* Fill payload */
-	eventing_message_ptr->payload_len = message_body_len;
-	eventing_message_ptr->payload_ptr = message_body_ptr;
-
-	/* Send coap message */
-	status = sn_nsdl_internal_coap_send(eventing_message_ptr, nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_EVENT);
-
-	eventing_message_ptr->payload_ptr = NULL;
-
-	sn_coap_parser_release_allocated_coap_msg_mem(eventing_message_ptr);
-
-	return status;
-}
-
 void sn_nsdl_nsp_lost(void)
 {
 	sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_NOT_REGISTERED;
@@ -699,7 +653,6 @@ void sn_nsdl_nsp_lost(void)
 
 int8_t sn_nsdl_is_ep_registered(void)
 {
-
 	return sn_nsdl_endpoint_registered;
 }
 
@@ -995,16 +948,15 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 						return SN_NSDL_SUCCESS;
 					}
 				}
-				/* Todo: add success TLV parsing response & returning */
+				/* Success TLV parsing response */
 				else
 				{
-					coap_response_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_ACCEPTABLE);
+					coap_response_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CREATED);
 					if(coap_response_ptr)
 					{
 						sn_nsdl_send_coap_message(src_ptr, coap_response_ptr);
 						sn_coap_parser_release_allocated_coap_msg_mem(coap_response_ptr);
 						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
-						return SN_NSDL_SUCCESS;
 					}
 				}
 
@@ -1012,6 +964,8 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 			/* Non - TLV */
 			else if(*coap_packet_ptr->content_type_ptr == 97)
 			{
+				sn_grs_process_coap(coap_packet_ptr, src_ptr);
+
 				/* Security mode */
 				if(*(coap_packet_ptr->uri_path_ptr + (coap_packet_ptr->uri_path_len - 1)) == '2')
 				{
@@ -1040,6 +994,7 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 			}
 
 		}
+		return SN_NSDL_SUCCESS;
 	}
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -2078,6 +2033,18 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 	uint8_t type = 0;
 	uint16_t identifier = 0;
 	uint32_t length = 0;
+	uint8_t path_temp[5] = "0/0/x";
+
+	sn_nsdl_resource_info_s resource_temp = {
+			.resource_parameters_ptr = 0,
+			.mode = SN_GRS_STATIC,
+			.pathlen = 5,
+			.path = path_temp,
+			.resourcelen = 0,
+			.resource = 0,
+			.access = 0x0f, /* All allowed */
+			.sn_grs_dyn_res_callback = 0
+	};
 
 	while((temp_ptr - data_ptr) < data_len)
 	{
@@ -2126,6 +2093,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 		if((type & 0xC0) == 0x00)
 		{
 			/* 00 = Object Instance in which case the Value contains one or more Resource TLVs */
+			/* Not implemented, return failure */
 		}
 		else if((type & 0xC0) == 0xC0)
 		{
@@ -2133,31 +2101,58 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 			switch(identifier)
 			{
 			case 0:
-				//printf("LWM2M Server URI\n");
+				/* Resolve LWM2M Server URI */
+				sn_nsdl_resolve_lwm2m_address(temp_ptr, length);
+				path_temp[4] = '0';
+				resource_temp.resource = temp_ptr;
+				resource_temp.resourcelen = length;
+				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+					return SN_NSDL_FAILURE;
 				break;
 			case 2:
-				//printf("Security Mode\n");
+				/* Resolve security Mode */
+				nsp_address_ptr->omalw_server_security = (omalw_server_security_t)sn_nsdl_atoi(temp_ptr, length);
+				path_temp[4] = '2';
+				resource_temp.resource = temp_ptr;
+				resource_temp.resourcelen = length;
+				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+					return SN_NSDL_FAILURE;
+
 				break;
 			case 3:
-				//printf("Public Key or Identity\n");
+				/* Public Key or Identity */
+				path_temp[4] = '3';
+				resource_temp.resource = temp_ptr;
+				resource_temp.resourcelen = length;
+				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+					return SN_NSDL_FAILURE;
 				break;
 			case 4:
-				//printf("Server Public Key or Identity\n");
+				/* Server Public Key or Identity */;
+				path_temp[4] = '4';
+				resource_temp.resource = temp_ptr;
+				resource_temp.resourcelen = length;
+				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+					return SN_NSDL_FAILURE;
+
 				break;
 			case 5:
-				//printf("Secret Key\n");
+				/* Secret Key */
+				path_temp[4] = '5';
+				resource_temp.resource = temp_ptr;
+				resource_temp.resourcelen = length;
+				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+					return SN_NSDL_FAILURE;
+
 				break;
 			default:
-				//printf("default - %d\n", identifier);
 				break;
 			}
 
+			/* Move pointer to next TLV message */
 			temp_ptr += length;
 		}
-
-
 	}
 
-	return SN_NSDL_FAILURE;
-//	return SN_NSDL_SUCCESS;
+	return SN_NSDL_SUCCESS;
 }
