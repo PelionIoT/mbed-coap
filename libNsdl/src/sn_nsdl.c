@@ -21,40 +21,53 @@
 #define RESOURCE_DIR_LEN				2
 #define RESOURCE_DIR_PATH				{'r','d'}
 
+/* * Endpoint parameter defines * */
+
+/* Endpoint name. A unique name for the registering node in a domain.  */
 #define EP_NAME_PARAMETERS_LEN			3
 #define EP_NAME_PARAMETERS				{'e','p','='}
 
-#define RT_PARAMETER_LEN				3
-#define RT_PARAMETER					{'r','t','='}
+/* Endpoint type */
+#define ET_PARAMETER_LEN			3
+#define ET_PARAMETER				{'e','t','='}
 
-#define DOMAIN_PARAMETER_LEN			2
-#define DOMAIN_PARAMETER				{'d','='}
-
-#define IF_PARAMETER_LEN				3
-#define IF_PARAMETER					{'i','f','='}
-
-#define CON_PARAMETER_LEN				4
-#define CON_PARAMETER					{'c','o','n','='}
-
+/* Lifetime. Number of seconds that this registration will be valid for. Must be updated within this time, or will be removed. */
 #define LT_PARAMETER_LEN				3
 #define LT_PARAMETER					{'l','t','='}
 
+/* Domain name. If this parameter is missing, a default domain is assumed. */
+#define DOMAIN_PARAMETER_LEN			2
+#define DOMAIN_PARAMETER				{'d','='}
+
+/* * Resource parameters * */
+
+/* Resource type. Only once for registration */
+#define RT_PARAMETER_LEN				3
+#define RT_PARAMETER					{'r','t','='}
+
+/* Interface description. Only once */
+#define IF_PARAMETER_LEN				3
+#define IF_PARAMETER					{'i','f','='}
+
+/* Observable */
 #define OBS_PARAMETER_LEN				3
 #define OBS_PARAMETER					{'o','b','s'}
 
+/* Auto-observable */
 #define AOBS_PARAMETER_LEN				8
 #define AOBS_PARAMETER					{'a','o','b','s',';','i','d','='}
 
+/* CoAP content type */
 #define COAP_CON_PARAMETER_LEN			3
 #define COAP_CON_PARAMETER				{'c','t','='}
 
-#define EVENT_PATH_LEN					6
-#define EVENT_PATH						{'e','v','e','n','t','/'}
+/* * OMA BS parameters * */
 
 #define BS_PATH							{'b','s'}
 
 #define BS_EP_PARAMETER_LEN				3
 #define BS_EP_PARAMETER					{'e','p','='}
+
 
 #define SN_NSDL_EP_REGISTER_MESSAGE		1
 #define SN_NSDL_EP_UPDATE_MESSAGE		2
@@ -100,6 +113,9 @@ static uint8_t bs_uri[] 					= BS_PATH;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t bs_ep_name[] 					= BS_EP_PARAMETER;
+
+SN_NSDL_CONST_MEMORY_ATTRIBUTE
+static uint8_t et_parameter[] 					= ET_PARAMETER;
 
 
 /* Global function pointers */
@@ -1417,7 +1433,7 @@ static uint8_t sn_nsdl_calculate_uri_query_option_len(sn_nsdl_ep_parameters_s *e
 	if((endpoint_info_ptr->type_len != 0) && (endpoint_info_ptr->type_ptr != 0))
 	{
 		return_value+=endpoint_info_ptr->type_len;
-		return_value += RT_PARAMETER_LEN; 		//et=
+		return_value += ET_PARAMETER_LEN; 		//et=
 		number_of_parameters++;
 	}
 
@@ -1490,8 +1506,8 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
 		if(temp_ptr != source_msg_ptr->options_list_ptr->uri_query_ptr)
 			*temp_ptr++ = '&';
 
-		memcpy(temp_ptr, resource_type_parameter, sizeof(resource_type_parameter));
-		temp_ptr += RT_PARAMETER_LEN;
+		memcpy(temp_ptr, et_parameter, sizeof(et_parameter));
+		temp_ptr += ET_PARAMETER_LEN;
 		memcpy(temp_ptr, parameter_ptr->type_ptr, parameter_ptr->type_len);
 		temp_ptr += parameter_ptr->type_len;
 	}
