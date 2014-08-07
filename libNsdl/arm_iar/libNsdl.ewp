@@ -3774,9 +3774,6 @@
     <name>$PROJ_DIR$\..\src\sn_grs.c</name>
   </file>
   <file>
-    <name>$PROJ_DIR$\..\src\sn_linked_list.c</name>
-  </file>
-  <file>
     <name>$PROJ_DIR$\..\src\sn_nsdl.c</name>
   </file>
 </project>

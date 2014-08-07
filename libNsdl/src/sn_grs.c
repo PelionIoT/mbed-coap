@@ -7,7 +7,6 @@
  *
  */
 #include "nsdl_types.h"
-#include "sn_linked_list.h"
 #include "sn_nsdl.h"
 
 #if(SN_NSDL_HAVE_COAP_CAPABILITY)
@@ -29,7 +28,7 @@
 static sn_nsdl_resource_info_s *	sn_grs_search_resource				(uint16_t pathlen, uint8_t *path, uint8_t search_method);
 static int8_t 						sn_grs_resource_info_free			(sn_nsdl_resource_info_s *resource_ptr);
 static uint8_t *					sn_grs_convert_uri					(uint16_t *uri_len, uint8_t *uri_ptr);
-static int8_t 						sn_grs_add_resource_to_list			(sn_linked_list_t *list_ptr, sn_nsdl_resource_info_s *resource_ptr);
+static int8_t 						sn_grs_add_resource_to_list			(sn_nsdl_resource_info_s *resource_ptr);
 #ifdef CC8051_PLAT
 void 								copy_code_nsdl						(uint8_t * ptr, prog_uint8_t * code_ptr, uint16_t len);
 #endif
@@ -40,7 +39,9 @@ extern int8_t 						sn_nsdl_build_registration_body		(sn_coap_hdr_s *message_ptr
 
 
 /* Local global variables */
-SN_MEM_ATTR_GRS_DECL static sn_linked_list_t *resource_root_list = NULL;
+SN_MEM_ATTR_GRS_DECL static NS_LIST_DEFINE(resource_root_list, sn_nsdl_resource_info_s, link);
+SN_MEM_ATTR_GRS_DECL static const sn_nsdl_resource_info_s *sn_grs_current_resource;
+SN_MEM_ATTR_GRS_DECL static uint16_t resource_root_count;
 
 
 /* Local global function pointers */
@@ -56,57 +57,13 @@ static int8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
  */
 SN_MEM_ATTR_GRS_FUNC extern int8_t sn_grs_destroy(void)
 {
-	if(resource_root_list)
+	ns_list_foreach_safe(sn_nsdl_resource_info_s, tmp, &resource_root_list)
 	{
-		uint16_t size =  sn_linked_list_count_nodes(resource_root_list);
-		uint16_t i = 0;
-		sn_nsdl_resource_info_s*tmp;
-
-		for(i=0;i<size;i++)
-		{
-			tmp = sn_linked_list_get_first_node(resource_root_list);
-
-			if(tmp)
-			{
-				if(tmp->resource_parameters_ptr->resource_type_ptr)
-				{
-					sn_grs_free(tmp->resource_parameters_ptr->resource_type_ptr);
-					tmp->resource_parameters_ptr->resource_type_ptr = 0;
-				}
-
-				if(tmp->resource_parameters_ptr->interface_description_ptr)
-				{
-					sn_grs_free(tmp->resource_parameters_ptr->interface_description_ptr);
-					tmp->resource_parameters_ptr->interface_description_ptr = 0;
-				}
-
-				if(tmp->resource_parameters_ptr)
-				{
-					sn_grs_free(tmp->resource_parameters_ptr);
-					tmp->resource_parameters_ptr = 0;
-				}
-				if(tmp->path)
-				{
-					sn_grs_free(tmp->path);
-					tmp->path = 0;
-				}
-				if(tmp->resource)
-				{
-					sn_grs_free(tmp->resource);
-					tmp->resource = 0;
-				}
-				sn_linked_list_remove_current_node(resource_root_list);
-				sn_grs_free(tmp);
-				tmp = 0;
-			}
-		}
-
-		if(!sn_linked_list_count_nodes(resource_root_list))
-		{
-			sn_linked_list_free(resource_root_list);
-		}
-
+		ns_list_remove(&resource_root_list, tmp);
+		--resource_root_count;
+		sn_grs_resource_info_free(tmp);
 	}
+
 	return 0;
 }
 
@@ -132,54 +89,40 @@ extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , u
 		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory)
 {
 	/* If application tries to init GRS more than once.. */
-	if(!resource_root_list)
+	if (sn_grs_alloc)
+		return SN_NSDL_FAILURE;
+
+	/* if sn_memory struct is NULL or , return failure */
+	if(!sn_memory)
+		return SN_NSDL_FAILURE;
+
+	if (sn_memory->sn_nsdl_alloc == NULL ||
+		sn_memory->sn_nsdl_free == NULL ||
+		sn_grs_tx_callback_ptr == NULL)
 	{
-		/* if sn_memory struct is NULL or , return failure */
-		if(!sn_memory)
-			return SN_NSDL_FAILURE;
-
-		if (sn_memory->sn_nsdl_alloc == NULL ||
-			sn_memory->sn_nsdl_free == NULL ||
-			sn_grs_tx_callback_ptr == NULL)
-		{
-			/* There was a null pointer as a parameter */
-			return SN_NSDL_FAILURE;
-		}
-
-		/* Alloc and free - function pointers  */
-		sn_grs_alloc = sn_memory->sn_nsdl_alloc;
-		sn_grs_free = sn_memory->sn_nsdl_free;
-
-		/* TX callback function pointer */
-		sn_grs_tx_callback = sn_grs_tx_callback_ptr;
-		sn_grs_rx_callback = sn_grs_rx_callback_ptr;
-
-		/* Initialize linked list */
-		sn_linked_list_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free);
-
-
-		/* Initialize list for resources */
-		resource_root_list = sn_linked_list_create();
-		if (!resource_root_list)
-		{
-			return SN_NSDL_FAILURE;
-		}
-
-		/* Initialize CoAP protocol library, if implemented to library */
-#if	SN_NSDL_HAVE_COAP_CAPABILITY
-		sn_coap_builder_and_parser_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free);
-
-		if(sn_coap_protocol_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free, sn_grs_tx_callback, sn_grs_rx_callback))
-		{
-			sn_linked_list_free(resource_root_list);
-			return SN_NSDL_FAILURE;
-		}
-#endif
-
-		return SN_NSDL_SUCCESS;
+		/* There was a null pointer as a parameter */
+		return SN_NSDL_FAILURE;
 	}
 
-	return SN_NSDL_FAILURE;
+	/* Alloc and free - function pointers  */
+	sn_grs_alloc = sn_memory->sn_nsdl_alloc;
+	sn_grs_free = sn_memory->sn_nsdl_free;
+
+	/* TX callback function pointer */
+	sn_grs_tx_callback = sn_grs_tx_callback_ptr;
+	sn_grs_rx_callback = sn_grs_rx_callback_ptr;
+
+	/* Initialize CoAP protocol library, if implemented to library */
+#if	SN_NSDL_HAVE_COAP_CAPABILITY
+	sn_coap_builder_and_parser_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free);
+
+	if(sn_coap_protocol_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free, sn_grs_tx_callback, sn_grs_rx_callback))
+	{
+		return SN_NSDL_FAILURE;
+	}
+#endif
+
+	return SN_NSDL_SUCCESS;
 }
 
 /**
@@ -222,20 +165,16 @@ extern int8_t sn_grs_exec(uint32_t time)
 SN_MEM_ATTR_GRS_FUNC
 extern sn_grs_resource_list_s *sn_grs_list_resource(uint16_t pathlen, uint8_t *path)
 {
-	/* Local variables */
-	uint8_t i = 0;
-	sn_grs_resource_list_s 	*grs_resource_list_ptr 	= NULL;
-	sn_nsdl_resource_info_s 	*grs_resource_ptr 		= NULL;
+	sn_grs_resource_list_s *grs_resource_list_ptr = NULL;
 
 	/* Allocate memory for the resource list to be filled */
-	grs_resource_list_ptr = (sn_grs_resource_list_s *)sn_grs_alloc(sizeof(sn_grs_resource_list_s));
+	grs_resource_list_ptr = sn_grs_alloc(sizeof(sn_grs_resource_list_s));
 	if(!grs_resource_list_ptr)
-	{
-		return (sn_grs_resource_list_s *)NULL;
-	}
+		goto fail;
 
 	/* Count resources to the resource list struct */
-	grs_resource_list_ptr->res_count = sn_linked_list_count_nodes(resource_root_list);
+	grs_resource_list_ptr->res_count = resource_root_count;
+	grs_resource_list_ptr->res = NULL;
 
 	/**************************************/
 	/* Fill resource structs to the table */
@@ -244,51 +183,87 @@ extern sn_grs_resource_list_s *sn_grs_list_resource(uint16_t pathlen, uint8_t *p
 	/* If resources in list */
 	if(grs_resource_list_ptr->res_count)
 	{
+		int i;
+
 		/* Allocate memory for resources */
-		grs_resource_list_ptr->res = sn_grs_alloc(grs_resource_list_ptr->res_count*(sizeof(sn_grs_resource_s)));
-		if(!grs_resource_list_ptr->res)
+		grs_resource_list_ptr->res = sn_grs_alloc(grs_resource_list_ptr->res_count * sizeof(sn_grs_resource_s));
+		if (!grs_resource_list_ptr->res)
+			goto fail;
+
+		/* Initialise the pointers to NULL to permit easy cleanup */
+		for (i = 0; i < grs_resource_list_ptr->res_count; i++)
 		{
-			sn_grs_free(grs_resource_list_ptr);
-			return (sn_grs_resource_list_s *)NULL;
+			grs_resource_list_ptr->res[i].path = NULL;
+			grs_resource_list_ptr->res[i].pathlen = 0;
 		}
 
-		/* Get first resource */
-		grs_resource_ptr = sn_linked_list_get_first_node(resource_root_list);
-
-		for(i = 0; i < grs_resource_list_ptr->res_count; i++)
+		i = 0;
+		ns_list_foreach(sn_nsdl_resource_info_s, grs_resource_ptr, &resource_root_list)
 		{
 			/* Copy pathlen to resource list */
 			grs_resource_list_ptr->res[i].pathlen = grs_resource_ptr->pathlen;
 
 			/* Allocate memory for path string */
 			grs_resource_list_ptr->res[i].path = sn_grs_alloc(grs_resource_list_ptr->res[i].pathlen);
-			if(!grs_resource_list_ptr->res[i].path)
-				//todo: free struct
-				return (sn_grs_resource_list_s *)NULL;
+			if (!grs_resource_list_ptr->res[i].path)
+				goto fail;
 
-			/* Move pathstring to resource list */
-			memmove(grs_resource_list_ptr->res[i].path,grs_resource_ptr->path, grs_resource_ptr->pathlen);
+			/* Copy pathstring to resource list */
+			memcpy(grs_resource_list_ptr->res[i].path, grs_resource_ptr->path, grs_resource_ptr->pathlen);
 
-			/* move to next node */
-			grs_resource_ptr = sn_linked_list_get_next_node(resource_root_list);
+			i++;
 		}
 	}
 	return grs_resource_list_ptr;
+
+fail:
+	sn_grs_free_resource_list(grs_resource_list_ptr);
+	return NULL;
+}
+
+/**
+ * \fn extern void sn_grs_free_resource_list(sn_grs_resource_list_s *list)
+ *
+ * \brief Resource list function
+ *
+ * \param list		Pointer to resource list to free - may be NULL.
+ */
+SN_MEM_ATTR_GRS_FUNC
+extern void sn_grs_free_resource_list(sn_grs_resource_list_s *list)
+{
+	if (!list)
+		return;
+
+	if (list->res)
+	{
+		for (int i = 0; i < list->res_count; i++)
+		{
+			if (list->res[i].path)
+			{
+				sn_grs_free(list->res[i].path);
+				list->res[i].path = NULL;
+			}
+		}
+		sn_grs_free(list->res);
+		list->res = NULL;
+	}
+
+	sn_grs_free(list);
 }
 
 SN_MEM_ATTR_GRS_FUNC
-extern sn_nsdl_resource_info_s *sn_grs_get_first_resource(void)
+extern const sn_nsdl_resource_info_s *sn_grs_get_first_resource(void)
 {
 
-	return sn_linked_list_get_first_node(resource_root_list);
+	return sn_grs_current_resource = ns_list_get_first(&resource_root_list);
 
 }
 
 SN_MEM_ATTR_GRS_FUNC
-extern sn_nsdl_resource_info_s *sn_grs_get_next_resource(void)
+extern const sn_nsdl_resource_info_s *sn_grs_get_next_resource(void)
 {
 
-	return sn_linked_list_get_next_node(resource_root_list);
+	return sn_grs_current_resource = ns_list_get_next(&resource_root_list, sn_grs_current_resource);
 
 }
 
@@ -341,14 +316,15 @@ extern int8_t sn_grs_delete_resource(uint16_t pathlen, uint8_t *path_ptr)
 	resource_temp = sn_grs_search_resource(pathlen, path_ptr, SN_GRS_SEARCH_METHOD);
 
 	/* If not found */
-	if(resource_temp == (sn_nsdl_resource_info_s *)NULL)
+	if(resource_temp == NULL)
 		return SN_NSDL_FAILURE;
 
 	/* If found, delete it and delete also subresources, if there is any */
-	while (resource_temp != (sn_nsdl_resource_info_s *)NULL)
+	do
 	{
 		/* Remove from list */
-		resource_temp = (sn_nsdl_resource_info_s *)sn_linked_list_remove_current_node(resource_root_list);
+		ns_list_remove(&resource_root_list, resource_temp);
+		--resource_root_count;
 
 		/* Free */
 		sn_grs_resource_info_free(resource_temp);
@@ -356,6 +332,8 @@ extern int8_t sn_grs_delete_resource(uint16_t pathlen, uint8_t *path_ptr)
 		/* Search for subresources */
 		resource_temp = sn_grs_search_resource(pathlen, path_ptr, SN_GRS_DELETE_METHOD);
 	}
+	while (resource_temp != NULL);
+
 	return SN_NSDL_SUCCESS;
 }
 
@@ -460,7 +438,7 @@ extern int8_t sn_grs_create_resource(sn_nsdl_resource_info_s *res)
 	}
 
 	/* Create resource */
-	if(sn_grs_add_resource_to_list(resource_root_list, res) == SN_NSDL_SUCCESS)
+	if(sn_grs_add_resource_to_list(res) == SN_NSDL_SUCCESS)
 	{
 		return SN_NSDL_SUCCESS;
 	}
@@ -730,30 +708,16 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 
 							memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
 
-							if(sn_linked_list_add_node(resource_root_list, resource_temp_ptr) == SN_LINKED_LIST_ERROR_NO_ERROR)
+							ns_list_add_to_start(&resource_root_list, resource_temp_ptr);
+							++resource_root_count;
+							if(coap_packet_ptr->content_type_ptr)
 							{
-								if(coap_packet_ptr->content_type_ptr)
+								if(resource_temp_ptr->resource_parameters_ptr)
 								{
-									if(resource_temp_ptr->resource_parameters_ptr)
-									{
-										resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
-									}
+									resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
 								}
-								status = COAP_MSG_CODE_RESPONSE_CREATED;
 							}
-							else
-							{
-								sn_grs_free(resource_temp_ptr->path);
-								resource_temp_ptr->path = 0;
-
-								sn_grs_free(resource_temp_ptr->resource);
-								resource_temp_ptr->resource = 0;
-
-								sn_grs_free(resource_temp_ptr);
-								resource_temp_ptr = 0;
-
-								status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-							}
+							status = COAP_MSG_CODE_RESPONSE_CREATED;
 
 						}
 
@@ -1012,25 +976,22 @@ SN_MEM_ATTR_GRS_FUNC
 static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t *path, uint8_t search_method)
 {
 	/* Local variables */
-	sn_nsdl_resource_info_s 	*resource_search_temp 	= NULL;
 	uint8_t 					*path_temp_ptr 			= NULL;
 
 	/* Check parameters */
 	if(!pathlen || !path)
 	{
-		return (sn_nsdl_resource_info_s *)NULL;;
+		return NULL;
 	}
 
 	/* Remove '/' - marks from the end and beginning */
 	path_temp_ptr = sn_grs_convert_uri(&pathlen, path);
 
-	resource_search_temp = sn_linked_list_get_first_node(resource_root_list);
-
 	/* Searchs exact path */
 	if(search_method == SN_GRS_SEARCH_METHOD)
 	{
 		/* Scan all nodes on list */
-		while(resource_search_temp)
+		ns_list_foreach(sn_nsdl_resource_info_s, resource_search_temp, &resource_root_list)
 		{
 			/* If length equals.. */
 			if(resource_search_temp->pathlen == pathlen)
@@ -1039,8 +1000,6 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 				if(0 == memcmp(resource_search_temp->path, path_temp_ptr, pathlen))
 					return resource_search_temp;
 			}
-			/* If that was not what we needed, get next node.. */
-			resource_search_temp = sn_linked_list_get_next_node(resource_root_list);
 		}
 	}
 
@@ -1048,7 +1007,7 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 	else if(search_method == SN_GRS_DELETE_METHOD)
 	{
 		/* Scan all nodes on list */
-		while(resource_search_temp)
+		ns_list_foreach(sn_nsdl_resource_info_s, resource_search_temp, &resource_root_list)
 		{
 			uint8_t *temp_ptr = resource_search_temp->path;
 
@@ -1056,23 +1015,18 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
 			if((*(temp_ptr+(uint8_t)pathlen) == '/')
 					&& !memcmp(resource_search_temp->path, path_temp_ptr, pathlen))
 				return resource_search_temp;
-
-			/* else get next node */
-			resource_search_temp = sn_linked_list_get_next_node(resource_root_list);
 		}
 	}
 
 	/* If there was not nodes we wanted, return NULL */
-	return (sn_nsdl_resource_info_s *)NULL;
+	return NULL;
 }
 
 
 /**
- * \fn 	static int8_t sn_grs_add_resource_to_list(sn_linked_list_t *list_ptr, sn_grs_resource_info_s *resource_ptr)
+ * \fn 	static int8_t sn_grs_add_resource_to_list(sn_grs_resource_info_s *resource_ptr)
  *
  * \brief Adds given resource to resource list
- *
- *	\param  *list_ptr			Length of the path to be search
  *
  *	\param 	*resource_ptr			Pointer to the path string to be search
  *
@@ -1080,10 +1034,9 @@ static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t
  *
 */
 SN_MEM_ATTR_GRS_FUNC
-static int8_t sn_grs_add_resource_to_list(sn_linked_list_t *list_ptr, sn_nsdl_resource_info_s *resource_ptr)
+static int8_t sn_grs_add_resource_to_list(sn_nsdl_resource_info_s *resource_ptr)
 {
 	/* Local variables */
-	int8_t status = 0;
 	uint8_t *path_start_ptr = NULL;
 	uint16_t path_len = 0;
 	sn_nsdl_resource_info_s *resource_copy_ptr = NULL;
@@ -1094,7 +1047,7 @@ static int8_t sn_grs_add_resource_to_list(sn_linked_list_t *list_ptr, sn_nsdl_re
 		return SN_NSDL_FAILURE;
 	}
 	resource_copy_ptr = sn_grs_alloc(sizeof(sn_nsdl_resource_info_s));
-	if(resource_copy_ptr == (sn_nsdl_resource_info_s*)NULL)
+	if(resource_copy_ptr == NULL)
 	{
 		return SN_NSDL_FAILURE;
 	}
@@ -1209,18 +1162,10 @@ static int8_t sn_grs_add_resource_to_list(sn_linked_list_t *list_ptr, sn_nsdl_re
 	}
 
 	/* Add copied resource to the linked list */
-	status = sn_linked_list_add_node(list_ptr, resource_copy_ptr);
+	ns_list_add_to_start(&resource_root_list, resource_copy_ptr);
+	++resource_root_count;
 
-	/* Was adding ok? */
-	if(status == SN_LINKED_LIST_ERROR_NO_ERROR)
-	{
-		return SN_NSDL_SUCCESS;
-	}
-	else
-	{
-		sn_grs_resource_info_free(resource_copy_ptr);
-		return SN_NSDL_FAILURE;//DONE?: Free memory
-	}
+	return SN_NSDL_SUCCESS;
 }
 
 

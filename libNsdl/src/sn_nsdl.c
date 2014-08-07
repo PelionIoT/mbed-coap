@@ -15,7 +15,6 @@
 #include "sn_coap_protocol.h"
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
-#include "sn_linked_list.h"
 
 /* Defines */
 #define RESOURCE_DIR_LEN				2
@@ -126,7 +125,8 @@ static uint8_t 	(*sn_nsdl_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *) = 0;
 /* Global variables */
 static sn_nsdl_ep_parameters_s		*ep_information_ptr  = 0; 	// Endpoint parameters, Name, Domain etc..
 static sn_nsdl_oma_server_info_t	*nsp_address_ptr = 0;		// NSP server address information
-static sn_linked_list_t				*message_list_ptr = 0;		//
+static NS_LIST_DEFINE(				message_list, sn_nsdl_sent_messages_s, link);
+static uint16_t						message_count;
 static uint8_t 						sn_nsdl_endpoint_registered = 0;
 
 /* OMA bootstrap server address information */
@@ -155,30 +155,11 @@ static int8_t 			sn_nsdl_process_oma_tlv						(uint8_t *data_ptr, uint16_t data_
 
 int8_t sn_nsdl_destroy(void)
 {
-	if(message_list_ptr)
+	ns_list_foreach_safe(sn_nsdl_sent_messages_s, tmp, &message_list)
 	{
-		uint16_t size =  sn_linked_list_count_nodes(message_list_ptr);
-		uint16_t i = 0;
-		sn_nsdl_sent_messages_s*tmp;
-
-
-		for(i=0;i<size;i++)
-		{
-			tmp = sn_linked_list_get_first_node(message_list_ptr);
-
-			if(tmp)
-			{
-				sn_linked_list_remove_current_node(message_list_ptr);
-				sn_nsdl_free(tmp);
-				tmp = 0;
-			}
-		}
-
-		if(!sn_linked_list_count_nodes(message_list_ptr))
-		{
-			sn_linked_list_free(message_list_ptr);
-			message_list_ptr = 0;
-		}
+		ns_list_remove(&message_list, tmp);
+		sn_nsdl_free(tmp);
+		tmp = 0;
 	}
 
 	if(ep_information_ptr)
@@ -249,19 +230,12 @@ int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint1
 	sn_nsdl_tx_callback = sn_nsdl_tx_cb;
 	sn_nsdl_rx_callback = sn_nsdl_rx_cb;
 
-	sn_linked_list_init(sn_nsdl_alloc, sn_nsdl_free);
-
-	message_list_ptr = sn_linked_list_create();
-	if(!message_list_ptr)
-		return SN_NSDL_FAILURE;
-
 	/* Initialize ep parameters struct */
 	if(!ep_information_ptr)
 	{
 		ep_information_ptr = sn_nsdl_alloc(sizeof(sn_nsdl_ep_parameters_s));
 		if(!ep_information_ptr)
 		{
-			sn_linked_list_free(message_list_ptr);
 			return SN_NSDL_FAILURE;
 		}
 		memset(ep_information_ptr, 0, sizeof(sn_nsdl_ep_parameters_s));
@@ -273,7 +247,6 @@ int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint1
 
 		sn_nsdl_free(ep_information_ptr);
 		ep_information_ptr = 0;
-		sn_linked_list_free(message_list_ptr);
 		return SN_NSDL_FAILURE;
 
 	}
@@ -1066,6 +1039,11 @@ sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path_pt
 	return sn_grs_list_resource(pathlen, path_ptr);
 }
 
+void sn_nsdl_free_resource_list(sn_grs_resource_list_s *list)
+{
+	return sn_grs_free_resource_list(list);
+}
+
 int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
 {
 	return sn_grs_send_coap_message(address_ptr, coap_hdr_ptr);
@@ -1119,17 +1097,18 @@ static int8_t sn_nsdl_internal_coap_send(sn_coap_hdr_s *coap_header_ptr, sn_nsdl
 		sn_nsdl_sent_messages_s *message_ptr = sn_nsdl_alloc(sizeof(sn_nsdl_sent_messages_s));
 		if(message_ptr)
 		{
-			if(sn_linked_list_count_nodes(message_list_ptr) >= SN_NSDL_MAX_MESSAGE_COUNT)
+			if(message_count >= SN_NSDL_MAX_MESSAGE_COUNT)
 			{
-				sn_nsdl_sent_messages_s *message_temp_ptr = sn_linked_list_get_last_node(message_list_ptr);
-				if(message_temp_ptr)
-					sn_nsdl_free(message_temp_ptr);
-				sn_linked_list_remove_current_node(message_list_ptr);
+				sn_nsdl_sent_messages_s *message_temp_ptr = ns_list_get_first(&message_list);
+				ns_list_remove(&message_list, message_temp_ptr);
+				--message_count;
+				sn_nsdl_free(message_temp_ptr);
 			}
 
 			message_ptr->message_type = message_description;
 			message_ptr->msg_id_number = coap_header_ptr->msg_id;
-			sn_linked_list_add_node(message_list_ptr, (void*)message_ptr);
+			ns_list_add_to_end(&message_list, message_ptr);
+			++message_count;
 
 			status = SN_NSDL_SUCCESS;
 		}
@@ -1190,7 +1169,7 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 {
 	/* Local variables */
 	uint8_t					*temp_ptr;
-	sn_nsdl_resource_info_s 	*resource_temp_ptr;
+	const sn_nsdl_resource_info_s 	*resource_temp_ptr;
 
 
 	/* Get list of resources */
@@ -1328,7 +1307,7 @@ static uint16_t sn_nsdl_calculate_registration_body_size(uint8_t updating_regist
 {
 	/* Local variables */
 	uint16_t return_value = 0;
-	sn_nsdl_resource_info_s *resource_temp_ptr;
+	const sn_nsdl_resource_info_s *resource_temp_ptr;
 
 	/* check pointer */
 
@@ -1559,74 +1538,61 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
 static int8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *address_ptr)
 {
 	int8_t 						status = 0;
-	uint16_t					number_of_messages;
-	sn_nsdl_sent_messages_s 	*sent_message_temp_ptr;
 
 	if((coap_packet_ptr == 0) || (address_ptr == 0))
 		return -1;
 
 	/* If we wait for a response to some message.. */
-	number_of_messages = sn_linked_list_count_nodes(message_list_ptr);
-
-	if(number_of_messages)
+	ns_list_foreach(sn_nsdl_sent_messages_s, sent_message_temp_ptr, &message_list)
 	{
-		while(number_of_messages--)
+		if(sent_message_temp_ptr->msg_id_number == coap_packet_ptr->msg_id)
 		{
-			sent_message_temp_ptr = sn_linked_list_get_last_node(message_list_ptr);
-
-			if(sent_message_temp_ptr)
+			switch(sent_message_temp_ptr->message_type)
 			{
-				if(sent_message_temp_ptr->msg_id_number == coap_packet_ptr->msg_id)
+			case SN_NSDL_MSG_REGISTER:
+				if(coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CREATED)
 				{
-					switch(sent_message_temp_ptr->message_type)
+					sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_IS_REGISTERED;
+					sn_nsdl_mark_resources_as_registered();
+					status = sn_nsdl_resolve_ep_information(coap_packet_ptr);
+					if(status != SN_NSDL_SUCCESS)
 					{
-					case SN_NSDL_MSG_REGISTER:
-						if(coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CREATED)
-						{
-							sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_IS_REGISTERED;
-							sn_nsdl_mark_resources_as_registered();
-							status = sn_nsdl_resolve_ep_information(coap_packet_ptr);
-							if(status != SN_NSDL_SUCCESS)
-							{
-								/* Node can be removed */
-								sn_nsdl_free(sent_message_temp_ptr);
-								sn_linked_list_remove_current_node(message_list_ptr);
-								return status;
-							}
-						}
-						break;
-					case SN_NSDL_MSG_UNREGISTER:
-						if(coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_DELETED)
-						{
-							if(ep_information_ptr->endpoint_name_ptr)
-								{
-									sn_nsdl_free(ep_information_ptr->endpoint_name_ptr);
-									ep_information_ptr->endpoint_name_ptr = 0;
-									ep_information_ptr->endpoint_name_len = 0;
-								}
-
-							if(ep_information_ptr->domain_name_ptr)
-								{
-									sn_nsdl_free(ep_information_ptr->domain_name_ptr);
-									ep_information_ptr->domain_name_ptr = 0;
-									ep_information_ptr->domain_name_len = 0;
-								}
-
-						}
-						break;
-					case SN_NSDL_MSG_EVENT:
-					case SN_NSDL_MSG_UPDATE:
-						break;
+						/* Node can be removed */
+						ns_list_remove(&message_list, sent_message_temp_ptr);
+						--message_count;
+						sn_nsdl_free(sent_message_temp_ptr);
+						return status;
 					}
-					/* Node can be removed */
-					sn_nsdl_free(sent_message_temp_ptr);
-					sn_linked_list_remove_current_node(message_list_ptr);
-
-					sn_nsdl_rx_callback(coap_packet_ptr, address_ptr);
-					return SN_NSDL_SUCCESS;
 				}
+				break;
+			case SN_NSDL_MSG_UNREGISTER:
+				if(coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_DELETED)
+				{
+					if(ep_information_ptr->endpoint_name_ptr)
+						{
+							sn_nsdl_free(ep_information_ptr->endpoint_name_ptr);
+							ep_information_ptr->endpoint_name_ptr = 0;
+							ep_information_ptr->endpoint_name_len = 0;
+						}
+						if(ep_information_ptr->domain_name_ptr)
+						{
+							sn_nsdl_free(ep_information_ptr->domain_name_ptr);
+							ep_information_ptr->domain_name_ptr = 0;
+							ep_information_ptr->domain_name_len = 0;
+						}
+					}
+				break;
+			case SN_NSDL_MSG_EVENT:
+			case SN_NSDL_MSG_UPDATE:
+				break;
 			}
-			sent_message_temp_ptr = sn_linked_list_get_previous_node(message_list_ptr);
+			/* Node can be removed */
+			ns_list_remove(&message_list, sent_message_temp_ptr);
+			--message_count;
+			sn_nsdl_free(sent_message_temp_ptr);
+
+			sn_nsdl_rx_callback(coap_packet_ptr, address_ptr);
+			return SN_NSDL_SUCCESS;
 		}
 	}
 
@@ -1639,7 +1605,7 @@ static int8_t sn_nsdl_local_rx_function(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_
 void sn_nsdl_mark_resources_as_registered(void)
 {
 
-	sn_nsdl_resource_info_s *temp_resource;
+	const sn_nsdl_resource_info_s *temp_resource;
 
 	temp_resource = sn_grs_get_first_resource();
 

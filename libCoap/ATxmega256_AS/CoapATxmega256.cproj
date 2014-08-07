@@ -121,10 +121,6 @@
       <SubType>compile</SubType>
       <Link>sn_coap_protocol.c</Link>
     </Compile>
-    <Compile Include="..\src\sn_linked_list.c">
-      <SubType>compile</SubType>
-      <Link>sn_linked_list.c</Link>
-    </Compile>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>

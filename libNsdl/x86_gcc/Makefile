@@ -1,10 +1,10 @@
 TARGET = libNsdl.a
-OBJECTS = ../src/sn_grs.o ../src/sn_nsdl.o ../src/sn_linked_list.o
-AR_OBJECTS = sn_grs.o sn_nsdl.o sn_linked_list.o
+OBJECTS = ../src/sn_grs.o ../src/sn_nsdl.o
+AR_OBJECTS = sn_grs.o sn_nsdl.o
 
 SOURCE = ../src
 
-CFLAGS	= -Wall -D_REENTRANT -D x86 -I ../src/Include -I ../../libCoap/src/include -I -g -std=c99
+CFLAGS	= -Wall -D_REENTRANT -D x86 -I ../src/Include -I ../../libCoap/src/include -I ../../../libService/include -I -g -std=c99
 LDFLAGS = -L. -D_REENTRANT -lpthread
 
 ifdef USE_TEMPLATE

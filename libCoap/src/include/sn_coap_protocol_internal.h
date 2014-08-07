@@ -9,12 +9,14 @@
  * \note Supports draft-ietf-core-coap-18
  */
 
+#ifndef SN_COAP_PROTOCOL_INTERNAL_H_
+#define SN_COAP_PROTOCOL_INTERNAL_H_
+
+#include "ns_list.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef SN_COAP_PROTOCOL_INTERNAL_H_
-#define SN_COAP_PROTOCOL_INTERNAL_H_
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
@@ -84,7 +86,11 @@ typedef struct coap_send_msg_
     uint32_t            resending_time;     /* Tells next resending time */
 
     sn_nsdl_transmit_s *send_msg_ptr;
+
+    ns_list_link_t     link;
 } coap_send_msg_s;
+
+typedef NS_LIST_HEAD(coap_send_msg_s, link) coap_send_msg_list_t;
 
 /* Structure which is stored to Linked list for message acknowledgement purposes */
 typedef struct coap_ack_info_
@@ -99,7 +105,11 @@ typedef struct coap_ack_info_
 
     uint8_t             token_len;
     uint8_t            *token_ptr;
+
+    ns_list_link_t     link;
 } coap_ack_info_s;
+
+typedef NS_LIST_HEAD(coap_ack_info_s, link) coap_ack_info_list_t;
 
 /* Structure which is stored to Linked list for message duplication detection purposes */
 typedef struct coap_duplication_info_
@@ -111,7 +121,11 @@ typedef struct coap_duplication_info_
     uint16_t            port;
 
     uint16_t            msg_id;
+
+    ns_list_link_t     link;
 } coap_duplication_info_s;
+
+typedef NS_LIST_HEAD(coap_duplication_info_s, link) coap_duplication_info_list_t;
 
 /* Structure which is stored to Linked list for blockwise messages sending purposes */
 typedef struct coap_blockwise_msg_
@@ -119,7 +133,11 @@ typedef struct coap_blockwise_msg_
     uint32_t            timestamp;  /* Tells when Blockwise message is stored to Linked list */
 
     sn_coap_hdr_s		*coap_msg_ptr;
+
+    ns_list_link_t     link;
 } coap_blockwise_msg_s;
+
+typedef NS_LIST_HEAD(coap_blockwise_msg_s, link) coap_blockwise_msg_list_t;
 
 /* Structure which is stored to Linked list for blockwise messages receiving purposes */
 typedef struct coap_blockwise_payload_
@@ -132,15 +150,20 @@ typedef struct coap_blockwise_payload_
 
     uint16_t            payload_len;
     uint8_t            *payload_ptr;
+
+    ns_list_link_t     link;
 } coap_blockwise_payload_s;
+
+typedef NS_LIST_HEAD(coap_blockwise_payload_s, link) coap_blockwise_payload_list_t;
 
 /**
  * \brief Releases any memory allocated in sn_nsdl_transmit_s
  */
 extern void           sn_coap_builder_release_allocated_send_msg_mem(sn_nsdl_transmit_s *freed_send_msg_ptr);
 
-#endif /* SN_COAP_PROTOCOL_INTERNAL_H_ */
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* SN_COAP_PROTOCOL_INTERNAL_H_ */
+
