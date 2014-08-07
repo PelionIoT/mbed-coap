@@ -184,7 +184,6 @@ int svr_ipv6(void)
 
 	received_packet_address.addr_len = 16;
 	received_packet_address.addr_ptr = nsp_addr;
-	received_packet_address.socket_information = 0;
 	received_packet_address.type = SN_NSDL_ADDRESS_TYPE_IPV6;
 
 	sleep(1);
