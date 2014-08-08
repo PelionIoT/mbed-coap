@@ -27,7 +27,7 @@
 
 #ifdef USE_EDTLS
 #include "sn_edtls_lib.h"
-#include "sn_aes.h"
+#include "arm_aes.h"
 #endif
 
 #define BUFLEN 1024
@@ -161,7 +161,7 @@ int svr_ipv6(void)
 
 	/* eDTLS init and connection */
 #ifdef USE_EDTLS
-	sn_edtls_libraray_initialize();
+	sn_edtls_library_initialize();
 
 	edtls_pre_shared_key_set(edtls_psk_key, edtls_psk_key_id);
 	edtls_server_address_s.socket = sock_server;
@@ -739,6 +739,47 @@ void edtls_free(void *mem_ptr)
 	own_free(mem_ptr);
 }
 
+void *ns_dyn_mem_alloc(uint16_t alloc_size)
+{
+
+	void *ptr = malloc(alloc_size);
+	return ptr;
+}
+
+void *ns_dyn_mem_temporary_alloc(uint16_t alloc_size)
+{
+	void *ptr = malloc(alloc_size);
+	return ptr;
+}
+
+int8_t randLIB_get_n_bytes_random(uint8_t *data_ptr, uint8_t eight_bit_boundary)
+{
+	uint8_t i = 0;
+
+	while(i < eight_bit_boundary)
+	{
+		*(data_ptr + i) = rand();
+		i++;
+	}
+	return 0;
+}
+
+
+void ns_dyn_mem_free(void *ptr)
+{
+	free(ptr);
+}
+
+uint8_t compare_code(uint8_t * ptr,  unsigned char const * code_ptr, uint8_t len)
+{
+	return memcmp(ptr, code_ptr, len);
+}
+
+void copy_code(uint8_t * ptr, uint8_t * code_ptr, uint16_t len)
+{
+	memcpy(ptr, code_ptr, len);
+}
+
 /* eDTLS sending function */
 uint8_t edtls_tx(uint8_t *data_ptr, uint16_t data_len, sn_edtls_address_t *dst_addr)
 {
@@ -763,13 +804,6 @@ uint8_t edtls_tx(uint8_t *data_ptr, uint16_t data_len, sn_edtls_address_t *dst_a
 	return 1;
 }
 
-/* eDTLS random generation function 	*/
-/* Used to generate client hello random */
-/* fields and sequence numbers.			*/
-uint8_t edtls_random()
-{
-	return rand();
-}
 
 /* eDTLS registration status function 				*/
 /* eDTLS library returns status during registration */
