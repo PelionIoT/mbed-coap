@@ -298,6 +298,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/../src/include</state>
+          <state>$PROJ_DIR$/../../../libService/include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1239,6 +1240,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/../src/include</state>
+          <state>$PROJ_DIR$/../../../libService/include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -2180,6 +2182,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/../src/include</state>
+          <state>$PROJ_DIR$/../../../libService/include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -3121,6 +3124,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/../src/include</state>
+          <state>$PROJ_DIR$/../../../libService/include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>

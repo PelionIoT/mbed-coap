@@ -351,6 +351,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\..\src\include</state>
+          <state>$PROJ_DIR$\..\..\..\libService\include</state>
           <state>$PROJ_DIR$\..\src\x86_include</state>
         </option>
         <option>
@@ -1240,6 +1241,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\..\src\include</state>
+          <state>$PROJ_DIR$\..\..\..\libService\include</state>
           <state>$PROJ_DIR$\..\src\x86_include</state>
         </option>
         <option>

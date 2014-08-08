@@ -441,6 +441,7 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
+          <state>$PROJ_DIR$\..\..\..\libService\include</state>
           <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
           <state>$PROJ_DIR$\..\..\NanoStack\cc2530_include</state>
           <state>$PROJ_DIR$\..\..\libEdtls\src\include</state>
