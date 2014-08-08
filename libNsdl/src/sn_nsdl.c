@@ -1041,7 +1041,7 @@ sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path_pt
 
 void sn_nsdl_free_resource_list(sn_grs_resource_list_s *list)
 {
-	return sn_grs_free_resource_list(list);
+	sn_grs_free_resource_list(list);
 }
 
 int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
