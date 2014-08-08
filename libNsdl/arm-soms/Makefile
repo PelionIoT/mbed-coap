@@ -5,7 +5,7 @@ AR_OBJECTS = sn_grs.o sn_nsdl.o
 
 SOURCE = ../src
 
-CFLAGS	= -Wall -D_REENTRANT -I ../src/Include -I ../../libCoap/src/include -I -g 
+CFLAGS	= -Wall -D_REENTRANT -I ../src/Include -I ../../libCoap/src/include -I ../../../libService/include -g
 LDFLAGS = -L. -D_REENTRANT -lpthread
 
 all: clean $(TARGET)

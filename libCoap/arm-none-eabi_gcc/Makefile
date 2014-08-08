@@ -5,7 +5,7 @@ AR_OBJECTS = sn_coap_builder_ietf_draft_12.o sn_coap_parser_ietf_draft_12.o sn_c
 
 SOURCE = ../src
 
-CFLAGS	= -Wall -D_REENTRANT -I ../src/include -I ../src/x86_include -g 
+CFLAGS	= -Wall -D_REENTRANT -I ../src/include -I ../src/x86_include -I ../../../libService/include -g
 LDFLAGS = -L. -D_REENTRANT -lpthread
 
 all: clean $(TARGET)
