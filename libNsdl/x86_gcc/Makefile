@@ -4,7 +4,7 @@ AR_OBJECTS = sn_grs.o sn_nsdl.o
 
 SOURCE = ../src
 
-CFLAGS	= -Wall -D_REENTRANT -D x86 -I ../src/Include -I ../../libCoap/src/include -I ../../../libService/include -I -g -std=c99
+CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -D x86 -I ../src/Include -I ../../libCoap/src/include -I ../../../libService/include -I -g
 LDFLAGS = -L. -D_REENTRANT -lpthread
 
 ifdef USE_TEMPLATE
