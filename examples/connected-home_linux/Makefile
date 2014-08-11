@@ -3,13 +3,11 @@ OS = LINUX
 EDTLS = NO
 TARGET	= connected_home
 OBJECTS = main.o connected_home.o 
-ifeq ($(EDTLS),NO)
-CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -I ../../libCoap/src/x86_include -DHAVE_DEBUG
+CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -I ../../libCoap/src/x86_include -I ../../../libService/include -DHAVE_DEBUG
 LDFLAGS = -L../../libCoap/x86_gcc/ -D_REENTRANT -lpthread -lCoap
-endif
 ifeq ($(EDTLS),YES)
-CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -I ../../libCoap/src/x86_include -I ../../libEdtls/src/include -DHAVE_DEBUG -DUSE_EDTLS
-LDFLAGS = -L../../libCoap/x86_gcc/ -L../../libEdtls/x86_gcc -D_REENTRANT -lpthread -lCoap -leDTLS -lsn_aes
+CFLAGS	+= -I ../../libEdtls/src/include -DUSE_EDTLS
+LDFLAGS += -L../../libEdtls/x86_gcc -leDTLS -lsn_aes
 endif
 
 all: $(TARGET) 
