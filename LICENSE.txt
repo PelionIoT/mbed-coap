@@ -1,6 +1,6 @@
-Copyright 2011. Sensinode Ltd. All rights reserved.
+Copyright 2014. ARM Ltd. All rights reserved.
 
-Use of this software is restricted by the terms of Sensinode's limited use license or permitted 
+Use of this software is restricted by the terms of ARM's limited use license or permitted 
 sublicense (the "License").  You may not use this software unless you have been expressly granted 
 the right to use it under the License, and in such case you must use this file in compliance with 
 the License.
