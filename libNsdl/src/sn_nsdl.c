@@ -2058,7 +2058,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 			.path = path_temp,
 			.resourcelen = 0,
 			.resource = 0,
-			.access = 0x0f, /* All allowed */
+			.access = (sn_grs_resource_acl_e) 0x0f, /* All allowed */
 			.sn_grs_dyn_res_callback = 0
 	};
 
@@ -2100,7 +2100,8 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 		else if((type & 0x18) == 0x18)
 		{
 			/* 11 = The Length field is 24-bits and Bits 2-0 MUST be ignored */
-			length = (uint8_t)(*temp_ptr++) << 16;
+			length = (uint8_t)(*temp_ptr++);
+			length = length << 16;
 			length += (uint8_t)(*temp_ptr++) << 8;
 			length += (uint8_t)*temp_ptr++;
 		}
