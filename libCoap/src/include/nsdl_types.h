@@ -22,9 +22,4 @@
 #define SN_MEM_ATTR_COAP_VALID_CHECK_FUNC               /* Memory attribute for CoAP Validity Check functions,    e.g: __root */
 #define SN_MEM_ATTR_COAP_VALID_CHECK_DECL   NS_LARGE    /* Memory attribute for CoAP Validity Check declarations, e.g: NS_LARGE */
 
-/* HTTP specific declarations */
-#define SN_HTTP_CONST_ARRAY_MEMORY_ATTRIBUTE NS_PROGMEM
-#define SN_HTTP_FUNCTION_POINTER_MEMORY_ATTRIBUTE
-#define SN_HTTP_FUNCTION_MEMORY_ATTRIBUTE
-
 #endif /*_NSDL_TYPES_*/

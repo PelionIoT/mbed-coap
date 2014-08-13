@@ -3,8 +3,8 @@ OBJECTS = ../src/sn_coap_builder.o ../src/sn_coap_parser.o ../src/sn_coap_header
 
 SOURCE = ../src
 
-CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -I ../src/include -I ../src/x86_include -I ../../../libService/include -g -Dx86
-LDFLAGS = -L. -D_REENTRANT -lpthread
+CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -I ../src/include -I ../../../libService/include -g
+LDFLAGS = -L. -D_REENTRANT
 
 CC = $(PLATFORM)gcc
 
