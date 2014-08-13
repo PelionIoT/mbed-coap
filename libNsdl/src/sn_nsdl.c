@@ -983,6 +983,7 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 			}
 
 		}
+		sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
 		return SN_NSDL_SUCCESS;
 	}
 
