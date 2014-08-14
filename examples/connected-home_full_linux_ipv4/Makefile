@@ -7,7 +7,7 @@ CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -I .
 LDFLAGS = -L../../libCoap/x86_gcc/ -L../../libNsdl/x86_gcc/ -D_REENTRANT -lpthread -lNsdl -lCoap
 ifeq ($(EDTLS),YES)
 CFLAGS	+= -I ../../libEdtls/src/include -DUSE_EDTLS
-LDFLAGS += -L../../libEdtls/x86_gcc -leDTLS -lsn_aes
+LDFLAGS += -L../../libEdtls/x86_gcc -leDTLS -laes
 endif
 
 all: $(TARGET) 

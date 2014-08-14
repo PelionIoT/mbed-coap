@@ -740,8 +740,8 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is 
 # run.
 
-EXCLUDE                = ../../Users/tero/git/nsdl-c/libNsdl/src/Include/nsdl_types.h \
-                         ../../Users/tero/git/nsdl-c/libNsdl/src/Include/sn_grs.h
+EXCLUDE                = ../libNsdl/src/Include/nsdl_types.h \
+                         ../libNsdl/src/Include/sn_grs.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or 
 # directories that are symbolic links (a Unix file system feature) are excluded 

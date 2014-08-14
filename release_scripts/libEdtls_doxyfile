@@ -196,7 +196,7 @@ SEPARATE_MEMBER_PAGES  = NO
 # The TAB_SIZE tag can be used to set the number of spaces in a tab. 
 # Doxygen uses this value to replace tabs by spaces in code fragments.
 
-TAB_SIZE               = 4
+TAB_SIZE               = 16
 
 # This tag can be used to specify a number of aliases that acts 
 # as commands in the documentation. An alias has the form "name=value". 
@@ -740,25 +740,14 @@ RECURSIVE              = NO
 # Note that relative paths are relative to the directory from which doxygen is 
 # run.
 
-EXCLUDE                = ../../git/edtls-lib/aes.h \
-                         ../../git/edtls-lib/aes_ccm_star.c \
-                         ../../git/edtls-lib/cc2530_eDTLS_lib.dep \
-                         ../../git/edtls-lib/cc2530_eDTLS_lib.ewd \
-                         ../../git/edtls-lib/cc2530_eDTLS_lib.ewp \
-                         ../../git/edtls-lib/ccm_security.c \
-                         ../../git/edtls-lib/edtls_certificates.h \
-                         ../../git/edtls-lib/msp430_eDTLS_lib.dep \
-                         ../../git/edtls-lib/msp430_eDTLS_lib.ewp \
-                         ../../git/edtls-lib/nsdl_types.h \
-                         ../../git/edtls-lib/shalib.c \
-                         ../../git/edtls-lib/shalib.h \
-                         ../../git/edtls-lib/sn_edtls_internal.h \
-                         ../../git/edtls-lib/tls_ccm.c \
-                         ../../git/edtls-lib/tls_ccm.h \
-                         ../../git/edtls-lib/xmas_party_patchv01.txt \
-                         ../../git/edtls-lib/ECC \
-                         ../../git/edtls-lib/ECC \
-                         ../../git/edtls-lib/sn_edtls_lib.c
+EXCLUDE                = ../../edtls-lib/cc2530_eDTLS_lib.dep \
+                         ../../edtls-lib/cc2530_eDTLS_lib.ewd \
+                         ../../edtls-lib/cc2530_eDTLS_lib.ewp \
+                         ../../edtls-lib/edtls_certificates.h \
+                         ../../edtls-lib/msp430_eDTLS_lib.dep \
+                         ../../edtls-lib/msp430_eDTLS_lib.ewp \
+                         ../../edtls-lib/sn_edtls_lib.c \
+                         ../../edtls-lib/sn_edtls_internal.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or 
 # directories that are symbolic links (a Unix file system feature) are excluded 

@@ -1,16 +1,9 @@
 Connected Home Server for NSDL C
 
-Zach Shelby <zach@sensinode.com>
-
 This project is an example of a NanoService endpoint for the Connected Home Reference App, which emulates the sensors of 
 a power measurement and relay node.  
 
-Compilation:
-
-This software supports both Linux and MAC OSX builds, controlled by the "OS =" line of Makefile. 
-Set this line to "LINUX" for Linux OSs and to "MACOSX" for Macs. 
-
-To build the software type:
+To build the software, type:
 
 make
 
@@ -27,7 +20,7 @@ connected-home [-p 8000]
 
 When running on the same machine as NSP, simply run:
 
-./connected-home
+./connected_home
 
 
 Known Limitations:
