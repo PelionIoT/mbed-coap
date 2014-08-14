@@ -151,6 +151,7 @@ static uint32_t 		sn_nsdl_atoi								(uint8_t *ptr, uint8_t len);
 static uint32_t 		sn_nsdl_ahextoi								(uint8_t *ptr, uint8_t len);
 static int8_t			sn_nsdl_resolve_lwm2m_address				(uint8_t *uri, uint16_t uri_len);
 static int8_t 			sn_nsdl_process_oma_tlv						(uint8_t *data_ptr, uint16_t data_len);
+static void 			sn_nsdl_check_oma_bs_status					(void);
 
 
 int8_t sn_nsdl_destroy(void)
@@ -912,32 +913,42 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 				return SN_NSDL_SUCCESS;
 			}
 			else
+			{
+				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
 				return SN_NSDL_FAILURE;
+			}
 		}
-
 	}
 
-	/* If OMA bootstrap message... */
+
+	/* * If OMA bootstrap message... * */
 	if((oma_bs_address_len == src_ptr->addr_len) && (oma_bs_port == src_ptr->port) && !memcmp(oma_bs_address_ptr, src_ptr->addr_ptr, oma_bs_address_len))
 	{
-		if(coap_packet_ptr->content_type_len == 1)
+		/* TLV message. Parse message and check status of the OMA bootstrap  */
+		/* process.	If ok, call cb function and return. Otherwise send error */
+		/* and return failure.												 */
+
+		if(coap_packet_ptr->content_type_len == 1) //todo check message type
 		{
-			/* TLV */
 			if(*coap_packet_ptr->content_type_ptr == 99)
 			{
+				/* TLV parsing failed. Send response to get non-tlv messages */
 				if(sn_nsdl_process_oma_tlv(coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len) == SN_NSDL_FAILURE)
 				{
-					/* TLV parsing failed. Send response to get non-tlv messages */
 					coap_response_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_ACCEPTABLE);
 					if(coap_response_ptr)
 					{
 						sn_nsdl_send_coap_message(src_ptr, coap_response_ptr);
 						sn_coap_parser_release_allocated_coap_msg_mem(coap_response_ptr);
 						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
-						return SN_NSDL_SUCCESS;
+					}
+					else
+					{
+						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+						return SN_NSDL_FAILURE;
 					}
 				}
-				/* Success TLV parsing response */
+				/* Success TLV parsing */
 				else
 				{
 					coap_response_ptr = sn_coap_build_response(coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CREATED);
@@ -947,45 +958,45 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 						sn_coap_parser_release_allocated_coap_msg_mem(coap_response_ptr);
 						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
 					}
+					else
+					{
+						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+						return SN_NSDL_FAILURE;
+					}
+					sn_nsdl_check_oma_bs_status();
 				}
 
+				return SN_NSDL_SUCCESS;
 			}
-			/* Non - TLV */
+
+			/* Non - TLV message */
 			else if(*coap_packet_ptr->content_type_ptr == 97)
 			{
 				sn_grs_process_coap(coap_packet_ptr, src_ptr);
 
+				/* Todo: move this copying to sn_nsdl_check_oma_bs_status(), also from TLV parser */
 				/* Security mode */
 				if(*(coap_packet_ptr->uri_path_ptr + (coap_packet_ptr->uri_path_len - 1)) == '2')
 				{
 					nsp_address_ptr->omalw_server_security = (omalw_server_security_t)sn_nsdl_atoi(coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
+					sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
 				}
 
 				/* NSP address */
 				else if (*(coap_packet_ptr->uri_path_ptr + (coap_packet_ptr->uri_path_len - 1)) == '0')
 				{
 					sn_nsdl_resolve_lwm2m_address(coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
+					sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
 				}
-			}
 
-			/* Check OMA BS status */
-			if((nsp_address_ptr->omalw_server_security == PSK) && (nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE))
-			{
-				/* call cb that oma bootstrap is done */
-				sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
+				sn_nsdl_check_oma_bs_status();
 			}
-			else if((nsp_address_ptr->omalw_server_security == CERTIFICATE) && (nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE)&&
-					((sn_nsdl_get_resource(5, (void*)"0/0/5") != 0) &&
-					(sn_nsdl_get_resource(5, (void*)"0/0/4") != 0) &&
-					(sn_nsdl_get_resource(5, (void*)"0/0/3") != 0)) )
-			{
-				sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
-			}
-
 		}
-		sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+
 		return SN_NSDL_SUCCESS;
 	}
+
+
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * */
 	/* If message is response message, call RX callback  */
@@ -2138,4 +2149,21 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 	}
 
 	return SN_NSDL_SUCCESS;
+}
+
+static void sn_nsdl_check_oma_bs_status(void)
+{
+	/* Check OMA BS status */
+	if((nsp_address_ptr->omalw_server_security == PSK) && (nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE))
+	{
+		/* call cb that oma bootstrap is done */
+		sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
+	}
+	else if((nsp_address_ptr->omalw_server_security == CERTIFICATE) && (nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE)&&
+			((sn_nsdl_get_resource(5, (void*)"0/0/5") != 0) &&
+			(sn_nsdl_get_resource(5, (void*)"0/0/4") != 0) &&
+			(sn_nsdl_get_resource(5, (void*)"0/0/3") != 0)) )
+	{
+		sn_nsdl_oma_bs_done_cb(nsp_address_ptr);
+	}
 }

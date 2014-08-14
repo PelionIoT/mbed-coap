@@ -1070,12 +1070,12 @@ static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_add
                 {
                     /* * * Message found * * */
 
-                    /* Free memory of stored message */
-                    sn_coap_protocol_release_allocated_send_msg_mem(stored_msg_ptr);
-
                     /* Remove message from Linked list */
                     ns_list_remove(&global_linked_list_resent_msgs, stored_msg_ptr);
                     --global_count_resent_msgs;
+
+                    /* Free memory of stored message */
+                    sn_coap_protocol_release_allocated_send_msg_mem(stored_msg_ptr);
 
                     return;
                 }
