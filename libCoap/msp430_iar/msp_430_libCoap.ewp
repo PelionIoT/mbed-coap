@@ -318,7 +318,7 @@
         <option>
           <name>newCCIncludePaths</name>
           <state>$PROJ_DIR$\..\src\include</state>
-          <state>$PROJ_DIR$\..\src\x86_include</state>
+          <state>$PROJ_DIR$\..\..\..\libService\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -956,7 +956,11 @@
         <debug>1</debug>
         <option>
           <name>CUTest</name>
-          <state>###Uninitialized###</state>
+          <state>-I$TOOLKIT_DIR$\inc</state>
+          <state>-@$TOOLKIT_DIR$\bin\iar.cmd</state>
+          <state>-@$PROJ_DIR$\source.txt</state>
+          <state>-@$PROJ_DIR$\include.txt</state>
+          <state>--preinclude=$PROJ_DIR$\IAR_ULPAdvisor_Defs.h</state>
         </option>
         <option>
           <name>ULPRules</name>
