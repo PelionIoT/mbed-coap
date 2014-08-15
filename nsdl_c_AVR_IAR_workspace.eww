@@ -7,6 +7,9 @@
   <project>
     <path>$WS_DIR$\libNsdl\atmel_rfr2_iar\atmel_rfr2_libNsdl.ewp</path>
   </project>
+  <project>
+    <path>$WS_DIR$\libCoap\atxmega256_iar\atxmega256_libCoap.ewp</path>
+  </project>
   <batchBuild/>
 </workspace>
 
