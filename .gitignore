@@ -20,3 +20,8 @@ Obj
 *_output
 Backup*
 *.r43
+*.htm
+*.uvgui.*
+*.lib
+*.crf
+*.uvopt
