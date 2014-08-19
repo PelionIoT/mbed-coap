@@ -29,6 +29,8 @@ CFLAGS += -IlibCoap/src/Include/
 SERVLIB_DIR := ../libService
 CFLAGS += -I$(SERVLIB_DIR)/include
 
+CFLAGS += -DREAL_EMBEDDED
+
 ifneq ($(strip $(PLATFORM)),)
 CC:=$(PLATFORM)gcc
 AR:=$(PLATFORM)ar
@@ -36,11 +38,12 @@ endif
 
 ifneq (,$(findstring iccarm,$(CC)))
 	# Define flags for IAR-ARM
-	CFLAGS += --cpu Cortex-M4 --diag_suppress Pa50 --require_prototypes
+	CFLAGS += --cpu Cortex-M4 --diag_suppress Pa50
 else
 ifneq (,$(findstring ArmCC,$(CC)))
 	# Define flags for ArmCC (Keil)
-	CFLAGS += --cpu=Cortex-M4 --c99 --remarks --no_wrap_diagnostics
+	CFLAGS += --cpu=Cortex-M4 --c99 --no_wrap_diagnostics
+	TARGET := $(TARGET:%.a=%.lib)
 else
 	# Flags for common toolchain, usually GCC or CC
 	CFLAGS += -Wall -std=gnu99 -pedantic-errors
@@ -56,7 +59,7 @@ $(TARGET): $(OBJECTS)
 ifneq (,$(findstring iccarm,$(CC)))
 	iarchive.exe $^ --create -o $@
 else
-	$(AR) -rsc  $@ $(OBJS)
+	$(AR) -rsc  $@ $(OBJECTS)
 endif
 
 clean:
