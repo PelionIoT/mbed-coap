@@ -25,7 +25,7 @@ SRCS := \
 	libCoap/src/sn_coap_builder.c \
 
 CFLAGS += -IlibNsdl/src/Include/
-CFLAGS += -IlibCoap/src/Include/
+CFLAGS += -IlibCoap/src/include/
 SERVLIB_DIR := ../libService
 CFLAGS += -I$(SERVLIB_DIR)/include
 
