@@ -25,3 +25,4 @@ Backup*
 *.lib
 *.crf
 *.uvopt
+libEdtls
