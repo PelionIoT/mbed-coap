@@ -25,7 +25,6 @@
 #define WELLKNOWN_PATH					(".well-known/core")
 
 /* Local static function prototypes */
-static sn_nsdl_resource_info_s *	sn_grs_search_resource				(uint16_t pathlen, uint8_t *path, uint8_t search_method);
 static int8_t 						sn_grs_resource_info_free			(sn_nsdl_resource_info_s *resource_ptr);
 static uint8_t *					sn_grs_convert_uri					(uint16_t *uri_len, uint8_t *uri_ptr);
 static int8_t 						sn_grs_add_resource_to_list			(sn_nsdl_resource_info_s *resource_ptr);
@@ -266,30 +265,6 @@ extern const sn_nsdl_resource_info_s *sn_grs_get_next_resource(void)
 	return sn_grs_current_resource = ns_list_get_next(&resource_root_list, sn_grs_current_resource);
 
 }
-
-/**
- * \fn extern sn_grs_resource_info_s *sn_grs_get_resource(uint16_t pathlen, uint8_t *path)
- *
- * \brief Resource get function.
- *
- *	Used to get a resource.
- *
- *	\param pathlen	Contains the length of the path that is to be returned (excluding possible trailing '\\0').
- *
- *	\param *path	A pointer to an array containing the path.
- *
- *	\return 		!NULL success, pointer to a sn_grs_resource_info_t that contains the resource information\n
- *					NULL failure
-*/
-SN_MEM_ATTR_GRS_FUNC
-extern sn_nsdl_resource_info_s *sn_grs_get_resource(uint16_t pathlen, uint8_t *path)
-{
-
-	/* Search for resource */
-	return sn_grs_search_resource(pathlen, path, SN_GRS_SEARCH_METHOD);
-
-}
-
 
 
 /**
@@ -540,7 +515,7 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 		}
 
 		/* Get resource */
-		resource_temp_ptr = sn_grs_get_resource(coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr);
+		resource_temp_ptr = sn_grs_search_resource(coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr, SN_GRS_SEARCH_METHOD);
 
 		/* * * * * * * * * * * */
 		/* If resource exists  */
@@ -973,7 +948,7 @@ extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_
  *
 */
 SN_MEM_ATTR_GRS_FUNC
-static sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t *path, uint8_t search_method)
+sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t *path, uint8_t search_method)
 {
 	/* Local variables */
 	uint8_t 					*path_temp_ptr 			= NULL;

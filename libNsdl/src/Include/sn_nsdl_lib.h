@@ -107,6 +107,28 @@ typedef enum sn_grs_resource_acl_
 	SN_GRS_DELETE_ALLOWED 	= 0x08
 } sn_grs_resource_acl_e;
 
+
+typedef enum sn_nsdl_oma_device_error_
+{
+	NO_ERROR = 0,
+	LOW_BATTERY_POWER = 1,
+	EXTERNAL_POWER_SUPPLY_OFF = 2,
+	GPS_MODULE_FAILURE = 3,
+	LOW_RECEIVED_SIGNAL_STRENGTH = 4,
+	OUT_OF_MEMORY = 5,
+	SMS_FAILURE = 6,
+	IP_CONN_FAILURE = 7,
+	PERIPHERAL_MALFUNCTION = 8
+} sn_nsdl_oma_device_error_t;
+
+typedef enum sn_nsdl_oma_binding_and_mode_
+{
+	BINDING_MODE_U = 0x01,
+	BINDING_MODE_Q = 0x02,
+	BINDING_MODE_S = 0x04
+} sn_nsdl_oma_binding_and_mode_t;
+
+
 /**
  * \brief Used protocol
  */
@@ -189,6 +211,13 @@ typedef struct sn_nsdl_oma_server_info_
 
 }sn_nsdl_oma_server_info_t;
 
+typedef struct sn_nsdl_oma_device_
+{
+	sn_nsdl_oma_device_error_t error_code;
+	sn_nsdl_oma_binding_and_mode_t binding_and_mode;
+	uint8_t (*sn_oma_device_boot_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
+
+}sn_nsdl_oma_device_t;
 
 /**
  * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
@@ -491,6 +520,8 @@ extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_ns
 extern omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain);
 
 extern int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
+
+extern int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *oma_device_setup_ptr);
 
 #ifdef __cplusplus
 }

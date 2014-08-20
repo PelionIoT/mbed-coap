@@ -27,8 +27,8 @@
 #define EP_NAME_PARAMETERS				{'e','p','='}
 
 /* Endpoint type */
-#define ET_PARAMETER_LEN			3
-#define ET_PARAMETER				{'e','t','='}
+#define ET_PARAMETER_LEN				3
+#define ET_PARAMETER					{'e','t','='}
 
 /* Lifetime. Number of seconds that this registration will be valid for. Must be updated within this time, or will be removed. */
 #define LT_PARAMETER_LEN				3
@@ -81,7 +81,7 @@
 
 /* Constants */
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t 	ep_name_parameter_string[] 	= EP_NAME_PARAMETERS;
+static uint8_t 	ep_name_parameter_string[] 		= EP_NAME_PARAMETERS;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t		resource_path_ptr[]			= RESOURCE_DIR_PATH;
@@ -105,10 +105,10 @@ SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t		ep_domain_parameter[]		= DOMAIN_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t 	coap_con_type_parameter[]	= COAP_CON_PARAMETER;
+static uint8_t 	coap_con_type_parameter[]		= COAP_CON_PARAMETER;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t bs_uri[] 					= BS_PATH;
+static uint8_t bs_uri[] 						= BS_PATH;
 
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t bs_ep_name[] 					= BS_EP_PARAMETER;
@@ -863,6 +863,111 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	return SN_NSDL_SUCCESS;
 }
 
+int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *oma_device_setup_ptr)
+{
+	sn_nsdl_resource_info_s new_resource;
+	uint8_t object_path[6] = "0/3/11";
+	uint8_t resource_temp[3];
+	uint8_t i = 0, x = 0;
+
+	/* Set object number */
+	while(sn_grs_search_resource(3, object_path, SN_GRS_DELETE_METHOD) != 0)
+	{
+		if(i <= 9)
+		{
+			object_path[0]++;
+			i++;
+		}
+		else
+			return SN_NSDL_FAILURE;
+	}
+
+	/* Create resources */
+	memset(&new_resource, 0, sizeof(sn_nsdl_resource_info_s));
+
+	new_resource.mode = SN_GRS_STATIC;
+
+	/* Create error - resource */
+	new_resource.access = SN_GRS_GET_ALLOWED;
+
+	new_resource.path = object_path;
+	new_resource.pathlen = 6;
+
+	sn_nsdl_itoa(resource_temp, (uint8_t)oma_device_setup_ptr->error_code);
+
+	new_resource.resource = resource_temp;
+	new_resource.resourcelen = 1;
+
+	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+		return SN_NSDL_FAILURE;
+
+
+	/* These resources can be only once.. */
+	//if(i == 0) //debug
+	{
+		/* Create supported binding and modes */
+		object_path[5] = '6';
+		new_resource.path = object_path;
+		new_resource.pathlen = 6;
+
+		if(oma_device_setup_ptr->binding_and_mode & 0x01)
+		{
+			resource_temp[x] = 'U';
+			x++;
+			if(oma_device_setup_ptr->binding_and_mode & 0x02)
+			{
+				resource_temp[x] = 'Q';
+				x++;
+			}
+		}
+		if(oma_device_setup_ptr->binding_and_mode & 0x04)
+		{
+			resource_temp[x] = 'S';
+			x++;
+			if((oma_device_setup_ptr->binding_and_mode & 0x02) && !(oma_device_setup_ptr->binding_and_mode & 0x01))
+			{
+				resource_temp[x] = 'Q';
+				x++;
+			}
+		}
+
+		new_resource.access = SN_GRS_GET_ALLOWED;
+
+		new_resource.resourcelen = x;
+
+		if(new_resource.resourcelen)
+			new_resource.resource = resource_temp;
+		else
+			new_resource.resource = 0;
+
+
+		if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+			return SN_NSDL_FAILURE;
+
+
+		/* Create dynamic reboot object */
+		new_resource.mode = SN_GRS_DYNAMIC;
+
+		new_resource.access = SN_GRS_PUT_ALLOWED;
+
+		object_path[4] = '4';
+
+		new_resource.path = object_path;
+		new_resource.pathlen = 5;
+
+		new_resource.resourcelen = 0;
+		new_resource.resource = 0;
+
+		new_resource.sn_grs_dyn_res_callback = oma_device_setup_ptr->sn_oma_device_boot_callback;
+
+		if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+			return SN_NSDL_FAILURE;
+	}
+
+	return i;
+
+}
+
 /* * * * * * * * * * * * * * * * * * * * * */
 /* 			GRS Wrapper					   */
 /* These are documented in sn_grs.c - file */
@@ -1043,7 +1148,7 @@ int8_t sn_nsdl_delete_resource(uint8_t pathlen, uint8_t *path_ptr)
 
 sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *path_ptr)
 {
-	return sn_grs_get_resource(pathlen, path_ptr);
+	return sn_grs_search_resource(pathlen, path_ptr, SN_GRS_SEARCH_METHOD);
 }
 
 sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path_ptr)
