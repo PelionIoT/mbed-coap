@@ -1,3 +1,6 @@
+#ifndef GRS_H_
+#define GRS_H_
+
 /*
  * GRS.h
  *
@@ -9,11 +12,6 @@
 extern "C" {
 #endif
 
-#ifndef GRS_H_
-#define GRS_H_
-
-
-#endif /* GRS_H_ */
 
 #define SN_GRS_VERSION	                	0x0101
 
@@ -113,3 +111,4 @@ extern int8_t 						sn_grs_destroy				(void);
 
 
 
+#endif /* GRS_H_ */
