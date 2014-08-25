@@ -6,10 +6,15 @@
  *
  *
  */
+#include <string.h>			// for memcomp
+#include <stdlib.h>
+
+#include "ns_types.h"
 #include "nsdl_types.h"
+
 #include "sn_nsdl.h"
 
-#if(SN_NSDL_HAVE_COAP_CAPABILITY)
+#if defined(SN_NSDL_HAVE_COAP_CAPABILITY)
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
 #endif
@@ -17,8 +22,6 @@
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
 
-#include <stdlib.h>
-#include <string.h>			// for memcomp
 
 /* Defines */
 #define WELLKNOWN_PATH_LEN				16
