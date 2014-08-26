@@ -46,7 +46,7 @@ BUILD_DIR := $(BUILD_DIR)_$(CPU)
 endif
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 $(OBJS): $(BUILD_DIR)/%.o: %.c
-	@mkdir -p $(shell dirname $@)
+	@$(MKDIR) -p -p $(shell dirname $@)
 	$(CC) $(CFLAGS) -o $@ $<
 
 $(LIB): $(OBJS)
