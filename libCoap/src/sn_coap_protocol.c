@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h> /* For libary malloc() */
 #include <string.h> /* For memset() and memcpy() */
-#ifndef REAL_EMBEDDED
+#ifdef __linux__
 #include <time.h>
 #endif
 
@@ -296,13 +296,13 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
 #endif /* ENABLE_RESENDINGS */
 
     /* Randomize global message ID */
-#ifndef REAL_EMBEDDED
+#ifdef __linux__
    	srand(time(NULL));
+
+	global_message_id = rand() % 400 + 100;
+#else
+    global_message_id = 100;
 #endif
-    {
-	    uint8_t random_number = rand();
-	    global_message_id = 100 + random_number;
-    }
 
 	return 0;
 }
