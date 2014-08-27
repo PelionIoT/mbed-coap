@@ -39,6 +39,12 @@ typedef enum sn_nsdl_oma_binding_and_mode_
 	BINDING_MODE_S = 0x04
 } sn_nsdl_oma_binding_and_mode_t;
 
+typedef enum sn_nsdl_registration_mode_
+{
+	REGISTER_WITH_RESOURCES = 0,
+	REGISTER_WITH_TEMPLATE
+}sn_nsdl_registration_mode_t;
+
 typedef struct omalw_certificate_list_
 {
 	uint8_t certificate_chain_len;
@@ -53,18 +59,19 @@ typedef struct omalw_certificate_list_
  */
 typedef struct sn_nsdl_ep_parameters_
 {
-	uint8_t 	*endpoint_name_ptr;		/**< Endpoint name */
+	uint8_t 	*endpoint_name_ptr;						/**< Endpoint name */
 	uint8_t  	endpoint_name_len;
 
-	uint8_t		*domain_name_ptr;		/**< Domain to register. If null, NSP uses default domain */
+	uint8_t		*domain_name_ptr;						/**< Domain to register. If null, NSP uses default domain */
 	uint8_t		domain_name_len;
 
-	uint8_t 	*type_ptr;				/**< Endpoint type */
+	uint8_t 	*type_ptr;								/**< Endpoint type */
 	uint8_t 	type_len;
 
-	uint8_t		*lifetime_ptr;			/**< Endpoint lifetime in seconds. eg. "1200" = 1200 seconds */
+	uint8_t		*lifetime_ptr;							/**< Endpoint lifetime in seconds. eg. "1200" = 1200 seconds */
 	uint8_t		lifetime_len;
 
+	sn_nsdl_registration_mode_t ds_register_mode;
 	sn_nsdl_oma_binding_and_mode_t binding_and_mode;
 
 } sn_nsdl_ep_parameters_s;

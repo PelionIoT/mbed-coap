@@ -434,17 +434,18 @@ int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 
 	/* Fill Uri-query options */
 	sn_nsdl_fill_uri_query_options(endpoint_info_ptr, register_message_ptr, SN_NSDL_EP_REGISTER_MESSAGE);
-#ifndef REG_TEMPLATE
-	/* Built body for message */
-	status = sn_nsdl_build_registration_body(register_message_ptr, 0);
-	if(status == SN_NSDL_FAILURE)
-	{ 
-		register_message_ptr->uri_path_ptr = NULL;
-		register_message_ptr->options_list_ptr->uri_host_ptr = NULL;
-		sn_coap_parser_release_allocated_coap_msg_mem(register_message_ptr);
-		return SN_NSDL_FAILURE;
+	if(endpoint_info_ptr->ds_register_mode == REGISTER_WITH_RESOURCES)
+	{
+		/* Built body for message */
+		status = sn_nsdl_build_registration_body(register_message_ptr, 0);
+		if(status == SN_NSDL_FAILURE)
+		{
+			register_message_ptr->uri_path_ptr = NULL;
+			register_message_ptr->options_list_ptr->uri_host_ptr = NULL;
+			sn_coap_parser_release_allocated_coap_msg_mem(register_message_ptr);
+			return SN_NSDL_FAILURE;
+		}
 	}
-#endif
 	/* Build and send coap message to NSP */
 	status = sn_nsdl_internal_coap_send(register_message_ptr, nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_REGISTER);
 
