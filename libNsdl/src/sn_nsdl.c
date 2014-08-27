@@ -67,6 +67,8 @@
 #define BS_EP_PARAMETER_LEN				3
 #define BS_EP_PARAMETER					{'e','p','='}
 
+#define BS_QUEUE_MODE_PARAMATER_LEN		2
+#define BS_QUEUE_MODE_PARAMATER			{'b','='}
 
 #define SN_NSDL_EP_REGISTER_MESSAGE		1
 #define SN_NSDL_EP_UPDATE_MESSAGE		2
@@ -116,6 +118,8 @@ static uint8_t bs_ep_name[] 					= BS_EP_PARAMETER;
 SN_NSDL_CONST_MEMORY_ATTRIBUTE
 static uint8_t et_parameter[] 					= ET_PARAMETER;
 
+SN_NSDL_CONST_MEMORY_ATTRIBUTE
+static uint8_t bs_queue_mode[]					= BS_QUEUE_MODE_PARAMATER;
 
 /* Global function pointers */
 static void 	*(*sn_nsdl_alloc)(uint16_t)  = 0;
@@ -130,7 +134,7 @@ static uint16_t						message_count;
 static uint8_t 						sn_nsdl_endpoint_registered = 0;
 
 /* OMA bootstrap server address information */
-static uint8_t 						*oma_bs_address_ptr 	= 0; 												/* Bootstrap address pointer */
+static uint8_t 						*oma_bs_address_ptr 	= 0; 												/* Bootstrap address pointer. If null, no bootstrap in use */
 static uint8_t						oma_bs_address_len 		= 0; 												/* Bootstrap address length */
 static uint16_t						oma_bs_port 			= 0; 												/* Bootstrap port */
 static void 						(*sn_nsdl_oma_bs_done_cb)(sn_nsdl_oma_server_info_t *server_info_ptr) = 0;	/* Callback to inform application when bootstrap is done */
@@ -152,6 +156,7 @@ static uint32_t 		sn_nsdl_ahextoi								(uint8_t *ptr, uint8_t len);
 static int8_t			sn_nsdl_resolve_lwm2m_address				(uint8_t *uri, uint16_t uri_len);
 static int8_t 			sn_nsdl_process_oma_tlv						(uint8_t *data_ptr, uint16_t data_len);
 static void 			sn_nsdl_check_oma_bs_status					(void);
+static int8_t 			sn_nsdl_create_oma_device_object_base		(sn_nsdl_oma_device_t *oma_device_setup_ptr, sn_nsdl_oma_binding_and_mode_t binding_and_mode);
 
 
 int8_t sn_nsdl_destroy(void)
@@ -574,6 +579,9 @@ int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 	sn_coap_hdr_s 	*register_message_ptr;
 	uint8_t			*temp_ptr;
 
+	if(!endpoint_info_ptr)
+		return SN_NSDL_FAILURE;
+
 	/*** Build endpoint register update message ***/
 
 	/* Allocate memory for header struct */
@@ -587,7 +595,7 @@ int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 	register_message_ptr->msg_type 	= 	COAP_MSG_TYPE_CONFIRMABLE;
 	register_message_ptr->msg_code 	= 	COAP_MSG_CODE_REQUEST_PUT;
 
-	register_message_ptr->uri_path_len 	= 	sizeof(resource_path_ptr) + ep_information_ptr->domain_name_len + ep_information_ptr->endpoint_name_len + 2; 	// = rd/domain/endpoint
+	register_message_ptr->uri_path_len 	= 	sizeof(resource_path_ptr) + ep_information_ptr->domain_name_len + ep_information_ptr->endpoint_name_len + 2; 	/* = rd/domain/endpoint */
 
 	register_message_ptr->uri_path_ptr 	= 	sn_nsdl_alloc(register_message_ptr->uri_path_len);
 	if(!register_message_ptr->uri_path_ptr)
@@ -624,6 +632,21 @@ int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 
 	/* Fill Uri-query options */
 	sn_nsdl_fill_uri_query_options(endpoint_info_ptr, register_message_ptr, SN_NSDL_EP_UPDATE_MESSAGE);
+
+	/* Build payload */
+	register_message_ptr->payload_len = sn_nsdl_calculate_registration_body_size(1);
+
+	if(register_message_ptr->payload_len)
+	{
+		register_message_ptr->payload_ptr = sn_nsdl_alloc(register_message_ptr->payload_len);
+
+		if(!register_message_ptr->payload_ptr)
+		{
+			sn_coap_parser_release_allocated_coap_msg_mem(register_message_ptr);
+			return SN_NSDL_FAILURE;
+		}
+		sn_nsdl_build_registration_body(register_message_ptr, 1);
+	}
 
 	/* Build and send coap message to NSP */
 	sn_nsdl_internal_coap_send(register_message_ptr, nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_UPDATE);
@@ -715,7 +738,7 @@ uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token
 /* ~ OMA functions ~ */
 /* * * * * * * * * * */
 
-int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr, void (*oma_bs_status_cb)(sn_nsdl_oma_server_info_t *server_info_ptr))
+int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr)
 {
 
 	/* Local variables */
@@ -723,10 +746,14 @@ int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_bs_e
 	uint8_t *uri_query_tmp_ptr;
 
 	/* Check parameters */
-	if(!bootstrap_address_ptr || !bootstrap_endpoint_info_ptr || !oma_bs_status_cb)
+	if(!bootstrap_address_ptr || !bootstrap_endpoint_info_ptr || !endpoint_info_ptr)
 		return SN_NSDL_FAILURE;
 
-	sn_nsdl_oma_bs_done_cb = oma_bs_status_cb;
+	/* Create device object */
+	if(sn_nsdl_create_oma_device_object_base(bootstrap_endpoint_info_ptr->device_object, endpoint_info_ptr->binding_and_mode) < 0)
+		return SN_NSDL_FAILURE;
+
+	sn_nsdl_oma_bs_done_cb = bootstrap_endpoint_info_ptr->oma_bs_status_cb;
 
 	/* Init CoAP header struct */
 	memset(&bootstrap_coap_header, 0, sizeof(sn_coap_hdr_s));
@@ -744,7 +771,7 @@ int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_bs_e
 	bootstrap_coap_header.uri_path_ptr = bs_uri;
 	bootstrap_coap_header.uri_path_len = sizeof(bs_uri);
 
-	uri_query_tmp_ptr = sn_nsdl_alloc(bootstrap_endpoint_info_ptr->endpoint_name_len + BS_EP_PARAMETER_LEN);
+	uri_query_tmp_ptr = sn_nsdl_alloc(endpoint_info_ptr->endpoint_name_len + BS_EP_PARAMETER_LEN);
 	if(!uri_query_tmp_ptr)
 	{
 		sn_nsdl_free(bootstrap_coap_header.options_list_ptr);
@@ -752,9 +779,9 @@ int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_bs_e
 	}
 
 	memcpy(uri_query_tmp_ptr, bs_ep_name, BS_EP_PARAMETER_LEN);
-	memcpy((uri_query_tmp_ptr + BS_EP_PARAMETER_LEN), bootstrap_endpoint_info_ptr->endpoint_name_ptr, bootstrap_endpoint_info_ptr->endpoint_name_len);
+	memcpy((uri_query_tmp_ptr + BS_EP_PARAMETER_LEN), endpoint_info_ptr->endpoint_name_ptr, endpoint_info_ptr->endpoint_name_len);
 
-	bootstrap_coap_header.options_list_ptr->uri_query_len = bootstrap_endpoint_info_ptr->endpoint_name_len + BS_EP_PARAMETER_LEN;
+	bootstrap_coap_header.options_list_ptr->uri_query_len = endpoint_info_ptr->endpoint_name_len + BS_EP_PARAMETER_LEN;
 	bootstrap_coap_header.options_list_ptr->uri_query_ptr = uri_query_tmp_ptr;
 
 	/* Save bootstrap server address */
@@ -863,109 +890,86 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	return SN_NSDL_SUCCESS;
 }
 
-int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *oma_device_setup_ptr)
+
+int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr)
 {
-	sn_nsdl_resource_info_s new_resource;
-	uint8_t object_path[6] = "0/3/11";
-	uint8_t resource_temp[3];
-	uint8_t i = 0, x = 0;
+	sn_nsdl_resource_info_s *resource_temp = 0;
+	uint8_t path[8] = "3/0/11/0";
 
-	/* Set object number */
-	while(sn_grs_search_resource(3, object_path, SN_GRS_DELETE_METHOD) != 0)
-	{
-		if(i <= 9)
-		{
-			object_path[0]++;
-			i++;
-		}
-		else
-			return SN_NSDL_FAILURE;
-	}
-
-	/* Create resources */
-	memset(&new_resource, 0, sizeof(sn_nsdl_resource_info_s));
-
-	new_resource.mode = SN_GRS_STATIC;
-
-	/* Create error - resource */
-	new_resource.access = SN_GRS_GET_ALLOWED;
-
-	new_resource.path = object_path;
-	new_resource.pathlen = 6;
-
-	sn_nsdl_itoa(resource_temp, (uint8_t)oma_device_setup_ptr->error_code);
-
-	new_resource.resource = resource_temp;
-	new_resource.resourcelen = 1;
-
-	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	if(!device_object_ptr)
 		return SN_NSDL_FAILURE;
 
+	/* * Error code * */
 
-	/* These resources can be only once.. */
-	//if(i == 0) //debug
+	/* Get first error message */
+	resource_temp = sn_grs_search_resource(8, path, SN_GRS_SEARCH_METHOD);
+
+	while(resource_temp)
 	{
-		/* Create supported binding and modes */
-		object_path[5] = '6';
-		new_resource.path = object_path;
-		new_resource.pathlen = 6;
+		if(resource_temp->resource)
+		{
+			/* If no error code set */
+			if(*resource_temp->resource == 0)
+			{
+				/* Set error code */
+				*resource_temp->resource = (uint8_t)device_object_ptr->error_code;
+				resource_temp->resourcelen = 1;
 
-		if(oma_device_setup_ptr->binding_and_mode & 0x01)
-		{
-			resource_temp[x] = 'U';
-			x++;
-			if(oma_device_setup_ptr->binding_and_mode & 0x02)
-			{
-				resource_temp[x] = 'Q';
-				x++;
+				sn_grs_update_resource(resource_temp);
+				return SN_NSDL_SUCCESS;
 			}
-		}
-		if(oma_device_setup_ptr->binding_and_mode & 0x04)
-		{
-			resource_temp[x] = 'S';
-			x++;
-			if((oma_device_setup_ptr->binding_and_mode & 0x02) && !(oma_device_setup_ptr->binding_and_mode & 0x01))
-			{
-				resource_temp[x] = 'Q';
-				x++;
-			}
+			break;
 		}
 
-		new_resource.access = SN_GRS_GET_ALLOWED;
-
-		new_resource.resourcelen = x;
-
-		if(new_resource.resourcelen)
-			new_resource.resource = resource_temp;
-		else
-			new_resource.resource = 0;
-
-
-		if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+		if(path[7] == '9')
 			return SN_NSDL_FAILURE;
 
-
-		/* Create dynamic reboot object */
-		new_resource.mode = SN_GRS_DYNAMIC;
-
-		new_resource.access = SN_GRS_PUT_ALLOWED;
-
-		object_path[4] = '4';
-
-		new_resource.path = object_path;
-		new_resource.pathlen = 5;
-
-		new_resource.resourcelen = 0;
-		new_resource.resource = 0;
-
-		new_resource.sn_grs_dyn_res_callback = oma_device_setup_ptr->sn_oma_device_boot_callback;
-
-		if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
-			return SN_NSDL_FAILURE;
+		path[7]++;
+		resource_temp = sn_grs_search_resource(8, path, SN_GRS_SEARCH_METHOD);
 	}
 
-	return i;
+	/* Create new resource for this error */
+	resource_temp = sn_nsdl_alloc(sizeof(sn_nsdl_resource_info_s));
+	if(!resource_temp)
+		return SN_NSDL_FAILURE;
 
+	memset(resource_temp, 0, sizeof(sn_nsdl_resource_info_s));
+
+	resource_temp->access = SN_GRS_GET_ALLOWED;
+	resource_temp->mode = SN_GRS_DYNAMIC;
+
+	resource_temp->path = path;
+	resource_temp->pathlen = 8;
+
+	resource_temp->resource = sn_nsdl_alloc(1);
+	if(!resource_temp->resource)
+	{
+		sn_nsdl_free(resource_temp);
+		return SN_NSDL_FAILURE;
+	}
+
+	*resource_temp->resource = (uint8_t)device_object_ptr->error_code;
+	resource_temp->resourcelen = 1;
+
+	resource_temp->resource_parameters_ptr = sn_nsdl_alloc(sizeof(sn_nsdl_resource_parameters_s));
+
+	memset(resource_temp->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
+
+	if(!resource_temp->resource_parameters_ptr)
+	{
+		sn_nsdl_free(resource_temp->resource);
+		sn_nsdl_free(resource_temp);
+
+		return SN_NSDL_FAILURE;
+	}
+
+	sn_nsdl_create_resource(resource_temp);
+
+	sn_nsdl_free(resource_temp->resource);
+	sn_nsdl_free(resource_temp->resource_parameters_ptr);
+	sn_nsdl_free(resource_temp);
+
+	return SN_NSDL_SUCCESS;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * */
@@ -1045,7 +1049,6 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 					{
 						sn_nsdl_send_coap_message(src_ptr, coap_response_ptr);
 						sn_coap_parser_release_allocated_coap_msg_mem(coap_response_ptr);
-						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
 					}
 					else
 					{
@@ -1061,7 +1064,7 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 					{
 						sn_nsdl_send_coap_message(src_ptr, coap_response_ptr);
 						sn_coap_parser_release_allocated_coap_msg_mem(coap_response_ptr);
-						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+
 					}
 					else
 					{
@@ -1071,6 +1074,7 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 					sn_nsdl_check_oma_bs_status();
 				}
 
+				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
 				return SN_NSDL_SUCCESS;
 			}
 
@@ -1096,7 +1100,18 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 
 				sn_nsdl_check_oma_bs_status();
 			}
+			else
+			{
+				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+				return SN_NSDL_FAILURE;
+			}
 		}
+		else
+		{
+			sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+			return SN_NSDL_FAILURE;
+		}
+
 
 		return SN_NSDL_SUCCESS;
 	}
@@ -1273,6 +1288,111 @@ static void sn_nsdl_resolve_nsp_address(void)
 	/* Todo: get NSP address */
 }
 
+static int8_t sn_nsdl_create_oma_device_object_base(sn_nsdl_oma_device_t *oma_device_setup_ptr, sn_nsdl_oma_binding_and_mode_t binding_and_mode)
+{
+	sn_nsdl_resource_info_s new_resource;
+	uint8_t object_path[8] = "3/0/11/0";
+	uint8_t resource_temp[3];
+	uint8_t x = 0;
+
+	if(!oma_device_setup_ptr)
+		return SN_NSDL_FAILURE;
+
+	/* * Create resources. * */
+
+	/* These resources can be created multiple times. */
+	memset(&new_resource, 0, sizeof(sn_nsdl_resource_info_s));
+	new_resource.resource_parameters_ptr = sn_nsdl_alloc(sizeof(sn_nsdl_resource_parameters_s));
+	if(!new_resource.resource_parameters_ptr)
+		return SN_NSDL_FAILURE;
+
+	memset(new_resource.resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
+
+	/* Create error - resource */
+	new_resource.mode = SN_GRS_STATIC;
+	new_resource.access = SN_GRS_GET_ALLOWED;
+
+	new_resource.path = object_path;
+	new_resource.pathlen = 8;
+
+	sn_nsdl_itoa(resource_temp, (uint8_t)oma_device_setup_ptr->error_code);
+
+	new_resource.resource = resource_temp;
+	new_resource.resourcelen = 1;
+
+	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	{
+		sn_nsdl_free(new_resource.resource_parameters_ptr);
+		return SN_NSDL_FAILURE;
+	}
+
+	/* These resources can be only once, during OMA bootstrap.. */
+	/* Create supported binding and modes */
+	object_path[5] = '6';
+	new_resource.path = object_path;
+	new_resource.pathlen = 6;
+
+	if(binding_and_mode & 0x01)
+	{
+		resource_temp[x] = 'U';
+		x++;
+		if(binding_and_mode & 0x02)
+		{
+			resource_temp[x] = 'Q';
+			x++;
+		}
+	}
+	if(binding_and_mode & 0x04)
+	{
+		resource_temp[x] = 'S';
+		x++;
+		if((binding_and_mode & 0x02) && !(binding_and_mode & 0x01))
+		{
+			resource_temp[x] = 'Q';
+			x++;
+		}
+	}
+
+	new_resource.resourcelen = x;
+
+	if(new_resource.resourcelen)
+		new_resource.resource = resource_temp;
+	else
+		new_resource.resource = 0;
+
+
+	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	{
+		sn_nsdl_free(new_resource.resource_parameters_ptr);
+		return SN_NSDL_FAILURE;
+	}
+
+
+	/* Create dynamic reboot object */
+	new_resource.mode = SN_GRS_DYNAMIC;
+
+	new_resource.access = SN_GRS_POST_ALLOWED;
+
+	object_path[4] = '4';
+
+	new_resource.path = object_path;
+	new_resource.pathlen = 5;
+
+	new_resource.resourcelen = 0;
+	new_resource.resource = 0;
+
+	new_resource.sn_grs_dyn_res_callback = oma_device_setup_ptr->sn_oma_device_boot_callback;
+
+	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	{
+		sn_nsdl_free(new_resource.resource_parameters_ptr);
+		return SN_NSDL_FAILURE;
+	}
+
+	sn_nsdl_free(new_resource.resource_parameters_ptr);
+	return SN_NSDL_SUCCESS;
+}
+
 /**
  * \fn static int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr)
  *
@@ -1327,7 +1447,7 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 			}
 			else
 			{
-				resource_temp_ptr->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_REGISTERING;
+				resource_temp_ptr->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_REGISTERED;
 			}
 
 			/* If not first resource, add '.' to separator */
@@ -1526,7 +1646,7 @@ static uint8_t sn_nsdl_calculate_uri_query_option_len(sn_nsdl_ep_parameters_s *e
 		number_of_parameters++;
 	}
 
-	if((endpoint_info_ptr->type_len != 0) && (endpoint_info_ptr->type_ptr != 0))
+	if((endpoint_info_ptr->type_len != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE) && (endpoint_info_ptr->type_ptr != 0))
 	{
 		return_value+=endpoint_info_ptr->type_len;
 		return_value += ET_PARAMETER_LEN; 		//et=
@@ -1540,10 +1660,23 @@ static uint8_t sn_nsdl_calculate_uri_query_option_len(sn_nsdl_ep_parameters_s *e
 		number_of_parameters++;
 	}
 
-	if((endpoint_info_ptr->domain_name_len != 0) && (endpoint_info_ptr->domain_name_ptr != 0))
+	if((endpoint_info_ptr->domain_name_len != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE) && (endpoint_info_ptr->domain_name_ptr != 0))
 	{
 		return_value+=endpoint_info_ptr->domain_name_len;
 		return_value += DOMAIN_PARAMETER_LEN;		//d=
+		number_of_parameters++;
+	}
+
+	if((endpoint_info_ptr->binding_and_mode != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE))
+	{
+		return_value += BS_QUEUE_MODE_PARAMATER_LEN;
+		if(endpoint_info_ptr->binding_and_mode & 0x01)
+			return_value++;
+		if(endpoint_info_ptr->binding_and_mode & 0x04)
+			return_value++;
+		if((endpoint_info_ptr->binding_and_mode & 0x02) && ((endpoint_info_ptr->binding_and_mode & 0x04)||(endpoint_info_ptr->binding_and_mode & 0x01)))
+			return_value++;
+
 		number_of_parameters++;
 	}
 
@@ -1597,7 +1730,7 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
 	/* If endpoint type is configured, fill needed fields */
 	/******************************************************/
 
-	if((parameter_ptr->type_len != 0) && (parameter_ptr->type_ptr != 0))
+	if((parameter_ptr->type_len != 0) && (parameter_ptr->type_ptr != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE))
 	{
 		if(temp_ptr != source_msg_ptr->options_list_ptr->uri_query_ptr)
 			*temp_ptr++ = '&';
@@ -1628,7 +1761,7 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
 	/* If domain is configured, fill needed fields */
 	/******************************************************/
 
-	if((parameter_ptr->domain_name_len != 0) && (parameter_ptr->domain_name_ptr != 0))
+	if((parameter_ptr->domain_name_len != 0) && (parameter_ptr->domain_name_ptr != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE))
 	{
 		if(temp_ptr != source_msg_ptr->options_list_ptr->uri_query_ptr)
 			*temp_ptr++ = '&';
@@ -1637,6 +1770,33 @@ static int8_t sn_nsdl_fill_uri_query_options(sn_nsdl_ep_parameters_s *parameter_
 		temp_ptr += DOMAIN_PARAMETER_LEN;
 		memcpy(temp_ptr, parameter_ptr->domain_name_ptr, parameter_ptr->domain_name_len);
 		temp_ptr += parameter_ptr->domain_name_len;
+	}
+
+	/******************************************************/
+	/* If queue-mode is configured, fill needed fields    */
+	/******************************************************/
+
+	if((parameter_ptr->binding_and_mode != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE))
+	{
+		if(temp_ptr != source_msg_ptr->options_list_ptr->uri_query_ptr)
+			*temp_ptr++ = '&';
+
+		memcpy(temp_ptr, bs_queue_mode, sizeof(bs_queue_mode));
+		temp_ptr += BS_QUEUE_MODE_PARAMATER_LEN;
+
+		if(parameter_ptr->binding_and_mode & 0x01)
+		{
+			*temp_ptr++ = 'U';
+			if(parameter_ptr->binding_and_mode & 0x02)
+				*temp_ptr++ = 'Q';
+		}
+
+		if(parameter_ptr->binding_and_mode & 0x04)
+		{
+			*temp_ptr++ = 'S';
+			if((parameter_ptr->binding_and_mode & 0x02) && !(parameter_ptr->binding_and_mode & 0x01))
+				*temp_ptr++ = 'Q';
+		}
 	}
 
 	return SN_NSDL_SUCCESS;

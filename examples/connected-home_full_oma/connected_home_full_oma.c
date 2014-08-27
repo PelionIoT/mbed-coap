@@ -52,7 +52,7 @@ static uint8_t res_temp[] = {"sen/temp"};
 static uint8_t res_temp_val[] = {"25.4"};
 static uint8_t res_type_test[] = {"t"};
 
-static uint8_t ep[] = {"nsdl-power"};
+static uint8_t query[] = "nodesec-001";
 static uint8_t ep_type[] = {"PowerNode"};
 static uint8_t lifetime_ptr[] = {"1200"};
 
@@ -85,24 +85,27 @@ static int sock_server, slen_sa_dst=sizeof(sa_dst);
 
 /* Thread globals */
 static	pthread_t 	coap_exec_thread 				= 0; /* Thread for coap_exec-function */
-static	pthread_t 	socket_read_thread 				= 0; /* Thread for coap_exec-function */
+static	pthread_t 	socket_read_thread 				= 0; /* Thread for socket reading */
+
 /* CoAP related globals*/
 uint16_t current_mid = 0;
 uint8_t	 text_plain = COAP_CT_TEXT_PLAIN;
 uint8_t	 link_format = COAP_CT_LINK_FORMAT;
 
-uint8_t nsp_registered = 0;
-
 /* eDTLS related globals*/
 uint8_t edtls_connection_status;
+uint8_t bs_edtls_connection_status;
+
 int16_t edtls_session_id;
+int16_t bs_edtls_session_id;
+
 static edtls_certificate_chain_entry_t certificate_chain_entry;
 
 /* Resource related globals*/
-char relay_state = '1';
-uint8_t *reg_location = 0;
-int8_t reg_location_len;
+uint8_t relay_state = '1';
+
 uint8_t nsp_addr[16];
+
 uint8_t obs_token[8];
 uint8_t obs_token_len = 0;
 
@@ -118,6 +121,7 @@ static uint8_t delayed_response_cnt = 0;
 uint8_t domain[] = {"domain"};
 static uint32_t ns_system_time = 1;
 static volatile int16_t rcv_size=0;
+
 static uint8_t buf[BUFLEN];
 static sn_edtls_address_t edtls_server_address;
 
@@ -166,8 +170,8 @@ int svr_ipv4(void)
 	if (bind(sock_server, (struct sockaddr *) &sa_src, sizeof(sa_src))==-1)
 		stop_pgm("bind() error");
 
-	/* Initialize the libNsdl */
 
+	/* Initialize the libNsdl */
 	memory_struct.sn_nsdl_alloc = &own_alloc;
 	memory_struct.sn_nsdl_free = &own_free;
 
@@ -230,57 +234,39 @@ int svr_ipv4(void)
 
 	edtls_session_id = do_edtls_handshake(&edtls_server_address);
 
-	if(edtls_session_id == 0)
+	if(edtls_session_id < 0)
+	{
 		return 0;
+	}
 
 	rcv_size = 0;
 
+	sn_nsdl_bs_ep_info_t endpoint_info;
 	sn_nsdl_oma_device_t oma_device_setup_ptr;
-	/*
-	sn_nsdl_oma_device_error_t error_code;
-	sn_nsdl_oma_binding_and_mode_t binding_and_mode;
-	uint8_t (*sn_oma_device_boot_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
-	*/
-	oma_device_setup_ptr.error_code = 1;
-	oma_device_setup_ptr.binding_and_mode = 0;
+
+	oma_device_setup_ptr.error_code = 0;
 	oma_device_setup_ptr.sn_oma_device_boot_callback = 0;
 
 
-	sn_nsdl_create_oma_device_object(&oma_device_setup_ptr);
-
-	oma_device_setup_ptr.binding_and_mode = 1;
-	sn_nsdl_create_oma_device_object(&oma_device_setup_ptr);
-	oma_device_setup_ptr.binding_and_mode = 2;
-	sn_nsdl_create_oma_device_object(&oma_device_setup_ptr);
-	oma_device_setup_ptr.binding_and_mode = 3;
-	sn_nsdl_create_oma_device_object(&oma_device_setup_ptr);
-	oma_device_setup_ptr.binding_and_mode = 4;
-	sn_nsdl_create_oma_device_object(&oma_device_setup_ptr);
-	oma_device_setup_ptr.binding_and_mode = 5;
-	sn_nsdl_create_oma_device_object(&oma_device_setup_ptr);
-	oma_device_setup_ptr.binding_and_mode = 6;
-	sn_nsdl_create_oma_device_object(&oma_device_setup_ptr);
-	oma_device_setup_ptr.binding_and_mode = 7;
-	sn_nsdl_create_oma_device_object(&oma_device_setup_ptr);
-
-
-return 0;
-
-
 	sn_nsdl_addr_s address;
-	sn_nsdl_bs_ep_info_t endpoint_info;
 
-	uint8_t query[] = "nodesec-001";
+	endpoint_info.device_object = &oma_device_setup_ptr;
+	endpoint_info.oma_bs_status_cb = &oma_status;
 
-	endpoint_info.endpoint_name_ptr = query;
-	endpoint_info.endpoint_name_len = 11;
+	endpoint_info.device_object = &oma_device_setup_ptr;
+
+	/* Macro to allocate edpoint_ptr structure for endpoint parameters (name, type and lifetime) */
+	INIT_REGISTER_NSDL_ENDPOINT(endpoint_ptr, query, ep_type, lifetime_ptr);
+
+	endpoint_ptr->binding_and_mode = BINDING_MODE_U | BINDING_MODE_Q;
+
 
 	address.port = arg_dport;
 	address.type = SN_NSDL_ADDRESS_TYPE_IPV4;
 	address.addr_ptr = nsp_addr;
 	address.addr_len = 4;
 
-	printf("bootstrap return %d\n",sn_nsdl_oma_bootstrap(&address, &endpoint_info, &oma_status));
+	printf("bootstrap return %d\n",sn_nsdl_oma_bootstrap(&address, endpoint_ptr, &endpoint_info));
 
 
 	while (!oma)
@@ -327,7 +313,7 @@ return 0;
 	}
 
 	/**/
-	sleep(1);
+	sleep(5);
 
 	edtls_session_id = do_edtls_handshake(&edtls_server_address);
 
@@ -346,8 +332,6 @@ return 0;
 	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_temp)-1, (uint8_t*) res_temp, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &general_resource_cb)
 
 	/* Register with NSP */
-	/* Macro to allocate edpoint_ptr structure for endpoint parameters (name, type and lifetime) */
-	INIT_REGISTER_NSDL_ENDPOINT(endpoint_ptr, ep, ep_type, lifetime_ptr);
 
 	/* Call sn_nsdl_register_endpoint() to send NSP registration message */
 	if(sn_nsdl_register_endpoint(endpoint_ptr) == SN_NSDL_FAILURE)
@@ -364,6 +348,13 @@ return 0;
 
 	/* 				Main loop.				*/
 	/* Listen and process incoming messages */
+
+	sn_nsdl_oma_device_t device_object_ptr;
+	memset(&device_object_ptr, 0, sizeof(sn_nsdl_oma_device_t));
+
+	device_object_ptr.error_code = 1;
+
+	sn_nsdl_create_oma_device_object(&device_object_ptr);
 
 	while (1)
 	{
@@ -471,24 +462,12 @@ uint8_t rx_function(sn_coap_hdr_s *coap_header, sn_nsdl_addr_s *address_ptr)
 	printf("RX callback mid:%d\n", coap_header->msg_id);
 
 	/* If message is response to NSP registration */
-	if((coap_header->msg_code == COAP_MSG_CODE_RESPONSE_CREATED) && !nsp_registered)
+	if((coap_header->msg_code == COAP_MSG_CODE_RESPONSE_CREATED) && !sn_nsdl_is_ep_registered())
 	{
-		reg_location_len = coap_header->options_list_ptr->location_path_len;
-
-		if(reg_location)
-			free(reg_location);
-
-		reg_location = malloc(reg_location_len);
-
-		if(!reg_location)
-			return 0;
-
-		memcpy(reg_location, coap_header->options_list_ptr->location_path_ptr, reg_location_len);
 		printf("Registered to NSP: ");
-		for(i = 0; i < reg_location_len; i++)
-			printf("%c", *(reg_location+i));
+		for(i = 0; i < coap_header->options_list_ptr->location_path_len; i++)
+			printf("%c", *(coap_header->options_list_ptr->location_path_ptr+i));
 		printf("\n");
-		nsp_registered = 1;
 	}
 
 	return 0;
@@ -499,9 +478,6 @@ static void ctrl_c_handle_function(void)
 	printf("Pressed ctrl-c\n");
 	sn_nsdl_unregister_endpoint();
 	usleep(100);
-
-	if(reg_location)
-		own_free(reg_location);
 
 	exit(1);
 }
@@ -540,14 +516,17 @@ static void coap_exec_poll_function(void)
 		}
 
 		/* Check if reregistration needed */
-		if(!(ns_system_time % (uint32_t)120) && ns_system_time)
+		if(!(ns_system_time % (uint32_t)20) && ns_system_time)
 		{
 			printf("reregister!\n");
 			sn_nsdl_ep_parameters_s *endpoint_ptr = 0;
 
-			INIT_REGISTER_NSDL_ENDPOINT(endpoint_ptr, ep, ep_type, lifetime_ptr);
+			/* Macro to allocate edpoint_ptr structure for endpoint parameters (name, type and lifetime) */
+			INIT_REGISTER_NSDL_ENDPOINT(endpoint_ptr, query, ep_type, lifetime_ptr);
 
-			sn_nsdl_register_endpoint(endpoint_ptr);
+			endpoint_ptr->binding_and_mode = BINDING_MODE_U | BINDING_MODE_Q;
+
+			sn_nsdl_update_registration(endpoint_ptr);
 
 			CLEAN_REGISTER_NSDL_ENDPOINT(endpoint_ptr);
 
@@ -581,6 +560,7 @@ static void coap_exec_poll_function(void)
 
 			delayed_response_cnt = 0;
 		}
+
 		else if(delayed_response_cnt > 1)
 			delayed_response_cnt--;
 	}

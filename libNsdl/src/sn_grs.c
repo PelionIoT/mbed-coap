@@ -539,7 +539,10 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 				}
 				else
 				{
-					resource_temp_ptr->sn_grs_dyn_res_callback(coap_packet_ptr, src_addr_ptr,0);
+					/* Do not call null pointer.. */
+					if(resource_temp_ptr->sn_grs_dyn_res_callback != NULL)
+						resource_temp_ptr->sn_grs_dyn_res_callback(coap_packet_ptr, src_addr_ptr,0);
+
 					if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
 					{
 						sn_grs_free(coap_packet_ptr->payload_ptr);
@@ -797,24 +800,27 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 			}
 
 			/* Add payload */
-			response_message_hdr_ptr->payload_len = resource_temp_ptr->resourcelen;
-			response_message_hdr_ptr->payload_ptr = sn_grs_alloc(response_message_hdr_ptr->payload_len);
-
-			if(!response_message_hdr_ptr->payload_ptr)
+			if(resource_temp_ptr->resourcelen != 0)
 			{
-				sn_coap_parser_release_allocated_coap_msg_mem(response_message_hdr_ptr);
+				response_message_hdr_ptr->payload_len = resource_temp_ptr->resourcelen;
+				response_message_hdr_ptr->payload_ptr = sn_grs_alloc(response_message_hdr_ptr->payload_len);
 
-				if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
+				if(!response_message_hdr_ptr->payload_ptr)
 				{
-					sn_grs_free(coap_packet_ptr->payload_ptr);
-					coap_packet_ptr->payload_ptr = 0;
+					sn_coap_parser_release_allocated_coap_msg_mem(response_message_hdr_ptr);
+
+					if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
+					{
+						sn_grs_free(coap_packet_ptr->payload_ptr);
+						coap_packet_ptr->payload_ptr = 0;
+					}
+
+					sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+					return SN_NSDL_FAILURE;
 				}
 
-				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
-				return SN_NSDL_FAILURE;
+				memcpy(response_message_hdr_ptr->payload_ptr, resource_temp_ptr->resource, response_message_hdr_ptr->payload_len);
 			}
-
-			memcpy(response_message_hdr_ptr->payload_ptr, resource_temp_ptr->resource, response_message_hdr_ptr->payload_len);
 		}
 
 		sn_grs_send_coap_message(src_addr_ptr, response_message_hdr_ptr);

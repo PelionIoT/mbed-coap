@@ -29,7 +29,7 @@ extern "C" {
 #define SN_COAP_ACK_INFO_MAX_COUNT_MESSAGES_SAVED   	10
 
 /* * For Message resending * */
-#define ENABLE_RESENDINGS	1								/**< Enable / Disable resending from library in building */
+#define ENABLE_RESENDINGS								1	/**< Enable / Disable resending from library in building */
 
 #define SN_COAP_RESENDING_MAX_COUNT		            	3	/**< Default number of re-sendings  */
 #define SN_COAP_RESENDING_QUEUE_SIZE_MSGS 		    	2	/**< Default re-sending queue size - defines how many messages can be stored. Setting this to 0 disables feature */

@@ -31,6 +31,14 @@ typedef enum omalw_server_security_
 	NO_SEC = 3
 }omalw_server_security_t;
 
+typedef enum sn_nsdl_oma_binding_and_mode_
+{
+	BINDING_MODE_NOT_SET = 0,
+	BINDING_MODE_U = 0x01,
+	BINDING_MODE_Q = 0x02,
+	BINDING_MODE_S = 0x04
+} sn_nsdl_oma_binding_and_mode_t;
+
 typedef struct omalw_certificate_list_
 {
 	uint8_t certificate_chain_len;
@@ -56,6 +64,8 @@ typedef struct sn_nsdl_ep_parameters_
 
 	uint8_t		*lifetime_ptr;			/**< Endpoint lifetime in seconds. eg. "1200" = 1200 seconds */
 	uint8_t		lifetime_len;
+
+	sn_nsdl_oma_binding_and_mode_t binding_and_mode;
 
 } sn_nsdl_ep_parameters_s;
 
@@ -121,13 +131,6 @@ typedef enum sn_nsdl_oma_device_error_
 	PERIPHERAL_MALFUNCTION = 8
 } sn_nsdl_oma_device_error_t;
 
-typedef enum sn_nsdl_oma_binding_and_mode_
-{
-	BINDING_MODE_U = 0x01,
-	BINDING_MODE_Q = 0x02,
-	BINDING_MODE_S = 0x04
-} sn_nsdl_oma_binding_and_mode_t;
-
 
 /**
  * \brief Used protocol
@@ -191,15 +194,13 @@ typedef struct sn_nsdl_resource_info_
 
 } sn_nsdl_resource_info_s;
 
-/**
- * \brief Defines endpoint parameters to OMA bootstrap.
- */
-typedef struct sn_nsdl_bs_ep_info_
-{
-	uint8_t *endpoint_name_ptr;
-	uint16_t endpoint_name_len;
 
-} sn_nsdl_bs_ep_info_t;
+typedef struct sn_nsdl_oma_device_
+{
+	sn_nsdl_oma_device_error_t error_code;
+	uint8_t (*sn_oma_device_boot_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
+
+}sn_nsdl_oma_device_t;
 
 /**
  * \brief Defines OMAlw server information
@@ -211,13 +212,17 @@ typedef struct sn_nsdl_oma_server_info_
 
 }sn_nsdl_oma_server_info_t;
 
-typedef struct sn_nsdl_oma_device_
+/**
+ * \brief Defines endpoint parameters to OMA bootstrap.
+ */
+typedef struct sn_nsdl_bs_ep_info_
 {
-	sn_nsdl_oma_device_error_t error_code;
-	sn_nsdl_oma_binding_and_mode_t binding_and_mode;
-	uint8_t (*sn_oma_device_boot_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
+	void (*oma_bs_status_cb)(sn_nsdl_oma_server_info_t *);
+	sn_nsdl_oma_device_t *device_object;
+} sn_nsdl_bs_ep_info_t;
 
-}sn_nsdl_oma_device_t;
+
+
 
 /**
  * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
@@ -515,13 +520,13 @@ extern int8_t sn_nsdl_destroy(void);
  *
  * \brief Starts OMA bootstrap
  */
-extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr, void (*oma_bs_status_cb)(sn_nsdl_oma_server_info_t *server_info_ptr));
+extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
 
 extern omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain);
 
 extern int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
 
-extern int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *oma_device_setup_ptr);
+extern int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr);
 
 #ifdef __cplusplus
 }
