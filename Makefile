@@ -33,24 +33,5 @@ override CFLAGS += -DREAL_EMBEDDED
 
 include ../libService/toolchain_rules.mk
 
-.PHONY: all
-all: $(LIB)
-	@echo Built $(LIB)
+$(eval $(call generate_rules,$(LIB),$(SRCS)))
 
-#
-# Define build dir outside from src folders
-#
-BUILD_DIR := output/$(CC)
-ifneq (,$(CPU))
-BUILD_DIR := $(BUILD_DIR)_$(CPU)
-endif
-OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
-$(OBJS): $(BUILD_DIR)/%.o: %.c
-	@$(MKDIR) -p -p $(shell dirname $@)
-	$(CC) $(CFLAGS) -o $@ $<
-
-$(LIB): $(OBJS)
-	$(AR) $(AROPTS)
-
-clean:
-	@$(RM) -r output
