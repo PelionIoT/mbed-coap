@@ -26,3 +26,5 @@ Backup*
 *.crf
 *.uvopt
 libEdtls
+*.out
+
