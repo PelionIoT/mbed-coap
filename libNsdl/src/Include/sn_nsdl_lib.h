@@ -22,6 +22,9 @@ extern "C" {
 #define SN_NSDL_ENDPOINT_NOT_REGISTERED  0
 #define SN_NSDL_ENDPOINT_IS_REGISTERED   1
 
+/**
+ * \brief Received device server security
+ */
 typedef enum omalw_server_security_
 {
 	SEC_NOT_SET = -1,
@@ -31,6 +34,9 @@ typedef enum omalw_server_security_
 	NO_SEC = 3
 }omalw_server_security_t;
 
+/**
+ * \brief Endpoint binding and mode
+ */
 typedef enum sn_nsdl_oma_binding_and_mode_
 {
 	BINDING_MODE_NOT_SET = 0,
@@ -39,11 +45,18 @@ typedef enum sn_nsdl_oma_binding_and_mode_
 	BINDING_MODE_S = 0x04
 } sn_nsdl_oma_binding_and_mode_t;
 
+/**
+ * \brief Endpoint registration mode.
+ * 		If REGISTER_WITH_RESOURCES, endpoint sends list of all resources during registration.
+ * 		If REGISTER_WITH_TEMPLATE, endpoint sends registration without resource list. Device server must have
+ * 		correctly configured template.
+ */
 typedef enum sn_nsdl_registration_mode_
 {
 	REGISTER_WITH_RESOURCES = 0,
 	REGISTER_WITH_TEMPLATE
 }sn_nsdl_registration_mode_t;
+
 
 typedef struct omalw_certificate_list_
 {
@@ -523,16 +536,31 @@ extern int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_
 extern int8_t sn_nsdl_destroy(void);
 
 /**
- * \fn extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
+ * \fn extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
  *
  * \brief Starts OMA bootstrap
  */
 extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
 
+/**
+ * \fn extern omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain);
+ *
+ * \brief Get pointer to received device server certificates
+ */
 extern omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain);
 
+/**
+ * \fn extern int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
+ *
+ * \brief Updates certificate pointers to resource server.
+ */
 extern int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
 
+/**
+ * \fn extern int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr);
+ *
+ * \brief Creates new device object resource
+ */
 extern int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr);
 
 #ifdef __cplusplus

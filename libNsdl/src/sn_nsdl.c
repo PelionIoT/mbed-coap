@@ -515,6 +515,9 @@ int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 			ep_information_ptr->endpoint_name_len = endpoint_info_ptr->endpoint_name_len;
 
 		}
+
+		ep_information_ptr->binding_and_mode = endpoint_info_ptr->binding_and_mode;
+		ep_information_ptr->ds_register_mode = endpoint_info_ptr->ds_register_mode;
 	}
 
 	return status;
@@ -635,18 +638,21 @@ int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 	sn_nsdl_fill_uri_query_options(endpoint_info_ptr, register_message_ptr, SN_NSDL_EP_UPDATE_MESSAGE);
 
 	/* Build payload */
-	register_message_ptr->payload_len = sn_nsdl_calculate_registration_body_size(1);
-
-	if(register_message_ptr->payload_len)
+	if(ep_information_ptr->ds_register_mode == REGISTER_WITH_RESOURCES)
 	{
-		register_message_ptr->payload_ptr = sn_nsdl_alloc(register_message_ptr->payload_len);
+		register_message_ptr->payload_len = sn_nsdl_calculate_registration_body_size(1);
 
-		if(!register_message_ptr->payload_ptr)
+		if(register_message_ptr->payload_len)
 		{
-			sn_coap_parser_release_allocated_coap_msg_mem(register_message_ptr);
-			return SN_NSDL_FAILURE;
+			register_message_ptr->payload_ptr = sn_nsdl_alloc(register_message_ptr->payload_len);
+
+			if(!register_message_ptr->payload_ptr)
+			{
+				sn_coap_parser_release_allocated_coap_msg_mem(register_message_ptr);
+				return SN_NSDL_FAILURE;
+			}
+			sn_nsdl_build_registration_body(register_message_ptr, 1);
 		}
-		sn_nsdl_build_registration_body(register_message_ptr, 1);
 	}
 
 	/* Build and send coap message to NSP */
