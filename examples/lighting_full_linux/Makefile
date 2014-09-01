@@ -2,8 +2,8 @@ PLATFORM=
 OS = LINUX
 TARGET	= lighting_full
 OBJECTS = main.o lighting_full.o 
-CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -I ../../libNsdl/src/Include  -DHAVE_DEBUG
-LDFLAGS = -L../../libCoap/x86_gcc/ -L../../libNsdl/x86_gcc/ -D_REENTRANT -lpthread -lNsdl -lCoap 
+CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../include -I ../../../libService/include -std=c99 -DHAVE_DEBUG
+LDFLAGS = -L../../ -D_REENTRANT -lpthread -lnsdl_gcc 
 
 all: $(TARGET) 
 

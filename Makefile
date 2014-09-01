@@ -24,12 +24,11 @@ SRCS := \
 	libCoap/src/sn_coap_header_check.c \
 	libCoap/src/sn_coap_builder.c \
 
-override CFLAGS += -IlibNsdl/src/Include/
+override CFLAGS += -IlibNsdl/src/include/
 override CFLAGS += -IlibCoap/src/include/
+override CFLAGS += -Iinclude/
 SERVLIB_DIR := ../libService
 override CFLAGS += -I$(SERVLIB_DIR)/include
-
-override CFLAGS += -DREAL_EMBEDDED
 
 include ../libService/toolchain_rules.mk
 
