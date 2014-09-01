@@ -84,8 +84,8 @@ typedef struct sn_nsdl_ep_parameters_
 	uint8_t		*lifetime_ptr;							/**< Endpoint lifetime in seconds. eg. "1200" = 1200 seconds */
 	uint8_t		lifetime_len;
 
-	sn_nsdl_registration_mode_t ds_register_mode;
-	sn_nsdl_oma_binding_and_mode_t binding_and_mode;
+	sn_nsdl_registration_mode_t ds_register_mode;		/**< Defines registration mode */
+	sn_nsdl_oma_binding_and_mode_t binding_and_mode;	/**< Defines endpoints binding and mode */
 
 } sn_nsdl_ep_parameters_s;
 
@@ -214,11 +214,13 @@ typedef struct sn_nsdl_resource_info_
 
 } sn_nsdl_resource_info_s;
 
-
+/**
+ * \brief Defines OMA device object parameters.
+ */
 typedef struct sn_nsdl_oma_device_
 {
-	sn_nsdl_oma_device_error_t error_code;
-	uint8_t (*sn_oma_device_boot_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
+	sn_nsdl_oma_device_error_t error_code;															/**< Error code. Mandatory. Can be more than one */
+	uint8_t (*sn_oma_device_boot_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);	/**< Device boot callback function. If defined, this is called when reset request is received */
 
 }sn_nsdl_oma_device_t;
 
@@ -547,7 +549,7 @@ extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_ns
  *
  * \brief Get pointer to received device server certificates
  */
-extern omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain);
+extern omalw_certificate_list_t *sn_nsdl_get_certificates(void);
 
 /**
  * \fn extern int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);

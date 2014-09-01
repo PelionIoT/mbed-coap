@@ -74,6 +74,7 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *addr
 static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare);
 void print_array(uint8_t *ptr, uint16_t len);
 void send_ack(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address);
+void create_example_resources(void);
 uint8_t edtls_tx(uint8_t *data_ptr, uint16_t data_len, sn_edtls_address_t *dst_addr);
 void edtls_registration_status(uint8_t status, int16_t session_id);
 static int16_t do_edtls_handshake(sn_edtls_address_t *edtls_address);
@@ -99,7 +100,6 @@ uint8_t bs_edtls_connection_status;
 int16_t edtls_session_id;
 int16_t bs_edtls_session_id;
 
-static edtls_certificate_chain_entry_t certificate_chain_entry;
 
 /* Resource related globals*/
 uint8_t relay_state = '1';
@@ -134,10 +134,8 @@ uint8_t received_address[4];
 int svr_ipv4(void)
 {
 	/* Local variables */
-
 	sn_nsdl_mem_s memory_struct;
 	sn_nsdl_ep_parameters_s *endpoint_ptr = 0;
-	sn_nsdl_resource_info_s	*resource_ptr = 0;
 
 	/* eDTLS related variables */
 	sn_edtls_data_buffer_t edtls_buffer_s;
@@ -145,19 +143,20 @@ int svr_ipv4(void)
 	memset(&edtls_server_address, 0, sizeof(sn_edtls_address_t));
 
 	memset(&received_packet_address, 0, sizeof(sn_nsdl_addr_s));
+
 	received_packet_address.addr_ptr = received_address;
 
 	/* Catch ctrl-c */
 	if (signal(SIGINT, (signalhandler_t)ctrl_c_handle_function) == SIG_ERR)
-	{
-		printf("Error with SIGINT: %s\n", strerror(errno));
 		return -1;
-	}
+
 	printf("\nCoAP server\nport: %i\n", arg_port);
 
 	/* Open the server socket*/
 	if ((sock_server=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))==-1)
 		stop_pgm("socket() error");
+
+	inet_pton(AF_INET, arg_dst, &nsp_addr);
 
 	/* Init the listen port addr*/
 	memset((char *) &sa_src, 0, sizeof(sa_src));
@@ -170,7 +169,11 @@ int svr_ipv4(void)
 	if (bind(sock_server, (struct sockaddr *) &sa_src, sizeof(sa_src))==-1)
 		stop_pgm("bind() error");
 
+	/* Create used threads */
+	pthread_create(&coap_exec_thread, NULL, (void *)coap_exec_poll_function, NULL);
+	pthread_create(&socket_read_thread, NULL, (void *)svr_receive_msg, NULL);
 
+	/* * INITIALIZE LIBRARIES * */
 	/* Initialize the libNsdl */
 	memory_struct.sn_nsdl_alloc = &own_alloc;
 	memory_struct.sn_nsdl_free = &own_free;
@@ -180,73 +183,30 @@ int svr_ipv4(void)
 	/* And used functions for TX and RX purposes. */
 	sn_nsdl_init(&tx_function, &rx_function, &memory_struct);
 
-	inet_pton(AF_INET, arg_dst, &nsp_addr);
-
-	pthread_create(&coap_exec_thread, NULL, (void *)coap_exec_poll_function, NULL);
-	pthread_create(&socket_read_thread, NULL, (void *)svr_receive_msg, NULL);
-
-
-	/* Create resources */
-	/* Resource struct is used during this process. */
-	/* Libraries copies values to own list. resource_ptr can be free'd after resource creations */
-	resource_ptr = own_alloc(sizeof(sn_nsdl_resource_info_s));
-	if(!resource_ptr)
-		return 0;
-	memset(resource_ptr, 0, sizeof(sn_nsdl_resource_info_s));
-
-	resource_ptr->resource_parameters_ptr = own_alloc(sizeof(sn_nsdl_resource_parameters_s));
-	if(!resource_ptr->resource_parameters_ptr)
-	{
-		own_free(resource_ptr);
-		return 0;
-	}
-	memset(resource_ptr->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
-
-	/* eDTLS init and connection */
+	/* eDTLS init */
 	sn_edtls_library_initialize();
 
-	certificate_chain_entry.certificate_owner = 1;
-	certificate_chain_entry.chain_length = 2;
+	/* * Start eDTLS connection to bs server * */
+	/* Set certificates */
+	set_edtls_certificates(bs_trusted_certificate, sizeof(bs_trusted_certificate), bs_client_certificate, sizeof(bs_client_certificate), bs_private_key);
 
-	/* Set Root */
-	certificate_chain_entry.certi_chain[0] = bs_trusted_certificate;
-	certificate_chain_entry.certi_len[0] = sizeof(bs_trusted_certificate);
-	certificate_chain_entry.key_chain[0] = 0;
-
-	certificate_chain_entry.certi_chain[1] = bs_client_certificate;
-	certificate_chain_entry.certi_len[1] = sizeof(bs_client_certificate);
-	certificate_chain_entry.key_chain[1] = bs_private_key;
-
-
-	if(edtls_certificate_list_update(&certificate_chain_entry) == 0)
-		printf("eDTLS certi updated\n");
-	else
-	{
-		printf("eDTLS certi update failed!!\n");
-		return 0;
-	}
-
-	/* Set eDTLS socket address - same as NSP address in this case */
+	/* Set eDTLS address */
 	edtls_server_address.socket = sock_server;
 	edtls_server_address.port = arg_dport;
 	edtls_server_address.address_type = SN_EDTLS_ADDRESS_TYPE_IPV4;
 	memcpy(edtls_server_address.address, nsp_addr, 16);
 
 	edtls_session_id = do_edtls_handshake(&edtls_server_address);
-
 	if(edtls_session_id < 0)
-	{
 		return 0;
-	}
 
-	rcv_size = 0;
 
+	/* * Do bootstrap with BS server * */
 	sn_nsdl_bs_ep_info_t endpoint_info;
 	sn_nsdl_oma_device_t oma_device_setup_ptr;
 
 	oma_device_setup_ptr.error_code = 0;
 	oma_device_setup_ptr.sn_oma_device_boot_callback = 0;
-
 
 	sn_nsdl_addr_s address;
 
@@ -259,7 +219,6 @@ int svr_ipv4(void)
 	INIT_REGISTER_NSDL_ENDPOINT(endpoint_ptr, query, ep_type, lifetime_ptr);
 
 	endpoint_ptr->binding_and_mode = BINDING_MODE_U | BINDING_MODE_Q;
-
 
 	address.port = arg_dport;
 	address.type = SN_NSDL_ADDRESS_TYPE_IPV4;
@@ -290,49 +249,25 @@ int svr_ipv4(void)
 		}
 	}
 
+	/* Oma bootstrap done. Disconnect eDTLS. */
+	/* This is not needed, and must not be done if wanted to receive requests from bs server */
 	sn_edtls_disconnect(edtls_session_id);
 
-	omalw_certificate_list_t *crt_ptr = sn_nsdl_get_certificates(0);
+
+	omalw_certificate_list_t *crt_ptr = sn_nsdl_get_certificates();
 	if(!crt_ptr)
 		printf("certi get failed\r\n");
 
-	certificate_chain_entry.certi_chain[0] = crt_ptr->certificate_ptr[0];
-	certificate_chain_entry.certi_len[0] = crt_ptr->certificate_len[0];
-
-	certificate_chain_entry.certi_chain[1] = crt_ptr->certificate_ptr[1];
-	certificate_chain_entry.certi_len[1] = crt_ptr->certificate_len[1];
-
-	certificate_chain_entry.key_chain[1] =crt_ptr->own_private_key_ptr;
-
-	if(edtls_certificate_list_update(&certificate_chain_entry) == 0)
-		printf("eDTLS certi updated\n");
-	else
-	{
-		printf("eDTLS certi update failed!!\n");
-		return 0;
-	}
-
-	/**/
-	sleep(5);
+	set_edtls_certificates(crt_ptr->certificate_ptr[0], crt_ptr->certificate_len[0], crt_ptr->certificate_ptr[1], crt_ptr->certificate_len[1], crt_ptr->own_private_key_ptr);
 
 	edtls_session_id = do_edtls_handshake(&edtls_server_address);
 
 	if(edtls_session_id == 0)
 		return 0;
 
-	/* Macro is used to help creating resources. Fills struct and calls sn_nsdl_create_resource() - function */
-	/* Static resources are handled in libNsdl, and application can give some value for them to add to responses */
-	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mgf)-1, (uint8_t*) res_mgf, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mgf_val, sizeof(res_mgf_val)-1);
-	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mdl)-1, (uint8_t*) res_mdl, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mdl_val, sizeof(res_mdl_val)-1);
-
-	/* Dynamic resources are processed in callback function that is given in resource creating */
-	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_bat)-1, (uint8_t*) res_bat, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 1, &general_resource_cb) /* Observable resource */
-	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_pwr)-1, (uint8_t*) res_pwr, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &general_resource_cb)
-	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_rel)-1, (uint8_t*) res_rel, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &relay_resource_cb)
-	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_temp)-1, (uint8_t*) res_temp, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &general_resource_cb)
+	create_example_resources();
 
 	/* Register with NSP */
-
 	/* Call sn_nsdl_register_endpoint() to send NSP registration message */
 	if(sn_nsdl_register_endpoint(endpoint_ptr) == SN_NSDL_FAILURE)
 		printf("NSP registration failed\n");
@@ -340,21 +275,8 @@ int svr_ipv4(void)
 	/* Free endpoint_ptr */
 	CLEAN_REGISTER_NSDL_ENDPOINT(endpoint_ptr);
 
-	/* Free resource_ptr */
-	if(resource_ptr->resource_parameters_ptr)
-		own_free(resource_ptr->resource_parameters_ptr);
-	if(resource_ptr)
-		own_free(resource_ptr);
-
 	/* 				Main loop.				*/
 	/* Listen and process incoming messages */
-
-	sn_nsdl_oma_device_t device_object_ptr;
-	memset(&device_object_ptr, 0, sizeof(sn_nsdl_oma_device_t));
-
-	device_object_ptr.error_code = 1;
-
-	sn_nsdl_create_oma_device_object(&device_object_ptr);
 
 	while (1)
 	{
@@ -746,6 +668,34 @@ static uint8_t general_resource_cb(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_add
 	return 0;
 }
 
+int8_t set_edtls_certificates(uint8_t *root_certi_ptr, uint16_t root_certi_len, uint8_t *own_certi_ptr, uint16_t own_certi_len, uint8_t *private_key_ptr)
+{
+	static edtls_certificate_chain_entry_t certificate_chain_entry;
+
+	certificate_chain_entry.certificate_owner = 1;
+	certificate_chain_entry.chain_length = 2;
+
+	/* Set Root */
+	certificate_chain_entry.certi_chain[0] = root_certi_ptr;
+	certificate_chain_entry.certi_len[0] = root_certi_len;
+	certificate_chain_entry.key_chain[0] = 0;
+
+	certificate_chain_entry.certi_chain[1] = own_certi_ptr;
+	certificate_chain_entry.certi_len[1] = own_certi_len;
+	certificate_chain_entry.key_chain[1] = private_key_ptr;
+
+
+	if(edtls_certificate_list_update(&certificate_chain_entry) == 0)
+		printf("eDTLS certi updated\n");
+	else
+	{
+		printf("eDTLS certi update failed!!\n");
+		return 0;
+	}
+
+	return 1;
+}
+
 static int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare)
 {
     if(memcmp(coap_header->uri_path_ptr,&uri_path_to_compare[0], coap_header->uri_path_len) == 0)
@@ -765,6 +715,47 @@ void print_array(uint8_t *ptr, uint16_t len)
 		i++;
 	}
 	printf("\n");
+}
+
+void create_example_resources(void)
+{
+	sn_nsdl_resource_info_s	*resource_ptr = 0;
+
+
+	/* Create resources */
+	/* Resource struct is used during this process. */
+	/* Libraries copies values to own list. resource_ptr can be free'd after resource creations */
+	resource_ptr = own_alloc(sizeof(sn_nsdl_resource_info_s));
+	if(!resource_ptr)
+		return 0;
+	memset(resource_ptr, 0, sizeof(sn_nsdl_resource_info_s));
+
+	resource_ptr->resource_parameters_ptr = own_alloc(sizeof(sn_nsdl_resource_parameters_s));
+	if(!resource_ptr->resource_parameters_ptr)
+	{
+		own_free(resource_ptr);
+		return 0;
+	}
+	memset(resource_ptr->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
+
+
+	/* Macro is used to help creating resources. Fills struct and calls sn_nsdl_create_resource() - function */
+	/* Static resources are handled in libNsdl, and application can give some value for them to add to responses */
+	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mgf)-1, (uint8_t*) res_mgf, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mgf_val, sizeof(res_mgf_val)-1);
+	CREATE_STATIC_RESOURCE(resource_ptr, sizeof(res_mdl)-1, (uint8_t*) res_mdl, sizeof(res_type_test)-1, (uint8_t*)res_type_test,  (uint8_t*) res_mdl_val, sizeof(res_mdl_val)-1);
+
+	/* Dynamic resources are processed in callback function that is given in resource creating */
+	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_bat)-1, (uint8_t*) res_bat, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 1, &general_resource_cb) /* Observable resource */
+	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_pwr)-1, (uint8_t*) res_pwr, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &general_resource_cb)
+	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_rel)-1, (uint8_t*) res_rel, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &relay_resource_cb)
+	CREATE_DYNAMIC_RESOURCE(resource_ptr, sizeof(res_temp)-1, (uint8_t*) res_temp, sizeof(res_type_test)-1, (uint8_t*)res_type_test, 0, &general_resource_cb)
+
+	/* Free resource_ptr */
+	if(resource_ptr->resource_parameters_ptr)
+		own_free(resource_ptr->resource_parameters_ptr);
+	if(resource_ptr)
+		own_free(resource_ptr);
+
 }
 
 void send_ack(sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address)

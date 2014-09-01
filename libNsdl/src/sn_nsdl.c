@@ -813,7 +813,7 @@ int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_p
 	return SN_NSDL_SUCCESS;
 }
 
-omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain)
+omalw_certificate_list_t *sn_nsdl_get_certificates(void)
 {
 		sn_nsdl_resource_info_s *resource_ptr = 0;;
 		omalw_certificate_list_t *certi_list_ptr = 0;
