@@ -403,6 +403,7 @@
           <name>newCCIncludePaths</name>
           <state>$PROJ_DIR$\..\src\include</state>
           <state>$PROJ_DIR$\..\..\..\libService\include</state>
+          <state>$PROJ_DIR$\..\..\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -2403,6 +2404,8 @@
         <option>
           <name>newCCIncludePaths</name>
           <state>$PROJ_DIR$\..\src\include</state>
+          <state>$PROJ_DIR$\..\..\include</state>
+          <state>$PROJ_DIR$\..\..\..\libService\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
