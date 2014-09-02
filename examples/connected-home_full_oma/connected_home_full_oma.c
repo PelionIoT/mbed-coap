@@ -79,6 +79,7 @@ uint8_t edtls_tx(uint8_t *data_ptr, uint16_t data_len, sn_edtls_address_t *dst_a
 void edtls_registration_status(uint8_t status, int16_t session_id);
 static int16_t do_edtls_handshake(sn_edtls_address_t *edtls_address);
 void oma_status(sn_nsdl_oma_server_info_t *server_info_ptr);
+int8_t set_edtls_certificates(uint8_t *root_certi_ptr, uint16_t root_certi_len, uint8_t *own_certi_ptr, uint16_t own_certi_len, uint8_t *private_key_ptr);
 
 /* Socket globals */
 static struct sockaddr_in sa_dst, sa_src;

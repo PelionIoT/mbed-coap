@@ -1,6 +1,6 @@
 PLATFORM= 
 OS = LINUX
-EDTLS = NO
+EDTLS = YES
 TARGET	= connected_home_full_oma
 OBJECTS = main.o connected_home_full_oma.o 
 ifeq ($(EDTLS),NO)
