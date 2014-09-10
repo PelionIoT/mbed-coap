@@ -34,3 +34,6 @@ include ../libService/toolchain_rules.mk
 
 $(eval $(call generate_rules,$(LIB),$(SRCS)))
 
+.PHONY: release
+release:
+	7z a nsdl-c.zip *.a *.lib include
