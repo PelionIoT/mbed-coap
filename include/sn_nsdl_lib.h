@@ -299,7 +299,7 @@ extern int8_t sn_nsdl_unregister_endpoint(void);
  * \return	0	Success
  * \return	-1	Failure
  */
-extern int8_t sn_nsdl_update_registration(sn_nsdl_ep_parameters_s *endpoint_parameters_ptr);
+extern int8_t sn_nsdl_update_registration(uint8_t *lt_ptr, uint8_t lt_len);
 
 /**
  * \fn extern int8_t sn_nsdl_is_ep_registered(void)

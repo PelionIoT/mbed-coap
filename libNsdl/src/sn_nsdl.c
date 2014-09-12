@@ -577,14 +577,17 @@ int8_t sn_nsdl_unregister_endpoint(void)
 	return SN_NSDL_SUCCESS;
 }
 
-int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
+int8_t sn_nsdl_update_registration (uint8_t *lt_ptr, uint8_t lt_len)
 {
 	/* Local variables */
 	sn_coap_hdr_s 	*register_message_ptr;
 	uint8_t			*temp_ptr;
+	sn_nsdl_ep_parameters_s temp_parameters;
 
-	if(!endpoint_info_ptr)
-		return SN_NSDL_FAILURE;
+	memset(&temp_parameters, 0, sizeof(sn_nsdl_ep_parameters_s));
+
+	temp_parameters.lifetime_len = lt_len;
+	temp_parameters.lifetime_ptr = lt_ptr;
 
 	/*** Build endpoint register update message ***/
 
@@ -635,7 +638,7 @@ int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 	memset(register_message_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
 
 	/* Fill Uri-query options */
-	sn_nsdl_fill_uri_query_options(endpoint_info_ptr, register_message_ptr, SN_NSDL_EP_UPDATE_MESSAGE);
+	sn_nsdl_fill_uri_query_options(&temp_parameters, register_message_ptr, SN_NSDL_EP_UPDATE_MESSAGE);
 
 	/* Build payload */
 	if(ep_information_ptr->ds_register_mode == REGISTER_WITH_RESOURCES)
