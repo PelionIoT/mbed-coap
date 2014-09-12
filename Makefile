@@ -36,4 +36,4 @@ $(eval $(call generate_rules,$(LIB),$(SRCS)))
 
 .PHONY: release
 release:
-	7z a nsdl-c.zip *.a *.lib include
+	7z a nsdl-c_$(VERSION).zip *.a *.lib include
