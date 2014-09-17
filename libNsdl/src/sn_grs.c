@@ -124,41 +124,7 @@ extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , u
 	return SN_NSDL_SUCCESS;
 }
 
-/**
- * \fn extern int8_t sn_grs_exec(uint32_t time)
- *
- * \brief CoAP retransmission function.
- *
- *	Used to give execution time for the GRS (CoAP) library for retransmissions. The GRS library
- *	will call the exec functions of all enabled protocol modules.
- *
- *	\param 	time	Time in seconds.
- *
- *	\return  0 = success, -1 = failure
- *
-*/
-SN_MEM_ATTR_GRS_FUNC
-extern int8_t sn_grs_exec(uint32_t time)
-{
-	/* Call CoAP execution function */
-	return sn_coap_protocol_exec(time);
-}
-
-/**
- * \fn extern sn_grs_resource_list_s *sn_grs_list_resource(uint16_t pathlen, uint8_t *path)
- *
- * \brief Resource list function
- *
- * \param pathlen	Contains the length of the target path (excluding possible trailing '\0').
- *					The length value is not examined if the path itself is a NULL pointer.
- *
- * \param *path		A pointer to an array containing the path or a NULL pointer.
- *
- * \return !NULL 	A pointer to a sn_grs_resource_list structure containing the resource listing.\n
- *          NULL 	failure with an unspecified error
- */
-SN_MEM_ATTR_GRS_FUNC
-extern sn_grs_resource_list_s *sn_grs_list_resource(uint16_t pathlen, uint8_t *path)
+extern sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path)
 {
 	sn_grs_resource_list_s *grs_resource_list_ptr = NULL;
 
@@ -212,19 +178,11 @@ extern sn_grs_resource_list_s *sn_grs_list_resource(uint16_t pathlen, uint8_t *p
 	return grs_resource_list_ptr;
 
 fail:
-	sn_grs_free_resource_list(grs_resource_list_ptr);
+	sn_nsdl_free_resource_list(grs_resource_list_ptr);
 	return NULL;
 }
 
-/**
- * \fn extern void sn_grs_free_resource_list(sn_grs_resource_list_s *list)
- *
- * \brief Resource list function
- *
- * \param list		Pointer to resource list to free - may be NULL.
- */
-SN_MEM_ATTR_GRS_FUNC
-extern void sn_grs_free_resource_list(sn_grs_resource_list_s *list)
+extern void sn_nsdl_free_resource_list(sn_grs_resource_list_s *list)
 {
 	if (!list)
 		return;
@@ -249,42 +207,22 @@ extern void sn_grs_free_resource_list(sn_grs_resource_list_s *list)
 SN_MEM_ATTR_GRS_FUNC
 extern const sn_nsdl_resource_info_s *sn_grs_get_first_resource(void)
 {
-
 	return sn_grs_current_resource = ns_list_get_first(&resource_root_list);
-
 }
 
 SN_MEM_ATTR_GRS_FUNC
 extern const sn_nsdl_resource_info_s *sn_grs_get_next_resource(void)
 {
-
 	return sn_grs_current_resource = ns_list_get_next(&resource_root_list, sn_grs_current_resource);
-
 }
 
-
-/**
- * \fn 	extern int8_t sn_grs_delete_resource(uint16_t pathlen, uint8_t *path_ptr)
- *
- * \brief Resource delete function.
- *
- *	Used to delete a resource. If resource has a subresources, these all must also be removed.
- *
- *	\param 	pathlen		Contains the length of the path that is to be deleted (excluding possible trailing �\0�).
- *
- *	\param 	*path_ptr	A pointer to an array containing the path.
- *
- *	\return 		0 = success, -1 = failure (No such resource)
-*/
-
-SN_MEM_ATTR_GRS_FUNC
-extern int8_t sn_grs_delete_resource(uint16_t pathlen, uint8_t *path_ptr)
+extern int8_t sn_nsdl_delete_resource(uint16_t pathlen, uint8_t *path)
 {
 	/* Local variables */
 	sn_nsdl_resource_info_s 	*resource_temp 	= NULL;
 
 	/* Search if resource found */
-	resource_temp = sn_grs_search_resource(pathlen, path_ptr, SN_GRS_SEARCH_METHOD);
+	resource_temp = sn_grs_search_resource(pathlen, path, SN_GRS_SEARCH_METHOD);
 
 	/* If not found */
 	if(resource_temp == NULL)
@@ -301,31 +239,14 @@ extern int8_t sn_grs_delete_resource(uint16_t pathlen, uint8_t *path_ptr)
 		sn_grs_resource_info_free(resource_temp);
 
 		/* Search for subresources */
-		resource_temp = sn_grs_search_resource(pathlen, path_ptr, SN_GRS_DELETE_METHOD);
+		resource_temp = sn_grs_search_resource(pathlen, path, SN_GRS_DELETE_METHOD);
 	}
 	while (resource_temp != NULL);
 
 	return SN_NSDL_SUCCESS;
 }
 
-
-
-/**
- * \fn 	extern int8_t sn_grs_update_resource(sn_grs_resource_info_s *res)
- *
- * \brief Resource updating function.
- *
- *	Used to update the direct value of a static resource, the callback function pointer of a dynamic resource
- *	and access rights of the recource.
- *
- *	\param 	*res	Pointer to a structure of type sn_grs_resource_info_t that contains the information
- *					about the resource. Only the pathlen and path elements are evaluated along with
- *					either resourcelen and resource or the function pointer.
- *
- *	\return			0 = success, -1 = failure
-*/
-SN_MEM_ATTR_GRS_FUNC
-extern int8_t sn_grs_update_resource(sn_nsdl_resource_info_s *res)
+extern int8_t sn_nsdl_update_resource(sn_nsdl_resource_info_s *res)
 {
 	/* Local variables */
 	sn_nsdl_resource_info_s 	*resource_temp 	= NULL;
@@ -368,28 +289,8 @@ extern int8_t sn_grs_update_resource(sn_nsdl_resource_info_s *res)
 	return SN_NSDL_SUCCESS;
 }
 
-
-
-/**
- * \fn 	extern int8_t sn_grs_create_resource(sn_grs_resource_info_t *res)
- *
- * \brief Resource creating function.
- *
- *	Used to create a static or dynamic HTTP(S) or CoAP resource.
- *
- *	\param 	*res	Pointer to a structure of type sn_grs_resource_info_t that contains the information
- *					about the resource.
- *
- *	\return 		 0 success
- *					-1 Failure
- *					-2 Resource already exists
- *					-3 Invalid path
- *					-4 List adding failure
-*/
-SN_MEM_ATTR_GRS_FUNC
-extern int8_t sn_grs_create_resource(sn_nsdl_resource_info_s *res)
+extern int8_t sn_nsdl_create_resource(sn_nsdl_resource_info_s *res)
 {
-
 	if(!res)
 		return SN_NSDL_FAILURE;
 
@@ -490,7 +391,7 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 			sn_nsdl_build_registration_body(response_message_hdr_ptr, 0);
 
 			/* Send and free */
-			sn_grs_send_coap_message(src_addr_ptr, response_message_hdr_ptr);
+			sn_nsdl_send_coap_message(src_addr_ptr, response_message_hdr_ptr);
 
 			if(response_message_hdr_ptr->payload_ptr)
 			{
@@ -618,7 +519,7 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 				case (COAP_MSG_CODE_REQUEST_DELETE):
 					if(resource_temp_ptr->access & SN_GRS_DELETE_ALLOWED)
 					{
-						if(sn_grs_delete_resource(coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr) == SN_NSDL_SUCCESS)
+						if(sn_nsdl_delete_resource(coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr) == SN_NSDL_SUCCESS)
 							status = COAP_MSG_CODE_RESPONSE_DELETED;
 						else
 							status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
@@ -816,7 +717,7 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 			}
 		}
 
-		sn_grs_send_coap_message(src_addr_ptr, response_message_hdr_ptr);
+		sn_nsdl_send_coap_message(src_addr_ptr, response_message_hdr_ptr);
 
 		if(response_message_hdr_ptr->payload_ptr)
 		{
@@ -838,21 +739,7 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 	return SN_NSDL_SUCCESS;
 }
 
-/**
- * \fn 	extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s * address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
- *
- * \brief Sends CoAP message
- *
- *	Sends CoAP message
- *
- *	\param  *coap_hdr_ptr	Pointer to CoAP message to be sent
- *
- *	\param 	*address_ptr	Pointer to source address struct
- *
- *	\return	0 = success, -1 = failed
- *
-*/
-extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
+extern int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
 {
 	uint8_t 	*message_ptr = NULL;
 	uint16_t 	message_len	= 0;

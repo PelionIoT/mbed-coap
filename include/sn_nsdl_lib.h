@@ -441,7 +441,7 @@ extern int8_t sn_nsdl_update_resource(sn_nsdl_resource_info_s *res);
  * \return	0	Success
  * \return	-1	Failure (No such resource)
  */
-extern int8_t sn_nsdl_delete_resource(uint8_t pathlen, uint8_t *path);
+extern int8_t sn_nsdl_delete_resource(uint16_t pathlen, uint8_t *path);
 
 /**
  * \fn extern sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *path)

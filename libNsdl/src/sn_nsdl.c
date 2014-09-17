@@ -315,7 +315,7 @@ int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destination, 
 		}
 	}
 
-	sn_grs_send_coap_message(dst, message_ptr);
+	sn_nsdl_send_coap_message(dst, message_ptr);
 
 	if(dst->addr_ptr)
 		sn_nsdl_free(dst->addr_ptr);
@@ -381,7 +381,7 @@ int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint16_t po
 			memcpy(dst->addr_ptr, destination, 16);
 		}
 	}
-	sn_grs_send_coap_message(dst, message_ptr);
+	sn_nsdl_send_coap_message(dst, message_ptr);
 
 	if(dst->addr_ptr)
 		sn_nsdl_free(dst->addr_ptr);
@@ -727,7 +727,7 @@ uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token
 	}
 
 	/* Send message */
-	if(sn_grs_send_coap_message(nsp_address_ptr->omalw_address_ptr, notification_message_ptr) == SN_NSDL_FAILURE)
+	if(sn_nsdl_send_coap_message(nsp_address_ptr->omalw_address_ptr, notification_message_ptr) == SN_NSDL_FAILURE)
 		return_msg_id = 0;
 	else
 		return_msg_id = notification_message_ptr->msg_id;
@@ -925,7 +925,7 @@ int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr)
 				*resource_temp->resource = (uint8_t)device_object_ptr->error_code;
 				resource_temp->resourcelen = 1;
 
-				sn_grs_update_resource(resource_temp);
+				sn_nsdl_update_resource(resource_temp);
 				return SN_NSDL_SUCCESS;
 			}
 			break;
@@ -1147,22 +1147,8 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 
 int8_t sn_nsdl_exec(uint32_t time)
 {
-	return sn_grs_exec(time);
-}
-
-int8_t sn_nsdl_create_resource(sn_nsdl_resource_info_s *res_ptr)
-{
-	return sn_grs_create_resource(res_ptr);
-}
-
-int8_t sn_nsdl_update_resource(sn_nsdl_resource_info_s *res_ptr)
-{
-	return sn_grs_update_resource(res_ptr);
-}
-
-int8_t sn_nsdl_delete_resource(uint8_t pathlen, uint8_t *path_ptr)
-{
-	return sn_grs_delete_resource(pathlen, path_ptr);
+	/* Call CoAP execution function */
+	return sn_coap_protocol_exec(time);
 }
 
 sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *path_ptr)
@@ -1170,20 +1156,6 @@ sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *path_pt
 	return sn_grs_search_resource(pathlen, path_ptr, SN_GRS_SEARCH_METHOD);
 }
 
-sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path_ptr)
-{
-	return sn_grs_list_resource(pathlen, path_ptr);
-}
-
-void sn_nsdl_free_resource_list(sn_grs_resource_list_s *list)
-{
-	sn_grs_free_resource_list(list);
-}
-
-int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
-{
-	return sn_grs_send_coap_message(address_ptr, coap_hdr_ptr);
-}
 
 /********************/
 /* Static functions */
@@ -1324,7 +1296,7 @@ static int8_t sn_nsdl_create_oma_device_object_base(sn_nsdl_oma_device_t *oma_de
 	new_resource.resource = resource_temp;
 	new_resource.resourcelen = 1;
 
-	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	if(sn_nsdl_create_resource(&new_resource) != SN_NSDL_SUCCESS)
 	{
 		sn_nsdl_free(new_resource.resource_parameters_ptr);
 		return SN_NSDL_FAILURE;
@@ -1365,7 +1337,7 @@ static int8_t sn_nsdl_create_oma_device_object_base(sn_nsdl_oma_device_t *oma_de
 		new_resource.resource = 0;
 
 
-	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	if(sn_nsdl_create_resource(&new_resource) != SN_NSDL_SUCCESS)
 	{
 		sn_nsdl_free(new_resource.resource_parameters_ptr);
 		return SN_NSDL_FAILURE;
@@ -1387,7 +1359,7 @@ static int8_t sn_nsdl_create_oma_device_object_base(sn_nsdl_oma_device_t *oma_de
 
 	new_resource.sn_grs_dyn_res_callback = oma_device_setup_ptr->sn_oma_device_boot_callback;
 
-	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	if(sn_nsdl_create_resource(&new_resource) != SN_NSDL_SUCCESS)
 	{
 		sn_nsdl_free(new_resource.resource_parameters_ptr);
 		return SN_NSDL_FAILURE;
@@ -2370,7 +2342,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '0';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 				break;
 			case 2:
@@ -2379,7 +2351,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '2';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 
 				break;
@@ -2388,7 +2360,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '3';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 				break;
 			case 4:
@@ -2396,7 +2368,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '4';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 
 				break;
@@ -2405,7 +2377,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '5';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 
 				break;
