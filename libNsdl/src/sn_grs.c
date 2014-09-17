@@ -839,22 +839,6 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 }
 
 /**
- * \fn 	extern uint32_t sn_grs_get_version(void)
- *
- * \brief Version query function.
- *
- *	Used to retrieve the version information structure from the GRS library.
- *
- *	\return 		!0 MSB 2 bytes major version, LSB 2 bytes minor version.
- *					0 failure
-*/
-SN_MEM_ATTR_GRS_FUNC
-extern uint32_t sn_grs_get_version(void)
-{
-	return SN_GRS_VERSION;
-}
-
-/**
  * \fn 	extern int8_t sn_grs_send_coap_message(sn_nsdl_addr_s * address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
  *
  * \brief Sends CoAP message

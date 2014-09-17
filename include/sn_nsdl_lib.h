@@ -351,12 +351,11 @@ extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_
  *
  * \brief Version query function.
  *
- * Used to retrieve the version information structure from the mbed Device C Client library.
+ * Used to retrieve the version information from the mbed Device C Client library.
  *
- * \return	!0	MSB 2 bytes major version, LSB 2 bytes minor version.
- * \return	0	Failure
+ * \return Pointer to library version string
 */
-extern uint32_t sn_nsdl_get_version(void);
+extern char *sn_nsdl_get_version(void);
 
 /**
  * \fn extern int8_t sn_nsdl_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src)

@@ -15,12 +15,6 @@ extern "C" {
 #ifndef SN_NSDL_H_
 #define SN_NSDL_H_
 
-/* * * * * * * * * * * */
-/* * * * DEFINES * * * */
-/* * * * * * * * * * * */
-
-#define SN_GRS_VERSION	                0x0101
-
 /* * * Common * * */
 
 #define SN_NSDL_SUCCESS  0
