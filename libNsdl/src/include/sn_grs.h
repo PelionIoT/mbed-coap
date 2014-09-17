@@ -13,20 +13,6 @@ extern "C" {
 #endif
 
 
-#define SN_GRS_VERSION	                	0x0101
-
-#ifndef SN_NSDL_HAVE_HTTP_CAPABILITY
-#define SN_NSDL_HAVE_HTTP_CAPABILITY		0
-#endif
-
-#ifndef SN_NSDL_HAVE_HTTPS_CAPABILITY
-#define SN_NSDL_HAVE_HTTPS_CAPABILITY		0
-#endif
-
-#ifndef SN_NSDL_HAVE_COAP_CAPABILITY
-#define SN_NSDL_HAVE_COAP_CAPABILITY		1
-#endif
-
 #define SN_GRS_RESOURCE_ALREADY_EXISTS	-2
 #define SN_GRS_INVALID_PATH 			-3
 #define SN_GRS_LIST_ADDING_FAILURE		-4
@@ -86,7 +72,7 @@ extern int8_t 						sn_grs_update_resource		(sn_nsdl_resource_info_s *res);
  *
  * \brief Resource creating function.
  *
- *	Used to create a static or dynamic HTTP(S) or CoAP resource.
+ *	Used to create a static or dynamic CoAP resource.
  *
  *	\param 	*res	Pointer to a structure of type sn_grs_resource_info_t that contains the information
  *					about the resource.
@@ -98,7 +84,6 @@ extern int8_t 						sn_grs_update_resource		(sn_nsdl_resource_info_s *res);
 */
 extern int8_t 						sn_grs_create_resource		(sn_nsdl_resource_info_s *res);
 extern int8_t 						sn_grs_process_coap			(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src);
-extern int16_t 						sn_grs_get_capability		(void);
 extern uint32_t 					sn_grs_get_version			(void);
 extern sn_nsdl_resource_info_s *	sn_grs_search_resource		(uint16_t pathlen, uint8_t *path, uint8_t search_method);
 extern int8_t 						sn_grs_send_coap_message	(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);

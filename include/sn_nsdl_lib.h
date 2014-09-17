@@ -256,7 +256,7 @@ typedef struct sn_nsdl_bs_ep_info_
  * \param *sn_nsdl_tx_callback 	A callback function for sending messages.
  *
  * \param *sn_nsdl_rx_callback 	A callback function for parsed messages. If received message is not CoAP protocol message (eg. ACK), message for GRS (GET, PUT, POST, DELETE) or
- * 								reply for some NSDL message (register message etc.), rx callback will be called.
+ * 								reply for some DS messages (register message etc.), rx callback will be called.
  *
  * \param *sn_memory			Memory structure which includes function pointers to the allocation and free functions.
  *
@@ -270,7 +270,7 @@ extern int8_t sn_nsdl_init(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *,
 /**
  * \fn extern uint8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
  *
- * \brief Registers endpoint to NSP server.
+ * \brief Registers endpoint to mbed Device Server.
  *
  * \param *endpoint_info_ptr	Contains endpoint information.
  *
@@ -282,7 +282,7 @@ extern int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_p
 /**
  * \fn extern int8_t sn_nsdl_unregister_endpoint(void)
  *
- * \brief Sends unregister-message to NSP server.
+ * \brief Sends unregister-message to mbed Device Server.
  *
  * \return	0	Success
  * \return	-1	Failure
@@ -292,7 +292,7 @@ extern int8_t sn_nsdl_unregister_endpoint(void);
 /**
  * \fn extern int8_t sn_nsdl_update_registration(sn_nsdl_ep_parameters_s *endpoint_parameters_ptr);
  *
- * \brief Update the registration with NSP.
+ * \brief Update the registration with mbed Device Server.
  *
  * \param *endpoint_info_ptr	Contains endpoint information.
  *
@@ -314,7 +314,7 @@ extern int8_t sn_nsdl_is_ep_registered(void);
 /**
  * \fn extern void sn_nsdl_nsp_lost(void);
  *
- * \brief A function to inform NSDL-C library if application detects a fault in NSP registration.
+ * \brief A function to inform mbed Device C client library if application detects a fault in mbed Device Server registration.
  *
  * After calling this function sn_nsdl_is_ep_registered() will return "not registered".
  */
@@ -327,7 +327,7 @@ extern void sn_nsdl_nsp_lost(void);
  *													sn_coap_msg_type_e message_type, uint8_t content_type)
  *
  *
- * \brief Sends observation message to NSP server
+ * \brief Sends observation message to mbed Device Server
  *
  * \param	*token_ptr		Pointer to token to be used
  * \param	token_len		Token length
@@ -347,23 +347,11 @@ extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_
 													sn_coap_msg_type_e message_type, uint8_t content_type);
 
 /**
- * \fn extern int16_t sn_nsdl_get_capability(void)
- *
- * \brief Capability query function.
- *
- * Used to retrieve the list of supported protocols from the NSDL module.
- *
- * \return	>0	Success, supported capabilities reported using bitmask with definitions from sn_nsdl_capab_t
- * \return	0	Success, no supported capabilities
- */
-extern int16_t sn_nsdl_get_capability(void);
-
-/**
  * \fn extern uint32_t sn_nsdl_get_version(void)
  *
  * \brief Version query function.
  *
- * Used to retrieve the version information structure from the NSDL library.
+ * Used to retrieve the version information structure from the mbed Device C Client library.
  *
  * \return	!0	MSB 2 bytes major version, LSB 2 bytes minor version.
  * \return	0	Failure
@@ -371,20 +359,11 @@ extern int16_t sn_nsdl_get_capability(void);
 extern uint32_t sn_nsdl_get_version(void);
 
 /**
- * \fn extern int8_t sn_nsdl_process_http(uint8_t *packet, uint16_t *packet_len, sn_nsdl_addr_s *src)
- *
- * \brief Currently HTTP is not supported
- *
- * \return	-1	Failure
- */
-extern int8_t sn_nsdl_process_http(uint8_t *packet, uint16_t *packet_len, sn_nsdl_addr_s *src);
-
-/**
  * \fn extern int8_t sn_nsdl_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src)
  *
- * \brief To push CoAP packet to NSDL library
+ * \brief To push CoAP packet to mbed Device C Client library
  *
- * Used to push an CoAP packet to NSDL library for processing.
+ * Used to push an CoAP packet to mbed Device C Client library for processing.
  *
  * \param	*packet  Pointer to a uint8_t array containing the packet (including the CoAP headers).
  *      After successful execution this array may contain the response packet.
@@ -405,8 +384,7 @@ extern int8_t sn_nsdl_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl
  *
  * \brief CoAP retransmission function.
  *
- * Used to give execution time for the NSDL (CoAP) library for retransmissions. The NSDL library
- * will call the exec functions of all enabled protocol modules.
+ * Used to give execution time for the mbed Device C Client library for retransmissions.
  *
  * \param  time Time in seconds.
  *
@@ -420,7 +398,7 @@ extern int8_t sn_nsdl_exec(uint32_t time);
  *
  * \brief Resource creating function.
  *
- * Used to create a static or dynamic HTTP(S) or CoAP resource.
+ * Used to create a static or dynamic CoAP resource.
  *
  * \param	*res	Pointer to a structure of type sn_nsdl_resource_info_t that contains the information
  *     about the resource.
@@ -523,24 +501,24 @@ extern int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr
 /**
  * \fn extern int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type);
  *
- * \brief This function is used to set the NSP address given by an application.
+ * \brief This function is used to set the mbed Device Server address given by an application.
  *
  * \return	0	Success
- * \return	-1	Failed to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
+ * \return	-1	Failed to indicate that internal address pointer is not allocated (call nsdl_init() first).
  */
 extern int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type);
 
 /**
  * \fn extern int8_t sn_nsdl_destroy(void);
  *
- * \brief This function releases all allocated memory in nsdl library.
+ * \brief This function releases all allocated memory in mbed Device C Client library.
  */
 extern int8_t sn_nsdl_destroy(void);
 
 /**
  * \fn extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
  *
- * \brief Starts OMA bootstrap
+ * \brief Starts OMA bootstrap process
  */
 extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
 

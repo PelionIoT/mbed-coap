@@ -14,10 +14,9 @@
 
 #include "sn_nsdl.h"
 
-#if defined(SN_NSDL_HAVE_COAP_CAPABILITY)
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
-#endif
+
 
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
@@ -115,14 +114,12 @@ extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , u
 	sn_grs_rx_callback = sn_grs_rx_callback_ptr;
 
 	/* Initialize CoAP protocol library, if implemented to library */
-#if	SN_NSDL_HAVE_COAP_CAPABILITY
 	sn_coap_builder_and_parser_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free);
 
 	if(sn_coap_protocol_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free, sn_grs_tx_callback, sn_grs_rx_callback))
 	{
 		return SN_NSDL_FAILURE;
 	}
-#endif
 
 	return SN_NSDL_SUCCESS;
 }
@@ -143,12 +140,8 @@ extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , u
 SN_MEM_ATTR_GRS_FUNC
 extern int8_t sn_grs_exec(uint32_t time)
 {
-#if(SN_NSDL_HAVE_COAP_CAPABILITY)
 	/* Call CoAP execution function */
 	return sn_coap_protocol_exec(time);
-#else
-	return SN_NSDL_SUCCESS;
-#endif
 }
 
 /**
@@ -844,36 +837,6 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 
 	return SN_NSDL_SUCCESS;
 }
-
-
-
-
-/**
- * \fn 	extern int16_t sn_grs_get_capability(void)
- *
- * \brief Capability query function.
- *
- *	Used to retrieve the list of supported protocols from the GRS module.
- *
- *	\return				>0 success, supported capabilities reported using bitmask with definitions from sn_grs_capab_t\n
- *						0 success, no supported capabilities\n
-*/
-SN_MEM_ATTR_GRS_FUNC
-extern int16_t sn_grs_get_capability(void)
-{
-	int16_t capabilities = 0;
-	if(SN_NSDL_HAVE_HTTP_CAPABILITY)
-		capabilities |= 0x01;
-
-	if(SN_NSDL_HAVE_HTTPS_CAPABILITY)
-		capabilities |= 0x02;
-
-	if(SN_NSDL_HAVE_COAP_CAPABILITY)
-		capabilities |= 0x04;
-
-	return capabilities;
-}
-
 
 /**
  * \fn 	extern uint32_t sn_grs_get_version(void)

@@ -21,18 +21,6 @@ extern "C" {
 
 #define SN_GRS_VERSION	                0x0101
 
-#ifndef SN_NSDL_HAVE_HTTP_CAPABILITY
-#define SN_NSDL_HAVE_HTTP_CAPABILITY		0
-#endif
-
-#ifndef SN_NSDL_HAVE_HTTPS_CAPABILITY
-#define SN_NSDL_HAVE_HTTPS_CAPABILITY		0
-#endif
-
-#ifndef SN_NSDL_HAVE_COAP_CAPABILITY
-#define SN_NSDL_HAVE_COAP_CAPABILITY		1
-#endif
-
 /* * * Common * * */
 
 #define SN_NSDL_SUCCESS  0
@@ -89,7 +77,7 @@ typedef struct sn_nsdl_addr_
 } sn_nsdl_addr_s;
 
 /**
- * \brief Used for creating manually nsdl registration message with sn_coap_register()
+ * \brief Used for creating manually registration message with sn_coap_register()
  */
 typedef struct registration_info_
 {

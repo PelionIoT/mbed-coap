@@ -239,6 +239,7 @@ typedef struct sn_coap_hdr_
  * 											void (*used_free_func_ptr)(void*))
  *
  * \brief Initializes CoAP Builder and Parser parts. Sets the memory allocation and deallocation functions the library will use, and must be called first.
+ * Calling sn_nsdl_init() - function also initializes CoAP libraries.
  *
  * \param void* used_malloc_func_ptr is function pointer for used malloc() function.
  * \param void *used_free_func_ptr is function pointer for usef free() function.

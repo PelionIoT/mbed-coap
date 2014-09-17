@@ -987,11 +987,6 @@ int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr)
 /* These are documented in sn_grs.c - file */
 /* * * * * * * * * * * * * * * * * * * * * */
 
-int16_t sn_nsdl_get_capability(void)
-{
-	return sn_grs_get_capability();
-}
-
 
 uint32_t sn_nsdl_get_version(void)
 {

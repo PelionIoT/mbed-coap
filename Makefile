@@ -26,9 +26,9 @@ SRCS := \
 
 override CFLAGS += -IlibNsdl/src/include/
 override CFLAGS += -IlibCoap/src/include/
-override CFLAGS += -Iinclude/
 SERVLIB_DIR := ../libService
 override CFLAGS += -I$(SERVLIB_DIR)/include
+override CFLAGS += -Iinclude/
 
 include ../libService/toolchain_rules.mk
 
