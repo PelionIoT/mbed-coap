@@ -264,138 +264,6 @@ int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint1
 	return SN_NSDL_SUCCESS;
 }
 
-int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port, char *query, uint8_t query_len)
-{
-	sn_coap_hdr_s 	*message_ptr;
-	sn_nsdl_addr_s *dst = 0;
-
-	message_ptr = sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
-	if(message_ptr == NULL)
-		return SN_NSDL_FAILURE;
-
-	memset(message_ptr, 0, sizeof(sn_coap_hdr_s));
-
-	/* Fill message fields -> confirmable post to specified NSP path */
-	message_ptr->msg_type 	= 	COAP_MSG_TYPE_CONFIRMABLE;
-	message_ptr->msg_code 	= 	COAP_MSG_CODE_REQUEST_GET;
-	/* Allocate memory for the extended options list */
-	message_ptr->options_list_ptr = sn_nsdl_alloc(sizeof(sn_coap_options_list_s));
-	if(message_ptr->options_list_ptr == NULL)
-	{
-		sn_nsdl_free(message_ptr);
-		message_ptr = 0;
-		return SN_NSDL_FAILURE;
-	}
-
-
-	memset(message_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
-	message_ptr->options_list_ptr->uri_query_len =query_len;
-	message_ptr->options_list_ptr->uri_query_ptr = (uint8_t *)query;
-	message_ptr->uri_path_len = urilen;
-	message_ptr->uri_path_ptr = (uint8_t *)uri;
-
-	/* Build and send coap message to NSP */
-	/* Local variables */
-	if(!dst)
-	{
-		//allocate only if previously not allocated
-		dst = sn_nsdl_alloc(sizeof(sn_nsdl_addr_s));
-	}
-
-	if(dst)
-	{
-		/* This is only for version 0.5 */
-		dst->type = SN_NSDL_ADDRESS_TYPE_IPV6;
-		dst->port = port;
-		dst->addr_len = 16;
-		if(!dst->addr_ptr)
-		{
-			dst->addr_ptr = sn_nsdl_alloc(dst->addr_len);
-			memcpy(dst->addr_ptr, destination, 16);
-		}
-	}
-
-	sn_nsdl_send_coap_message(dst, message_ptr);
-
-	if(dst->addr_ptr)
-		sn_nsdl_free(dst->addr_ptr);
-
-	if(dst)
-		sn_nsdl_free(dst);
-	message_ptr->uri_path_ptr = NULL;
-	message_ptr->options_list_ptr->uri_host_ptr = NULL;
-	message_ptr->options_list_ptr->uri_query_ptr = NULL;
-
-	sn_coap_parser_release_allocated_coap_msg_mem(message_ptr);
-	return SN_NSDL_SUCCESS;
-}
-
-int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port)
-{
-	sn_coap_hdr_s 	*message_ptr;
-	sn_nsdl_addr_s *dst = 0;
-
-
-	message_ptr = sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
-	if(message_ptr == NULL)
-		return SN_NSDL_FAILURE;
-
-	memset(message_ptr, 0, sizeof(sn_coap_hdr_s));
-
-	/* Fill message fields -> confirmable post to specified NSP path */
-	message_ptr->msg_type 	= 	COAP_MSG_TYPE_CONFIRMABLE;
-	message_ptr->msg_code 	= 	COAP_MSG_CODE_REQUEST_GET;
-	/* Allocate memory for the extended options list */
-	message_ptr->options_list_ptr = sn_nsdl_alloc(sizeof(sn_coap_options_list_s));
-	if(message_ptr->options_list_ptr == NULL)
-	{
-		sn_nsdl_free(message_ptr);
-		message_ptr = 0;
-		return SN_NSDL_FAILURE;
-	}
-
-
-	memset(message_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
-
-	message_ptr->uri_path_len = urilen;
-	message_ptr->uri_path_ptr = (uint8_t *)uri;
-
-	/* Build and send coap message to NSP */
-	/* Local variables */
-	if(!dst)
-	{
-		//allocate only if previously not allocated
-		dst = sn_nsdl_alloc(sizeof(sn_nsdl_addr_s));
-		memset(dst, 0, sizeof(sn_nsdl_addr_s));
-	}
-
-	if(dst)
-	{
-		/* This is only for version 0.5 */
-		dst->type = SN_NSDL_ADDRESS_TYPE_IPV6;
-		dst->port = port;
-		dst->addr_len = 16;
-		if(!dst->addr_ptr)
-		{
-			dst->addr_ptr = sn_nsdl_alloc(dst->addr_len);
-			memcpy(dst->addr_ptr, destination, 16);
-		}
-	}
-	sn_nsdl_send_coap_message(dst, message_ptr);
-
-	if(dst->addr_ptr)
-		sn_nsdl_free(dst->addr_ptr);
-	if(dst)
-		sn_nsdl_free(dst);
-	message_ptr->uri_path_ptr = NULL;
-	message_ptr->options_list_ptr->uri_host_ptr = NULL;
-
-	sn_coap_parser_release_allocated_coap_msg_mem(message_ptr);
-	return SN_NSDL_SUCCESS;
-}
-
-
-
 int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 {
 	/* Local variables */
@@ -818,57 +686,58 @@ int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_p
 
 omalw_certificate_list_t *sn_nsdl_get_certificates(void)
 {
-		sn_nsdl_resource_info_s *resource_ptr = 0;;
-		omalw_certificate_list_t *certi_list_ptr = 0;
+	sn_nsdl_resource_info_s *resource_ptr = 0;;
+	omalw_certificate_list_t *certi_list_ptr = 0;
 
-		certi_list_ptr = sn_nsdl_alloc(sizeof(omalw_certificate_list_t));
+	certi_list_ptr = sn_nsdl_alloc(sizeof(omalw_certificate_list_t));
 
-		if(!certi_list_ptr)
-			return NULL;
+	if(!certi_list_ptr)
+		return NULL;
 
-		/* Get private key resource */
-		resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/5");
-		if(!resource_ptr)
-		{
-			sn_nsdl_free(certi_list_ptr);
-			return NULL;
-		}
-		certi_list_ptr->own_private_key_ptr = resource_ptr->resource;
-		certi_list_ptr->own_private_key_len = resource_ptr->resourcelen;
+	/* Get private key resource */
+	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/5");
+	if(!resource_ptr)
+	{
+		sn_nsdl_free(certi_list_ptr);
+		return NULL;
+	}
+	certi_list_ptr->own_private_key_ptr = resource_ptr->resource;
+	certi_list_ptr->own_private_key_len = resource_ptr->resourcelen;
 
-		/* Get client certificate resource */
-		resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/4");
-		if(!resource_ptr)
-		{
-			sn_nsdl_free(certi_list_ptr);
-			return NULL;
-		}
-		certi_list_ptr->certificate_ptr[0] = resource_ptr->resource;
-		certi_list_ptr->certificate_len[0] = resource_ptr->resourcelen;
+	/* Get client certificate resource */
+	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/4");
+	if(!resource_ptr)
+	{
+		sn_nsdl_free(certi_list_ptr);
+		return NULL;
+	}
+	certi_list_ptr->certificate_ptr[0] = resource_ptr->resource;
+	certi_list_ptr->certificate_len[0] = resource_ptr->resourcelen;
 
-		/* Get root certificate resource */
-		resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/3");
-		if(!resource_ptr)
-		{
-			sn_nsdl_free(certi_list_ptr);
-			return NULL;
-		}
-		certi_list_ptr->certificate_ptr[1] = resource_ptr->resource;
-		certi_list_ptr->certificate_len[1] = resource_ptr->resourcelen;
+	/* Get root certificate resource */
+	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/3");
+	if(!resource_ptr)
+	{
+		sn_nsdl_free(certi_list_ptr);
+		return NULL;
+	}
+	certi_list_ptr->certificate_ptr[1] = resource_ptr->resource;
+	certi_list_ptr->certificate_len[1] = resource_ptr->resourcelen;
 
-		/* return filled list */
-		return certi_list_ptr;
+	/* return filled list */
+	return certi_list_ptr;
 
 }
 
-int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain)
+int8_t sn_nsdl_update_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain)
 {
+	(void)certificate_chain;
+
 	/* Check pointers */
 	if(!certificate_ptr)
 		return SN_NSDL_FAILURE;
 
 	sn_nsdl_resource_info_s *resource_ptr = 0;;
-
 
 	/* Get private key resource */
 	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/5");
@@ -876,6 +745,7 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	{
 		return SN_NSDL_FAILURE;
 	}
+	sn_nsdl_free(resource_ptr->resource);
 	resource_ptr->resource = certificate_ptr->own_private_key_ptr;
 	resource_ptr->resourcelen = certificate_ptr->own_private_key_len;
 
@@ -885,6 +755,7 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	{
 		return SN_NSDL_FAILURE;
 	}
+	sn_nsdl_free(resource_ptr->resource);
 	resource_ptr->resource = certificate_ptr->certificate_ptr[0];
 	resource_ptr->resourcelen = certificate_ptr->certificate_len[0];
 
@@ -894,12 +765,12 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	{
 		return SN_NSDL_FAILURE;
 	}
+	sn_nsdl_free(resource_ptr->resource);
 	resource_ptr->resource = certificate_ptr->certificate_ptr[1];
 	resource_ptr->resourcelen = certificate_ptr->certificate_len[1];
 
 	return SN_NSDL_SUCCESS;
 }
-
 
 int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr)
 {
@@ -981,11 +852,6 @@ int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr)
 
 	return SN_NSDL_SUCCESS;
 }
-
-/* * * * * * * * * * * * * * * * * * * * * */
-/* 			GRS Wrapper					   */
-/* These are documented in sn_grs.c - file */
-/* * * * * * * * * * * * * * * * * * * * * */
 
 char *sn_nsdl_get_version(void)
 {
@@ -1157,11 +1023,6 @@ sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *path_pt
 }
 
 
-/********************/
-/* Static functions */
-/********************/
-
-
 /**
  * \fn static int8_t sn_nsdl_send_coap_message(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description)
  *
@@ -1252,7 +1113,6 @@ static void sn_nsdl_resolve_nsp_address(void)
 	if(nsp_address_ptr)
 	{
 		nsp_address_ptr->omalw_server_security = SEC_NOT_SET;
-		/* This is only for version 0.5 */
 		nsp_address_ptr->omalw_address_ptr = sn_nsdl_alloc(sizeof(sn_nsdl_addr_s));
 		if(nsp_address_ptr->omalw_address_ptr)
 		{
@@ -1260,8 +1120,6 @@ static void sn_nsdl_resolve_nsp_address(void)
 			nsp_address_ptr->omalw_address_ptr->type = SN_NSDL_ADDRESS_TYPE_NONE;
 		}
 	}
-
-	/* Todo: get NSP address */
 }
 
 static int8_t sn_nsdl_create_oma_device_object_base(sn_nsdl_oma_device_t *oma_device_setup_ptr, sn_nsdl_oma_binding_and_mode_t binding_and_mode)
@@ -1385,9 +1243,6 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 	const sn_nsdl_resource_info_s 	*resource_temp_ptr;
 
 
-	/* Get list of resources */
-
-
 	/* Calculate needed memory and allocate */
 	message_ptr->payload_len = sn_nsdl_calculate_registration_body_size(updating_registeration);
 
@@ -1411,11 +1266,9 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 	/* Loop trough all resources */
 	while(resource_temp_ptr)
 	{
-
 		/* if resource needs to be registered */
 		if(resource_temp_ptr->resource_parameters_ptr)
 		{
-
 			if(updating_registeration && resource_temp_ptr->resource_parameters_ptr->registered == SN_NDSL_RESOURCE_REGISTERED)
 			{
 				resource_temp_ptr = sn_grs_get_next_resource();
@@ -1478,7 +1331,7 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 			}
 
 			/* ;aobs;id= */
-			/* todo: aosb not supported ATM - needs fixing */
+			/* todo: aosb not supported ATM */
 			/*
 			if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
 					resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
@@ -1500,7 +1353,6 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 		}
 
 		resource_temp_ptr = sn_grs_get_next_resource();
-
 	}
 
 	return SN_NSDL_SUCCESS;
@@ -1528,10 +1380,8 @@ static uint16_t sn_nsdl_calculate_registration_body_size(uint8_t updating_regist
 
 	while(resource_temp_ptr)
 	{
-
 		if(resource_temp_ptr->resource_parameters_ptr)
 		{
-
 			if(updating_registeration && resource_temp_ptr->resource_parameters_ptr->registered == SN_NDSL_RESOURCE_REGISTERED)
 			{
 				resource_temp_ptr = sn_grs_get_next_resource();
@@ -1573,7 +1423,7 @@ static uint16_t sn_nsdl_calculate_registration_body_size(uint8_t updating_regist
 				/* ;obs */
 				return_value += 4;
 			}
-			/*todo: aobs not supported ATM - needs fixing*/
+			/*todo: aobs not supported ATM */
 			/*
 			if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
 					resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
@@ -1954,11 +1804,11 @@ static int8_t sn_nsdl_resolve_ep_information(sn_coap_hdr_s *coap_packet_ptr)
 
 /**
  * \fn int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type)
- * \brief This function is used to set the NSP address given by an application.
- * \param uint8_t *NSP_address Pointer to NSP address Note! IPv6 address must always be 16 bytes long and IPv4 address must always be 4 bytes long!
- * \param uint16_t port NSP port
- * \param sn_nsdl_addr_type_e address_type NSP address type (SN_NSDL_ADDRESS_TYPE_IPV6 or SN_NSDL_ADDRESS_TYPE_IPV4)
- * \return 0 on success, -1 on false to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
+ * \brief This function is used to set the DS address given by an application.
+ * \param uint8_t *NSP_address Pointer to DS address Note! IPv6 address must always be 16 bytes long and IPv4 address must always be 4 bytes long!
+ * \param uint16_t port DS port
+ * \param sn_nsdl_addr_type_e address_type DS address type (SN_NSDL_ADDRESS_TYPE_IPV6 or SN_NSDL_ADDRESS_TYPE_IPV4)
+ * \return 0 on success, -1 on false to indicate that internal address pointer is not allocated (call nsdl_init() first).
  *
  */
 int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type)

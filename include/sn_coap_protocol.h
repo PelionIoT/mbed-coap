@@ -15,11 +15,6 @@ extern "C" {
 #ifndef SN_COAP_PROTOCOL_H_
 #define SN_COAP_PROTOCOL_H_
 
-
-/* * * * * * * * * * * * * * * * * * * * * * */
-/* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */
-/* * * * * * * * * * * * * * * * * * * * * * */
-
 /**
  * \fn int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
 		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),

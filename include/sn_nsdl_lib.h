@@ -239,8 +239,8 @@ typedef struct sn_nsdl_oma_server_info_
  */
 typedef struct sn_nsdl_bs_ep_info_
 {
-	void (*oma_bs_status_cb)(sn_nsdl_oma_server_info_t *);
-	sn_nsdl_oma_device_t *device_object;
+	void (*oma_bs_status_cb)(sn_nsdl_oma_server_info_t *);	/**< Callback for OMA bootstrap status */
+	sn_nsdl_oma_device_t *device_object;					/**< OMA LWM2M mandatory device resources */
 } sn_nsdl_bs_ep_info_t;
 
 
@@ -529,11 +529,11 @@ extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_ns
 extern omalw_certificate_list_t *sn_nsdl_get_certificates(void);
 
 /**
- * \fn extern int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
+ * \fn extern int8_t sn_nsdl_update_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
  *
  * \brief Updates certificate pointers to resource server.
  */
-extern int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
+extern int8_t sn_nsdl_update_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
 
 /**
  * \fn extern int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr);
