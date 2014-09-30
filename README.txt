@@ -22,4 +22,6 @@ Package:
   /client-c/libNsdl/src/include                         libNsdl header files
   /libEdtls                                         	eDTLS library
   /libEdtls/src/include                             	eDTLS library header files
+  /libService                                           Service libraries
+  /libService/included                                  Service libraries header files
   
