@@ -27,5 +27,5 @@ Backup*
 *.uvopt
 libEdtls
 *.out
-
+docs/
 *.zip
