@@ -1,16 +1,10 @@
 PLATFORM= 
 OS = LINUX
-EDTLS = YES
 TARGET	= connected_home_full_oma
 OBJECTS = main.o connected_home_full_oma.o 
-ifeq ($(EDTLS),NO)
-CFLAGS	= -std=c99 -Wall -D_REENTRANT -D$(OS) -I ../../include -I ../../../libService/include -DHAVE_DEBUG
-LDFLAGS = -L../../ -D_REENTRANT -lpthread -lnsdl_gcc
-endif
-ifeq ($(EDTLS),YES)
-CFLAGS	= -std=c99 -Wall -D_REENTRANT -D$(OS) -I ../../include -I ../../../libService/include -I ../../libEdtls/src/include -DHAVE_DEBUG -DUSE_EDTLS
-LDFLAGS = -L../../ -L../../libEdtls/x86_gcc -D_REENTRANT -lpthread -lnsdl_gcc -leDTLS -lsn_aes
-endif
+CFLAGS	+= -I../../include -I../../../libService/include -I../../../edtls-lib/include -DUSE_EDTLS -std=gnu99 
+LDFLAGS += -L../../../edtls-lib -leDTLS_gcc -L../../ -lnsdl_gcc -lpthread
+LDFLAGS += -L../../../libService -lccm_gcc -laes_gcc -lecc_gcc -llist_gcc -lrand_gcc -lSHA256_gcc -lX509_V3_gcc
 
 all: $(TARGET) 
 

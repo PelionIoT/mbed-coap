@@ -1,6 +1,6 @@
-Connected Home Full Server for NSDL C
+Connected Home Full Server for mbed Device C Client Library
 
-This project is an example of a NanoService endpoint for the Connected Home Reference App, which emulates the sensors of 
+This project is an example of a mbed Device Server endpoint for the Connected Home Reference App, which emulates the sensors of 
 a power measurement and relay node.  
 
 To build the software, type:
@@ -13,11 +13,11 @@ make EDTLS=YES
 
 Usage:
 
-connected-home [-p 8000] 
+connected_home_full_ipv4 [-p 8000] 
 -p	port to listen on (default = 8000)
--d	NSP IPv6 address (default = ::1)
--dp NSP port number (default = 5683)
+-d	mbed Device Server IPv6 address (default = ::1)
+-dp mbed Device Server port number (default = 5683)
 
-When running on the same machine as NSP, simply run:
+When running on the same machine as mbed Device Server, simply run:
 
 ./connected_home_full_ipv4

@@ -7,8 +7,6 @@
  *
  */
 
-#if 1
-
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -32,7 +30,7 @@
 #include "bootstrap_certificates.h"
 
 #include "sn_edtls_lib.h"
-#include "sn_aes.h"
+#include "arm_aes.h"
 #define MAX_CONNECTING_TIME 200
 
 #define BUFLEN 1024
@@ -442,17 +440,7 @@ static void coap_exec_poll_function(void)
 		if(!(ns_system_time % (uint32_t)20) && ns_system_time)
 		{
 			printf("reregister!\n");
-			sn_nsdl_ep_parameters_s *endpoint_ptr = 0;
-
-			/* Macro to allocate edpoint_ptr structure for endpoint parameters (name, type and lifetime) */
-			INIT_REGISTER_NSDL_ENDPOINT(endpoint_ptr, query, ep_type, lifetime_ptr);
-
-			endpoint_ptr->binding_and_mode = BINDING_MODE_U | BINDING_MODE_Q;
-
-			sn_nsdl_update_registration(endpoint_ptr);
-
-			CLEAN_REGISTER_NSDL_ENDPOINT(endpoint_ptr);
-
+			sn_nsdl_update_registration(lifetime_ptr, 4);
 		}
 
 		/* Send delayed response to request */
@@ -722,23 +710,21 @@ void create_example_resources(void)
 {
 	sn_nsdl_resource_info_s	*resource_ptr = 0;
 
-
 	/* Create resources */
 	/* Resource struct is used during this process. */
 	/* Libraries copies values to own list. resource_ptr can be free'd after resource creations */
 	resource_ptr = own_alloc(sizeof(sn_nsdl_resource_info_s));
 	if(!resource_ptr)
-		return 0;
+		return;
 	memset(resource_ptr, 0, sizeof(sn_nsdl_resource_info_s));
 
 	resource_ptr->resource_parameters_ptr = own_alloc(sizeof(sn_nsdl_resource_parameters_s));
 	if(!resource_ptr->resource_parameters_ptr)
 	{
 		own_free(resource_ptr);
-		return 0;
+		return;
 	}
 	memset(resource_ptr->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
-
 
 	/* Macro is used to help creating resources. Fills struct and calls sn_nsdl_create_resource() - function */
 	/* Static resources are handled in libNsdl, and application can give some value for them to add to responses */
@@ -956,4 +942,3 @@ void oma_status(sn_nsdl_oma_server_info_t *server_info_ptr)
 
 	oma = 1;
 }
-#endif

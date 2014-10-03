@@ -102,8 +102,8 @@ SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_duplication_buffer_size						
 
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              *(*sn_coap_protocol_malloc)(uint16_t)              = NULL; /* Function pointer for used malloc() function */
 SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              (*sn_coap_protocol_free)(void*)                    = NULL; /* Function pointer for used free()   function */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint8_t 			(*sn_coap_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *)  = NULL;
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static int8_t 			(*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *) MAYBE_UNUSED			 = NULL;
+SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint8_t 			(*sn_coap_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *) = NULL;
+SN_MEM_ATTR_COAP_PROTOCOL_DECL static int8_t 			(*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *) 						= NULL;
 
 
 static uint8_t 	resource_path_ptr[]			= {'r','d'};

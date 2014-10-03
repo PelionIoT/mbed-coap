@@ -168,7 +168,7 @@
         <debug>1</debug>
         <option>
           <name>CCDefines</name>
-          <state>REAL_EMBEDDED</state>
+          <state></state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -297,6 +297,7 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
+          <state>$PROJ_DIR$/../../include</state>
           <state>$PROJ_DIR$/../src/include</state>
           <state>$PROJ_DIR$/../../../libService/include</state>
         </option>

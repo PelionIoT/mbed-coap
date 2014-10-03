@@ -13,20 +13,6 @@ extern "C" {
 #endif
 
 
-#define SN_GRS_VERSION	                	0x0101
-
-#ifndef SN_NSDL_HAVE_HTTP_CAPABILITY
-#define SN_NSDL_HAVE_HTTP_CAPABILITY		0
-#endif
-
-#ifndef SN_NSDL_HAVE_HTTPS_CAPABILITY
-#define SN_NSDL_HAVE_HTTPS_CAPABILITY		0
-#endif
-
-#ifndef SN_NSDL_HAVE_COAP_CAPABILITY
-#define SN_NSDL_HAVE_COAP_CAPABILITY		1
-#endif
-
 #define SN_GRS_RESOURCE_ALREADY_EXISTS	-2
 #define SN_GRS_INVALID_PATH 			-3
 #define SN_GRS_LIST_ADDING_FAILURE		-4
@@ -74,34 +60,10 @@ typedef struct sn_grs_version_
 */
 extern int8_t 						sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
 										sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory);
-extern int8_t 						sn_grs_exec					(uint32_t time);
-extern sn_grs_resource_list_s 		*sn_grs_list_resource		(uint16_t pathlen, uint8_t *path);
-extern void 						sn_grs_free_resource_list	(sn_grs_resource_list_s *list);
 extern const sn_nsdl_resource_info_s *sn_grs_get_first_resource	(void);
 extern const sn_nsdl_resource_info_s *sn_grs_get_next_resource	(void);
-extern int8_t 						sn_grs_delete_resource		(uint16_t pathlen, uint8_t *path);
-extern int8_t 						sn_grs_update_resource		(sn_nsdl_resource_info_s *res);
-/**
- * \fn 	extern int8_t sn_grs_create_resource(sn_grs_resource_info_t *res)
- *
- * \brief Resource creating function.
- *
- *	Used to create a static or dynamic HTTP(S) or CoAP resource.
- *
- *	\param 	*res	Pointer to a structure of type sn_grs_resource_info_t that contains the information
- *					about the resource.
- *
- *	\return 		 0 success
- *					-1 Resource already exists
- *					-2 Invalid path
- *					-3 List adding failure
-*/
-extern int8_t 						sn_grs_create_resource		(sn_nsdl_resource_info_s *res);
 extern int8_t 						sn_grs_process_coap			(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src);
-extern int16_t 						sn_grs_get_capability		(void);
-extern uint32_t 					sn_grs_get_version			(void);
 extern sn_nsdl_resource_info_s *	sn_grs_search_resource		(uint16_t pathlen, uint8_t *path, uint8_t search_method);
-extern int8_t 						sn_grs_send_coap_message	(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
 extern int8_t 						sn_grs_destroy				(void);
 
 #ifdef __cplusplus

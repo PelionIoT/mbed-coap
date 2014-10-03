@@ -264,138 +264,6 @@ int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint1
 	return SN_NSDL_SUCCESS;
 }
 
-int8_t sn_nsdl_GET_with_QUERY(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port, char *query, uint8_t query_len)
-{
-	sn_coap_hdr_s 	*message_ptr;
-	sn_nsdl_addr_s *dst = 0;
-
-	message_ptr = sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
-	if(message_ptr == NULL)
-		return SN_NSDL_FAILURE;
-
-	memset(message_ptr, 0, sizeof(sn_coap_hdr_s));
-
-	/* Fill message fields -> confirmable post to specified NSP path */
-	message_ptr->msg_type 	= 	COAP_MSG_TYPE_CONFIRMABLE;
-	message_ptr->msg_code 	= 	COAP_MSG_CODE_REQUEST_GET;
-	/* Allocate memory for the extended options list */
-	message_ptr->options_list_ptr = sn_nsdl_alloc(sizeof(sn_coap_options_list_s));
-	if(message_ptr->options_list_ptr == NULL)
-	{
-		sn_nsdl_free(message_ptr);
-		message_ptr = 0;
-		return SN_NSDL_FAILURE;
-	}
-
-
-	memset(message_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
-	message_ptr->options_list_ptr->uri_query_len =query_len;
-	message_ptr->options_list_ptr->uri_query_ptr = (uint8_t *)query;
-	message_ptr->uri_path_len = urilen;
-	message_ptr->uri_path_ptr = (uint8_t *)uri;
-
-	/* Build and send coap message to NSP */
-	/* Local variables */
-	if(!dst)
-	{
-		//allocate only if previously not allocated
-		dst = sn_nsdl_alloc(sizeof(sn_nsdl_addr_s));
-	}
-
-	if(dst)
-	{
-		/* This is only for version 0.5 */
-		dst->type = SN_NSDL_ADDRESS_TYPE_IPV6;
-		dst->port = port;
-		dst->addr_len = 16;
-		if(!dst->addr_ptr)
-		{
-			dst->addr_ptr = sn_nsdl_alloc(dst->addr_len);
-			memcpy(dst->addr_ptr, destination, 16);
-		}
-	}
-
-	sn_grs_send_coap_message(dst, message_ptr);
-
-	if(dst->addr_ptr)
-		sn_nsdl_free(dst->addr_ptr);
-
-	if(dst)
-		sn_nsdl_free(dst);
-	message_ptr->uri_path_ptr = NULL;
-	message_ptr->options_list_ptr->uri_host_ptr = NULL;
-	message_ptr->options_list_ptr->uri_query_ptr = NULL;
-
-	sn_coap_parser_release_allocated_coap_msg_mem(message_ptr);
-	return SN_NSDL_SUCCESS;
-}
-
-int8_t sn_nsdl_GET(char * uri, uint16_t urilen, uint8_t*destination, uint16_t port)
-{
-	sn_coap_hdr_s 	*message_ptr;
-	sn_nsdl_addr_s *dst = 0;
-
-
-	message_ptr = sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
-	if(message_ptr == NULL)
-		return SN_NSDL_FAILURE;
-
-	memset(message_ptr, 0, sizeof(sn_coap_hdr_s));
-
-	/* Fill message fields -> confirmable post to specified NSP path */
-	message_ptr->msg_type 	= 	COAP_MSG_TYPE_CONFIRMABLE;
-	message_ptr->msg_code 	= 	COAP_MSG_CODE_REQUEST_GET;
-	/* Allocate memory for the extended options list */
-	message_ptr->options_list_ptr = sn_nsdl_alloc(sizeof(sn_coap_options_list_s));
-	if(message_ptr->options_list_ptr == NULL)
-	{
-		sn_nsdl_free(message_ptr);
-		message_ptr = 0;
-		return SN_NSDL_FAILURE;
-	}
-
-
-	memset(message_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
-
-	message_ptr->uri_path_len = urilen;
-	message_ptr->uri_path_ptr = (uint8_t *)uri;
-
-	/* Build and send coap message to NSP */
-	/* Local variables */
-	if(!dst)
-	{
-		//allocate only if previously not allocated
-		dst = sn_nsdl_alloc(sizeof(sn_nsdl_addr_s));
-		memset(dst, 0, sizeof(sn_nsdl_addr_s));
-	}
-
-	if(dst)
-	{
-		/* This is only for version 0.5 */
-		dst->type = SN_NSDL_ADDRESS_TYPE_IPV6;
-		dst->port = port;
-		dst->addr_len = 16;
-		if(!dst->addr_ptr)
-		{
-			dst->addr_ptr = sn_nsdl_alloc(dst->addr_len);
-			memcpy(dst->addr_ptr, destination, 16);
-		}
-	}
-	sn_grs_send_coap_message(dst, message_ptr);
-
-	if(dst->addr_ptr)
-		sn_nsdl_free(dst->addr_ptr);
-	if(dst)
-		sn_nsdl_free(dst);
-	message_ptr->uri_path_ptr = NULL;
-	message_ptr->options_list_ptr->uri_host_ptr = NULL;
-
-	sn_coap_parser_release_allocated_coap_msg_mem(message_ptr);
-	return SN_NSDL_SUCCESS;
-}
-
-
-
 int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 {
 	/* Local variables */
@@ -577,14 +445,17 @@ int8_t sn_nsdl_unregister_endpoint(void)
 	return SN_NSDL_SUCCESS;
 }
 
-int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
+int8_t sn_nsdl_update_registration (uint8_t *lt_ptr, uint8_t lt_len)
 {
 	/* Local variables */
 	sn_coap_hdr_s 	*register_message_ptr;
 	uint8_t			*temp_ptr;
+	sn_nsdl_ep_parameters_s temp_parameters;
 
-	if(!endpoint_info_ptr)
-		return SN_NSDL_FAILURE;
+	memset(&temp_parameters, 0, sizeof(sn_nsdl_ep_parameters_s));
+
+	temp_parameters.lifetime_len = lt_len;
+	temp_parameters.lifetime_ptr = lt_ptr;
 
 	/*** Build endpoint register update message ***/
 
@@ -635,7 +506,7 @@ int8_t sn_nsdl_update_registration (sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 	memset(register_message_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
 
 	/* Fill Uri-query options */
-	sn_nsdl_fill_uri_query_options(endpoint_info_ptr, register_message_ptr, SN_NSDL_EP_UPDATE_MESSAGE);
+	sn_nsdl_fill_uri_query_options(&temp_parameters, register_message_ptr, SN_NSDL_EP_UPDATE_MESSAGE);
 
 	/* Build payload */
 	if(ep_information_ptr->ds_register_mode == REGISTER_WITH_RESOURCES)
@@ -724,7 +595,7 @@ uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token
 	}
 
 	/* Send message */
-	if(sn_grs_send_coap_message(nsp_address_ptr->omalw_address_ptr, notification_message_ptr) == SN_NSDL_FAILURE)
+	if(sn_nsdl_send_coap_message(nsp_address_ptr->omalw_address_ptr, notification_message_ptr) == SN_NSDL_FAILURE)
 		return_msg_id = 0;
 	else
 		return_msg_id = notification_message_ptr->msg_id;
@@ -815,57 +686,58 @@ int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_p
 
 omalw_certificate_list_t *sn_nsdl_get_certificates(void)
 {
-		sn_nsdl_resource_info_s *resource_ptr = 0;;
-		omalw_certificate_list_t *certi_list_ptr = 0;
+	sn_nsdl_resource_info_s *resource_ptr = 0;;
+	omalw_certificate_list_t *certi_list_ptr = 0;
 
-		certi_list_ptr = sn_nsdl_alloc(sizeof(omalw_certificate_list_t));
+	certi_list_ptr = sn_nsdl_alloc(sizeof(omalw_certificate_list_t));
 
-		if(!certi_list_ptr)
-			return NULL;
+	if(!certi_list_ptr)
+		return NULL;
 
-		/* Get private key resource */
-		resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/5");
-		if(!resource_ptr)
-		{
-			sn_nsdl_free(certi_list_ptr);
-			return NULL;
-		}
-		certi_list_ptr->own_private_key_ptr = resource_ptr->resource;
-		certi_list_ptr->own_private_key_len = resource_ptr->resourcelen;
+	/* Get private key resource */
+	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/5");
+	if(!resource_ptr)
+	{
+		sn_nsdl_free(certi_list_ptr);
+		return NULL;
+	}
+	certi_list_ptr->own_private_key_ptr = resource_ptr->resource;
+	certi_list_ptr->own_private_key_len = resource_ptr->resourcelen;
 
-		/* Get client certificate resource */
-		resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/4");
-		if(!resource_ptr)
-		{
-			sn_nsdl_free(certi_list_ptr);
-			return NULL;
-		}
-		certi_list_ptr->certificate_ptr[0] = resource_ptr->resource;
-		certi_list_ptr->certificate_len[0] = resource_ptr->resourcelen;
+	/* Get client certificate resource */
+	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/4");
+	if(!resource_ptr)
+	{
+		sn_nsdl_free(certi_list_ptr);
+		return NULL;
+	}
+	certi_list_ptr->certificate_ptr[0] = resource_ptr->resource;
+	certi_list_ptr->certificate_len[0] = resource_ptr->resourcelen;
 
-		/* Get root certificate resource */
-		resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/3");
-		if(!resource_ptr)
-		{
-			sn_nsdl_free(certi_list_ptr);
-			return NULL;
-		}
-		certi_list_ptr->certificate_ptr[1] = resource_ptr->resource;
-		certi_list_ptr->certificate_len[1] = resource_ptr->resourcelen;
+	/* Get root certificate resource */
+	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/3");
+	if(!resource_ptr)
+	{
+		sn_nsdl_free(certi_list_ptr);
+		return NULL;
+	}
+	certi_list_ptr->certificate_ptr[1] = resource_ptr->resource;
+	certi_list_ptr->certificate_len[1] = resource_ptr->resourcelen;
 
-		/* return filled list */
-		return certi_list_ptr;
+	/* return filled list */
+	return certi_list_ptr;
 
 }
 
-int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain)
+int8_t sn_nsdl_update_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain)
 {
+	(void)certificate_chain;
+
 	/* Check pointers */
 	if(!certificate_ptr)
 		return SN_NSDL_FAILURE;
 
 	sn_nsdl_resource_info_s *resource_ptr = 0;;
-
 
 	/* Get private key resource */
 	resource_ptr = sn_nsdl_get_resource(5, (void*)"0/0/5");
@@ -873,6 +745,7 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	{
 		return SN_NSDL_FAILURE;
 	}
+	sn_nsdl_free(resource_ptr->resource);
 	resource_ptr->resource = certificate_ptr->own_private_key_ptr;
 	resource_ptr->resourcelen = certificate_ptr->own_private_key_len;
 
@@ -882,6 +755,7 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	{
 		return SN_NSDL_FAILURE;
 	}
+	sn_nsdl_free(resource_ptr->resource);
 	resource_ptr->resource = certificate_ptr->certificate_ptr[0];
 	resource_ptr->resourcelen = certificate_ptr->certificate_len[0];
 
@@ -891,12 +765,12 @@ int8_t sn_nsdl_set_certificates(omalw_certificate_list_t* certificate_ptr, uint8
 	{
 		return SN_NSDL_FAILURE;
 	}
+	sn_nsdl_free(resource_ptr->resource);
 	resource_ptr->resource = certificate_ptr->certificate_ptr[1];
 	resource_ptr->resourcelen = certificate_ptr->certificate_len[1];
 
 	return SN_NSDL_SUCCESS;
 }
-
 
 int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr)
 {
@@ -922,7 +796,7 @@ int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr)
 				*resource_temp->resource = (uint8_t)device_object_ptr->error_code;
 				resource_temp->resourcelen = 1;
 
-				sn_grs_update_resource(resource_temp);
+				sn_nsdl_update_resource(resource_temp);
 				return SN_NSDL_SUCCESS;
 			}
 			break;
@@ -979,20 +853,9 @@ int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr)
 	return SN_NSDL_SUCCESS;
 }
 
-/* * * * * * * * * * * * * * * * * * * * * */
-/* 			GRS Wrapper					   */
-/* These are documented in sn_grs.c - file */
-/* * * * * * * * * * * * * * * * * * * * * */
-
-int16_t sn_nsdl_get_capability(void)
+char *sn_nsdl_get_version(void)
 {
-	return sn_grs_get_capability();
-}
-
-
-uint32_t sn_nsdl_get_version(void)
-{
-	return sn_grs_get_version();
+	return VERSION;
 }
 
 
@@ -1150,47 +1013,14 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 
 int8_t sn_nsdl_exec(uint32_t time)
 {
-	return sn_grs_exec(time);
-}
-
-int8_t sn_nsdl_create_resource(sn_nsdl_resource_info_s *res_ptr)
-{
-	return sn_grs_create_resource(res_ptr);
-}
-
-int8_t sn_nsdl_update_resource(sn_nsdl_resource_info_s *res_ptr)
-{
-	return sn_grs_update_resource(res_ptr);
-}
-
-int8_t sn_nsdl_delete_resource(uint8_t pathlen, uint8_t *path_ptr)
-{
-	return sn_grs_delete_resource(pathlen, path_ptr);
+	/* Call CoAP execution function */
+	return sn_coap_protocol_exec(time);
 }
 
 sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *path_ptr)
 {
 	return sn_grs_search_resource(pathlen, path_ptr, SN_GRS_SEARCH_METHOD);
 }
-
-sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path_ptr)
-{
-	return sn_grs_list_resource(pathlen, path_ptr);
-}
-
-void sn_nsdl_free_resource_list(sn_grs_resource_list_s *list)
-{
-	sn_grs_free_resource_list(list);
-}
-
-int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
-{
-	return sn_grs_send_coap_message(address_ptr, coap_hdr_ptr);
-}
-
-/********************/
-/* Static functions */
-/********************/
 
 
 /**
@@ -1283,7 +1113,6 @@ static void sn_nsdl_resolve_nsp_address(void)
 	if(nsp_address_ptr)
 	{
 		nsp_address_ptr->omalw_server_security = SEC_NOT_SET;
-		/* This is only for version 0.5 */
 		nsp_address_ptr->omalw_address_ptr = sn_nsdl_alloc(sizeof(sn_nsdl_addr_s));
 		if(nsp_address_ptr->omalw_address_ptr)
 		{
@@ -1291,8 +1120,6 @@ static void sn_nsdl_resolve_nsp_address(void)
 			nsp_address_ptr->omalw_address_ptr->type = SN_NSDL_ADDRESS_TYPE_NONE;
 		}
 	}
-
-	/* Todo: get NSP address */
 }
 
 static int8_t sn_nsdl_create_oma_device_object_base(sn_nsdl_oma_device_t *oma_device_setup_ptr, sn_nsdl_oma_binding_and_mode_t binding_and_mode)
@@ -1327,7 +1154,7 @@ static int8_t sn_nsdl_create_oma_device_object_base(sn_nsdl_oma_device_t *oma_de
 	new_resource.resource = resource_temp;
 	new_resource.resourcelen = 1;
 
-	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	if(sn_nsdl_create_resource(&new_resource) != SN_NSDL_SUCCESS)
 	{
 		sn_nsdl_free(new_resource.resource_parameters_ptr);
 		return SN_NSDL_FAILURE;
@@ -1368,7 +1195,7 @@ static int8_t sn_nsdl_create_oma_device_object_base(sn_nsdl_oma_device_t *oma_de
 		new_resource.resource = 0;
 
 
-	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	if(sn_nsdl_create_resource(&new_resource) != SN_NSDL_SUCCESS)
 	{
 		sn_nsdl_free(new_resource.resource_parameters_ptr);
 		return SN_NSDL_FAILURE;
@@ -1390,7 +1217,7 @@ static int8_t sn_nsdl_create_oma_device_object_base(sn_nsdl_oma_device_t *oma_de
 
 	new_resource.sn_grs_dyn_res_callback = oma_device_setup_ptr->sn_oma_device_boot_callback;
 
-	if(sn_grs_create_resource(&new_resource) != SN_NSDL_SUCCESS)
+	if(sn_nsdl_create_resource(&new_resource) != SN_NSDL_SUCCESS)
 	{
 		sn_nsdl_free(new_resource.resource_parameters_ptr);
 		return SN_NSDL_FAILURE;
@@ -1416,9 +1243,6 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 	const sn_nsdl_resource_info_s 	*resource_temp_ptr;
 
 
-	/* Get list of resources */
-
-
 	/* Calculate needed memory and allocate */
 	message_ptr->payload_len = sn_nsdl_calculate_registration_body_size(updating_registeration);
 
@@ -1442,11 +1266,9 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 	/* Loop trough all resources */
 	while(resource_temp_ptr)
 	{
-
 		/* if resource needs to be registered */
 		if(resource_temp_ptr->resource_parameters_ptr)
 		{
-
 			if(updating_registeration && resource_temp_ptr->resource_parameters_ptr->registered == SN_NDSL_RESOURCE_REGISTERED)
 			{
 				resource_temp_ptr = sn_grs_get_next_resource();
@@ -1509,7 +1331,7 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 			}
 
 			/* ;aobs;id= */
-			/* todo: aosb not supported ATM - needs fixing */
+			/* todo: aosb not supported ATM */
 			/*
 			if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
 					resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
@@ -1531,7 +1353,6 @@ int8_t sn_nsdl_build_registration_body(sn_coap_hdr_s *message_ptr, uint8_t updat
 		}
 
 		resource_temp_ptr = sn_grs_get_next_resource();
-
 	}
 
 	return SN_NSDL_SUCCESS;
@@ -1559,10 +1380,8 @@ static uint16_t sn_nsdl_calculate_registration_body_size(uint8_t updating_regist
 
 	while(resource_temp_ptr)
 	{
-
 		if(resource_temp_ptr->resource_parameters_ptr)
 		{
-
 			if(updating_registeration && resource_temp_ptr->resource_parameters_ptr->registered == SN_NDSL_RESOURCE_REGISTERED)
 			{
 				resource_temp_ptr = sn_grs_get_next_resource();
@@ -1604,7 +1423,7 @@ static uint16_t sn_nsdl_calculate_registration_body_size(uint8_t updating_regist
 				/* ;obs */
 				return_value += 4;
 			}
-			/*todo: aobs not supported ATM - needs fixing*/
+			/*todo: aobs not supported ATM */
 			/*
 			if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
 					resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
@@ -1985,11 +1804,11 @@ static int8_t sn_nsdl_resolve_ep_information(sn_coap_hdr_s *coap_packet_ptr)
 
 /**
  * \fn int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type)
- * \brief This function is used to set the NSP address given by an application.
- * \param uint8_t *NSP_address Pointer to NSP address Note! IPv6 address must always be 16 bytes long and IPv4 address must always be 4 bytes long!
- * \param uint16_t port NSP port
- * \param sn_nsdl_addr_type_e address_type NSP address type (SN_NSDL_ADDRESS_TYPE_IPV6 or SN_NSDL_ADDRESS_TYPE_IPV4)
- * \return 0 on success, -1 on false to indicate that NSDL internal address pointer is not allocated (call nsdl_init() first).
+ * \brief This function is used to set the DS address given by an application.
+ * \param uint8_t *NSP_address Pointer to DS address Note! IPv6 address must always be 16 bytes long and IPv4 address must always be 4 bytes long!
+ * \param uint16_t port DS port
+ * \param sn_nsdl_addr_type_e address_type DS address type (SN_NSDL_ADDRESS_TYPE_IPV6 or SN_NSDL_ADDRESS_TYPE_IPV4)
+ * \return 0 on success, -1 on false to indicate that internal address pointer is not allocated (call nsdl_init() first).
  *
  */
 int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type)
@@ -2373,7 +2192,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '0';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 				break;
 			case 2:
@@ -2382,7 +2201,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '2';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 
 				break;
@@ -2391,7 +2210,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '3';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 				break;
 			case 4:
@@ -2399,7 +2218,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '4';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 
 				break;
@@ -2408,7 +2227,7 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				path_temp[4] = '5';
 				resource_temp.resource = temp_ptr;
 				resource_temp.resourcelen = length;
-				if(sn_grs_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
+				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
 
 				break;
