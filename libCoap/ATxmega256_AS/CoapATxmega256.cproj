@@ -63,6 +63,7 @@
         <avrgcc.compiler.directories.IncludePaths>
           <ListValues>
             <Value>../../src/include</Value>
+            <Value>../../../include</Value>
           </ListValues>
         </avrgcc.compiler.directories.IncludePaths>
         <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
@@ -93,6 +94,7 @@
   <avrgcc.compiler.directories.IncludePaths>
     <ListValues>
       <Value>../../src/include</Value>
+      <Value>../../../include</Value>
       <Value>../../../../libService/include</Value>
     </ListValues>
   </avrgcc.compiler.directories.IncludePaths>
