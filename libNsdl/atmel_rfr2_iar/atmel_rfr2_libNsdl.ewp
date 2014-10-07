@@ -249,10 +249,6 @@
           <state>1</state>
         </option>
         <option>
-          <name>CCDefines</name>
-          <state></state>
-        </option>
-        <option>
           <name>CCPreprocFile</name>
           <state>0</state>
         </option>
@@ -1236,6 +1232,7 @@
         <option>
           <name>CCDefines</name>
           <state>VERSION="(shell git describe --tags --long --dirty --always)"</state>
+          <state>NDEBUG</state>
         </option>
         <option>
           <name>CCVariantProcessor</name>
@@ -1252,10 +1249,6 @@
         <option>
           <name>CCObjPrefix</name>
           <state>1</state>
-        </option>
-        <option>
-          <name>CCDefines</name>
-          <state>NDEBUG</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
