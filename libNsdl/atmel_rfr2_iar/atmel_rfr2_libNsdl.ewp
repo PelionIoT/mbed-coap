@@ -229,6 +229,10 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
+          <name>CCDefines</name>
+          <state>VERSION="(shell git describe --tags --long --dirty --always)"</state>
+        </option>
+        <option>
           <name>CCVariantProcessor</name>
           <state>0</state>
         </option>
@@ -1229,6 +1233,10 @@
         <version>17</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
+        <option>
+          <name>CCDefines</name>
+          <state>VERSION="(shell git describe --tags --long --dirty --always)"</state>
+        </option>
         <option>
           <name>CCVariantProcessor</name>
           <state>0</state>
