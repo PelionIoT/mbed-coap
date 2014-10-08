@@ -1146,7 +1146,7 @@
         <debug>0</debug>
         <option>
           <name>CCDefines</name>
-          <state></state>
+          <state>VERSION="8631d785"</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1971,6 +1971,18 @@
       <data/>
     </settings>
   </configuration>
+  <file>
+    <name>$PROJ_DIR$\..\..\libCoap\src\sn_coap_builder.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\libCoap\src\sn_coap_header_check.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\libCoap\src\sn_coap_parser.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\libCoap\src\sn_coap_protocol.c</name>
+  </file>
   <file>
     <name>$PROJ_DIR$\..\src\sn_grs.c</name>
   </file>
