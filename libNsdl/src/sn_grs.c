@@ -6,7 +6,7 @@
  *
  *
  */
-#include <string.h>			// for memcomp
+#include <string.h>			// for memcmp
 #include <stdlib.h>
 
 #include "ns_types.h"
@@ -30,10 +30,6 @@
 static int8_t 						sn_grs_resource_info_free			(sn_nsdl_resource_info_s *resource_ptr);
 static uint8_t *					sn_grs_convert_uri					(uint16_t *uri_len, uint8_t *uri_ptr);
 static int8_t 						sn_grs_add_resource_to_list			(sn_nsdl_resource_info_s *resource_ptr);
-#ifdef CC8051_PLAT
-void 								copy_code_nsdl						(uint8_t * ptr, prog_uint8_t * code_ptr, uint16_t len);
-#endif
-static uint8_t 						sn_grs_compare_code					(uint8_t * ptr, prog_uint8_t * code_ptr, uint8_t len);
 
 /* Extern function prototypes */
 extern int8_t 						sn_nsdl_build_registration_body		(sn_coap_hdr_s *message_ptr, uint8_t updating_registeration);
@@ -348,7 +344,7 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 	if(coap_packet_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE)
 	{
 		/* Check if .well-known/core */
-		if(coap_packet_ptr->uri_path_len == WELLKNOWN_PATH_LEN && sn_grs_compare_code(coap_packet_ptr->uri_path_ptr, (const uint8_t*)WELLKNOWN_PATH, WELLKNOWN_PATH_LEN) == 0)
+		if(coap_packet_ptr->uri_path_len == WELLKNOWN_PATH_LEN && memcmp(coap_packet_ptr->uri_path_ptr, WELLKNOWN_PATH, WELLKNOWN_PATH_LEN) == 0)
 		{
 
 			sn_coap_content_format_e wellknown_content_format = COAP_CT_LINK_FORMAT;
@@ -895,11 +891,8 @@ static int8_t sn_grs_add_resource_to_list(sn_nsdl_resource_info_s *resource_ptr)
 	resource_copy_ptr->pathlen = path_len;
 
 	/* Copy path string to the copy */
-#ifdef CC8051_PLAT
-        copy_code_nsdl(resource_copy_ptr->path, (prog_uint8_t*)path_start_ptr, resource_copy_ptr->pathlen);
-#else
 	memcpy(resource_copy_ptr->path, path_start_ptr, resource_copy_ptr->pathlen);
-#endif
+
 	/* Allocate memory for the resource, and copy it to copy */
 	if(resource_ptr->resource)
 	{
@@ -943,12 +936,8 @@ static int8_t sn_grs_add_resource_to_list(sn_nsdl_resource_info_s *resource_ptr)
 				sn_grs_resource_info_free(resource_copy_ptr);
 				return SN_NSDL_FAILURE;
 			}
-#ifdef CC8051_PLAT
-                        copy_code_nsdl(resource_copy_ptr->resource_parameters_ptr->resource_type_ptr,(prog_uint8_t*) resource_ptr->resource_parameters_ptr->resource_type_ptr, resource_ptr->resource_parameters_ptr->resource_type_len);
-#else
 			memcpy(resource_copy_ptr->resource_parameters_ptr->resource_type_ptr, resource_ptr->resource_parameters_ptr->resource_type_ptr, resource_ptr->resource_parameters_ptr->resource_type_len);
-#endif
-                }
+		}
 
 		if(resource_ptr->resource_parameters_ptr->interface_description_ptr)
 		{
@@ -1080,30 +1069,3 @@ static int8_t sn_grs_resource_info_free(sn_nsdl_resource_info_s *resource_ptr)
 	}
 	return SN_NSDL_FAILURE;
 }
-
-#ifdef CC8051_PLAT
-void copy_code_nsdl(uint8_t * ptr, prog_uint8_t * code_ptr, uint16_t len)
-{
-	uint16_t i;
-	for(i=0; i<len; i++)
-	{
-		ptr[i] = code_ptr[i];
-	}
-}
-#endif
-
-static uint8_t sn_grs_compare_code(uint8_t * ptr, prog_uint8_t * code_ptr, uint8_t len)
-{
-	uint8_t i=0;
-	while(len)
-	{
-		if(ptr[i] != code_ptr[i])
-		{
-			break;
-		}
-		len--;
-		i++;
-	}
-	return len;
-}
-

@@ -12,7 +12,6 @@
 #include "hal_sn.h"
 
 extern void debug_send(uint8_t *str);
-extern void debug_send_const(prog_uint8_t *str);
 
 int8_t debug_init(uint32_t speed, uint8_t io_conf);
 extern int16_t debug_get(void);
@@ -93,11 +92,6 @@ int8_t debug_put(uint8_t byte)
 void debug_send(uint8_t *str)
 {
 	DBU_SEND(str);
-}
-
-void debug_send_const(prog_uint8_t *str)
-{
-	DBU_CONST(str);
 }
 
 /**
