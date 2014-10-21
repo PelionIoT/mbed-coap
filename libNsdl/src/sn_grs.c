@@ -351,7 +351,7 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 
 			/* Allocate resopnse message  */
 			response_message_hdr_ptr = sn_grs_alloc(sizeof(sn_coap_hdr_s));
-			if(!response_message_hdr_ptr)
+			if(response_message_hdr_ptr == NULL)
 			{
 				if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
 				{
@@ -369,7 +369,7 @@ extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s
 			response_message_hdr_ptr->msg_id = coap_packet_ptr->msg_id;
 			response_message_hdr_ptr->content_type_len = 1;
 			response_message_hdr_ptr->content_type_ptr = malloc(1);
-			if(!response_message_hdr_ptr)
+			if(!response_message_hdr_ptr->content_type_ptr)
 			{
 				if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
 				{
