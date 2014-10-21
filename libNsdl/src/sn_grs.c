@@ -1064,7 +1064,7 @@ static int8_t sn_grs_resource_info_free(sn_nsdl_resource_info_s *resource_ptr)
 			resource_ptr->resource = 0;
 		}
 		sn_grs_free(resource_ptr);
-		resource_ptr = 0;
+
 		return SN_NSDL_SUCCESS;
 	}
 	return SN_NSDL_FAILURE;
