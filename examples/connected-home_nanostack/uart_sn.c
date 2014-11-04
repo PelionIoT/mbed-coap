@@ -206,16 +206,6 @@ void uart_put_str(uint8_t *str)
 	lib_exit_critical();
 }
 
-void uart_put_const(prog_uint8_t *str)
-{
-	lib_enter_critical();
-	while(*str)
-	{
-		uart_put(*str++);
-	}
-	lib_exit_critical();
-}
-
 /**
  * UART RX interrupt service routine
  * for UART 0

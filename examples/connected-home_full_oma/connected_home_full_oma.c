@@ -877,16 +877,6 @@ void edtls_registration_status(uint8_t status, int16_t session_id)
 	edtls_connection_status = status;
 }
 
-void copy_code(uint8_t * ptr, uint8_t * code_ptr, uint16_t len)
-{
-	memcpy(ptr, code_ptr, len);
-}
-
-uint8_t compare_code(uint8_t * ptr,  unsigned char const * code_ptr, uint8_t len)
-{
-	return memcmp(ptr, code_ptr, len);
-}
-
 static int16_t do_edtls_handshake(sn_edtls_address_t *edtls_address)
 {
 	/* Start eDTLS connection */

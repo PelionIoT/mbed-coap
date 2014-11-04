@@ -770,16 +770,6 @@ void ns_dyn_mem_free(void *ptr)
 	free(ptr);
 }
 
-uint8_t compare_code(uint8_t * ptr,  unsigned char const * code_ptr, uint8_t len)
-{
-	return memcmp(ptr, code_ptr, len);
-}
-
-void copy_code(uint8_t * ptr, uint8_t * code_ptr, uint16_t len)
-{
-	memcpy(ptr, code_ptr, len);
-}
-
 /* eDTLS sending function */
 uint8_t edtls_tx(uint8_t *data_ptr, uint16_t data_len, sn_edtls_address_t *dst_addr)
 {
