@@ -2229,7 +2229,6 @@ int8_t sn_nsdl_process_oma_tlv (uint8_t *data_ptr, uint16_t data_len)
 				resource_temp.resourcelen = length;
 				if(sn_nsdl_create_resource(&resource_temp) != SN_NSDL_SUCCESS)
 					return SN_NSDL_FAILURE;
-
 				break;
 			default:
 				break;

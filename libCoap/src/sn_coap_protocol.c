@@ -168,7 +168,6 @@ int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoi
 	temp_ptr += sizeof(resource_type_parameter);
 
 	memcpy(temp_ptr, endpoint_info_ptr->endpoint_type_ptr, endpoint_info_ptr->endpoint_type_len);
-	temp_ptr += endpoint_info_ptr->endpoint_type_len;
 
 	return 0;
 }
@@ -891,7 +890,6 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
 			/* Check if all re-sendings have been done */
 			if (stored_msg_ptr->resending_counter > sn_coap_resending_count)
 			{
-				sn_coap_hdr_s *tmp_coap_hdr_ptr;
 				coap_version_e coap_version = COAP_VERSION_UNKNOWN;
 
 				/* Get message ID from stored sending message */
@@ -901,6 +899,7 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
 				/* If RX callback have been fedined.. */
 				if(sn_coap_rx_callback != 0)
 				{
+					sn_coap_hdr_s *tmp_coap_hdr_ptr;
 					/* Parse CoAP message, set status and call RX callback */
 					tmp_coap_hdr_ptr = sn_coap_parser(stored_msg_ptr->send_msg_ptr->packet_len, stored_msg_ptr->send_msg_ptr->packet_ptr, &coap_version);
 

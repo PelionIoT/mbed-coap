@@ -590,7 +590,7 @@ static int8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_h
         if((*packet_data_pptr - packet_data_start_ptr) > packet_len)
         	return -1;
 
-        message_left = packet_len - (*packet_data_pptr - packet_data_start_ptr);	//todo: if(*packet_data_pptr < packet_data_start_ptr) message_left = 0; else
+        message_left = packet_len - (*packet_data_pptr - packet_data_start_ptr);
 
 
     }

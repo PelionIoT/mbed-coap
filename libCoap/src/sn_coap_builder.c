@@ -168,7 +168,6 @@ SN_MEM_ATTR_COAP_BUILDER_FUNC
 uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr)
 {
     uint16_t returned_byte_count = 0;
-    uint16_t repeatable_option_size = 0;
 
     if(!src_coap_msg_ptr)
     	return 0;
@@ -183,7 +182,9 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
     /* If else than Reset message because Reset message must be empty */
     if (src_coap_msg_ptr->msg_type != COAP_MSG_TYPE_RESET)
     {
-        /* TOKEN - Length is 1-8 bytes */
+        uint16_t repeatable_option_size = 0;
+
+    	/* TOKEN - Length is 1-8 bytes */
         if (src_coap_msg_ptr->token_ptr != NULL)
         {
             if(src_coap_msg_ptr->token_len > 8 || src_coap_msg_ptr->token_len < 1)	/* Check that option is not longer than defined */
