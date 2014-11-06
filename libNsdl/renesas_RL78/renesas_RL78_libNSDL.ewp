@@ -216,21 +216,21 @@
         </option>
         <option>
           <name>IccOptLevel</name>
-          <state>2</state>
+          <state>3</state>
         </option>
         <option>
           <name>IccOptStrategy</name>
           <version>0</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccOptLevelSlave</name>
-          <state>2</state>
+          <state>3</state>
         </option>
         <option>
           <name>IccOptAllowList</name>
           <version>2</version>
-          <state>10010001</state>
+          <state>11111101</state>
         </option>
         <option>
           <name>IccWrksegEnable</name>
@@ -274,7 +274,7 @@
         </option>
         <option>
           <name>IccGenerateDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IccOutputFile</name>
@@ -283,6 +283,7 @@
         <option>
           <name>CCDefines</name>
           <state>REG_TEMPLATE</state>
+          <state>VERSION=(char*)1</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -353,6 +354,7 @@
           <state>$PROJ_DIR$\..\src\Include</state>
           <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
           <state>$PROJ_DIR$\..\..\..\libService\include</state>
+          <state>$PROJ_DIR$\..\..\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -444,7 +446,7 @@
         </option>
         <option>
           <name>AsmDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>AsmListFile</name>
@@ -885,7 +887,7 @@
         </option>
         <option>
           <name>XarOutputFile</name>
-          <state>renesas_RL78_libNSDL_debug.lib</state>
+          <state>libnsdl_iccrl78.lib</state>
         </option>
       </data>
     </settings>
@@ -1798,6 +1800,21 @@
       <data/>
     </settings>
   </configuration>
+  <mfc>
+    <configuration>Debug</configuration>
+  </mfc>
+  <file>
+    <name>$PROJ_DIR$\..\..\libCoap\src\sn_coap_builder.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\libCoap\src\sn_coap_header_check.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\libCoap\src\sn_coap_parser.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\libCoap\src\sn_coap_protocol.c</name>
+  </file>
   <file>
     <name>$PROJ_DIR$\..\src\sn_grs.c</name>
   </file>
