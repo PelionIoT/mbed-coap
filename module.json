@@ -1,0 +1,23 @@
+{
+  "name": "nsdl-c",
+  "version": "0.0.0",
+  "description": "Nanostack NSDL and COAP library",
+  "keywords": ["coap", "nanostack"],
+  "author": "Tero Heinonen <tero.heinonen@arm.com>",
+  "repository": {
+    "url": "ssh://git.oulu.arm.com/home/git/repositories/nanomesh/nsdl-c.git",
+    "type": "git"
+  },
+  "homepage": "http://git.oulu.arm.com/gitweb/?p=nanomesh/nsdl-c.git;a=summary",
+  "license": "Proprietary, all rights reserved.",
+  "extraIncludes": [
+      "nsdl-c",
+      "source/libNsdl/src/include",
+      "source/libCoap/src/include"
+  ],
+  "dependencies": {
+    "libservice": "git://git.oulu.arm.com/nanomesh/libService.git#2.0.0-yotta",
+    "nanostack-event-loop": "git://git.oulu.arm.com/nanomesh/event-loop.git#0.0.0-yotta"
+  },
+  "targetDependencies": {}
+}
