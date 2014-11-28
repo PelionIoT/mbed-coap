@@ -30,6 +30,9 @@ extern "C" {
  *
  * \param *used_rx_callback_ptr used to return CoAP header struct with status COAP_STATUS_BUILDER_MESSAGE_SENDING_FAILED
  * 		  when re-sendings exceeded. If set to NULL, no error message is returned.
+ *
+ * \return 	0 if success
+ * 			-1 if failed
  */
 
 extern 	int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
