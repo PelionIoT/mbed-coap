@@ -1,6 +1,6 @@
 {
   "name": "nsdl-c",
-  "version": "0.0.0-yotta3",
+  "version": "0.0.0-yotta4",
   "description": "Nanostack NSDL and COAP library",
   "keywords": [
     "coap",
