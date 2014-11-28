@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "libservice": "git://git.oulu.arm.com/nanomesh/libService.git#^2.0.0-yotta",
-    "nanostack-event-loop": "git://git.oulu.arm.com/nanomesh/event-loop.git#^0.0.0-yotta"
+    "nanostack-event-loop": "git://git.oulu.arm.com/nanomesh/event-loop.git#>=0.0.0-yotta"
   },
   "targetDependencies": {}
 }
