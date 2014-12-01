@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <string.h> /* For memset() and memcpy() */
 
-#include "nsdl_types.h"
+#include "ns_types.h"
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
@@ -37,8 +37,6 @@ static int8_t   sn_coap_parser_payload_parse(uint16_t packet_data_len, uint8_t *
 /* * * * GLOBAL DECLARATIONS * * * */
 /* * * * * * * * * * * * * * * * * */
 
-
-SN_MEM_ATTR_COAP_PARSER_FUNC
 sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr)
 {
     uint8_t       *data_temp_ptr                    = packet_data_ptr;
@@ -80,8 +78,6 @@ sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr
     return parsed_and_returned_coap_msg_ptr;
 }
 
-
-SN_MEM_ATTR_COAP_PARSER_FUNC
 void sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg_ptr)
 {
     if (freed_coap_msg_ptr != NULL)
@@ -180,7 +176,6 @@ void sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg
  *
  * \param *coap_version_ptr is destination for parsed CoAP specification version
  */
-SN_MEM_ATTR_COAP_PARSER_FUNC
 static void sn_coap_parser_header_parse(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, coap_version_e *coap_version_ptr)
 {
     /* Parse CoAP Version and message type*/
@@ -209,7 +204,6 @@ static void sn_coap_parser_header_parse(uint8_t **packet_data_pptr, sn_coap_hdr_
  *
  * \return Return value is 0 in ok case and -1 in failure case
  */
-SN_MEM_ATTR_COAP_PARSER_FUNC
 static int8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, uint8_t *packet_data_start_ptr, uint16_t packet_len)
 {
     uint8_t previous_option_number = 0;
@@ -613,7 +607,6 @@ static int8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_h
  *
  * \return Return value is count of Uri-query optios parsed. In failure case -1 is returned.
 */
-SN_MEM_ATTR_COAP_PARSER_FUNC
 static int8_t sn_coap_parser_options_parse_multiple_options(uint8_t **packet_data_pptr, uint16_t packet_left_len,  uint8_t **dst_pptr, uint16_t *dst_len_ptr, sn_coap_option_numbers_e option, uint16_t option_number_len)
 {
     int16_t     uri_query_needed_heap       = sn_coap_parser_options_count_needed_memory_multiple_option(*packet_data_pptr, packet_left_len, option, option_number_len);
@@ -703,7 +696,6 @@ static int8_t sn_coap_parser_options_parse_multiple_options(uint8_t **packet_dat
  *
  * \param uint16_t option_number_len length of the first option part
  */
-SN_MEM_ATTR_COAP_PARSER_FUNC
 static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_t *packet_data_ptr, uint16_t packet_left_len, sn_coap_option_numbers_e option, uint16_t option_number_len)
 {
     uint16_t ret_value              = 0;
@@ -774,7 +766,6 @@ static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_
  *
  * \param *dst_coap_msg_ptr is destination for parsed CoAP message
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PARSER_FUNC
 static int8_t sn_coap_parser_payload_parse(uint16_t packet_data_len, uint8_t *packet_data_start_ptr, uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr)
 {
     /* If there is payload */
@@ -809,7 +800,6 @@ static int8_t sn_coap_parser_payload_parse(uint16_t packet_data_len, uint8_t *pa
  * \param *coap_packet_ptr Pointer to the CoAP message to debug
  *
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PARSER_FUNC
 void sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr)
 {
 #ifdef HAVE_DEBUG

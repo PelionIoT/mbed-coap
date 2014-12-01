@@ -6,7 +6,7 @@
  *
  *  */
 
-#include "nsdl_types.h"
+#include "ns_types.h"
 
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"

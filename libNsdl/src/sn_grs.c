@@ -10,14 +10,9 @@
 #include <stdlib.h>
 
 #include "ns_types.h"
-#include "nsdl_types.h"
-
 #include "sn_nsdl.h"
-
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
-
-
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
 
@@ -36,9 +31,9 @@ extern int8_t 						sn_nsdl_build_registration_body		(sn_coap_hdr_s *message_ptr
 
 
 /* Local global variables */
-SN_MEM_ATTR_GRS_DECL static NS_LIST_DEFINE(resource_root_list, sn_nsdl_resource_info_s, link);
-SN_MEM_ATTR_GRS_DECL static const sn_nsdl_resource_info_s *sn_grs_current_resource;
-SN_MEM_ATTR_GRS_DECL static uint16_t resource_root_count;
+static NS_LIST_DEFINE(resource_root_list, sn_nsdl_resource_info_s, link);
+static const sn_nsdl_resource_info_s *sn_grs_current_resource;
+static uint16_t resource_root_count;
 
 
 /* Local global function pointers */
@@ -52,7 +47,7 @@ static int8_t (*sn_grs_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
  * \brief This function may be used to flush GRS related stuff when a program exits.
  * @return always 0.
  */
-SN_MEM_ATTR_GRS_FUNC extern int8_t sn_grs_destroy(void)
+extern int8_t sn_grs_destroy(void)
 {
 	ns_list_foreach_safe(sn_nsdl_resource_info_s, tmp, &resource_root_list)
 	{
@@ -81,7 +76,6 @@ SN_MEM_ATTR_GRS_FUNC extern int8_t sn_grs_destroy(void)
  * \return success = 0, failure = -1
  *
 */
-SN_MEM_ATTR_GRS_FUNC
 extern int8_t sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
 		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory)
 {
@@ -200,13 +194,11 @@ extern void sn_nsdl_free_resource_list(sn_grs_resource_list_s *list)
 	sn_grs_free(list);
 }
 
-SN_MEM_ATTR_GRS_FUNC
 extern const sn_nsdl_resource_info_s *sn_grs_get_first_resource(void)
 {
 	return sn_grs_current_resource = ns_list_get_first(&resource_root_list);
 }
 
-SN_MEM_ATTR_GRS_FUNC
 extern const sn_nsdl_resource_info_s *sn_grs_get_next_resource(void)
 {
 	return sn_grs_current_resource = ns_list_get_next(&resource_root_list, sn_grs_current_resource);
@@ -333,7 +325,6 @@ extern int8_t sn_nsdl_create_resource(sn_nsdl_resource_info_s *res)
  *
  *	\return				0 = success, -1 = failure
 */
-SN_MEM_ATTR_GRS_FUNC
 extern int8_t sn_grs_process_coap(sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src_addr_ptr)
 {
 
@@ -786,7 +777,7 @@ extern int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr
  *	\return					Pointer to the resource. If resource not found, return value is NULL
  *
 */
-SN_MEM_ATTR_GRS_FUNC
+
 sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t *path, uint8_t search_method)
 {
 	/* Local variables */
@@ -847,7 +838,6 @@ sn_nsdl_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t *path,
  *	\return	0 = SN_NSDL_SUCCESS, -1 = SN_NSDL_FAILURE
  *
 */
-SN_MEM_ATTR_GRS_FUNC
 static int8_t sn_grs_add_resource_to_list(sn_nsdl_resource_info_s *resource_ptr)
 {
 	/* Local variables */
@@ -1021,7 +1011,6 @@ static uint8_t *sn_grs_convert_uri(uint16_t *uri_len, uint8_t *uri_ptr)
  *	\return	0 if success, -1 if failed
  *
 */
-SN_MEM_ATTR_GRS_FUNC
 static int8_t sn_grs_resource_info_free(sn_nsdl_resource_info_s *resource_ptr)
 {
 	if(resource_ptr)

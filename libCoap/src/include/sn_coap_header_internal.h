@@ -17,8 +17,8 @@ extern "C" {
 /* * * * GLOBAL DECLARATIONS * * * */
 /* * * * * * * * * * * * * * * * * */
 
-SN_MEM_ATTR_COAP_PARSER_DECL extern void* (*sn_coap_malloc)(uint16_t); /* Function pointer for used malloc() function */
-SN_MEM_ATTR_COAP_PARSER_DECL extern void  (*sn_coap_free)(void*);      /* Function pointer for used free()   function */
+extern void* (*sn_coap_malloc)(uint16_t); /* Function pointer for used malloc() function */
+extern void  (*sn_coap_free)(void*);      /* Function pointer for used free()   function */
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
