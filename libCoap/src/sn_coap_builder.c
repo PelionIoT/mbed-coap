@@ -5,10 +5,7 @@
  *
  * Functionality: Builds CoAP message
  *
- *  Created on: Jun 30, 2011
- *      Author: tero
- *
- * \note Supports draft-ietf-core-coap-18
+ * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
  */
 
 /* * * * * * * * * * * * * * */

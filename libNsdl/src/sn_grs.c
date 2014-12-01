@@ -1,12 +1,12 @@
 /**
  *
  * \file sn_grs.c
- * \brief General resource server for Sensinode NanoService platforms
  *
+ * \brief General resource server.
  *
- *
+ * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
  */
-#include <string.h>			// for memcmp
+#include <string.h>
 #include <stdlib.h>
 
 #include "ns_types.h"

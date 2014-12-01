@@ -5,10 +5,7 @@
  *
  * Functionality: Checks validity of CoAP Header
  *
- *  Created on: Aug 22, 2011
- *      Author: tero
- *
- * \note Supports draft-ietf-core-coap-18
+ * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
  */
 
 /* * * * INCLUDE FILES * * * */

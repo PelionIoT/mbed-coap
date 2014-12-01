@@ -1,3 +1,10 @@
+/*
+ * \file sn_coap_header_internal.h
+ *
+ * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
+ *
+ * */
+
 #ifndef _NSDL_TYPES_
 #define _NSDL_TYPES_
 

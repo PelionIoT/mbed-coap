@@ -5,10 +5,8 @@
  *
  * Functionality: CoAP Protocol
  *
- *  Created on: Jul 19, 2011
- *      Author: tero
+ * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
  *
- * \note Supports draft-ietf-core-coap-18
  */
 
 

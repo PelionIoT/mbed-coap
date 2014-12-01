@@ -3,8 +3,7 @@
  *
  * \brief NanoService Devices Library header file
  *
- *  Created on: Aug 23, 2011
- *      Author: tero
+ * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
  *
  */
 

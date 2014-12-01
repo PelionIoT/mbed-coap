@@ -3,7 +3,7 @@
  *
  * \brief Nano service device library
  *
- *	Application interface to CoAP, GRS and NSP handling.
+ * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
  *
  */
 
