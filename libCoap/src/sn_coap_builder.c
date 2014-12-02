@@ -41,7 +41,7 @@ void  (*sn_coap_free)(void*);      						/* Function pointer for used free()   f
 
 /* * * * EXTERN VARIABLES * * * */
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
-SN_MEM_ATTR_COAP_PROTOCOL_DECL extern uint16_t 	sn_coap_block_data_size; 				/* From sn_coap_protocol_ieft_draft_12.c */
+extern uint16_t 	sn_coap_block_data_size; 				/* From sn_coap_protocol_ieft_draft_12.c */
 #endif
 
 
