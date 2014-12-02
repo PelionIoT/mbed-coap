@@ -3,7 +3,7 @@
  *
  * \brief Nano service device library
  *
- * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2011 - 2014, All rights reserved.
  *
  */
 

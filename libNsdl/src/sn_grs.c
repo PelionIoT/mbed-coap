@@ -4,7 +4,7 @@
  *
  * \brief General resource server.
  *
- * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2011 - 2014, All rights reserved.
  */
 #include <string.h>
 #include <stdlib.h>

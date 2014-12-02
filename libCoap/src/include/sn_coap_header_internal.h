@@ -3,7 +3,7 @@
  *
  * \brief Header file for CoAP Header part
  *
- * Copyright © 2011 - 2014, ARM Limited or its affiliates. All rights reserved.
+ * Copyright (c) 2011 - 2014, All rights reserved.
  */
 
 #ifdef __cplusplus
