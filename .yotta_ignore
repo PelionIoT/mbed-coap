@@ -13,4 +13,4 @@ test/etsi-server_linux/*
 
 # these do build, but only on linux/mac native platforms - could use custom
 # CMakeLists in test directory to control this
-test/*_linux**
+test/*_linux*/*
