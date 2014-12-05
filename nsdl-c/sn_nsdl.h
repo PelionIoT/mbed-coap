@@ -1,10 +1,9 @@
 /**
  * \file sn_nsdl.h
  *
- * \brief NanoService Devices Library generic header file
+ * \brief libNsdl generic header file
  *
- *  Created on: Aug 23, 2011
- *      Author: tero
+ * Copyright (c) 2011 - 2014, All rights reserved.
  *
  */
 

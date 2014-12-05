@@ -3,13 +3,13 @@
  *
  * \brief Nano service device library
  *
- *	Application interface to CoAP, GRS and NSP handling.
+ * Copyright (c) 2011 - 2014, All rights reserved.
  *
  */
 
 #include <string.h>
 
-#include "nsdl_types.h"
+#include "ns_types.h"
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"

@@ -5,10 +5,8 @@
  *
  * Functionality: CoAP Protocol
  *
- *  Created on: Jul 19, 2011
- *      Author: tero
+ * Copyright (c) 2011 - 2014, All rights reserved.
  *
- * \note Supports draft-ietf-core-coap-18
  */
 
 
@@ -23,7 +21,7 @@
 #include <time.h>
 #endif
 
-#include "nsdl_types.h"
+#include "ns_types.h"
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
@@ -71,47 +69,45 @@ static uint16_t				 sn_coap_count_linked_list_size(const coap_send_msg_list_t *l
 /* * * * * * * * * * * * * * * * * */
 
 #if ENABLE_RESENDINGS /* If Message resending is not used at all, this part of code will not be compiled */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_send_msg_list_t          NS_LIST_NAME_INIT(global_linked_list_resent_msgs); /* Active resending messages are stored to this Linked list */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t                      global_count_resent_msgs                = 0;
+static coap_send_msg_list_t          NS_LIST_NAME_INIT(global_linked_list_resent_msgs); /* Active resending messages are stored to this Linked list */
+static uint16_t                      global_count_resent_msgs                = 0;
 #endif
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_ack_info_list_t          NS_LIST_NAME_INIT(global_linked_list_ack_info); /* Message Acknowledgement info is stored to this Linked list */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t                      global_count_ack_info                   = 0;
+static coap_ack_info_list_t          NS_LIST_NAME_INIT(global_linked_list_ack_info); /* Message Acknowledgement info is stored to this Linked list */
+static uint16_t                      global_count_ack_info                   = 0;
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_duplication_info_list_t  NS_LIST_NAME_INIT(global_linked_list_duplication_msgs); /* Messages for duplicated messages detection is stored to this Linked list */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t                      global_count_duplication_msgs           = 0;
+static coap_duplication_info_list_t  NS_LIST_NAME_INIT(global_linked_list_duplication_msgs); /* Messages for duplicated messages detection is stored to this Linked list */
+static uint16_t                      global_count_duplication_msgs           = 0;
 
 #endif
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_blockwise_msg_list_t     NS_LIST_NAME_INIT(global_linked_list_blockwise_sent_msgs); /* Blockwise message to to be sent is stored to this Linked list */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static coap_blockwise_payload_list_t NS_LIST_NAME_INIT(global_linked_list_blockwise_received_payloads); /* Blockwise payload to to be received is stored to this Linked list */
+static coap_blockwise_msg_list_t     NS_LIST_NAME_INIT(global_linked_list_blockwise_sent_msgs); /* Blockwise message to to be sent is stored to this Linked list */
+static coap_blockwise_payload_list_t NS_LIST_NAME_INIT(global_linked_list_blockwise_received_payloads); /* Blockwise payload to to be received is stored to this Linked list */
 #endif
 
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint16_t          global_message_id                                  	= 100;  /* Increasing Message ID which is written to CoAP message header in building */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint32_t          global_system_time                                 	= 0;    /* System time seconds */
+static uint16_t          global_message_id                                  	= 100;  /* Increasing Message ID which is written to CoAP message header in building */
+static uint32_t          global_system_time                                 	= 0;    /* System time seconds */
 
 
-SN_MEM_ATTR_COAP_PROTOCOL_DECL uint16_t 				sn_coap_block_data_size 							= 0;
+uint16_t 				sn_coap_block_data_size 							= 0;
 
-SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t 					sn_coap_resending_queue_msgs 						= 0;
-SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_resending_queue_bytes						= 0;
-SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t 					sn_coap_resending_count		 						= 0;
-SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_resending_intervall							= 0;
+uint8_t 					sn_coap_resending_queue_msgs 						= 0;
+uint8_t					sn_coap_resending_queue_bytes						= 0;
+uint8_t 					sn_coap_resending_count		 						= 0;
+uint8_t					sn_coap_resending_intervall							= 0;
 
-SN_MEM_ATTR_COAP_PROTOCOL_DECL uint8_t					sn_coap_duplication_buffer_size						= 0;
+uint8_t					sn_coap_duplication_buffer_size						= 0;
 
 
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              *(*sn_coap_protocol_malloc)(uint16_t)              = NULL; /* Function pointer for used malloc() function */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static void              (*sn_coap_protocol_free)(void*)                    = NULL; /* Function pointer for used free()   function */
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static uint8_t 			(*sn_coap_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *) = NULL;
-SN_MEM_ATTR_COAP_PROTOCOL_DECL static int8_t 			(*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *) 						= NULL;
+static void              *(*sn_coap_protocol_malloc)(uint16_t)              = NULL; /* Function pointer for used malloc() function */
+static void              (*sn_coap_protocol_free)(void*)                    = NULL; /* Function pointer for used free()   function */
+static uint8_t 			(*sn_coap_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *) = NULL;
+static int8_t 			(*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *) 						= NULL;
 
 
 static uint8_t 	resource_path_ptr[]			= {'r','d'};
 static uint8_t 	ep_name_parameter_string[]	= {'h','='};
 static uint8_t	resource_type_parameter[]	= {'r','t','='};
 
-
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr)
 {
 	uint8_t *temp_ptr;
@@ -172,8 +168,6 @@ int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoi
 	return 0;
 }
 
-
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t 	sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
 {
 	coap_hdr_ptr->msg_code = COAP_MSG_CODE_REQUEST_PUT;
@@ -185,8 +179,6 @@ int8_t 	sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, 
 	return 0;
 }
 
-
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t 	sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
 {
 	coap_hdr_ptr->msg_code = COAP_MSG_CODE_REQUEST_DELETE;
@@ -198,8 +190,6 @@ int8_t 	sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8
 	return 0;
 }
 
-
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_destroy(void)
 {
 #if ENABLE_RESENDINGS /* If Message resending is not used at all, this part of code will not be compiled */
@@ -245,8 +235,6 @@ int8_t sn_coap_protocol_destroy(void)
 return 0;
 }
 
-
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
 		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
 		int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *))
@@ -306,8 +294,6 @@ int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*use
 	return 0;
 }
 
-
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_block_size(uint16_t block_size)
 {
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
@@ -331,8 +317,6 @@ int8_t sn_coap_protocol_set_block_size(uint16_t block_size)
 
 }
 
-
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
 {
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
@@ -345,8 +329,6 @@ int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
 	return -1;
 }
 
-
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_intervall)
 {
 #if ENABLE_RESENDINGS
@@ -365,8 +347,6 @@ int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, u
 	return -1;
 }
 
-
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
 {
 #if ENABLE_RESENDINGS
@@ -380,7 +360,6 @@ int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, 
 
 }
 
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 void sn_coap_protocol_clear_retransmission_buffer(void)
 {
 #if ENABLE_RESENDINGS /* If Message resending is not used at all, this part of code will not be compiled */
@@ -411,11 +390,9 @@ void sn_coap_protocol_clear_retransmission_buffer(void)
 		sn_coap_protocol_free(tmp);
 	}
 #endif
-
 }
 
 
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
                       uint8_t *dst_packet_data_ptr,
                       sn_coap_hdr_s *src_coap_msg_ptr)
@@ -644,7 +621,6 @@ int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr,
     return byte_count_built;
 }
 
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
 sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
 {
     sn_coap_hdr_s   *returned_dst_coap_msg_ptr = NULL;
@@ -857,7 +833,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t pac
     return (returned_dst_coap_msg_ptr);
 }
 
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 int8_t sn_coap_protocol_exec(uint32_t current_time)
 {
     /* * * * Store current System time * * * */
@@ -949,7 +925,7 @@ int8_t sn_coap_protocol_exec(uint32_t current_time)
  *
  * \param sending_time is stored sending time
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len,
                                                         uint8_t *send_packet_data_ptr, uint32_t sending_time)
 {
@@ -1011,7 +987,7 @@ static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr
  * \return Return value is pointer to found stored resending message in Linked
  *         list or NULL if message not found
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
 {
      /* Loop all stored resending messages Linked list */
@@ -1048,7 +1024,7 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_
  * \param *src_addr_ptr is searching key for searched message
  * \param msg_id is searching key for removed message
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
 {
     /* Loop all stored resending messages in Linked list */
@@ -1097,7 +1073,7 @@ static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_add
  *
  * \param *addr_ptr is pointer to Address information to be stored
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr)
 {
     coap_ack_info_s *stored_ack_info_ptr = NULL;
@@ -1194,7 +1170,7 @@ static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t
  *
  * \return Return value is found Message ID. If Message ID not found, -1 is returned.
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uint8_t token_len, uint8_t *token_ptr, sn_nsdl_addr_s *addr_ptr)
 {
     if(!addr_ptr)
@@ -1255,7 +1231,7 @@ static int32_t sn_coap_protocol_linked_list_ack_info_search(uint16_t msg_id, uin
  *
  * \param *addr_ptr is pointer to Address key to be removed
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr)
 {
     if(!addr_ptr)
@@ -1303,7 +1279,7 @@ static void sn_coap_protocol_linked_list_ack_info_remove(uint16_t msg_id, sn_nsd
  *
  * \brief Removes old stored Acknowledgement infos from Linked list
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_ack_info_remove_old_ones(void)
 {
     /* Loop all stored Acknowledgement infos in Linked list */
@@ -1360,7 +1336,7 @@ static void sn_coap_protocol_send_rst(uint16_t msg_id, sn_nsdl_addr_s *addr_ptr)
  * \param msg_id is Message ID to be stored
  * \param *addr_ptr is pointer to Address information to be stored
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_duplication_info_store(sn_nsdl_addr_s *addr_ptr,
                                                                 uint16_t msg_id)
 {
@@ -1410,7 +1386,7 @@ static void sn_coap_protocol_linked_list_duplication_info_store(sn_nsdl_addr_s *
  *
  * \return Return value is 0 when message found and -1 if not found
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static int8_t sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_s *addr_ptr,
                                                                    uint16_t msg_id)
 {
@@ -1447,7 +1423,7 @@ static int8_t sn_coap_protocol_linked_list_duplication_info_search(sn_nsdl_addr_
  *
  * \param msg_id is Message ID key to be removed
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_duplication_info_remove(uint8_t *addr_ptr, uint16_t port, uint16_t msg_id)
 {
     /* Loop all stored duplication messages in Linked list */
@@ -1482,7 +1458,7 @@ static void sn_coap_protocol_linked_list_duplication_info_remove(uint8_t *addr_p
  *
  * \brief Removes old stored Duplication detection infos from Linked list
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_duplication_info_remove_old_ones(void)
 {
     /* Loop all stored duplication messages in Linked list */
@@ -1511,7 +1487,7 @@ static void sn_coap_protocol_linked_list_duplication_info_remove_old_ones(void)
  *
  * \param removed_msg_ptr is message to be removed
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_blockwise_msg_remove(coap_blockwise_msg_s *removed_msg_ptr)
 {
 	ns_list_remove(&global_linked_list_blockwise_sent_msgs, removed_msg_ptr);
@@ -1533,7 +1509,7 @@ static void sn_coap_protocol_linked_list_blockwise_msg_remove(coap_blockwise_msg
  * \param stored_payload_len is length of stored Payload
  * \param *stored_payload_ptr is pointer to stored Payload
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_blockwise_payload_store(sn_nsdl_addr_s *addr_ptr,//TODO: addr + header parametreiksi, blokin offset talteen.
                                                                  uint16_t stored_payload_len,
                                                                  uint8_t *stored_payload_ptr)
@@ -1599,7 +1575,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(sn_nsdl_addr_s 
  * \return Return value is pointer to found stored blockwise payload in Linked
  *         list or NULL if payload not found
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length)
 {
     /* Loop all stored blockwise payloads in Linked list */
@@ -1627,7 +1603,7 @@ static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(sn_nsdl_ad
  *
  * \brief Removes current stored blockwise paylod from Linked list
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(void)
 {
     coap_blockwise_payload_s *removed_payload_ptr;
@@ -1648,7 +1624,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(void)
  *
  * \param removed_payload_ptr is payload to be removed
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_blockwise_payload_remove(coap_blockwise_payload_s *removed_payload_ptr)
 {
 	ns_list_remove(&global_linked_list_blockwise_received_payloads, removed_payload_ptr);
@@ -1676,7 +1652,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_remove(coap_blockwise
  *
  * \return Return value is length of Payloads as bytes
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static uint16_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(sn_nsdl_addr_s *src_addr_ptr)
 {
     uint16_t                  ret_whole_payload_len           = 0;
@@ -1704,7 +1680,7 @@ static uint16_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(sn_nsdl_
  *
  * \brief Removes old stored Blockwise messages and payloads from Linked list
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_linked_list_blockwise_remove_old_data(void)
 {
     /* Loop all stored Blockwise messages in Linked list */
@@ -1742,7 +1718,7 @@ static void sn_coap_protocol_linked_list_blockwise_remove_old_data(void)
  *
  * \return pointer to allocated struct
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len)
 {
 
@@ -1802,7 +1778,7 @@ coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(sn_nsdl_addr_s *dst_addr_
  *
  * \param *freed_send_msg_ptr is pointer to released Sending message
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *freed_send_msg_ptr)
 {
     if (freed_send_msg_ptr != NULL)
@@ -1843,7 +1819,7 @@ static uint16_t sn_coap_count_linked_list_size(const coap_send_msg_list_t *linke
  * \param *src_addr_ptr pointer to source address information struct
  * \param *received_coap_msg_ptr pointer to parsed CoAP message structure
  *****************************************************************************/
-SN_MEM_ATTR_COAP_PROTOCOL_FUNC
+
 static sn_coap_hdr_s *sn_coap_handle_blockwise_message(sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr)
 {
     sn_coap_hdr_s *src_coap_blockwise_ack_msg_ptr = NULL;

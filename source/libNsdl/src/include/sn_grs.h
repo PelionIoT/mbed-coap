@@ -4,8 +4,7 @@
 /*
  * GRS.h
  *
- *  Created on: 2.8.2011
- *      Author: Tero
+ * Copyright (c) 2011 - 2014, All rights reserved.
  */
 
 #ifdef __cplusplus

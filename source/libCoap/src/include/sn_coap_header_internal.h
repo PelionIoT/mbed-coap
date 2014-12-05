@@ -3,10 +3,7 @@
  *
  * \brief Header file for CoAP Header part
  *
- *  Created on: Jun 30, 2011
- *      Author: tero
- *
- * \note Supports draft-ietf-core-coap-18
+ * Copyright (c) 2011 - 2014, All rights reserved.
  */
 
 #ifdef __cplusplus
@@ -20,8 +17,8 @@ extern "C" {
 /* * * * GLOBAL DECLARATIONS * * * */
 /* * * * * * * * * * * * * * * * * */
 
-SN_MEM_ATTR_COAP_PARSER_DECL extern void* (*sn_coap_malloc)(uint16_t); /* Function pointer for used malloc() function */
-SN_MEM_ATTR_COAP_PARSER_DECL extern void  (*sn_coap_free)(void*);      /* Function pointer for used free()   function */
+extern void* (*sn_coap_malloc)(uint16_t); /* Function pointer for used malloc() function */
+extern void  (*sn_coap_free)(void*);      /* Function pointer for used free()   function */
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */

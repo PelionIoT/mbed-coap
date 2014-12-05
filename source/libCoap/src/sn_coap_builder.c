@@ -5,10 +5,7 @@
  *
  * Functionality: Builds CoAP message
  *
- *  Created on: Jun 30, 2011
- *      Author: tero
- *
- * \note Supports draft-ietf-core-coap-18
+ * Copyright (c) 2011 - 2014, All rights reserved.
  */
 
 /* * * * * * * * * * * * * * */
@@ -17,7 +14,7 @@
 
 #include <string.h> /* For memset() and memcpy() */
 
-#include "nsdl_types.h"
+#include "ns_types.h"
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_header_internal.h"
@@ -37,21 +34,17 @@ static void     sn_coap_builder_payload_build(uint8_t **dst_packet_data_pptr, sn
 static uint8_t 	sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_coap_msg_ptr, uint8_t block_option);
 
 /* * * * GLOBAL DECLARATIONS * * * */
-//SN_MEM_ATTR_COAP_BUILDER_DECL static uint8_t *base_packet_data_ptr         	= NULL; 	/* Base (= original) destination Packet data pointer value */
-SN_MEM_ATTR_COAP_BUILDER_DECL static uint16_t global_previous_option_number = 0;    	/* Previous Option number in CoAP message */
+static uint16_t global_previous_option_number = 0;    	/* Previous Option number in CoAP message */
 
-SN_MEM_ATTR_COAP_BUILDER_DECL void* (*sn_coap_malloc)(uint16_t); 						/* Function pointer for used malloc() function */
-SN_MEM_ATTR_COAP_BUILDER_DECL void  (*sn_coap_free)(void*);      						/* Function pointer for used free()   function */
+void* (*sn_coap_malloc)(uint16_t); 						/* Function pointer for used malloc() function */
+void  (*sn_coap_free)(void*);      						/* Function pointer for used free()   function */
 
 /* * * * EXTERN VARIABLES * * * */
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
-SN_MEM_ATTR_COAP_PROTOCOL_DECL extern uint16_t 	sn_coap_block_data_size; 				/* From sn_coap_protocol_ieft_draft_12.c */
+extern uint16_t 	sn_coap_block_data_size; 				/* From sn_coap_protocol_ieft_draft_12.c */
 #endif
 
 
-
-
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
                                      void (*used_free_func_ptr)(void*))
 {
@@ -62,8 +55,6 @@ void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
     sn_coap_free = used_free_func_ptr;
 }
 
-
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
 {
 	sn_coap_hdr_s *coap_res_ptr;
@@ -110,9 +101,6 @@ sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t ms
 	return coap_res_ptr;
 }
 
-
-
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
 {
 	uint8_t *base_packet_data_ptr = NULL;
@@ -163,8 +151,6 @@ int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_ms
     return (dst_packet_data_ptr - base_packet_data_ptr);
 }
 
-
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr)
 {
     uint16_t returned_byte_count = 0;
@@ -409,7 +395,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
  *
  * \param *freed_send_msg_ptr is pointer to released Sending message
  */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
+
 void sn_coap_builder_release_allocated_send_msg_mem(sn_nsdl_transmit_s *freed_send_msg_ptr)
 {
     if (freed_send_msg_ptr != NULL)
@@ -592,7 +578,6 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
  *
  * \return Return value is 0 in ok case and -1 in failure case
  **************************************************************************** */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 static int8_t sn_coap_builder_header_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr)
 {
     /* * * * Check validity of Header values * * * */
@@ -637,7 +622,6 @@ static int8_t sn_coap_builder_header_build(uint8_t **dst_packet_data_pptr, sn_co
  *
  * \return Return value is 0 in ok case and -1 in failure case
  */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr)
 {
 	if(!*dst_packet_data_pptr || !src_coap_msg_ptr)
@@ -787,7 +771,6 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
  *
  * \return Return value is 0 if option was not added, 1 if added and -1 in failure case
  */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet_data_pptr, uint16_t option_len,
                                                             uint8_t *option_ptr, sn_coap_option_numbers_e option_number)
 {
@@ -928,7 +911,6 @@ int16_t sn_coap_builder_options_build_add_zero_length_option(uint8_t **dst_packe
  *
  * \return Return value is 0 in ok case and -1 in failure case
  */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 static int16_t sn_coap_builder_options_build_add_multiple_option(uint8_t **dst_packet_data_pptr, uint8_t **src_pptr, uint16_t *src_len_ptr, sn_coap_option_numbers_e option)
 {
     /* Check if there is option at all */
@@ -973,7 +955,6 @@ static int16_t sn_coap_builder_options_build_add_multiple_option(uint8_t **dst_p
  *
  * \return Return value is count of needed memory as bytes for Uri-query option
  */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, uint8_t *query_ptr, sn_coap_option_numbers_e option)
 {
     uint8_t     query_part_count    = sn_coap_builder_options_get_option_part_count(query_len, query_ptr, option);
@@ -1056,7 +1037,6 @@ static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, uin
  *
  * \return Return value is count of query parts
  */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 static uint8_t sn_coap_builder_options_get_option_part_count(uint16_t query_len, uint8_t *query_ptr, sn_coap_option_numbers_e option)
 {
     uint8_t  returned_query_count = 0;
@@ -1098,7 +1078,6 @@ static uint8_t sn_coap_builder_options_get_option_part_count(uint16_t query_len,
  *
  * \return Return value is length of query part
  */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option_string(uint16_t query_len, uint8_t *query_ptr,
 																						uint8_t query_index, sn_coap_option_numbers_e option)
 {
@@ -1163,7 +1142,6 @@ static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option
  * \return Return value is position (= offset) of query part in whole query. In
  *         fail cases -1 is returned.
  */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 static int16_t sn_coap_builder_options_get_option_part_position(uint16_t query_len, uint8_t *query_ptr,
                                                                uint8_t query_index, sn_coap_option_numbers_e option)
 {
@@ -1217,7 +1195,7 @@ static int16_t sn_coap_builder_options_get_option_part_position(uint16_t query_l
 
 
 /**
- * \fn SN_MEM_ATTR_COAP_BUILDER_FUNC static void sn_coap_builder_payload_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr)
+ * \fn static void sn_coap_builder_payload_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr)
  *
  * \brief Builds Options part of Packet data
  *
@@ -1225,7 +1203,6 @@ static int16_t sn_coap_builder_options_get_option_part_position(uint16_t query_l
  *
  * \param *src_coap_msg_ptr is source for building Packet data
  */
-SN_MEM_ATTR_COAP_BUILDER_FUNC
 static void sn_coap_builder_payload_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr)
 {
     /* Check if Payload is used at all */

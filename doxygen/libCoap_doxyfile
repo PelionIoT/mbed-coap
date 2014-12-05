@@ -740,8 +740,7 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is 
 # run.
 
-EXCLUDE                = ../libCoap/src/include/nsdl_types.h \
-                         ../libCoap/src/include/sn_coap_header_internal.h \
+EXCLUDE                = ../libCoap/src/include/sn_coap_header_internal.h \
                          ../libCoap/src/include/sn_coap_protocol_internal.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or 

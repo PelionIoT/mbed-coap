@@ -3,8 +3,7 @@
  *
  * \brief CoAP C-library User protocol interface header file
  *
- *  Created on: Jun 30, 2011
- *      Author: tero
+ * Copyright (c) 2011 - 2014, All rights reserved.
  *
  */
 
