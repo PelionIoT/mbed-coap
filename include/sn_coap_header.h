@@ -319,8 +319,8 @@ extern sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uin
  */
 extern void 		  sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr);
 
-#endif /* SN_COAP_HEADER_H_ */
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* SN_COAP_HEADER_H_ */
