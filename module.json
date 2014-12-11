@@ -19,7 +19,7 @@
     "source/libCoap/src/include"
   ],
   "dependencies": {
-    "libservice": "git://git.oulu.arm.com/nanomesh/libService.git#yotta-build"
+    "libservice": "ARMmbed/nanomesh-libService#~0.0.3"
   },
   "targetDependencies": {}
 }
