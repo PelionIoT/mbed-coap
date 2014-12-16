@@ -3,7 +3,7 @@
  *
  * \brief Header file for CoAP Protocol part
  *
- * Copyright (c) 2011 - 2014, All rights reserved.
+ * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  */
 
 #ifndef SN_COAP_PROTOCOL_INTERNAL_H_

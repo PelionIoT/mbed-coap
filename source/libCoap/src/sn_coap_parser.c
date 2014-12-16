@@ -5,7 +5,7 @@
  *
  * Functionality: Parses CoAP Header
  *
- * Copyright (c) 2011 - 2014, All rights reserved.
+ * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  *
  */
 
