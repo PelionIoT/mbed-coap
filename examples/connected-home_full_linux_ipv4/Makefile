@@ -3,7 +3,7 @@ OS = LINUX
 EDTLS = NO
 TARGET	= connected_home_full_ipv4
 OBJECTS = main.o connected_home_full_ipv4.o 
-CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -D$(OS) -I ../../include -I ../../../libService/include -DHAVE_DEBUG
+CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -D$(OS) -I ../../include -I ../../../libService/libService -DHAVE_DEBUG
 LDFLAGS = -L../../ -D_REENTRANT -lpthread -lnsdl_gcc
 ifeq ($(EDTLS),YES)
 CFLAGS	+= -I../../../edtls-lib/include -DUSE_EDTLS

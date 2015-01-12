@@ -3,7 +3,7 @@ OS = LINUX
 EDTLS = NO
 TARGET	= connected_home
 OBJECTS = main.o connected_home.o 
-CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -I ../../libCoap/src/x86_include -I ../../../libService/include -DHAVE_DEBUG
+CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -D$(OS) -I ../../libCoap/src/include -I ../../libCoap/src/x86_include -I ../../../libService/libService -DHAVE_DEBUG
 LDFLAGS = -L../../libCoap/x86_gcc/ -D_REENTRANT -lpthread -lCoap
 ifeq ($(EDTLS),YES)
 CFLAGS	+= -I ../../libEdtls/src/include -DUSE_EDTLS

@@ -357,7 +357,7 @@
               <MiscControls>--c99</MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\src\Include;..\..\..\libService\include;..\..\libCoap\src\include</IncludePath>
+              <IncludePath>..\src\Include;..\..\..\libService\libService;..\..\libCoap\src\include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -763,7 +763,7 @@
               <MiscControls>--c99</MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\src\Include;..\..\..\libService\include;..\..\libCoap\src\include</IncludePath>
+              <IncludePath>..\src\Include;..\..\..\libService\libService;..\..\libCoap\src\include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

@@ -13,7 +13,7 @@ SRC_FILES=../../../unittest/src/unity.c ../../libCoap/src/sn_coap_protocol.c ../
 ../../libCoap/src/sn_coap_header_check.c ../../libCoap/src/sn_coap_builder.c ../../../libService/libList/ns_list.c \
 Test.c  Test_Runner.c
 
-INC_DIRS=-I../../../unittest/src -I../../libCoap/src/include/ -I../../../libService/include
+INC_DIRS=-I../../../unittest/src -I../../libCoap/src/include/ -I../../../libService/libService
 
 SYMBOLS=-DTEST -std=gnu99 -DUNITY_EXCLUDE_STDINT_H
 

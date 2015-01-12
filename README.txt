@@ -23,5 +23,5 @@ Package:
   /libEdtls                                         	eDTLS library
   /libEdtls/src/include                             	eDTLS library header files
   /libService                                           Service libraries
-  /libService/included                                  Service libraries header files
+  /libService/libServiced                                  Service libraries header files
   

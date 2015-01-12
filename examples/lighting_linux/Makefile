@@ -2,7 +2,7 @@ PLATFORM=
 OS = LINUX
 TARGET	= lighting
 OBJECTS = main.o lighting.o 
-CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../include -I ../../../libService/include -DHAVE_DEBUG
+CFLAGS	= -Wall -D_REENTRANT -D$(OS) -I ../../include -I ../../../libService/libService -DHAVE_DEBUG
 LDFLAGS = -L../../ -D_REENTRANT -lpthread -lnsdl_gcc
 
 all: $(TARGET) 

@@ -357,7 +357,7 @@
               <MiscControls>--c99</MiscControls>
               <Define>REAL_EMBEDDED</Define>
               <Undefine></Undefine>
-              <IncludePath>..\src\include;..\..\..\libService\include</IncludePath>
+              <IncludePath>..\src\include;..\..\..\libService\libService</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -773,7 +773,7 @@
               <MiscControls>--c99</MiscControls>
               <Define>REAL_EMBEDDED</Define>
               <Undefine></Undefine>
-              <IncludePath>..\src\include;..\..\..\libService\include</IncludePath>
+              <IncludePath>..\src\include;..\..\..\libService\libService</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

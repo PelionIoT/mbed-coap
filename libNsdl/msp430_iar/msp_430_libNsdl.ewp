@@ -319,7 +319,7 @@
           <name>newCCIncludePaths</name>
           <state>$PROJ_DIR$\..\src\Include</state>
           <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
-          <state>$PROJ_DIR$\..\..\..\libService\include</state>
+          <state>$PROJ_DIR$\..\..\..\libService\libService</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1301,7 +1301,7 @@
           <name>newCCIncludePaths</name>
           <state>$PROJ_DIR$\..\src\Include</state>
           <state>$PROJ_DIR$\..\..\include</state>
-          <state>$PROJ_DIR$\..\..\..\libService\include</state>
+          <state>$PROJ_DIR$\..\..\..\libService\libService</state>
           <state>$PROJ_DIR$\..\..\libCoap\src\include</state>
         </option>
         <option>

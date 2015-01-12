@@ -357,7 +357,7 @@
               <MiscControls>--c99</MiscControls>
               <Define>TARGET_LPC1768,  TARGET_M3,  TARGET_NXP,  TARGET_LPC176X,  TOOLCHAIN_ARM_STD,  TOOLCHAIN_ARM,  __CORTEX_M3,  ARM_MATH_CM3,</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\libService\include;..\..\libCoap\src\include;..\..\libNsdl\src\Include</IncludePath>
+              <IncludePath>..\..\..\libService\libService;..\..\libCoap\src\include;..\..\libNsdl\src\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

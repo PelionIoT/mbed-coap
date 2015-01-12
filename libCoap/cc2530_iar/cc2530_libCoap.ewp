@@ -442,7 +442,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\..\src\include</state>
-          <state>$PROJ_DIR$\..\..\..\libService/include</state>
+          <state>$PROJ_DIR$\..\..\..\libService/libService</state>
           <state>$PROJ_DIR$\..\..\NanoStack\cc2530_include</state>
         </option>
         <option>

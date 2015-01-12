@@ -29,7 +29,7 @@ override CFLAGS += -DVERSION='"$(VERSION)"'
 override CFLAGS += -IlibNsdl/src/include/
 override CFLAGS += -IlibCoap/src/include/
 SERVLIB_DIR := ../libService
-override CFLAGS += -I$(SERVLIB_DIR)/include
+override CFLAGS += -I$(SERVLIB_DIR)/libService
 override CFLAGS += -Iinclude/
 
 

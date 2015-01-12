@@ -13,7 +13,7 @@ TARGET = $(TARGET_BASE)$(TARGET_EXTENSION)
 SRC_FILES=../../../unittest/src/unity.c ../../libNsdl/src/sn_grs.c ../../libNsdl/src/sn_nsdl.c \
 ../../../libService/libList/ns_list.c Test.c  Test_Runner.c
 
-INC_DIRS=-I../../../unittest/src -I../../libCoap/src/include/ -I../../../libService/include -I../../libNsdl/src/Include/
+INC_DIRS=-I../../../unittest/src -I../../libCoap/src/include/ -I../../../libService/libService -I../../libNsdl/src/Include/
 
 SYMBOLS= -std=c99 -DTEST -DUNITY_EXCLUDE_STDINT_H
 

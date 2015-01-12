@@ -89,7 +89,7 @@
     <ListValues>
       <Value>../../src/include</Value>
       <Value>../../../include</Value>
-      <Value>../../../../libService/include</Value>
+      <Value>../../../../libService/libService</Value>
     </ListValues>
   </avrgcc.compiler.directories.IncludePaths>
   <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>

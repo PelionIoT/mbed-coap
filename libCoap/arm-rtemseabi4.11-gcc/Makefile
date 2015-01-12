@@ -5,7 +5,7 @@ AR_OBJECTS = sn_coap_builder.o sn_coap_parser.o sn_coap_header_check.o sn_coap_p
 
 SOURCE = ../src
 
-CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -I ../src/include -I ../../../libService/include -g -Dx86
+CFLAGS	= -std=gnu99 -Wall -D_REENTRANT -I ../src/include -I ../../../libService/libService -g -Dx86
 LDFLAGS = -L. -D_REENTRANT -lpthread
 
 all: clean $(TARGET)
