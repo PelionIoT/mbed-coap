@@ -17,20 +17,20 @@
 
 LIB = libnsdl.a
 SRCS := \
-	libNsdl/src/sn_grs.c \
-	libNsdl/src/sn_nsdl.c \
-	libCoap/src/sn_coap_protocol.c \
-	libCoap/src/sn_coap_parser.c \
-	libCoap/src/sn_coap_header_check.c \
-	libCoap/src/sn_coap_builder.c \
+	source/libNsdl/src/sn_grs.c \
+	source/libNsdl/src/sn_nsdl.c \
+	source/libCoap/src/sn_coap_protocol.c \
+	source/libCoap/src/sn_coap_parser.c \
+	source/libCoap/src/sn_coap_header_check.c \
+	source/libCoap/src/sn_coap_builder.c \
 
 override CFLAGS += -DVERSION='"$(VERSION)"'
 
-override CFLAGS += -IlibNsdl/src/include/
-override CFLAGS += -IlibCoap/src/include/
+override CFLAGS += -Isource/libNsdl/src/include/
+override CFLAGS += -Isource/libCoap/src/include/
 SERVLIB_DIR := ../libService
 override CFLAGS += -I$(SERVLIB_DIR)/libService
-override CFLAGS += -Iinclude/
+override CFLAGS += -Insdl-c/
 
 
 include ../libService/toolchain_rules.mk
