@@ -1,16 +1,4 @@
 # need unity.h:
-test/libCoap/*
-test/libNsdl/*
+unittest/libCoap/*
+unittest/libNsdl/*
 
-# only builds on linux, and needs bootstrap_certificates.h (where to get that?)
-test/connected-home_full_oma/*
-
-# seems broken? (error: no member named 'socket_information' in 'struct sn_nsdl_addr_')
-test/etsi-server-full_linux*
-
-# needs pl_types.h?
-test/etsi-server_linux/*
-
-# these do build, but only on linux/mac native platforms - could use custom
-# CMakeLists in test directory to control this
-test/*_linux*/*
