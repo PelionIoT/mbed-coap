@@ -2,3 +2,4 @@
 unittest/libCoap/*
 unittest/libNsdl/*
 
+doxygen/*
