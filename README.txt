@@ -1,4 +1,4 @@
-mbed Device C Client Library 2.1
+mbed Device C Client Library 2.3
 
 The mbed Device C Client Library provides a simple and efficient way to create mbed Device Client in 
 C. In addition to the libCoap library, several examples of mbed Device C Client Library endpoints are 
