@@ -905,6 +905,21 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 		}
 	}
 
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * */
+	/* If message is response message, call RX callback  */
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+	if((coap_packet_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE) || (coap_packet_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT))
+	{
+		int8_t retval = sn_nsdl_local_rx_function(coap_packet_ptr, src_ptr);
+		if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
+		{
+			sn_nsdl_free(coap_packet_ptr->payload_ptr);
+			coap_packet_ptr->payload_ptr = 0;
+		}
+		sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+		return retval;
+	}
 
 	/* * If OMA bootstrap message... * */
 	if((oma_bs_address_len == src_ptr->addr_len) && (oma_bs_port == src_ptr->port) && !memcmp(oma_bs_address_ptr, src_ptr->addr_ptr, oma_bs_address_len))
@@ -992,23 +1007,6 @@ int8_t sn_nsdl_process_coap(uint8_t *packet_ptr, uint16_t packet_len, sn_nsdl_ad
 		return SN_NSDL_SUCCESS;
 	}
 
-
-
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * */
-	/* If message is response message, call RX callback  */
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-	if((coap_packet_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE) || (coap_packet_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT))
-	{
-		int8_t retval = sn_nsdl_local_rx_function(coap_packet_ptr, src_ptr);
-		if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
-		{
-			sn_nsdl_free(coap_packet_ptr->payload_ptr);
-			coap_packet_ptr->payload_ptr = 0;
-		}
-		sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
-		return retval;
-	}
 
 	/* * * * * * * * * * * * * * * */
 	/* Other messages are for GRS  */
