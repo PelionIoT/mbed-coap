@@ -1110,6 +1110,8 @@ static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t
         return;
     }
 
+    memset(stored_ack_info_ptr, 0, sizeof(coap_ack_info_s));
+
     if(token_ptr)
     {
 
@@ -1130,7 +1132,8 @@ static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t
 
     if (stored_ack_info_ptr->addr_ptr == NULL)
     {
-        sn_coap_protocol_free(stored_ack_info_ptr->token_ptr);
+    	if(stored_ack_info_ptr->token_ptr)
+        	sn_coap_protocol_free(stored_ack_info_ptr->token_ptr);
         sn_coap_protocol_free(stored_ack_info_ptr);
         return;
     }
@@ -1144,10 +1147,7 @@ static void sn_coap_protocol_linked_list_ack_info_store(uint16_t msg_id, uint8_t
     {
     	memcpy(stored_ack_info_ptr->token_ptr, token_ptr, token_len);
     }
-    else
-    {
-    	stored_ack_info_ptr->token_ptr = NULL;
-    }
+
     memcpy(stored_ack_info_ptr->addr_ptr, addr_ptr->addr_ptr, addr_ptr->addr_len);
     stored_ack_info_ptr->port = addr_ptr->port;
 
