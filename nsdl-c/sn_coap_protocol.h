@@ -161,51 +161,6 @@ extern int8_t			   sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_siz
  */
 extern void 			   sn_coap_protocol_clear_retransmission_buffer(void);
 
-
-/* * * Manual registration functions * * */
-
-
-/**
- * \fn int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr)
- *
- * \brief Builds RD registration request packet
- *
- * \param *coap_hdr_ptr is destination for built Packet data
- * \param *endpoint_info_ptr pointer to struct that contains endpoint info parameters
- *
- * \return Return value 0 given on success. In failure cases:\n
- *          -1 = Failure
- */
-extern int8_t 			   sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr);
-
-/**
- * \fn int8_t sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
- *
- * \brief Builds RD update request packet
- *
- * \param *coap_hdr_ptr is destination for built Packet data
- * \param *location The location returned when registering with the RD
- * \param length length of the location
- *
- * \return Return value 0 given on success. In failure cases:\n
- *          -1 = Failure
- */
-extern int8_t 			   sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length);
-
-/**
- * \fn int8_t sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
- *
- * \brief Builds RD de-registrtion request packet
- *
- * \param *coap_hdr_ptr is destination for built Packet data
- * \param *location The location returned when registering with the RD
- * \param length length of the location
- *
- * \return Return value 0 given on success. In failure cases:\n
- *          -1 = Failure
- */
-extern int8_t 			   sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length);
-
 #endif /* SN_COAP_PROTOCOL_H_ */
 
 #ifdef __cplusplus
