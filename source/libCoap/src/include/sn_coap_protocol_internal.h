@@ -153,11 +153,6 @@ typedef struct coap_blockwise_payload_
 
 typedef NS_LIST_HEAD(coap_blockwise_payload_s, link) coap_blockwise_payload_list_t;
 
-/**
- * \brief Releases any memory allocated in sn_nsdl_transmit_s
- */
-extern void           sn_coap_builder_release_allocated_send_msg_mem(sn_nsdl_transmit_s *freed_send_msg_ptr);
-
 #ifdef __cplusplus
 }
 #endif

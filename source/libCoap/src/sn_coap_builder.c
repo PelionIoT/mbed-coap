@@ -389,40 +389,6 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
 }
 
 /**
- * \fn void sn_coap_builder_release_allocated_send_msg_mem(sn_nsdl_transmit_s *freed_send_msg_ptr)
- *
- * \brief Releases memory of given Sending message
- *
- * \param *freed_send_msg_ptr is pointer to released Sending message
- */
-
-void sn_coap_builder_release_allocated_send_msg_mem(sn_nsdl_transmit_s *freed_send_msg_ptr)
-{
-    if (freed_send_msg_ptr != NULL)
-    {
-        if (freed_send_msg_ptr->dst_addr_ptr != NULL)
-        {
-            if (freed_send_msg_ptr->dst_addr_ptr->addr_ptr != NULL)
-            {
-                sn_coap_free(freed_send_msg_ptr->dst_addr_ptr->addr_ptr);
-                freed_send_msg_ptr->dst_addr_ptr->addr_ptr = 0;
-            }
-
-            sn_coap_free(freed_send_msg_ptr->dst_addr_ptr);
-            freed_send_msg_ptr->dst_addr_ptr = 0;
-        }
-
-        if (freed_send_msg_ptr->packet_ptr != NULL)
-        {
-            sn_coap_free(freed_send_msg_ptr->packet_ptr);
-            freed_send_msg_ptr->packet_ptr = 0;
-        }
-
-        sn_coap_free(freed_send_msg_ptr);
-    }
-}
-
-/**
  * \fn static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_coap_msg_ptr, uint8_t block_option)
  *
  * \brief Checks if there is need for option jump

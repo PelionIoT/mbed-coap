@@ -1697,7 +1697,29 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(coap_send_msg_s *fre
 {
     if (freed_send_msg_ptr != NULL)
     {
-        sn_coap_builder_release_allocated_send_msg_mem(freed_send_msg_ptr->send_msg_ptr);
+        if (freed_send_msg_ptr->send_msg_ptr != NULL)
+        {
+            if (freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr != NULL)
+            {
+                if (freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr != NULL)
+                {
+                	sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr);
+                    freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr = 0;
+                }
+
+                sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr);
+                freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr = 0;
+            }
+
+            if (freed_send_msg_ptr->send_msg_ptr->packet_ptr != NULL)
+            {
+            	sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->packet_ptr);
+                freed_send_msg_ptr->send_msg_ptr->packet_ptr = 0;
+            }
+
+            sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr);
+        }
+
         sn_coap_protocol_free(freed_send_msg_ptr);
     }
 }
