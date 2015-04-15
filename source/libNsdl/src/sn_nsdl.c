@@ -18,109 +18,41 @@
 
 /* Defines */
 #define RESOURCE_DIR_LEN				2
-#define RESOURCE_DIR_PATH				{'r','d'}
-
-/* * Endpoint parameter defines * */
-
-/* Endpoint name. A unique name for the registering node in a domain.  */
 #define EP_NAME_PARAMETERS_LEN			3
-#define EP_NAME_PARAMETERS				{'e','p','='}
-
-/* Endpoint type */
 #define ET_PARAMETER_LEN				3
-#define ET_PARAMETER					{'e','t','='}
-
-/* Lifetime. Number of seconds that this registration will be valid for. Must be updated within this time, or will be removed. */
 #define LT_PARAMETER_LEN				3
-#define LT_PARAMETER					{'l','t','='}
-
-/* Domain name. If this parameter is missing, a default domain is assumed. */
 #define DOMAIN_PARAMETER_LEN			2
-#define DOMAIN_PARAMETER				{'d','='}
-
-/* * Resource parameters * */
-
-/* Resource type. Only once for registration */
 #define RT_PARAMETER_LEN				3
-#define RT_PARAMETER					{'r','t','='}
-
-/* Interface description. Only once */
 #define IF_PARAMETER_LEN				3
-#define IF_PARAMETER					{'i','f','='}
-
-/* Observable */
 #define OBS_PARAMETER_LEN				3
-#define OBS_PARAMETER					{'o','b','s'}
-
-/* Auto-observable */
 #define AOBS_PARAMETER_LEN				8
-#define AOBS_PARAMETER					{'a','o','b','s',';','i','d','='}
-
-/* CoAP content type */
 #define COAP_CON_PARAMETER_LEN			3
-#define COAP_CON_PARAMETER				{'c','t','='}
-
-/* * OMA BS parameters * */
-
-#define BS_PATH							{'b','s'}
-
 #define BS_EP_PARAMETER_LEN				3
-#define BS_EP_PARAMETER					{'e','p','='}
-
 #define BS_QUEUE_MODE_PARAMATER_LEN		2
-#define BS_QUEUE_MODE_PARAMATER			{'b','='}
 
 #define SN_NSDL_EP_REGISTER_MESSAGE		1
 #define SN_NSDL_EP_UPDATE_MESSAGE		2
 
-#define	SN_NSDL_MSG_NO_TYPE				0
 #define	SN_NSDL_MSG_REGISTER			1
 #define SN_NSDL_MSG_UNREGISTER			2
 #define SN_NSDL_MSG_UPDATE				3
 #define SN_NSDL_MSG_EVENT				4
 
-#define	SN_NSDL_MAX_MESSAGE_COUNT		1
-
 /* Constants */
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t 	ep_name_parameter_string[] 		= EP_NAME_PARAMETERS;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t		resource_path_ptr[]			= RESOURCE_DIR_PATH;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t		resource_type_parameter[]	= RT_PARAMETER;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t		obs_parameter[]				= OBS_PARAMETER;
-
-//SN_NSDL_CONST_MEMORY_ATTRIBUTE
-//static uint8_t		aobs_parameter[]			= AOBS_PARAMETER;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t		if_description_parameter[]	= IF_PARAMETER;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t		ep_lifetime_parameter[]		= LT_PARAMETER;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t		ep_domain_parameter[]		= DOMAIN_PARAMETER;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t 	coap_con_type_parameter[]		= COAP_CON_PARAMETER;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t bs_uri[] 						= BS_PATH;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t bs_ep_name[] 					= BS_EP_PARAMETER;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t et_parameter[] 					= ET_PARAMETER;
-
-SN_NSDL_CONST_MEMORY_ATTRIBUTE
-static uint8_t bs_queue_mode[]					= BS_QUEUE_MODE_PARAMATER;
-
+static uint8_t	 	ep_name_parameter_string[] 	= {'e','p','='}; 		/* Endpoint name. A unique name for the registering node in a domain.  */
+static uint8_t		resource_path_ptr[]			= {'r','d'};			/* For resource directory */
+static uint8_t		resource_type_parameter[]	= {'r','t','='};		/* Resource type. Only once for registration */
+static uint8_t		obs_parameter[]				= {'o','b','s'};		/* Observable */
+//static uint8_t	aobs_parameter[]			= {'a','o','b','s',';','i','d','='};	/* Auto-observable - TBD */
+static uint8_t		if_description_parameter[]	= {'i','f','='};		/* Interface description. Only once */
+static uint8_t		ep_lifetime_parameter[]		= {'l','t','='};		/* Lifetime. Number of seconds that this registration will be valid for. Must be updated within this time, or will be removed. */
+static uint8_t		ep_domain_parameter[]		= {'d','='};			/* Domain name. If this parameter is missing, a default domain is assumed. */
+static uint8_t 		coap_con_type_parameter[]	= {'c','t','='};		/* CoAP content type */
+/* * OMA BS parameters * */
+static uint8_t bs_uri[] 						= {'b','s'};
+static uint8_t bs_ep_name[] 					= {'e','p','='};
+static uint8_t et_parameter[] 					= {'e','t','='}; 		/* Endpoint type */
+static uint8_t bs_queue_mode[]					= {'b','='};
 /* Global function pointers */
 static void 	*(*sn_nsdl_alloc)(uint16_t)  = 0;
 static void 	(*sn_nsdl_free)(void*) = 0;
