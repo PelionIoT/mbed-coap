@@ -55,7 +55,7 @@ extern int8_t sn_grs_destroy(void)
 		--resource_root_count;
 		sn_grs_resource_info_free(tmp);
 	}
-
+    sn_grs_alloc = NULL;
 	return 0;
 }
 
