@@ -41,6 +41,8 @@ typedef NS_LIST_HEAD(sn_nsdl_resource_info_s, link) resource_list_t;
 
 struct grs_s
 {
+	struct coap_s *coap;
+
 	uint16_t resource_root_count;
 	resource_list_t resource_root_list;
 
@@ -95,7 +97,7 @@ extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capa
 		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory);
 
 extern const sn_nsdl_resource_info_s 	*sn_grs_get_first_resource			(struct grs_s *handle);
-extern const sn_nsdl_resource_info_s 	*sn_grs_get_next_resource			(struct grs_s *handle);
+extern const sn_nsdl_resource_info_s 	*sn_grs_get_next_resource			(struct grs_s *handle, const sn_nsdl_resource_info_s *sn_grs_current_resource);
 extern int8_t 							sn_grs_process_coap					(struct grs_s *handle, sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src);
 extern sn_nsdl_resource_info_s 			*sn_grs_search_resource				(struct grs_s *handle, uint16_t pathlen, uint8_t *path, uint8_t search_method);
 extern int8_t 							sn_grs_destroy						(struct grs_s *handle);

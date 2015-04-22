@@ -13,6 +13,9 @@
 extern "C" {
 #endif
 
+/* Handle structure */
+struct coap_s;
+
 /* * * * * * * * * * * * * * */
 /* * * * ENUMERATIONS  * * * */
 /* * * * * * * * * * * * * * */
@@ -230,23 +233,12 @@ typedef struct sn_coap_hdr_
 /* * * * * * * * * * * * * * * * * * * * * * */
 /* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */
 /* * * * * * * * * * * * * * * * * * * * * * */
-
 /**
- * \fn void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
- * 											void (*used_free_func_ptr)(void*))
- *
- * \brief Initializes CoAP Builder and Parser parts. Sets the memory allocation and deallocation functions the library will use, and must be called first.
- * Calling sn_nsdl_init() - function also initializes CoAP libraries.
- *
- * \param void* used_malloc_func_ptr is function pointer for used malloc() function.
- * \param void *used_free_func_ptr is function pointer for usef free() function.
- */
-extern void           sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*));
-
-/**
- * \fn sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr)
+ * \fn sn_coap_hdr_s *sn_coap_parser(struct coap_s *handle, uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr)
  *
  * \brief Parses CoAP message from given Packet data
+ *
+ * \param *handle Pointer to CoAP library handle
  *
  * \param packet_data_len is length of given Packet data to be parsed to CoAP message
  *
@@ -259,18 +251,20 @@ extern void           sn_coap_builder_and_parser_init(void* (*used_malloc_func_p
  *          -Failure in given pointer (= NULL)\n
  *          -Failure in memory allocation (malloc() returns NULL)
  */
-extern sn_coap_hdr_s *sn_coap_parser(uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr);
+extern sn_coap_hdr_s *sn_coap_parser(struct coap_s *handle, uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr);
 
 /**
- * \fn void sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg_ptr)
+ * \fn void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr)
  *
  * \brief Releases memory of given CoAP message
  *
  *        Note!!! Does not release Payload part
  *
+ * \param *handle Pointer to CoAP library handle
+ *
  * \param *freed_coap_msg_ptr is pointer to released CoAP message
  */
-extern void           sn_coap_parser_release_allocated_coap_msg_mem(sn_coap_hdr_s *freed_coap_msg_ptr);
+extern void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr);
 
 /**
  * \fn int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
@@ -298,13 +292,14 @@ extern int16_t        sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_
  * \return Return value is count of needed memory as bytes for build Packet data
  * 			Null if failed
  */
-extern uint16_t       sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr);
+extern uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr);
 
 /**
- * \fn sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
+ * \fn sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
  *
  * \brief Prepares generic response packet from a request packet. This function allocates memory for the resulting sn_coap_hdr_s
  *
+ * \param *handle Pointer to CoAP library handle
  * \param *coap_packet_ptr The request packet pointer
  * \param msg_code response messages code
  *
@@ -312,12 +307,7 @@ extern uint16_t       sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s
  * 			NULL	Error in parsing the request
  *
  */
-extern sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code);
-
-/**
- * \brief CoAP packet debugging.
- */
-extern void 		  sn_coap_packet_debug(sn_coap_hdr_s *coap_packet_ptr);
+extern sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code);
 
 #ifdef __cplusplus
 }

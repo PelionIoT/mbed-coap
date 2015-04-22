@@ -30,9 +30,6 @@ static int8_t 						sn_grs_add_resource_to_list			(struct grs_s *handle, sn_nsdl
 /* Extern function prototypes */
 extern int8_t 						sn_nsdl_build_registration_body		(sn_coap_hdr_s *message_ptr, uint8_t updating_registeration);
 
-/* Temp variable */
-static const sn_nsdl_resource_info_s *sn_grs_current_resource;
-
 /**
  * \fn int8_t sn_grs_destroy(void)
  * \brief This function may be used to flush GRS related stuff when a program exits.
@@ -105,8 +102,7 @@ extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capa
 	handle_ptr->sn_grs_rx_callback = sn_grs_rx_callback_ptr;
 
 	/* Initialize CoAP protocol library */
-	sn_coap_builder_and_parser_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free);
-	sn_coap_protocol_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free, sn_grs_tx_callback_ptr, NULL);
+	handle_ptr->coap = sn_coap_protocol_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free, sn_grs_tx_callback_ptr, NULL);
 
 	return handle_ptr;
 }
@@ -197,7 +193,7 @@ extern const sn_nsdl_resource_info_s *sn_grs_get_first_resource(struct grs_s *ha
 	return ns_list_get_first(&handle->resource_root_list);
 }
 
-extern const sn_nsdl_resource_info_s *sn_grs_get_next_resource(struct grs_s *handle)
+extern const sn_nsdl_resource_info_s *sn_grs_get_next_resource(struct grs_s *handle, const sn_nsdl_resource_info_s *sn_grs_current_resource)
 {
 	return ns_list_get_next(&handle->resource_root_list, sn_grs_current_resource);
 }
@@ -347,7 +343,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 					handle->sn_grs_free(coap_packet_ptr->payload_ptr);
 					coap_packet_ptr->payload_ptr = 0;
 				}
-				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+				sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
 				return SN_NSDL_FAILURE;
 			}
 			memset(response_message_hdr_ptr, 0, sizeof(sn_coap_hdr_s));
@@ -365,7 +361,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 					handle->sn_grs_free(coap_packet_ptr->payload_ptr);
 					coap_packet_ptr->payload_ptr = 0;
 				}
-				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+				sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
 				handle->sn_grs_free(response_message_hdr_ptr);
 				return SN_NSDL_FAILURE;
 			}
@@ -383,7 +379,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 				handle->sn_grs_free(response_message_hdr_ptr->payload_ptr);
 				response_message_hdr_ptr->payload_ptr = 0;
 			}
-			sn_coap_parser_release_allocated_coap_msg_mem(response_message_hdr_ptr);
+			sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, response_message_hdr_ptr);
 
 			/* Free parsed CoAP message */
 			if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
@@ -391,7 +387,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 				handle->sn_grs_free(coap_packet_ptr->payload_ptr);
 				coap_packet_ptr->payload_ptr = 0;
 			}
-			sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+			sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
 
 			return SN_NSDL_SUCCESS;
 		}
@@ -427,7 +423,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 						handle->sn_grs_free(coap_packet_ptr->payload_ptr);
 						coap_packet_ptr->payload_ptr = 0;
 					}
-					sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+					sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
 					return SN_NSDL_SUCCESS;
 				}
 			}
@@ -608,7 +604,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 				handle->sn_grs_free(coap_packet_ptr->payload_ptr);
 				coap_packet_ptr->payload_ptr = 0;
 			}
-			sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+			sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
 			return SN_NSDL_FAILURE;
 		}
 		memset(response_message_hdr_ptr, 0, sizeof(sn_coap_hdr_s));
@@ -638,7 +634,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 					handle->sn_grs_free(response_message_hdr_ptr->payload_ptr);
 					response_message_hdr_ptr->payload_ptr = 0;
 				}
-				sn_coap_parser_release_allocated_coap_msg_mem(response_message_hdr_ptr);
+				sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, response_message_hdr_ptr);
 
 				if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
 				{
@@ -646,7 +642,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 					coap_packet_ptr->payload_ptr = 0;
 				}
 
-				sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+				sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
 				return SN_NSDL_FAILURE;
 			}
 			memcpy(response_message_hdr_ptr->token_ptr, coap_packet_ptr->token_ptr, response_message_hdr_ptr->token_len);
@@ -663,7 +659,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 					response_message_hdr_ptr->content_type_ptr = handle->sn_grs_alloc(response_message_hdr_ptr->content_type_len);
 					if(!response_message_hdr_ptr->content_type_ptr)
 					{
-						sn_coap_parser_release_allocated_coap_msg_mem(response_message_hdr_ptr);
+						sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, response_message_hdr_ptr);
 
 						if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
 						{
@@ -671,7 +667,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 							coap_packet_ptr->payload_ptr = 0;
 						}
 
-						sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+						sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
 						return SN_NSDL_FAILURE;
 					}
 					memcpy(response_message_hdr_ptr->content_type_ptr, &resource_temp_ptr->resource_parameters_ptr->coap_content_type, response_message_hdr_ptr->content_type_len);
@@ -686,7 +682,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 
 				if(!response_message_hdr_ptr->payload_ptr)
 				{
-					sn_coap_parser_release_allocated_coap_msg_mem(response_message_hdr_ptr);
+					sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, response_message_hdr_ptr);
 
 					if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
 					{
@@ -694,7 +690,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 						coap_packet_ptr->payload_ptr = 0;
 					}
 
-					sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+					sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
 					return SN_NSDL_FAILURE;
 				}
 
@@ -709,7 +705,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 			handle->sn_grs_free(response_message_hdr_ptr->payload_ptr);
 			response_message_hdr_ptr->payload_ptr = 0;
 		}
-		sn_coap_parser_release_allocated_coap_msg_mem(response_message_hdr_ptr);
+		sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, response_message_hdr_ptr);
 	}
 
 	/* Free parsed CoAP message */
@@ -718,7 +714,7 @@ extern int8_t sn_grs_process_coap(struct grs_s *handle, sn_coap_hdr_s *coap_pack
 		handle->sn_grs_free(coap_packet_ptr->payload_ptr);
 		coap_packet_ptr->payload_ptr = 0;
 	}
-	sn_coap_parser_release_allocated_coap_msg_mem(coap_packet_ptr);
+	sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
 
 
 	return SN_NSDL_SUCCESS;
@@ -739,7 +735,7 @@ extern int8_t sn_grs_send_coap_message(struct grs_s *handle, sn_nsdl_addr_s *add
 		return SN_NSDL_FAILURE;
 
 	/* Build CoAP message */
-	if(sn_coap_protocol_build(address_ptr, message_ptr, coap_hdr_ptr) < 0)
+	if(sn_coap_protocol_build(handle->coap, address_ptr, message_ptr, coap_hdr_ptr) < 0)
 	{
 		handle->sn_grs_free(message_ptr);
 		message_ptr = 0;
@@ -1073,6 +1069,6 @@ void sn_grs_mark_resources_as_registered(struct nsdl_s *handle)
 				temp_resource->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_REGISTERED;
 			}
 		}
-		temp_resource = sn_grs_get_next_resource(handle->grs);
+		temp_resource = sn_grs_get_next_resource(handle->grs, temp_resource);
 	}
 }

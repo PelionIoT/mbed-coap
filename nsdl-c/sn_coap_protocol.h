@@ -14,8 +14,10 @@ extern "C" {
 #ifndef SN_COAP_PROTOCOL_H_
 #define SN_COAP_PROTOCOL_H_
 
+#include "sn_coap_header.h"
+
 /**
- * \fn int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
+ * \fn struct coap_s *sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
 		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
 		int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *)
  *
@@ -30,11 +32,11 @@ extern "C" {
  * \param *used_rx_callback_ptr used to return CoAP header struct with status COAP_STATUS_BUILDER_MESSAGE_SENDING_FAILED
  * 		  when re-sendings exceeded. If set to NULL, no error message is returned.
  *
- * \return 	0 if success
- * 			-1 if failed
+ * \return 	Pointer to handle when success
+ * 			Null if failed
  */
 
-extern 	int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
+extern struct coap_s *sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
 										uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
 										int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *));
 
@@ -43,12 +45,14 @@ extern 	int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), vo
  *
  * \brief Frees all memory from CoAP protocol part
  *
+ * \param *handle Pointer to CoAP library handle
+ *
  * \return Return value is always 0
  */
-extern int8_t 			   sn_coap_protocol_destroy(void);
+extern int8_t sn_coap_protocol_destroy(struct coap_s *handle);
 
 /**
- * \fn int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
+ * \fn int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
  *
  * \brief Builds Packet data from given CoAP header structure to be sent
  *
@@ -68,15 +72,17 @@ extern int8_t 			   sn_coap_protocol_destroy(void);
  *         If there is not enough memory (or User given limit exceeded) for storing
  *         resending messages, situation is ignored.
  */
-extern int16_t             sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
+extern int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
 
 /**
- * \fn sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
+ * \fn sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
  *
  * \brief Parses received CoAP message from given Packet data
  *
  * \param *src_addr_ptr is pointer to source address of received CoAP message
  *        (CoAP parser needs that information for Message acknowledgement)
+ *
+ * \param *handle Pointer to CoAP library handle
  *
  * \param packet_data_len is length of given Packet data to be parsed to CoAP message
  *
@@ -88,7 +94,7 @@ extern int16_t             sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr, 
  *          -Failure in parsed header of non-confirmable message\ŋ
  *          -Out of memory (malloc() returns NULL)
  */
-extern sn_coap_hdr_s      *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
+extern sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
 
 /**
  * \fn int8_t sn_coap_protocol_exec(uint32_t current_time)

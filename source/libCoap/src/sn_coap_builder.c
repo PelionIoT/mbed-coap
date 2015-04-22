@@ -36,33 +36,19 @@ static uint8_t 	sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_c
 /* * * * GLOBAL DECLARATIONS * * * */
 static uint16_t global_previous_option_number = 0;    	/* Previous Option number in CoAP message */
 
-void* (*sn_coap_malloc)(uint16_t); 						/* Function pointer for used malloc() function */
-void  (*sn_coap_free)(void*);      						/* Function pointer for used free()   function */
-
 /* * * * EXTERN VARIABLES * * * */
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
 extern uint16_t 	sn_coap_block_data_size; 				/* From sn_coap_protocol_ieft_draft_12.c */
 #endif
 
-
-void sn_coap_builder_and_parser_init(void* (*used_malloc_func_ptr)(uint16_t),
-                                     void (*used_free_func_ptr)(void*))
-{
-     /* * * Set used memory allocation function pointer * * */
-    sn_coap_malloc = used_malloc_func_ptr;
-
-    /* * * Set used memory free function pointer * * */
-    sn_coap_free = used_free_func_ptr;
-}
-
-sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
+sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
 {
 	sn_coap_hdr_s *coap_res_ptr;
 
-	if(!coap_packet_ptr)
+	if(!coap_packet_ptr || !handle)
 		return NULL;
 
-	coap_res_ptr = sn_coap_malloc(sizeof(sn_coap_hdr_s));
+	coap_res_ptr = handle->sn_coap_protocol_malloc(sizeof(sn_coap_hdr_s));
 	if(!coap_res_ptr)
 		return NULL;
 
@@ -90,10 +76,10 @@ sn_coap_hdr_s *sn_coap_build_response(sn_coap_hdr_s *coap_packet_ptr, uint8_t ms
 	if (coap_packet_ptr->token_ptr)
 	{
 		coap_res_ptr->token_len = coap_packet_ptr->token_len;
-		coap_res_ptr->token_ptr = sn_coap_malloc(coap_res_ptr->token_len);
+		coap_res_ptr->token_ptr = handle->sn_coap_protocol_malloc(coap_res_ptr->token_len);
 		if(!coap_res_ptr->token_ptr)
 		{
-			sn_coap_free(coap_res_ptr);
+			handle->sn_coap_protocol_free(coap_res_ptr);
 			return NULL;
 		}
 		memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);

@@ -563,6 +563,34 @@ extern int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certifica
  */
 extern int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr);
 
+/**
+ * \fn sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
+ *
+ * \brief Prepares generic response packet from a request packet. This function allocates memory for the resulting sn_coap_hdr_s
+ *
+ * \param *handle Pointer to library handle
+ * \param *coap_packet_ptr The request packet pointer
+ * \param msg_code response messages code
+ *
+ * \return *coap_packet_ptr The allocated and pre-filled response packet pointer
+ * 			NULL	Error in parsing the request
+ *
+ */
+extern sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code);
+
+/**
+ * \fn void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr)
+ *
+ * \brief Releases memory of given CoAP message
+ *
+ *        Note!!! Does not release Payload part
+ *
+ * \param *handle Pointer to CoAP library handle
+ *
+ * \param *freed_coap_msg_ptr is pointer to released CoAP message
+ */
+extern void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr);
+
 #ifdef __cplusplus
 }
 #endif

@@ -13,12 +13,6 @@ extern "C" {
 #ifndef SN_COAP_HEADER_INTERNAL_H_
 #define SN_COAP_HEADER_INTERNAL_H_
 
-/* * * * * * * * * * * * * * * * * */
-/* * * * GLOBAL DECLARATIONS * * * */
-/* * * * * * * * * * * * * * * * * */
-
-extern void* (*sn_coap_malloc)(uint16_t); /* Function pointer for used malloc() function */
-extern void  (*sn_coap_free)(void*);      /* Function pointer for used free()   function */
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
