@@ -141,15 +141,15 @@ int8_t sn_nsdl_destroy(struct nsdl_s *handle)
 
 struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
 							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
-							sn_nsdl_mem_s *sn_memory)
+							void *(*sn_nsdl_alloc)(uint16_t),void (*sn_nsdl_free)(void *))
 {
 	/* Check pointers and define function pointers */
-	if(!sn_memory || !sn_memory->sn_nsdl_alloc || !sn_memory->sn_nsdl_free || !sn_nsdl_tx_cb || !sn_nsdl_rx_cb)
+	if(!sn_nsdl_alloc || !sn_nsdl_free || !sn_nsdl_tx_cb || !sn_nsdl_rx_cb)
 		return NULL;
 
 	struct nsdl_s *handle = NULL;
 
-	handle = sn_memory->sn_nsdl_alloc(sizeof(struct nsdl_s));
+	handle = sn_nsdl_alloc(sizeof(struct nsdl_s));
 
 	if(handle == NULL)
 			return NULL;
@@ -157,8 +157,8 @@ struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t 
 	memset(handle, 0, sizeof(struct nsdl_s));
 
 	/* Define function pointers */
-	handle->sn_nsdl_alloc = sn_memory->sn_nsdl_alloc;
-	handle->sn_nsdl_free = sn_memory->sn_nsdl_free;
+	handle->sn_nsdl_alloc = sn_nsdl_alloc;
+	handle->sn_nsdl_free = sn_nsdl_free;
 
 	handle->sn_nsdl_tx_callback = sn_nsdl_tx_cb;
 	handle->sn_nsdl_rx_callback = sn_nsdl_rx_cb;
@@ -174,7 +174,7 @@ struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t 
 		memset(handle->ep_information_ptr, 0, sizeof(sn_nsdl_ep_parameters_s));
 	}
 
-	handle->grs = sn_grs_init(sn_nsdl_tx_cb,&sn_nsdl_local_rx_function, sn_memory);
+	handle->grs = sn_grs_init(sn_nsdl_tx_cb,&sn_nsdl_local_rx_function, sn_nsdl_alloc, sn_nsdl_free);
 
 	/* Initialize GRS */
 	if(handle->grs == NULL)

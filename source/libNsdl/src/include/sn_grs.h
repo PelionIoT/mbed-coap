@@ -94,7 +94,7 @@ struct nsdl_s
  *
 */
 extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
-		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory);
+		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *), void *(*sn_grs_alloc)(uint16_t),void (*sn_grs_free)(void *));
 
 extern const sn_nsdl_resource_info_s 	*sn_grs_get_first_resource			(struct grs_s *handle);
 extern const sn_nsdl_resource_info_s 	*sn_grs_get_next_resource			(struct grs_s *handle, const sn_nsdl_resource_info_s *sn_grs_current_resource);

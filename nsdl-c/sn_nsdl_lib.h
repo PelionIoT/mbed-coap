@@ -100,15 +100,6 @@ typedef struct sn_nsdl_sent_messages_
 } sn_nsdl_sent_messages_s;
 
 /**
- * \brief Function pointers used for memory allocation and freeing
- */
-typedef struct sn_nsdl_mem_
-{
-	void *(*sn_nsdl_alloc)(uint16_t);
-	void (*sn_nsdl_free)(void *);
-} sn_nsdl_mem_s;
-
-/**
  * \brief Includes resource path
  */
 typedef struct sn_grs_resource_
@@ -264,7 +255,7 @@ typedef struct sn_nsdl_bs_ep_info_
  */
 struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
 							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
-							sn_nsdl_mem_s *sn_memory);
+							void *(*sn_nsdl_alloc)(uint16_t),void (*sn_nsdl_free)(void *));
 
 /**
  * \fn extern int8_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);

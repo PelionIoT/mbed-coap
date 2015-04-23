@@ -72,21 +72,20 @@ int8_t coap_callback_ptr(sn_coap_hdr_s *header, sn_nsdl_addr_s *address)
  *
 */
 extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
-		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *), sn_nsdl_mem_s *sn_memory)
+		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *),
+		void *(*sn_grs_alloc)(uint16_t),void (*sn_grs_free)(void *))
 {
 
 	struct grs_s *handle_ptr = NULL;
 
 	/* Check parameters */
-	if (sn_memory == NULL ||
-			sn_memory->sn_nsdl_alloc == NULL ||
-			sn_memory->sn_nsdl_free == NULL ||
+	if (sn_grs_alloc == NULL || sn_grs_free == NULL ||
 			sn_grs_tx_callback_ptr == NULL)
 	{
 		return NULL;
 	}
 
-	handle_ptr = sn_memory->sn_nsdl_alloc(sizeof(struct grs_s));
+	handle_ptr = sn_grs_alloc(sizeof(struct grs_s));
 
 	if(handle_ptr == NULL)
 		return NULL;
@@ -94,15 +93,15 @@ extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capa
 	memset(handle_ptr, 0, sizeof(struct grs_s));
 
 	/* Allocation and free - function pointers  */
-	handle_ptr->sn_grs_alloc = sn_memory->sn_nsdl_alloc;
-	handle_ptr->sn_grs_free = sn_memory->sn_nsdl_free;
+	handle_ptr->sn_grs_alloc = sn_grs_alloc;
+	handle_ptr->sn_grs_free = sn_grs_free;
 
 	/* TX callback function pointer */
 	handle_ptr->sn_grs_tx_callback = sn_grs_tx_callback_ptr;
 	handle_ptr->sn_grs_rx_callback = sn_grs_rx_callback_ptr;
 
 	/* Initialize CoAP protocol library */
-	handle_ptr->coap = sn_coap_protocol_init(sn_memory->sn_nsdl_alloc, sn_memory->sn_nsdl_free, sn_grs_tx_callback_ptr, NULL);
+	handle_ptr->coap = sn_coap_protocol_init(sn_grs_alloc, sn_grs_free, sn_grs_tx_callback_ptr, NULL);
 
 	return handle_ptr;
 }
