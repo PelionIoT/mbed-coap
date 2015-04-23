@@ -516,13 +516,15 @@ extern int8_t set_NSP_address(struct nsdl_s *handle, uint8_t *NSP_address, uint1
 extern int8_t sn_nsdl_destroy(struct nsdl_s *handle);
 
 /**
- * \fn extern int8_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
+ * \fn extern uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
  *
  * \brief Starts OMA bootstrap process
  *
  * \param 	*handle	Pointer to nsdl-library handle
+ *
+ * \return bootstrap message ID, 0 if failed
  */
-extern int8_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
+extern uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
 
 /**
  * \fn extern omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle);

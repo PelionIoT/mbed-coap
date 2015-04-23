@@ -563,20 +563,21 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
 /* ~ OMA functions ~ */
 /* * * * * * * * * * */
 
-int8_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr)
+uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr)
 {
 
 	/* Local variables */
 	sn_coap_hdr_s bootstrap_coap_header;
 	uint8_t *uri_query_tmp_ptr;
+	uint16_t message_id = 0;
 
 	/* Check parameters */
 	if(!bootstrap_address_ptr || !bootstrap_endpoint_info_ptr || !endpoint_info_ptr || !handle)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	/* Create device object */
 	if(sn_nsdl_create_oma_device_object_base(handle, bootstrap_endpoint_info_ptr->device_object, endpoint_info_ptr->binding_and_mode) < 0)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	handle->sn_nsdl_oma_bs_done_cb = bootstrap_endpoint_info_ptr->oma_bs_status_cb;
 
@@ -585,7 +586,7 @@ int8_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_ad
 
 	bootstrap_coap_header.options_list_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_options_list_s));
 	if(!bootstrap_coap_header.options_list_ptr)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	memset(bootstrap_coap_header.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
 
@@ -600,7 +601,7 @@ int8_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_ad
 	if(!uri_query_tmp_ptr)
 	{
 		handle->sn_nsdl_free(bootstrap_coap_header.options_list_ptr);
-		return SN_NSDL_FAILURE;
+		return 0;
 	}
 
 	memcpy(uri_query_tmp_ptr, bs_ep_name, BS_EP_PARAMETER_LEN);
@@ -622,13 +623,13 @@ int8_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_ad
 	handle->oma_bs_port = bootstrap_address_ptr->port;					/* And port */
 
 	/* Send message */
-	sn_nsdl_send_coap_message(handle, bootstrap_address_ptr, &bootstrap_coap_header);
+	message_id = sn_nsdl_send_coap_message(handle, bootstrap_address_ptr, &bootstrap_coap_header);
 
 	/* Free allocated memory */
 	handle->sn_nsdl_free(uri_query_tmp_ptr);
 	handle->sn_nsdl_free(bootstrap_coap_header.options_list_ptr);
 
-	return SN_NSDL_SUCCESS;
+	return message_id;
 }
 
 omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle)
