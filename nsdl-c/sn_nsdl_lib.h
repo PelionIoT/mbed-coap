@@ -258,31 +258,29 @@ struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t 
 							void *(*sn_nsdl_alloc)(uint16_t),void (*sn_nsdl_free)(void *));
 
 /**
- * \fn extern int8_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
+ * \fn extern uint16_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
  *
  * \brief Registers endpoint to mbed Device Server.
  * \param *handle				Pointer to nsdl-library handle
  * \param *endpoint_info_ptr	Contains endpoint information.
  *
- * \return	0	Success
- * \return	-1	Failure
+ * \return registration message ID, 0 if failed
  */
-extern int8_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
+extern uint16_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
 
 /**
- * \fn extern int8_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle)
+ * \fn extern uint16_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle)
  *
  * \brief Sends unregister-message to mbed Device Server.
  *
  * \param *handle				Pointer to nsdl-library handle
  *
- * \return	0	Success
- * \return	-1	Failure
+ * \return	unregistration message ID, 0 if failed
  */
-extern int8_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle);
+extern uint16_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle);
 
 /**
- * \fn extern int8_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8_t lt_len);
+ * \fn extern uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8_t lt_len);
  *
  * \brief Update the registration with mbed Device Server.
  *
@@ -290,10 +288,9 @@ extern int8_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle);
  * \param *lt_ptr	Pointer to lifetime value string in ascii form, eg. "1200"
  * \param lt_len	Length of the lifetime string
  *
- * \return	0	Success
- * \return	-1	Failure
+ * \return	registration update message ID, 0 if failed
  */
-extern int8_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8_t lt_len);
+extern uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8_t lt_len);
 
 /**
  * \fn extern int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle)

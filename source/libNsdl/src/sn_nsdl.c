@@ -55,7 +55,7 @@ static uint8_t et_parameter[] 					= {'e','t','='}; 		/* Endpoint type */
 static uint8_t bs_queue_mode[]					= {'b','='};
 
 /* Function prototypes */
-static int8_t 			sn_nsdl_internal_coap_send					(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description);
+static uint16_t 		sn_nsdl_internal_coap_send					(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description);
 static void				sn_nsdl_resolve_nsp_address					(struct nsdl_s *handle);
 int8_t					sn_nsdl_build_registration_body				(struct nsdl_s *handle, sn_coap_hdr_s *message_ptr, uint8_t updating_registeration);
 static uint16_t 		sn_nsdl_calculate_registration_body_size	(struct nsdl_s *handle, uint8_t updating_registeration);
@@ -191,21 +191,21 @@ struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t 
 	return handle;
 }
 
-int8_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr)
+uint16_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr)
 {
 	/* Local variables */
 	sn_coap_hdr_s 	*register_message_ptr;
-	int8_t			status 					= 0;
+	uint16_t		message_id	= 0;
 
 	if(endpoint_info_ptr == NULL || handle == NULL)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	/*** Build endpoint register message ***/
 
 	/* Allocate memory for header struct */
 	register_message_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
 	if(register_message_ptr == NULL)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	memset(register_message_ptr, 0, sizeof(sn_coap_hdr_s));
 
@@ -219,7 +219,7 @@ int8_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s 
 	{
 		handle->sn_nsdl_free(register_message_ptr);
 		register_message_ptr = 0;
-		return SN_NSDL_FAILURE;
+		return 0;
 	}
 
 	memset(register_message_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
@@ -232,17 +232,16 @@ int8_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s 
 	if(endpoint_info_ptr->ds_register_mode == REGISTER_WITH_RESOURCES)
 	{
 		/* Built body for message */
-		status = sn_nsdl_build_registration_body(handle, register_message_ptr, 0);
-		if(status == SN_NSDL_FAILURE)
+		if(sn_nsdl_build_registration_body(handle, register_message_ptr, 0) == SN_NSDL_FAILURE)
 		{
 			register_message_ptr->uri_path_ptr = NULL;
 			register_message_ptr->options_list_ptr->uri_host_ptr = NULL;
 			sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
-			return SN_NSDL_FAILURE;
+			return 0;
 		}
 	}
 	/* Build and send coap message to NSP */
-	status = sn_nsdl_internal_coap_send(handle, register_message_ptr, handle->nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_REGISTER);
+	message_id = sn_nsdl_internal_coap_send(handle, register_message_ptr, handle->nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_REGISTER);
 
 	if(register_message_ptr->payload_ptr)
 	{
@@ -280,7 +279,7 @@ int8_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s 
 			}
 			if(!handle->ep_information_ptr->domain_name_ptr)
 			{
-				return SN_NSDL_FAILURE;
+				return 0;
 			}
 
 			memcpy(handle->ep_information_ptr->domain_name_ptr, endpoint_info_ptr->domain_name_ptr, endpoint_info_ptr->domain_name_len);
@@ -303,7 +302,7 @@ int8_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s 
 					handle->ep_information_ptr->domain_name_ptr  = 0;
 					handle->ep_information_ptr->domain_name_len = 0;
 				}
-				return SN_NSDL_FAILURE;
+				return 0;
 			}
 
 			memcpy(handle->ep_information_ptr->endpoint_name_ptr, endpoint_info_ptr->endpoint_name_ptr, endpoint_info_ptr->endpoint_name_len);
@@ -315,18 +314,19 @@ int8_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s 
 		handle->ep_information_ptr->ds_register_mode = endpoint_info_ptr->ds_register_mode;
 	}
 
-	return status;
+	return message_id;
 }
 
-int8_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle)
+uint16_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle)
 {
 	/* Local variables */
 	sn_coap_hdr_s  	*unregister_message_ptr;
 	uint8_t			*temp_ptr = 0;
+	uint16_t 		message_id = 0;
 
 	/* Check parameters */
 	if(handle == NULL)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	/* Check that EP have been registered */
 	if(sn_nsdl_is_ep_registered(handle))
@@ -335,7 +335,7 @@ int8_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle)
 		/* Memory allocation for unregister message */
 		unregister_message_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
 		if(!unregister_message_ptr)
-			return SN_NSDL_FAILURE;
+			return 0;
 
 		memset(unregister_message_ptr, 0, sizeof(sn_coap_hdr_s));
 
@@ -348,7 +348,7 @@ int8_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle)
 		if (!unregister_message_ptr->uri_path_ptr)
 		{
 			sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, unregister_message_ptr);
-			return SN_NSDL_FAILURE;
+			return 0;
 		}
 
 		temp_ptr = unregister_message_ptr->uri_path_ptr;
@@ -366,26 +366,27 @@ int8_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle)
 		memcpy(temp_ptr ,handle->ep_information_ptr->endpoint_name_ptr, handle->ep_information_ptr->endpoint_name_len);
 
 		/* Send message */
-		sn_nsdl_internal_coap_send(handle, unregister_message_ptr, handle->nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_UNREGISTER);
+		message_id = sn_nsdl_internal_coap_send(handle, unregister_message_ptr, handle->nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_UNREGISTER);
 
 		/* Free memory */
 		sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, unregister_message_ptr);
 
 	}
 
-	return SN_NSDL_SUCCESS;
+	return message_id;
 }
 
-int8_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8_t lt_len)
+uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8_t lt_len)
 {
 	/* Local variables */
 	sn_coap_hdr_s 	*register_message_ptr;
 	uint8_t			*temp_ptr;
 	sn_nsdl_ep_parameters_s temp_parameters;
+	uint16_t 		message_id = 0;
 
 	/* Check parameters */
 	if(handle == NULL)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	memset(&temp_parameters, 0, sizeof(sn_nsdl_ep_parameters_s));
 
@@ -397,7 +398,7 @@ int8_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8
 	/* Allocate memory for header struct */
 	register_message_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
 	if(register_message_ptr == NULL)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	memset(register_message_ptr, 0, sizeof(sn_coap_hdr_s));
 
@@ -411,7 +412,7 @@ int8_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8
 	if(!register_message_ptr->uri_path_ptr)
 	{
 		sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
-		return SN_NSDL_FAILURE;
+		return 0;
 	}
 
 	temp_ptr = register_message_ptr->uri_path_ptr;
@@ -435,7 +436,7 @@ int8_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8
 	if(register_message_ptr->options_list_ptr == NULL)
 	{
 		sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
-		return SN_NSDL_FAILURE;
+		return 0;
 	}
 
 	memset(register_message_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
@@ -455,20 +456,20 @@ int8_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8
 			if(!register_message_ptr->payload_ptr)
 			{
 				sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
-				return SN_NSDL_FAILURE;
+				return 0;
 			}
 			sn_nsdl_build_registration_body(handle, register_message_ptr, 1);
 		}
 	}
 
 	/* Build and send coap message to NSP */
-	sn_nsdl_internal_coap_send(handle, register_message_ptr, handle->nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_UPDATE);
+	message_id = sn_nsdl_internal_coap_send(handle, register_message_ptr, handle->nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_UPDATE);
 
 	if(register_message_ptr->payload_ptr)
 		handle->sn_nsdl_free(register_message_ptr->payload_ptr);
 	sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
 
-	return SN_NSDL_SUCCESS;
+	return message_id;
 }
 
 void sn_nsdl_nsp_lost(struct nsdl_s *handle)
@@ -986,7 +987,7 @@ sn_nsdl_resource_info_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pa
 
 
 /**
- * \fn static int8_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description)
+ * \fn static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description)
  *
  *
  * \brief To send NSDL messages. Stores message id?s and message description to catch response from NSP server
@@ -995,31 +996,27 @@ sn_nsdl_resource_info_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pa
  * \param	*dst_addr_ptr		Pointer to the address structure that contains destination address information
  * \param	message_description Message description to be stored to list for waiting response
  *
- * \return		SN_NSDL_SUCCESS = 0, Failed = -1
+ * \return	message id, 0 if failed
  */
-static int8_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description)
+static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description)
 {
-	uint8_t 					*coap_message_ptr 	= NULL;
-	uint16_t 					coap_message_len 	= 0;
-	int16_t 						status 				= 0;
+	uint8_t 	*coap_message_ptr 	= NULL;
+	uint16_t	coap_message_len 	= 0;
 
 	coap_message_len = sn_coap_builder_calc_needed_packet_data_size(coap_header_ptr);
 
 	if(coap_message_len == 0)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	coap_message_ptr = handle->sn_nsdl_alloc(coap_message_len);
 	if(!coap_message_ptr)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	/* Build message */
-	status = sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr,coap_message_ptr, coap_header_ptr);
-
-	/* If message building failed */
-	if(status < 0)
+	if(sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr,coap_message_ptr, coap_header_ptr) < 0)
 	{
 		handle->sn_nsdl_free(coap_message_ptr);
-		return SN_NSDL_FAILURE;
+		return 0;
 	}
 
 	/* If mesage type is confirmable, save it to list to wait for reply */
@@ -1039,7 +1036,7 @@ static int8_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *c
 	handle->sn_nsdl_tx_callback(SN_NSDL_PROTOCOL_COAP, coap_message_ptr, coap_message_len, dst_addr_ptr);
 	handle->sn_nsdl_free(coap_message_ptr);
 
-	return status;
+	return coap_header_ptr->msg_id;
 }
 
 /**
