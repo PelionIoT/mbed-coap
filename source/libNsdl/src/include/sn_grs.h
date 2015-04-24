@@ -98,7 +98,7 @@ extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capa
 
 extern const sn_nsdl_resource_info_s 	*sn_grs_get_first_resource			(struct grs_s *handle);
 extern const sn_nsdl_resource_info_s 	*sn_grs_get_next_resource			(struct grs_s *handle, const sn_nsdl_resource_info_s *sn_grs_current_resource);
-extern int8_t 							sn_grs_process_coap					(struct grs_s *handle, sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src);
+extern int8_t 							sn_grs_process_coap					(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src);
 extern sn_nsdl_resource_info_s 			*sn_grs_search_resource				(struct grs_s *handle, uint16_t pathlen, uint8_t *path, uint8_t search_method);
 extern int8_t 							sn_grs_destroy						(struct grs_s *handle);
 extern sn_grs_resource_list_s 			*sn_grs_list_resource				(struct grs_s *handle, uint16_t pathlen, uint8_t *path);

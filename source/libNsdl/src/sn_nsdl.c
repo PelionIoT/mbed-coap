@@ -928,7 +928,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
 			/* Non - TLV message */
 			else if(*coap_packet_ptr->content_type_ptr == 97)
 			{
-				sn_grs_process_coap(handle->grs, coap_packet_ptr, src_ptr);
+				sn_grs_process_coap(handle, coap_packet_ptr, src_ptr);
 
 				/* Todo: move this copying to sn_nsdl_check_oma_bs_status(), also from TLV parser */
 				/* Security mode */
@@ -968,7 +968,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
 	/* Other messages are for GRS  */
 	/* * * * * * * * * * * * * * * */
 
-	return sn_grs_process_coap(handle->grs, coap_packet_ptr, src_ptr);
+	return sn_grs_process_coap(handle, coap_packet_ptr, src_ptr);
 }
 
 int8_t sn_nsdl_exec(uint32_t time)
