@@ -37,8 +37,8 @@ extern "C" {
  */
 
 extern struct coap_s *sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
-										uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
-										int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *));
+										uint8_t (*used_tx_callback_ptr)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *),
+										int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *));
 
 /**
  * \fn int8_t sn_coap_protocol_destroy(void)
@@ -63,6 +63,8 @@ extern int8_t sn_coap_protocol_destroy(struct coap_s *handle);
  *
  * \param *src_coap_msg_ptr is pointer to source of built Packet data
  *
+ * \param param void pointer that will be passed to tx/rx function callback when those are called.
+ *
  * \return Return value is byte count of built Packet data.\n
  *         Note: If message is blockwised, all payload is not sent at the same time\n
  *         In failure cases:\n
@@ -72,7 +74,7 @@ extern int8_t sn_coap_protocol_destroy(struct coap_s *handle);
  *         If there is not enough memory (or User given limit exceeded) for storing
  *         resending messages, situation is ignored.
  */
-extern int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
+extern int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void* param);
 
 /**
  * \fn sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
@@ -88,13 +90,15 @@ extern int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst
  *
  * \param *packet_data_ptr is pointer to source of Packet data to be parsed to CoAP message
  *
+ * \param param void pointer that will be passed to tx/rx function callback when those are called.
+ *
  * \return Return value is pointer to parsed CoAP message structure. This structure includes also coap_status field.\n
  *         In following failure cases NULL is returned:\n
  *          -Given NULL pointer\n
  *          -Failure in parsed header of non-confirmable message\ŋ
  *          -Out of memory (malloc() returns NULL)
  */
-extern sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
+extern sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr, void*);
 
 /**
  * \fn int8_t sn_coap_protocol_exec(uint32_t current_time)

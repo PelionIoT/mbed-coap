@@ -48,7 +48,7 @@ struct grs_s
 
 	void    *(*sn_grs_alloc)(uint16_t);
     void    (*sn_grs_free)(void*);
-    uint8_t (*sn_grs_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
+    uint8_t (*sn_grs_tx_callback)(struct nsdl_s *, sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
     int8_t (*sn_grs_rx_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *);
 };
 
@@ -71,7 +71,7 @@ struct nsdl_s
 
 	void *(*sn_nsdl_alloc)(uint16_t);
 	void (*sn_nsdl_free)(void*);
-	uint8_t (*sn_nsdl_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
+	uint8_t (*sn_nsdl_tx_callback)(struct nsdl_s *, sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
 	uint8_t (*sn_nsdl_rx_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *);
 };
 
@@ -93,7 +93,7 @@ struct nsdl_s
  *	\return success pointer to handle, failure = NULL
  *
 */
-extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
+extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(struct nsdl_s *, sn_nsdl_capab_e , uint8_t *, uint16_t,
 		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *), void *(*sn_grs_alloc)(uint16_t),void (*sn_grs_free)(void *));
 
 extern const sn_nsdl_resource_info_s 	*sn_grs_get_first_resource			(struct grs_s *handle);
@@ -104,7 +104,7 @@ extern int8_t 							sn_grs_destroy						(struct grs_s *handle);
 extern sn_grs_resource_list_s 			*sn_grs_list_resource				(struct grs_s *handle, uint16_t pathlen, uint8_t *path);
 extern void 							sn_grs_free_resource_list			(struct grs_s *handle, sn_grs_resource_list_s *list);
 extern int8_t 							sn_grs_update_resource				(struct grs_s *handle, sn_nsdl_resource_info_s *res);
-extern int8_t 							sn_grs_send_coap_message			(struct grs_s *handle, sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
+extern int8_t 							sn_grs_send_coap_message			(struct nsdl_s *handle, sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
 extern int8_t 							sn_grs_create_resource				(struct grs_s *handle, sn_nsdl_resource_info_s *res);
 extern int8_t 							sn_grs_delete_resource				(struct grs_s *handle, uint16_t pathlen, uint8_t *path);
 extern void 							sn_grs_mark_resources_as_registered	(struct nsdl_s *handle);

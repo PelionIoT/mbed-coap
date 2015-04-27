@@ -139,7 +139,7 @@ int8_t sn_nsdl_destroy(struct nsdl_s *handle)
 	return SN_NSDL_SUCCESS;
 }
 
-struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(struct nsdl_s *, sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
 							uint8_t (*sn_nsdl_rx_cb)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *),
 							void *(*sn_nsdl_alloc)(uint16_t),void (*sn_nsdl_free)(void *))
 {
@@ -827,7 +827,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
 		return SN_NSDL_FAILURE;
 
 	/* Parse CoAP packet */
-	coap_packet_ptr = sn_coap_protocol_parse(handle->grs->coap, src_ptr, packet_len, packet_ptr);
+	coap_packet_ptr = sn_coap_protocol_parse(handle->grs->coap, src_ptr, packet_len, packet_ptr, (void*)handle);
 
 	/* Check if parsing was successfull */
 	if(coap_packet_ptr == (sn_coap_hdr_s *)NULL)
@@ -1014,7 +1014,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
 		return 0;
 
 	/* Build message */
-	if(sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr,coap_message_ptr, coap_header_ptr) < 0)
+	if(sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr,coap_message_ptr, coap_header_ptr, (void *)handle) < 0)
 	{
 		handle->sn_nsdl_free(coap_message_ptr);
 		return 0;
@@ -1034,7 +1034,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
 
 	}
 
-	handle->sn_nsdl_tx_callback(SN_NSDL_PROTOCOL_COAP, coap_message_ptr, coap_message_len, dst_addr_ptr);
+	handle->sn_nsdl_tx_callback(handle, SN_NSDL_PROTOCOL_COAP, coap_message_ptr, coap_message_len, dst_addr_ptr);
 	handle->sn_nsdl_free(coap_message_ptr);
 
 	return coap_header_ptr->msg_id;
@@ -2183,7 +2183,7 @@ extern int8_t sn_nsdl_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *a
 	if(handle == NULL)
 		return SN_NSDL_FAILURE;
 
-	return sn_grs_send_coap_message(handle->grs, address_ptr, coap_hdr_ptr);
+	return sn_grs_send_coap_message(handle, address_ptr, coap_hdr_ptr);
 }
 
 extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res)

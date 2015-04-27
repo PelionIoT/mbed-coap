@@ -27,6 +27,9 @@ static int8_t 						sn_grs_resource_info_free			(struct grs_s *handle, sn_nsdl_r
 static uint8_t *					sn_grs_convert_uri					(uint16_t *uri_len, uint8_t *uri_ptr);
 static int8_t 						sn_grs_add_resource_to_list			(struct grs_s *handle, sn_nsdl_resource_info_s *resource_ptr);
 static int8_t 						sn_grs_core_request					(struct nsdl_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *coap_packet_ptr);
+static uint8_t 						coap_tx_callback					(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *);
+static int8_t 						coap_rx_callback					(sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *address_ptr, void *param);
+
 /* Extern function prototypes */
 extern int8_t 						sn_nsdl_build_registration_body		(struct nsdl_s *handle, sn_coap_hdr_s *message_ptr, uint8_t updating_registeration);
 
@@ -49,10 +52,24 @@ extern int8_t sn_grs_destroy(struct grs_s *handle)
 	return 0;
 }
 
-int8_t coap_callback_ptr(sn_coap_hdr_s *header, sn_nsdl_addr_s *address)
+static uint8_t coap_tx_callback(uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr, void *param)
 {
-	//TBD
-	return 0;
+	struct nsdl_s *handle = (struct nsdl_s *)param;
+
+	if(handle == NULL)
+		return 0;
+
+	return handle->grs->sn_grs_tx_callback(handle, SN_NSDL_PROTOCOL_COAP, data_ptr, data_len, address_ptr);
+}
+
+static int8_t coap_rx_callback(sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *address_ptr, void *param)
+{
+	struct nsdl_s *handle = (struct nsdl_s *)param;
+
+	if(handle == NULL)
+		return 0;
+
+	return handle->sn_nsdl_rx_callback(handle, coap_ptr, address_ptr);
 }
 
 /**
@@ -71,7 +88,7 @@ int8_t coap_callback_ptr(sn_coap_hdr_s *header, sn_nsdl_addr_s *address)
  * \return success = 0, failure = -1
  *
 */
-extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t,
+extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(struct nsdl_s *, sn_nsdl_capab_e , uint8_t *, uint16_t,
 		sn_nsdl_addr_s *), int8_t (*sn_grs_rx_callback_ptr)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *),
 		void *(*sn_grs_alloc)(uint16_t),void (*sn_grs_free)(void *))
 {
@@ -101,7 +118,7 @@ extern struct grs_s *sn_grs_init	(uint8_t (*sn_grs_tx_callback_ptr)(sn_nsdl_capa
 	handle_ptr->sn_grs_rx_callback = sn_grs_rx_callback_ptr;
 
 	/* Initialize CoAP protocol library */
-	handle_ptr->coap = sn_coap_protocol_init(sn_grs_alloc, sn_grs_free, sn_grs_tx_callback_ptr, NULL);
+	handle_ptr->coap = sn_coap_protocol_init(sn_grs_alloc, sn_grs_free, coap_tx_callback, coap_rx_callback);
 
 	return handle_ptr;
 }
@@ -640,7 +657,7 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
 			}
 		}
 
-		sn_grs_send_coap_message(handle, src_addr_ptr, response_message_hdr_ptr);
+		sn_grs_send_coap_message(nsdl_handle, src_addr_ptr, response_message_hdr_ptr);
 
 		if(response_message_hdr_ptr->payload_ptr)
 		{
@@ -662,7 +679,7 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
 	return SN_NSDL_SUCCESS;
 }
 
-extern int8_t sn_grs_send_coap_message(struct grs_s *handle, sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
+extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
 {
 	uint8_t 	*message_ptr = NULL;
 	uint16_t 	message_len	= 0;
@@ -672,23 +689,23 @@ extern int8_t sn_grs_send_coap_message(struct grs_s *handle, sn_nsdl_addr_s *add
 	message_len = sn_coap_builder_calc_needed_packet_data_size(coap_hdr_ptr);
 
 	/* Allocate memory for message and check was allocating successfully */
-	message_ptr = handle->sn_grs_alloc(message_len);
+	message_ptr = handle->grs->sn_grs_alloc(message_len);
 	if(message_ptr == NULL)
 		return SN_NSDL_FAILURE;
 
 	/* Build CoAP message */
-	if(sn_coap_protocol_build(handle->coap, address_ptr, message_ptr, coap_hdr_ptr) < 0)
+	if(sn_coap_protocol_build(handle->grs->coap, address_ptr, message_ptr, coap_hdr_ptr, (void *)handle) < 0)
 	{
-		handle->sn_grs_free(message_ptr);
+		handle->grs->sn_grs_free(message_ptr);
 		message_ptr = 0;
 		return SN_NSDL_FAILURE;
 	}
 
 	/* Call tx callback function to send message */
-	ret_val = handle->sn_grs_tx_callback(SN_NSDL_PROTOCOL_COAP, message_ptr, message_len, address_ptr);
+	ret_val = handle->grs->sn_grs_tx_callback(handle, SN_NSDL_PROTOCOL_COAP, message_ptr, message_len, address_ptr);
 
 	/* Free allocated memory */
-	handle->sn_grs_free(message_ptr);
+	handle->grs->sn_grs_free(message_ptr);
 	message_ptr = 0;
 
 	if(ret_val == 0)
@@ -739,7 +756,7 @@ static int8_t sn_grs_core_request(struct nsdl_s *handle, sn_nsdl_addr_s *src_add
 	sn_nsdl_build_registration_body(handle, response_message_hdr_ptr, 0);
 
 	/* Send and free */
-	sn_grs_send_coap_message(handle->grs, src_addr_ptr, response_message_hdr_ptr);
+	sn_grs_send_coap_message(handle, src_addr_ptr, response_message_hdr_ptr);
 
 	if(response_message_hdr_ptr->payload_ptr)
 	{

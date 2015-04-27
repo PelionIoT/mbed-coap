@@ -20,8 +20,8 @@ struct coap_s
 	void *(*sn_coap_protocol_malloc)(uint16_t);
 	void (*sn_coap_protocol_free)(void*);
 
-	uint8_t (*sn_coap_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
-	int8_t (*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
+	uint8_t (*sn_coap_tx_callback)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void*);
+	int8_t (*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *);
 };
 
 /* * * * * * * * * * * */
@@ -29,7 +29,7 @@ struct coap_s
 /* * * * * * * * * * * */
 
 /* * For Message resending * */
-#define ENABLE_RESENDINGS								0	/**< Enable / Disable resending from library in building */
+#define ENABLE_RESENDINGS								1	/**< Enable / Disable resending from library in building */
 
 #define SN_COAP_RESENDING_MAX_COUNT		            	3	/**< Default number of re-sendings  */
 #define SN_COAP_RESENDING_QUEUE_SIZE_MSGS 		    	2	/**< Default re-sending queue size - defines how many messages can be stored. Setting this to 0 disables feature */
@@ -87,7 +87,8 @@ typedef struct coap_send_msg_
 
     sn_nsdl_transmit_s *send_msg_ptr;
 
-    struct coap_s 		*coap;
+    struct coap_s 		*coap;				/* CoAP library handle */
+    void				*param;				/* Extra parameter that will be passed to TX/RX callback functions */
 
     ns_list_link_t      link;
 } coap_send_msg_s;
@@ -105,7 +106,7 @@ typedef struct coap_duplication_info_
 
     uint16_t            msg_id;
 
-    struct coap_s 		*coap;
+    struct coap_s 		*coap;	/* CoAP library handle */
 
     ns_list_link_t     link;
 }coap_duplication_info_s;
@@ -118,7 +119,7 @@ typedef struct coap_blockwise_msg_
     uint32_t            timestamp;  /* Tells when Blockwise message is stored to Linked list */
 
     sn_coap_hdr_s		*coap_msg_ptr;
-    struct coap_s 		*coap;
+    struct coap_s 		*coap;		/* CoAP library handle */
 
     ns_list_link_t     link;
 } coap_blockwise_msg_s;
@@ -136,7 +137,7 @@ typedef struct coap_blockwise_payload_
 
     uint16_t            payload_len;
     uint8_t            	*payload_ptr;
-    struct coap_s 		*coap;
+    struct coap_s 		*coap;	/* CoAP library handle */
 
     ns_list_link_t     link;
 } coap_blockwise_payload_s;
