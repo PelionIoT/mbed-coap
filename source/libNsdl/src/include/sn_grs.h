@@ -72,7 +72,7 @@ struct nsdl_s
 	void *(*sn_nsdl_alloc)(uint16_t);
 	void (*sn_nsdl_free)(void*);
 	uint8_t (*sn_nsdl_tx_callback)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
-	uint8_t (*sn_nsdl_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *);
+	uint8_t (*sn_nsdl_rx_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *);
 };
 
 /***** Function prototypes *****/

@@ -140,7 +140,7 @@ int8_t sn_nsdl_destroy(struct nsdl_s *handle)
 }
 
 struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
-							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
+							uint8_t (*sn_nsdl_rx_cb)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *),
 							void *(*sn_nsdl_alloc)(uint16_t),void (*sn_nsdl_free)(void *))
 {
 	/* Check pointers and define function pointers */
@@ -1625,7 +1625,7 @@ static int8_t sn_nsdl_local_rx_function(struct nsdl_s *handle, sn_coap_hdr_s *co
 	}
 
 	/* No messages to wait for, or message was not response to our request */
-	return handle->sn_nsdl_rx_callback(coap_packet_ptr, address_ptr);
+	return handle->sn_nsdl_rx_callback(handle, coap_packet_ptr, address_ptr);
 }
 
 /**

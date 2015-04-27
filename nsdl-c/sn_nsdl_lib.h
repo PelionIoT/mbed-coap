@@ -254,7 +254,7 @@ typedef struct sn_nsdl_bs_ep_info_
  * \return  pointer to created handle structure. NULL if failed
  */
 struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
-							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
+							uint8_t (*sn_nsdl_rx_cb)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *),
 							void *(*sn_nsdl_alloc)(uint16_t),void (*sn_nsdl_free)(void *));
 
 /**
