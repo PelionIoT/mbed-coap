@@ -481,65 +481,18 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
 
 		else
 		{
-			if(coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST ||
-					coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT)
+			if(coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST)
 			{
-				resource_temp_ptr = handle->sn_grs_alloc(sizeof(sn_nsdl_resource_info_s));
-				if(!resource_temp_ptr)
+				handle->sn_grs_rx_callback(nsdl_handle, coap_packet_ptr, src_addr_ptr);
+
+				if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr)
 				{
-					status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-				}
-				else
-				{
-					memset(resource_temp_ptr, 0, sizeof(sn_nsdl_resource_info_s));
-
-					resource_temp_ptr->access = (sn_grs_resource_acl_e)SN_GRS_DEFAULT_ACCESS;
-					resource_temp_ptr->mode = SN_GRS_STATIC;
-
-					resource_temp_ptr->pathlen = coap_packet_ptr->uri_path_len;
-					resource_temp_ptr->path = handle->sn_grs_alloc(resource_temp_ptr->pathlen);
-					if(!resource_temp_ptr->path)
-					{
-						handle->sn_grs_free(resource_temp_ptr);
-						resource_temp_ptr =  0;
-						status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-					}
-					else
-					{
-						memcpy(resource_temp_ptr->path, coap_packet_ptr->uri_path_ptr, resource_temp_ptr->pathlen);
-
-						resource_temp_ptr->resourcelen = coap_packet_ptr->payload_len;
-						resource_temp_ptr->resource = handle->sn_grs_alloc(resource_temp_ptr->resourcelen);
-						if(!resource_temp_ptr->resource)
-						{
-							handle->sn_grs_free(resource_temp_ptr->path);
-							resource_temp_ptr->path = 0;
-							handle->sn_grs_free(resource_temp_ptr);
-							resource_temp_ptr = 0;
-							status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
-						}
-						else
-						{
-
-							memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
-
-							ns_list_add_to_start(&handle->resource_root_list, resource_temp_ptr);
-							++handle->resource_root_count;
-							if(coap_packet_ptr->content_type_ptr)
-							{
-								if(resource_temp_ptr->resource_parameters_ptr)
-								{
-									resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
-								}
-							}
-							status = COAP_MSG_CODE_RESPONSE_CREATED;
-
-						}
-
-					}
-
+					handle->sn_grs_free(coap_packet_ptr->payload_ptr);
+					coap_packet_ptr->payload_ptr = 0;
 				}
 
+				sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
+				return SN_NSDL_SUCCESS;
 			}
 			else
 				status = COAP_MSG_CODE_RESPONSE_NOT_FOUND;
