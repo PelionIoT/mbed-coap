@@ -142,15 +142,6 @@ typedef enum sn_nsdl_oma_device_error_
 	PERIPHERAL_MALFUNCTION = 8
 } sn_nsdl_oma_device_error_t;
 
-
-/**
- * \brief Used protocol
- */
-typedef struct sn_proto_info_
-{
-	sn_nsdl_capab_e proto;				/**< Only COAP is supported */
-} sn_proto_info_s;
-
 /**
  * \brief Defines the resource mode
  */
@@ -199,7 +190,7 @@ typedef struct sn_nsdl_resource_info_
 
 	sn_grs_resource_acl_e 			access;
 
-	uint8_t (*sn_grs_dyn_res_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
+	uint8_t (*sn_grs_dyn_res_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);
 
 	ns_list_link_t					link;
 
@@ -210,8 +201,8 @@ typedef struct sn_nsdl_resource_info_
  */
 typedef struct sn_nsdl_oma_device_
 {
-	sn_nsdl_oma_device_error_t error_code;															/**< Error code. Mandatory. Can be more than one */
-	uint8_t (*sn_oma_device_boot_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);	/**< Device boot callback function. If defined, this is called when reset request is received */
+	sn_nsdl_oma_device_error_t error_code;																			/**< Error code. Mandatory. Can be more than one */
+	uint8_t (*sn_oma_device_boot_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);	/**< Device boot callback function. If defined, this is called when reset request is received */
 
 }sn_nsdl_oma_device_t;
 
