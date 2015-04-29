@@ -130,10 +130,8 @@ int8_t sn_nsdl_destroy(struct nsdl_s *handle)
 	}
 
 	/* Destroy also libCoap and grs part of libNsdl */
-	sn_grs_destroy(handle->grs);
-
 	sn_coap_protocol_destroy(handle->grs->coap);
-
+	sn_grs_destroy(handle->grs);
 	handle->sn_nsdl_free(handle);
 
 	return SN_NSDL_SUCCESS;
