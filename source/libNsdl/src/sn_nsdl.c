@@ -498,7 +498,7 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
 
 	/* Check parameters */
 	if(handle == NULL)
-		return SN_NSDL_FAILURE;
+		return 0;
 
 	/* Allocate and initialize memory for header struct */
 	notification_message_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
@@ -615,7 +615,7 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
 	{
 		handle->sn_nsdl_free(bootstrap_coap_header.options_list_ptr);
 		handle->sn_nsdl_free(uri_query_tmp_ptr);
-		return SN_NSDL_FAILURE;
+		return 0;
 	}
 	memcpy(handle->oma_bs_address_ptr, bootstrap_address_ptr->addr_ptr, handle->oma_bs_address_len);
 	handle->oma_bs_port = bootstrap_address_ptr->port;					/* And port */
