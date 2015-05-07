@@ -15,15 +15,18 @@
 extern "C" {
 #endif
 
+struct coap_s
+{
+	void *(*sn_coap_protocol_malloc)(uint16_t);
+	void (*sn_coap_protocol_free)(void*);
+
+	uint8_t (*sn_coap_tx_callback)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void*);
+	int8_t (*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *);
+};
+
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
 /* * * * * * * * * * * */
-
-/* Maximum time in seconds of messages to be stored for Acknowledging. This time tells */
-/* how long time User of mbed Device C Client library have time to send Piggy-backed acknowledgement */
-/* message to Request sender. */
-#define SN_COAP_ACK_INFO_MAX_TIME_MSGS_STORED    		20
-#define SN_COAP_ACK_INFO_MAX_COUNT_MESSAGES_SAVED   	10
 
 /* * For Message resending * */
 #define ENABLE_RESENDINGS								1	/**< Enable / Disable resending from library in building */
@@ -84,29 +87,13 @@ typedef struct coap_send_msg_
 
     sn_nsdl_transmit_s *send_msg_ptr;
 
-    ns_list_link_t     link;
+    struct coap_s 		*coap;				/* CoAP library handle */
+    void				*param;				/* Extra parameter that will be passed to TX/RX callback functions */
+
+    ns_list_link_t      link;
 } coap_send_msg_s;
 
 typedef NS_LIST_HEAD(coap_send_msg_s, link) coap_send_msg_list_t;
-
-/* Structure which is stored to Linked list for message acknowledgement purposes */
-typedef struct coap_ack_info_
-{
-    uint32_t            timestamp; /* Tells when duplication information is stored to Linked list */
-
-    uint8_t             addr_len;
-    uint8_t            *addr_ptr;
-    uint16_t            port;
-
-    uint16_t            msg_id;
-
-    uint8_t             token_len;
-    uint8_t            *token_ptr;
-
-    ns_list_link_t     link;
-} coap_ack_info_s;
-
-typedef NS_LIST_HEAD(coap_ack_info_s, link) coap_ack_info_list_t;
 
 /* Structure which is stored to Linked list for message duplication detection purposes */
 typedef struct coap_duplication_info_
@@ -119,8 +106,10 @@ typedef struct coap_duplication_info_
 
     uint16_t            msg_id;
 
+    struct coap_s 		*coap;	/* CoAP library handle */
+
     ns_list_link_t     link;
-} coap_duplication_info_s;
+}coap_duplication_info_s;
 
 typedef NS_LIST_HEAD(coap_duplication_info_s, link) coap_duplication_info_list_t;
 
@@ -130,6 +119,7 @@ typedef struct coap_blockwise_msg_
     uint32_t            timestamp;  /* Tells when Blockwise message is stored to Linked list */
 
     sn_coap_hdr_s		*coap_msg_ptr;
+    struct coap_s 		*coap;		/* CoAP library handle */
 
     ns_list_link_t     link;
 } coap_blockwise_msg_s;
@@ -142,21 +132,17 @@ typedef struct coap_blockwise_payload_
     uint32_t            timestamp; /* Tells when Payload is stored to Linked list */
 
     uint8_t             addr_len;
-    uint8_t            *addr_ptr;
+    uint8_t            	*addr_ptr;
     uint16_t            port;
 
     uint16_t            payload_len;
-    uint8_t            *payload_ptr;
+    uint8_t            	*payload_ptr;
+    struct coap_s 		*coap;	/* CoAP library handle */
 
     ns_list_link_t     link;
 } coap_blockwise_payload_s;
 
 typedef NS_LIST_HEAD(coap_blockwise_payload_s, link) coap_blockwise_payload_list_t;
-
-/**
- * \brief Releases any memory allocated in sn_nsdl_transmit_s
- */
-extern void           sn_coap_builder_release_allocated_send_msg_mem(sn_nsdl_transmit_s *freed_send_msg_ptr);
 
 #ifdef __cplusplus
 }

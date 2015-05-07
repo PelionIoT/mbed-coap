@@ -14,8 +14,10 @@ extern "C" {
 #ifndef SN_COAP_PROTOCOL_H_
 #define SN_COAP_PROTOCOL_H_
 
+#include "sn_coap_header.h"
+
 /**
- * \fn int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
+ * \fn struct coap_s *sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
 		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
 		int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *)
  *
@@ -30,25 +32,27 @@ extern "C" {
  * \param *used_rx_callback_ptr used to return CoAP header struct with status COAP_STATUS_BUILDER_MESSAGE_SENDING_FAILED
  * 		  when re-sendings exceeded. If set to NULL, no error message is returned.
  *
- * \return 	0 if success
- * 			-1 if failed
+ * \return 	Pointer to handle when success
+ * 			Null if failed
  */
 
-extern 	int8_t sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
-										uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
-										int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *));
+extern struct coap_s *sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
+										uint8_t (*used_tx_callback_ptr)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *),
+										int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *));
 
 /**
  * \fn int8_t sn_coap_protocol_destroy(void)
  *
  * \brief Frees all memory from CoAP protocol part
  *
+ * \param *handle Pointer to CoAP library handle
+ *
  * \return Return value is always 0
  */
-extern int8_t 			   sn_coap_protocol_destroy(void);
+extern int8_t sn_coap_protocol_destroy(struct coap_s *handle);
 
 /**
- * \fn int16_t sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
+ * \fn int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
  *
  * \brief Builds Packet data from given CoAP header structure to be sent
  *
@@ -59,6 +63,8 @@ extern int8_t 			   sn_coap_protocol_destroy(void);
  *
  * \param *src_coap_msg_ptr is pointer to source of built Packet data
  *
+ * \param param void pointer that will be passed to tx/rx function callback when those are called.
+ *
  * \return Return value is byte count of built Packet data.\n
  *         Note: If message is blockwised, all payload is not sent at the same time\n
  *         In failure cases:\n
@@ -68,19 +74,23 @@ extern int8_t 			   sn_coap_protocol_destroy(void);
  *         If there is not enough memory (or User given limit exceeded) for storing
  *         resending messages, situation is ignored.
  */
-extern int16_t             sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
+extern int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void* param);
 
 /**
- * \fn sn_coap_hdr_s *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
+ * \fn sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
  *
  * \brief Parses received CoAP message from given Packet data
  *
  * \param *src_addr_ptr is pointer to source address of received CoAP message
  *        (CoAP parser needs that information for Message acknowledgement)
  *
+ * \param *handle Pointer to CoAP library handle
+ *
  * \param packet_data_len is length of given Packet data to be parsed to CoAP message
  *
  * \param *packet_data_ptr is pointer to source of Packet data to be parsed to CoAP message
+ *
+ * \param param void pointer that will be passed to tx/rx function callback when those are called.
  *
  * \return Return value is pointer to parsed CoAP message structure. This structure includes also coap_status field.\n
  *         In following failure cases NULL is returned:\n
@@ -88,7 +98,7 @@ extern int16_t             sn_coap_protocol_build(sn_nsdl_addr_s *dst_addr_ptr, 
  *          -Failure in parsed header of non-confirmable message\ŋ
  *          -Out of memory (malloc() returns NULL)
  */
-extern sn_coap_hdr_s      *sn_coap_protocol_parse(sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
+extern sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr, void*);
 
 /**
  * \fn int8_t sn_coap_protocol_exec(uint32_t current_time)
@@ -160,51 +170,6 @@ extern int8_t			   sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_siz
  * \brief If re-transmissions are enabled, this function removes all messages from the retransmission queue.
  */
 extern void 			   sn_coap_protocol_clear_retransmission_buffer(void);
-
-
-/* * * Manual registration functions * * */
-
-
-/**
- * \fn int8_t sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr)
- *
- * \brief Builds RD registration request packet
- *
- * \param *coap_hdr_ptr is destination for built Packet data
- * \param *endpoint_info_ptr pointer to struct that contains endpoint info parameters
- *
- * \return Return value 0 given on success. In failure cases:\n
- *          -1 = Failure
- */
-extern int8_t 			   sn_coap_register(sn_coap_hdr_s *coap_hdr_ptr, registration_info_t *endpoint_info_ptr);
-
-/**
- * \fn int8_t sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
- *
- * \brief Builds RD update request packet
- *
- * \param *coap_hdr_ptr is destination for built Packet data
- * \param *location The location returned when registering with the RD
- * \param length length of the location
- *
- * \return Return value 0 given on success. In failure cases:\n
- *          -1 = Failure
- */
-extern int8_t 			   sn_coap_register_update(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length);
-
-/**
- * \fn int8_t sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length)
- *
- * \brief Builds RD de-registrtion request packet
- *
- * \param *coap_hdr_ptr is destination for built Packet data
- * \param *location The location returned when registering with the RD
- * \param length length of the location
- *
- * \return Return value 0 given on success. In failure cases:\n
- *          -1 = Failure
- */
-extern int8_t 			   sn_coap_deregister(sn_coap_hdr_s *coap_hdr_ptr, uint8_t *location, uint8_t length);
 
 #endif /* SN_COAP_PROTOCOL_H_ */
 

@@ -16,10 +16,11 @@
 extern "C" {
 #endif
 
-#define SN_NSDL_CONST_MEMORY_ATTRIBUTE
-
 #define SN_NSDL_ENDPOINT_NOT_REGISTERED  0
 #define SN_NSDL_ENDPOINT_IS_REGISTERED   1
+
+/* Handle structure */
+struct nsdl_s;
 
 /**
  * \brief Received device server security
@@ -99,15 +100,6 @@ typedef struct sn_nsdl_sent_messages_
 } sn_nsdl_sent_messages_s;
 
 /**
- * \brief Function pointers used for memory allocation and freeing
- */
-typedef struct sn_nsdl_mem_
-{
-	void *(*sn_nsdl_alloc)(uint16_t);
-	void (*sn_nsdl_free)(void *);
-} sn_nsdl_mem_s;
-
-/**
  * \brief Includes resource path
  */
 typedef struct sn_grs_resource_
@@ -149,15 +141,6 @@ typedef enum sn_nsdl_oma_device_error_
 	IP_CONN_FAILURE = 7,
 	PERIPHERAL_MALFUNCTION = 8
 } sn_nsdl_oma_device_error_t;
-
-
-/**
- * \brief Used protocol
- */
-typedef struct sn_proto_info_
-{
-	sn_nsdl_capab_e proto;				/**< Only COAP is supported */
-} sn_proto_info_s;
 
 /**
  * \brief Defines the resource mode
@@ -207,7 +190,7 @@ typedef struct sn_nsdl_resource_info_
 
 	sn_grs_resource_acl_e 			access;
 
-	uint8_t (*sn_grs_dyn_res_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);
+	uint8_t (*sn_grs_dyn_res_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);
 
 	ns_list_link_t					link;
 
@@ -218,8 +201,8 @@ typedef struct sn_nsdl_resource_info_
  */
 typedef struct sn_nsdl_oma_device_
 {
-	sn_nsdl_oma_device_error_t error_code;															/**< Error code. Mandatory. Can be more than one */
-	uint8_t (*sn_oma_device_boot_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_proto_info_s *);	/**< Device boot callback function. If defined, this is called when reset request is received */
+	sn_nsdl_oma_device_error_t error_code;																			/**< Error code. Mandatory. Can be more than one */
+	uint8_t (*sn_oma_device_boot_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);	/**< Device boot callback function. If defined, this is called when reset request is received */
 
 }sn_nsdl_oma_device_t;
 
@@ -246,7 +229,7 @@ typedef struct sn_nsdl_bs_ep_info_
 
 
 /**
- * \fn extern int8_t sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+ * \fn struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
  *							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
  *							sn_nsdl_mem_s *sn_memory)
  *
@@ -259,75 +242,80 @@ typedef struct sn_nsdl_bs_ep_info_
  *
  * \param *sn_memory			Memory structure which includes function pointers to the allocation and free functions.
  *
- * \return	0	Success
- * \return	-1	Failure
+ * \return  pointer to created handle structure. NULL if failed
  */
-extern int8_t sn_nsdl_init(uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
-							uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
-							sn_nsdl_mem_s *sn_memory);
+struct nsdl_s *sn_nsdl_init	(uint8_t (*sn_nsdl_tx_cb)(struct nsdl_s *, sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+							uint8_t (*sn_nsdl_rx_cb)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *),
+							void *(*sn_nsdl_alloc)(uint16_t),void (*sn_nsdl_free)(void *));
 
 /**
- * \fn extern uint8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr)
+ * \fn extern uint16_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
  *
  * \brief Registers endpoint to mbed Device Server.
- *
+ * \param *handle				Pointer to nsdl-library handle
  * \param *endpoint_info_ptr	Contains endpoint information.
  *
- * \return	0	Success
- * \return	-1	Failure
+ * \return registration message ID, 0 if failed
  */
-extern int8_t sn_nsdl_register_endpoint(sn_nsdl_ep_parameters_s *endpoint_info_ptr);
+extern uint16_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
 
 /**
- * \fn extern int8_t sn_nsdl_unregister_endpoint(void)
+ * \fn extern uint16_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle)
  *
  * \brief Sends unregister-message to mbed Device Server.
  *
- * \return	0	Success
- * \return	-1	Failure
+ * \param *handle				Pointer to nsdl-library handle
+ *
+ * \return	unregistration message ID, 0 if failed
  */
-extern int8_t sn_nsdl_unregister_endpoint(void);
+extern uint16_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle);
 
 /**
- * \fn extern int8_t sn_nsdl_update_registration(sn_nsdl_ep_parameters_s *endpoint_parameters_ptr);
+ * \fn extern uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8_t lt_len);
  *
  * \brief Update the registration with mbed Device Server.
  *
- * \param *endpoint_info_ptr	Contains endpoint information.
+ * \param *handle	Pointer to nsdl-library handle
+ * \param *lt_ptr	Pointer to lifetime value string in ascii form, eg. "1200"
+ * \param lt_len	Length of the lifetime string
  *
- * \return	0	Success
- * \return	-1	Failure
+ * \return	registration update message ID, 0 if failed
  */
-extern int8_t sn_nsdl_update_registration(uint8_t *lt_ptr, uint8_t lt_len);
+extern uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8_t lt_len);
 
 /**
- * \fn extern int8_t sn_nsdl_is_ep_registered(void)
+ * \fn extern int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle)
  *
  * \brief Checks if endpoint is registered.
+ *
+ * \param *handle	Pointer to nsdl-library handle
  *
  * \return 1 Endpoint registration is done successfully
  * \return 0 Endpoint is not registered
  */
-extern int8_t sn_nsdl_is_ep_registered(void);
+extern int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle);
 
 /**
- * \fn extern void sn_nsdl_nsp_lost(void);
+ * \fn extern void sn_nsdl_nsp_lost(struct nsdl_s *handle);
  *
  * \brief A function to inform mbed Device C client library if application detects a fault in mbed Device Server registration.
  *
+ * \param *handle	Pointer to nsdl-library handle
+ *
  * After calling this function sn_nsdl_is_ep_registered() will return "not registered".
  */
-extern void sn_nsdl_nsp_lost(void);
+extern void sn_nsdl_nsp_lost(struct nsdl_s *handle);
 
 /**
- * \fn extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
+ * \fn extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
  *													uint8_t *payload_ptr, uint16_t payload_len,
  *													uint8_t *observe_ptr, uint8_t observe_len,
- *													sn_coap_msg_type_e message_type, uint8_t content_type)
+ * 													sn_coap_msg_type_e message_type, uint8_t content_type)
  *
  *
  * \brief Sends observation message to mbed Device Server
  *
+ * \param 	*handle			Pointer to nsdl-library handle
  * \param	*token_ptr		Pointer to token to be used
  * \param	token_len		Token length
  * \param	*payload_ptr	Pointer to payload to be sent
@@ -340,7 +328,7 @@ extern void sn_nsdl_nsp_lost(void);
  * \return	!0	Success, observation messages message ID
  * \return	0	Failure
  */
-extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_t token_len,
+extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
 													uint8_t *payload_ptr, uint16_t payload_len,
 													uint8_t *observe_ptr, uint8_t observe_len,
 													sn_coap_msg_type_e message_type, uint8_t content_type);
@@ -357,25 +345,27 @@ extern uint16_t sn_nsdl_send_observation_notification(uint8_t *token_ptr, uint8_
 extern char *sn_nsdl_get_version(void);
 
 /**
- * \fn extern int8_t sn_nsdl_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src)
+ * \fn extern int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src)
  *
  * \brief To push CoAP packet to mbed Device C Client library
  *
  * Used to push an CoAP packet to mbed Device C Client library for processing.
  *
- * \param	*packet  Pointer to a uint8_t array containing the packet (including the CoAP headers).
+ * \param 	*handle	 	Pointer to nsdl-library handle
+ *
+ * \param	*packet  	Pointer to a uint8_t array containing the packet (including the CoAP headers).
  *      After successful execution this array may contain the response packet.
  *
  * \param	*packet_len	Pointer to length of the packet. After successful execution this array may contain the length
  *      of the response packet.
  *
- * \param	*src	Pointer to packet source address information. After successful execution this array may contain
+ * \param	*src		Pointer to packet source address information. After successful execution this array may contain
  *      the destination address of the response packet.
  *
  * \return	0	Success
  * \return	-1	Failure
  */
-extern int8_t sn_nsdl_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src);
+extern int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src);
 
 /**
  * \fn extern int8_t sn_nsdl_exec(uint32_t time);
@@ -392,7 +382,7 @@ extern int8_t sn_nsdl_process_coap(uint8_t *packet, uint16_t packet_len, sn_nsdl
 extern int8_t sn_nsdl_exec(uint32_t time);
 
 /**
- * \fn  extern int8_t sn_nsdl_create_resource(sn_nsdl_resource_info_s *res)
+ * \fn  extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
  *
  * \brief Resource creating function.
  *
@@ -407,7 +397,7 @@ extern int8_t sn_nsdl_exec(uint32_t time);
  * \return	-3	Invalid path
  * \return	-4	List adding failure
  */
-extern int8_t sn_nsdl_create_resource(sn_nsdl_resource_info_s *res);
+extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
 
 /**
  * \fn extern int8_t sn_nsdl_update_resource(sn_nsdl_resource_info_s *res)
@@ -417,6 +407,7 @@ extern int8_t sn_nsdl_create_resource(sn_nsdl_resource_info_s *res);
  * Used to update the direct value of a static resource, the callback function pointer of a dynamic resource
  * and access rights of the recource.
  *
+ * \param 	*handle	Pointer to nsdl-library handle
  * \param	*res	Pointer to a structure of type sn_nsdl_resource_info_t that contains the information
  *     about the resource. Only the pathlen and path elements are evaluated along with
  *     either resourcelen and resource or the function pointer.
@@ -424,122 +415,162 @@ extern int8_t sn_nsdl_create_resource(sn_nsdl_resource_info_s *res);
  * \return	0	Success
  * \return	-1	Failure
  */
-extern int8_t sn_nsdl_update_resource(sn_nsdl_resource_info_s *res);
+extern int8_t sn_nsdl_update_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
 
 /**
- * \fn extern int8_t sn_nsdl_delete_resource(uint8_t pathlen, uint8_t *path)
+ * \fn extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint8_t pathlen, uint8_t *path)
  *
  * \brief Resource delete function.
  *
  * Used to delete a resource. If resource has a subresources, these all must also be removed.
  *
+ * \param 	*handle		Pointer to nsdl-library handle
  * \param	pathlen		Contains the length of the path that is to be deleted (excluding possible trailing "\0").
- *
  * \param	*path_ptr	A pointer to an array containing the path.
  *
  * \return	0	Success
  * \return	-1	Failure (No such resource)
  */
-extern int8_t sn_nsdl_delete_resource(uint16_t pathlen, uint8_t *path);
+extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path);
 
 /**
- * \fn extern sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *path)
+ * \fn extern sn_nsdl_resource_info_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
  *
  * \brief Resource get function.
  *
  * Used to get a resource.
  *
+ * \param 	*handle		Pointer to nsdl-library handle
  * \param	pathlen	Contains the length of the path that is to be returned (excluding possible trailing '\0').
- *
  * \param	*path	A pointer to an array containing the path.
  *
  * \return	!NULL	Success, pointer to a sn_nsdl_resource_info_s that contains the resource information\n
  * \return	NULL	Failure
  */
-extern sn_nsdl_resource_info_s *sn_nsdl_get_resource(uint16_t pathlen, uint8_t *path);
+extern sn_nsdl_resource_info_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path);
 
 /**
- * \fn extern sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path)
+ * \fn extern sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
  *
  * \brief Resource list function.
  *
+ * \param 	*handle	Pointer to nsdl-library handle
  * \param	pathlen	Contains the length of the target path (excluding possible trailing '\0').
  *     The length value is not examined if the path itself is a NULL pointer.
- *
  * \param	*path	A pointer to an array containing the path or a NULL pointer.
  *
  * \return	!NULL	A pointer to a sn_grs_resource_list_s structure containing the resource listing.
  * \return	NULL	Failure with an unspecified error
  */
-extern sn_grs_resource_list_s *sn_nsdl_list_resource(uint16_t pathlen, uint8_t *path);
+sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path);
 
 /**
- * \fn extern void sn_nsdl_free_resource_list(sn_grs_resource_list_s *)
+ * \fn extern void sn_nsdl_free_resource_list(struct nsdl_s *handle, sn_grs_resource_list_s *list)
  *
  * \brief Free a resource list obtained from sn_nsdl_list_resource()
  *
  * \param	list	The list to free, or NULL.
  */
-extern void sn_nsdl_free_resource_list(sn_grs_resource_list_s *list);
+void sn_nsdl_free_resource_list(struct nsdl_s *handle, sn_grs_resource_list_s *list);
 
 /**
- * \fn extern int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
+ * \fn extern int8_t sn_nsdl_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
  *
  * \brief Send an outgoing CoAP request.
  *
+ * \param 	*handle	Pointer to nsdl-library handle
  * \param	*address_ptr	Pointer to source address struct
- *
  * \param	*coap_hdr_ptr	Pointer to CoAP message to be sent
  *
  * \return	0	Success
  * \return	-1	Failure
  */
-extern int8_t sn_nsdl_send_coap_message(sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
+extern int8_t sn_nsdl_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr);
 
 /**
- * \fn extern int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type);
+ * \fn extern int8_t set_NSP_address(struct nsdl_s *handle, uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type);
  *
  * \brief This function is used to set the mbed Device Server address given by an application.
  *
+ * \param 	*handle	Pointer to nsdl-library handle
  * \return	0	Success
  * \return	-1	Failed to indicate that internal address pointer is not allocated (call nsdl_init() first).
  */
-extern int8_t set_NSP_address(uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type);
+extern int8_t set_NSP_address(struct nsdl_s *handle, uint8_t *NSP_address, uint16_t port, sn_nsdl_addr_type_e address_type);
 
 /**
- * \fn extern int8_t sn_nsdl_destroy(void);
+ * \fn extern int8_t sn_nsdl_destroy(struct nsdl_s *handle);
  *
+ * \param 	*handle	Pointer to nsdl-library handle
  * \brief This function releases all allocated memory in mbed Device C Client library.
  */
-extern int8_t sn_nsdl_destroy(void);
+extern int8_t sn_nsdl_destroy(struct nsdl_s *handle);
 
 /**
- * \fn extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
+ * \fn extern uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
  *
  * \brief Starts OMA bootstrap process
+ *
+ * \param 	*handle	Pointer to nsdl-library handle
+ *
+ * \return bootstrap message ID, 0 if failed
  */
-extern int8_t sn_nsdl_oma_bootstrap(sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
+extern uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
 
 /**
- * \fn extern omalw_certificate_list_t *sn_nsdl_get_certificates(uint8_t certificate_chain);
+ * \fn extern omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle);
  *
  * \brief Get pointer to received device server certificates
+ *
+ * \param 	*handle	Pointer to nsdl-library handle
  */
-extern omalw_certificate_list_t *sn_nsdl_get_certificates(void);
+extern omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle);
 
 /**
- * \fn extern int8_t sn_nsdl_update_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
+ * \fn extern int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
  *
  * \brief Updates certificate pointers to resource server.
+ *
+ * \param 	*handle	Pointer to nsdl-library handle
  */
-extern int8_t sn_nsdl_update_certificates(omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
+extern int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
 
 /**
- * \fn extern int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr);
+ * \fn extern int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr);
  *
  * \brief Creates new device object resource
+ *
+ * \param 	*handle	Pointer to nsdl-library handle
  */
-extern int8_t sn_nsdl_create_oma_device_object(sn_nsdl_oma_device_t *device_object_ptr);
+extern int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr);
+
+/**
+ * \fn sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
+ *
+ * \brief Prepares generic response packet from a request packet. This function allocates memory for the resulting sn_coap_hdr_s
+ *
+ * \param *handle Pointer to library handle
+ * \param *coap_packet_ptr The request packet pointer
+ * \param msg_code response messages code
+ *
+ * \return *coap_packet_ptr The allocated and pre-filled response packet pointer
+ * 			NULL	Error in parsing the request
+ *
+ */
+extern sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code);
+
+/**
+ * \fn void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr)
+ *
+ * \brief Releases memory of given CoAP message
+ *
+ *        Note!!! Does not release Payload part
+ *
+ * \param *handle Pointer to CoAP library handle
+ *
+ * \param *freed_coap_msg_ptr is pointer to released CoAP message
+ */
+extern void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr);
 
 #ifdef __cplusplus
 }
