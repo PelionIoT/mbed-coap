@@ -1,17 +1,12 @@
 {
-  "name": "nsdl-c",
-  "version": "0.0.5",
+  "name": "mbed-client",
+  "version": "0.1.1",
   "description": "Nanostack NSDL and COAP library",
   "keywords": [
     "coap",
     "nanostack"
   ],
-  "author": "Tero Heinonen <tero.heinonen@arm.com>",
-  "repository": {
-    "url": "ssh://git.oulu.arm.com/home/git/repositories/nanomesh/nsdl-c.git",
-    "type": "git"
-  },
-  "homepage": "http://git.oulu.arm.com/gitweb/?p=nanomesh/nsdl-c.git;a=summary",
+  "private": true,
   "license": "Proprietary, all rights reserved.",
   "extraIncludes": [
     "nsdl-c",
@@ -19,7 +14,7 @@
     "source/libCoap/src/include"
   ],
   "dependencies": {
-    "libservice": "ARMmbed/nanomesh-libService#~0.0.3"
+    "mbed-client-libservice": "~2.0.8"
   },
   "targetDependencies": {}
 }
