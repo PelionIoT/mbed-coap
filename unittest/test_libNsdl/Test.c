@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2015 ARM. All rights reserved.
+ */
 /**
  * \file \test_libNsdl\Test.c
  *

@@ -1,11 +1,9 @@
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
 #ifndef GRS_H_
 #define GRS_H_
 
-/*
- * GRS.h
- *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
- */
 
 #ifdef __cplusplus
 extern "C" {

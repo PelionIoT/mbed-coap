@@ -1,9 +1,11 @@
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
+
 /**
  * \file sn_coap_header.h
  *
  * \brief CoAP C-library User header interface header file
- *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  */
 
 #ifndef SN_COAP_HEADER_H_

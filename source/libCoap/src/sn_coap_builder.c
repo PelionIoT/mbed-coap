@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
+
 /**
  * \file sn_coap_builder.c
  *
@@ -5,7 +9,6 @@
  *
  * Functionality: Builds CoAP message
  *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  */
 
 /* * * * * * * * * * * * * * */

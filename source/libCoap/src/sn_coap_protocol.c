@@ -1,11 +1,13 @@
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
+
 /**
  * \file sn_coap_protocol.c
  *
  * \brief CoAP Protocol implementation
  *
  * Functionality: CoAP Protocol
- *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  *
  */
 

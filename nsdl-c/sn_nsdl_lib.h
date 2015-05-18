@@ -1,9 +1,12 @@
-/**
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
+
+ /**
  * \file sn_nsdl_lib.h
  *
  * \brief NanoService Devices Library header file
  *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  *
  */
 
