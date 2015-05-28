@@ -33,10 +33,10 @@
 #define SN_NSDL_EP_REGISTER_MESSAGE		1
 #define SN_NSDL_EP_UPDATE_MESSAGE		2
 
+#define SN_NSDL_MSG_UNDEFINED			0
 #define	SN_NSDL_MSG_REGISTER			1
 #define SN_NSDL_MSG_UNREGISTER			2
 #define SN_NSDL_MSG_UPDATE				3
-#define SN_NSDL_MSG_EVENT				4
 
 /* Constants */
 static uint8_t	 	ep_name_parameter_string[] 	= {'e','p','='}; 		/* Endpoint name. A unique name for the registering node in a domain.  */
@@ -621,7 +621,7 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
 	handle->oma_bs_port = bootstrap_address_ptr->port;					/* And port */
 
 	/* Send message */
-	message_id = sn_nsdl_send_coap_message(handle, bootstrap_address_ptr, &bootstrap_coap_header);
+	message_id = sn_nsdl_internal_coap_send(handle, &bootstrap_coap_header, bootstrap_address_ptr, SN_NSDL_MSG_UNDEFINED);
 
 	/* Free allocated memory */
 	handle->sn_nsdl_free(uri_query_tmp_ptr);
