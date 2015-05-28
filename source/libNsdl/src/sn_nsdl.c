@@ -1705,7 +1705,7 @@ int8_t set_NSP_address(struct nsdl_s *handle, uint8_t *NSP_address, uint16_t por
 {
 
 	/* Check parameters and source pointers */
-	if(!handle->nsp_address_ptr || !NSP_address || !handle)
+	if(!handle || !handle->nsp_address_ptr || !NSP_address)
 	{
 		return SN_NSDL_FAILURE;
 	}
