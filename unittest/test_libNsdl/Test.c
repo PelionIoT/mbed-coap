@@ -21,9 +21,9 @@
 void fill_with_random(uint8_t *ptr, uint16_t len);
 void *own_alloc(uint16_t size);
 void own_free(void *ptr);
-uint8_t nsdl_tx_dummy(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr);
-uint8_t nsdl_rx_dummy(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr);
-uint8_t dynamic_callback(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr, sn_proto_info_s *protocol_ptr);
+uint8_t nsdl_tx_dummy(struct nsdl_s *, sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *);
+uint8_t nsdl_rx_dummy(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *);
+uint8_t dynamic_callback(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr, sn_nsdl_capab_e protocol);
 static void init_temp_variables(void);
 
 static uint8_t res1_path[] = {"test/res1"};
@@ -74,6 +74,8 @@ static uint16_t message_temp_len = 0;
 static uint8_t *message_temp_ptr = 0;
 static sn_nsdl_addr_s *address_temp_ptr = 0;
 
+struct nsdl_s *handle;
+
 /* Unity test code starts */
 void setUp(void)
 {
@@ -98,43 +100,26 @@ void tearDown(void)
  */
 void test_libnsdl_init(void)
 {
-	int8_t ret_val;
-	sn_nsdl_mem_s memory;
-
-	memory.sn_nsdl_alloc = NULL;
-	memory.sn_nsdl_free = NULL;
-
 	/* Memory struct contains null */
-	ret_val = sn_nsdl_init(&nsdl_tx_dummy, &nsdl_rx_dummy, &memory);
-	TEST_ASSERT_EQUAL(-1, ret_val);
+	handle = sn_nsdl_init(&nsdl_tx_dummy, &nsdl_rx_dummy, NULL, NULL);
+	TEST_ASSERT_NULL(handle);
 
-	memory.sn_nsdl_alloc = &own_alloc;
+	handle = sn_nsdl_init(&nsdl_tx_dummy, &nsdl_rx_dummy, &own_alloc, NULL);
+	TEST_ASSERT_NULL(handle);
 
-	ret_val = sn_nsdl_init(&nsdl_tx_dummy, &nsdl_rx_dummy, &memory);
-	TEST_ASSERT_EQUAL(-1, ret_val);
-
-	memory.sn_nsdl_alloc = NULL;
-	memory.sn_nsdl_free = &own_free;
-
-	ret_val = sn_nsdl_init(&nsdl_tx_dummy, &nsdl_rx_dummy, &memory);
-	TEST_ASSERT_EQUAL(-1, ret_val);
-
-	memory.sn_nsdl_alloc = &own_alloc;
-	memory.sn_nsdl_free = &own_free;
+	handle = sn_nsdl_init(&nsdl_tx_dummy, &nsdl_rx_dummy, NULL, &own_free);
+	TEST_ASSERT_NULL(handle);
 
 	/* One of parameters is null */
-	ret_val = sn_nsdl_init(NULL, &nsdl_rx_dummy, &memory);
-	TEST_ASSERT_EQUAL(-1, ret_val);
+	handle = sn_nsdl_init(NULL, &nsdl_rx_dummy, &own_alloc, &own_free);
+	TEST_ASSERT_NULL(handle);
 
-	ret_val = sn_nsdl_init(&nsdl_tx_dummy, NULL, &memory);
-	TEST_ASSERT_EQUAL(-1, ret_val);
-
-	ret_val = sn_nsdl_init(&nsdl_tx_dummy, &nsdl_rx_dummy, NULL);
-	TEST_ASSERT_EQUAL(-1, ret_val);
+	handle = sn_nsdl_init(&nsdl_tx_dummy, NULL, &own_alloc, &own_free);
+	TEST_ASSERT_NULL(handle);
 
 	/* OK case */
-	ret_val = sn_nsdl_init(&nsdl_tx_dummy, &nsdl_rx_dummy, &memory);
-	TEST_ASSERT_EQUAL(0, ret_val);
+	handle = sn_nsdl_init(&nsdl_tx_dummy, &nsdl_rx_dummy, &own_alloc, &own_free);
+	TEST_ASSERT_NOT_NULL(handle);
 }
 
 /**
@@ -180,7 +165,7 @@ void test_libnsdl_create_resource(void)
 	resource.resourcelen = sizeof(res1_content)-1;
 	resource.resource_parameters_ptr = &resource_parameters;
 
-	ret_val = sn_nsdl_create_resource(&resource);
+	ret_val = sn_nsdl_create_resource(handle, &resource);
 	TEST_ASSERT_EQUAL(0, ret_val);
 
 
@@ -191,7 +176,7 @@ void test_libnsdl_create_resource(void)
 	resource.resource = res2_content;
 	resource.resourcelen = sizeof(res2_content)-1;
 
-	ret_val = sn_nsdl_create_resource(&resource);
+	ret_val = sn_nsdl_create_resource(handle, &resource);
 	TEST_ASSERT_EQUAL(0, ret_val);
 
 
@@ -202,7 +187,7 @@ void test_libnsdl_create_resource(void)
 	resource.resource = res3_content;
 	resource.resourcelen = sizeof(res3_content)-1;
 
-	ret_val = sn_nsdl_create_resource(&resource);
+	ret_val = sn_nsdl_create_resource(handle, &resource);
 	TEST_ASSERT_EQUAL(0, ret_val);
 
 
@@ -213,7 +198,7 @@ void test_libnsdl_create_resource(void)
 	resource.resource = res4_content;
 	resource.resourcelen = sizeof(res4_content)-1;
 
-	ret_val = sn_nsdl_create_resource(&resource);
+	ret_val = sn_nsdl_create_resource(handle, &resource);
 	TEST_ASSERT_EQUAL(0, ret_val);
 
 
@@ -227,17 +212,20 @@ void test_libnsdl_create_resource(void)
 	resource.resourcelen = sizeof(res5_content)-1;
 	resource.sn_grs_dyn_res_callback = &dynamic_callback;
 
-	ret_val = sn_nsdl_create_resource(&resource);
+	ret_val = sn_nsdl_create_resource(handle, &resource);
 	TEST_ASSERT_EQUAL(0, ret_val);
 
 	/*** Negative test cases ***/
 
 	/* Already exists */
-	ret_val = sn_nsdl_create_resource(&resource);
+	ret_val = sn_nsdl_create_resource(handle, &resource);
 	TEST_ASSERT_EQUAL(-2, ret_val);
 
 	/* Null pointer */
-	ret_val = sn_nsdl_create_resource(NULL);
+	ret_val = sn_nsdl_create_resource(handle, NULL);
+	TEST_ASSERT_EQUAL(-1, ret_val);
+
+	ret_val = sn_nsdl_create_resource(NULL, &resource);
 	TEST_ASSERT_EQUAL(-1, ret_val);
 
 	resource.path = NULL;
@@ -245,13 +233,13 @@ void test_libnsdl_create_resource(void)
 	resource.resource = res_negative_content;
 	resource.resourcelen = sizeof(res_negative_content)-1;
 
-	ret_val = sn_nsdl_create_resource(&resource);
+	ret_val = sn_nsdl_create_resource(handle, &resource);
 	TEST_ASSERT_EQUAL(-3, ret_val);
 
 	resource.path = res_negative_path;
 	resource.pathlen = 0;
 
-	ret_val = sn_nsdl_create_resource(&resource);
+	ret_val = sn_nsdl_create_resource(handle, &resource);
 	TEST_ASSERT_EQUAL(-3, ret_val);
 
 }
@@ -267,7 +255,7 @@ void test_libnsdl_list_resources(void)
 {
 	sn_grs_resource_list_s *resource_list_ptr;
 
-	resource_list_ptr = sn_nsdl_list_resource(0,0);
+	resource_list_ptr = sn_nsdl_list_resource(handle, 0,0);
 
 	TEST_ASSERT_EQUAL(5, resource_list_ptr->res_count);
 
@@ -295,14 +283,17 @@ void test_libnsdl_get_resource(void)
 	sn_nsdl_resource_info_s *res_ptr;
 
 	/* With null pointer */
-	res_ptr = sn_nsdl_get_resource(0, res1_path);
+	res_ptr = sn_nsdl_get_resource(handle, 0, res1_path);
 	TEST_ASSERT_NULL(res_ptr);
 
-	res_ptr = sn_nsdl_get_resource(sizeof(res1_path)-1, NULL);
+	res_ptr = sn_nsdl_get_resource(handle, sizeof(res1_path)-1, NULL);
+	TEST_ASSERT_NULL(res_ptr);
+
+	res_ptr = sn_nsdl_get_resource(NULL, sizeof(res1_path)-1, res1_path);
 	TEST_ASSERT_NULL(res_ptr);
 
 	/* Ok case, gets resource 1 and checks that path and content are ok */
-	res_ptr = sn_nsdl_get_resource(sizeof(res1_path)-1, res1_path);
+	res_ptr = sn_nsdl_get_resource(handle, sizeof(res1_path)-1, res1_path);
 	TEST_ASSERT_NOT_NULL(res_ptr);
 
 	TEST_ASSERT_EQUAL_INT8_ARRAY(res_ptr->path, res1_path, sizeof(res1_path)-1);
@@ -322,11 +313,14 @@ void test_libnsdl_set_nsp_address(void)
 	int8_t ret_val = 0;
 
 	/* with null pointer */
-	ret_val = set_NSP_address(NULL, NSP_PORT, SN_NSDL_ADDRESS_TYPE_IPV4);
+	ret_val = set_NSP_address(handle, NULL, NSP_PORT, SN_NSDL_ADDRESS_TYPE_IPV4);
+	TEST_ASSERT_EQUAL(-1, ret_val);
+
+	ret_val = set_NSP_address(NULL, address, NSP_PORT, SN_NSDL_ADDRESS_TYPE_IPV4);
 	TEST_ASSERT_EQUAL(-1, ret_val);
 
 	/* OK case */
-	ret_val = set_NSP_address(address, NSP_PORT, SN_NSDL_ADDRESS_TYPE_IPV4);
+	ret_val = set_NSP_address(handle, address, NSP_PORT, SN_NSDL_ADDRESS_TYPE_IPV4);
 	TEST_ASSERT_EQUAL(0, ret_val);
 }
 
@@ -348,12 +342,15 @@ void test_libnsdl_register(void)
 	memset(&endpoint_info, 0, sizeof(sn_nsdl_ep_parameters_s));
 
 	/* With null pointer */
-	ret_val = sn_nsdl_register_endpoint(NULL);
-	TEST_ASSERT_EQUAL(-1, ret_val);
+	ret_val = sn_nsdl_register_endpoint(handle, NULL);
+	TEST_ASSERT_EQUAL(0, ret_val);
+
+	ret_val = sn_nsdl_register_endpoint(NULL, &endpoint_info);
+	TEST_ASSERT_EQUAL(0, ret_val);
 
 	/* OK case */
-	ret_val = sn_nsdl_register_endpoint(&endpoint_info);
-	TEST_ASSERT_EQUAL(0, ret_val);
+	ret_val = sn_nsdl_register_endpoint(handle, &endpoint_info);
+	TEST_ASSERT_NOT_EQUAL(0, ret_val);
 
 	/* Check address */
 	TEST_ASSERT_EQUAL(NSP_PORT, address_temp_ptr->port);
@@ -387,7 +384,7 @@ void test_libnsdl_get_requests_to_resources(void)
 	address_struct.port = NSP_PORT;
 
 	/* Get to resource that is allowed */
-	ret_val = sn_nsdl_process_coap(get_message, sizeof(get_message), &address_struct);
+	ret_val = sn_nsdl_process_coap(handle, get_message, sizeof(get_message), &address_struct);
 
 	TEST_ASSERT_EQUAL(0, ret_val);
 	TEST_ASSERT_EQUAL(sizeof(get_response), message_temp_len);
@@ -397,7 +394,7 @@ void test_libnsdl_get_requests_to_resources(void)
 
 	/* Get to resource that is not allowed */
 	get_message[13] = 0x32;
-	ret_val = sn_nsdl_process_coap(get_message, sizeof(get_message), &address_struct);
+	ret_val = sn_nsdl_process_coap(handle, get_message, sizeof(get_message), &address_struct);
 	get_message[13] = 0x31;
 
 	TEST_ASSERT_EQUAL(0, ret_val);
@@ -427,21 +424,21 @@ void test_libnsdl_put_requests_to_resources(void)
 	address_struct.port = NSP_PORT;
 
 	/* Put to resource that is allowed */
-	ret_val = sn_nsdl_process_coap(put_message, sizeof(put_message), &address_struct);
+	ret_val = sn_nsdl_process_coap(handle, put_message, sizeof(put_message), &address_struct);
 
 	TEST_ASSERT_EQUAL(0, ret_val);
 	TEST_ASSERT_EQUAL(sizeof(response_changed), message_temp_len);
 	TEST_ASSERT_EQUAL_INT8_ARRAY(response_changed, message_temp_ptr, message_temp_len);
 
 	//get resource and read res value
-	res_ptr = sn_nsdl_get_resource(sizeof(res2_path)-1, res2_path);
+	res_ptr = sn_nsdl_get_resource(handle, sizeof(res2_path)-1, res2_path);
 	TEST_ASSERT_EQUAL_INT8_ARRAY(message_payload, res_ptr->resource, sizeof(message_payload));
 
 	init_temp_variables();
 
 	/* Put to resource that is not allowed */
 	put_message[13] = 0x31;
-	ret_val = sn_nsdl_process_coap(put_message, sizeof(put_message), &address_struct);
+	ret_val = sn_nsdl_process_coap(handle, put_message, sizeof(put_message), &address_struct);
 	put_message[13] = 0x32;
 
 	TEST_ASSERT_EQUAL(0, ret_val);
@@ -471,21 +468,21 @@ void test_libnsdl_post_requests_to_resources(void)
 	address_struct.port = NSP_PORT;
 
 	/* Post to resource that is allowed */
-	ret_val = sn_nsdl_process_coap(post_message, sizeof(post_message), &address_struct);
+	ret_val = sn_nsdl_process_coap(handle, post_message, sizeof(post_message), &address_struct);
 
 	TEST_ASSERT_EQUAL(0, ret_val);
 	TEST_ASSERT_EQUAL(sizeof(response_changed), message_temp_len);
 	TEST_ASSERT_EQUAL_INT8_ARRAY(response_changed, message_temp_ptr, message_temp_len);
 
 	//get resource and read res value
-	res_ptr = sn_nsdl_get_resource(sizeof(res3_path)-1, res3_path);
+	res_ptr = sn_nsdl_get_resource(handle, sizeof(res3_path)-1, res3_path);
 	TEST_ASSERT_EQUAL_INT8_ARRAY(message_payload, res_ptr->resource, sizeof(message_payload));
 
 	init_temp_variables();
 
 	/* Post to resource that is not allowed */
 	post_message[13] = 0x32;
-	ret_val = sn_nsdl_process_coap(post_message, sizeof(post_message), &address_struct);
+	ret_val = sn_nsdl_process_coap(handle, post_message, sizeof(post_message), &address_struct);
 	post_message[13] = 0x33;
 
 	TEST_ASSERT_EQUAL(0, ret_val);
@@ -514,60 +511,14 @@ void test_libnsdl_delete_requests_to_resources(void)
 	address_struct.addr_len = 16;
 	address_struct.port = NSP_PORT;
 
-	/* Delete to resource that is allowed */
-	ret_val = sn_nsdl_process_coap(delete_message, sizeof(delete_message), &address_struct);
-
-	TEST_ASSERT_EQUAL(0, ret_val);
-	TEST_ASSERT_EQUAL(sizeof(response_deleted), message_temp_len);
-	TEST_ASSERT_EQUAL_INT8_ARRAY(response_deleted, message_temp_ptr, message_temp_len);
-
-	//get resource and read res value
-	res_ptr = sn_nsdl_get_resource(sizeof(res4_path)-1, res4_path);
-	TEST_ASSERT_NULL(res_ptr);
-
-	init_temp_variables();
-
 	/* Delete to resource that is not allowed */
 	delete_message[13] = 0x33;
-	ret_val = sn_nsdl_process_coap(delete_message, sizeof(delete_message), &address_struct);
+	ret_val = sn_nsdl_process_coap(handle, delete_message, sizeof(delete_message), &address_struct);
 	delete_message[13] = 0x34;
 
 	TEST_ASSERT_EQUAL(0, ret_val);
 	TEST_ASSERT_EQUAL(sizeof(response_not_allowed), message_temp_len);
 	TEST_ASSERT_EQUAL_INT8_ARRAY(response_not_allowed, message_temp_ptr, message_temp_len);
-
-	init_temp_variables();
-}
-
-/**
- * \fn void test_libnsdl_create_resource_with_post(void)
- *
- * \brief Sends coap message POST to create resource
- *
- */
-void test_libnsdl_create_resource_with_post(void)
-{
-	sn_nsdl_addr_s address_struct;
-	int8_t ret_val = 0;
-	sn_nsdl_resource_info_s *res_ptr;
-
-	address_struct.addr_ptr = address;
-	address_struct.addr_len = 16;
-	address_struct.port = NSP_PORT;
-
-	/* Create resource */
-	post_message[13] = 0x34;
-	ret_val = sn_nsdl_process_coap(post_message, sizeof(post_message), &address_struct);
-	post_message[13] = 0x33;
-
-	TEST_ASSERT_EQUAL(0, ret_val);
-	TEST_ASSERT_EQUAL(sizeof(response_created), message_temp_len);
-	TEST_ASSERT_EQUAL_INT8_ARRAY(response_created, message_temp_ptr, message_temp_len);
-
-	//get resource and read res value
-	res_ptr = sn_nsdl_get_resource(sizeof(res4_path)-1, res4_path);
-	TEST_ASSERT_NOT_NULL(res_ptr);
-	TEST_ASSERT_EQUAL_INT8_ARRAY(message_payload, res_ptr->resource, sizeof(message_payload));
 
 	init_temp_variables();
 }
@@ -597,12 +548,12 @@ void test_libnsdl_update_resource_value(void)
 	resource.resourcelen = sizeof(message_payload);
 	resource.resource_parameters_ptr = &resource_parameters;
 
-	ret_val = sn_nsdl_update_resource(&resource);
+	ret_val = sn_nsdl_update_resource(handle, &resource);
 
 	TEST_ASSERT_EQUAL(0, ret_val);
 
 	//get resource and read res value
-	res_ptr = sn_nsdl_get_resource(sizeof(res1_path)-1, res1_path);
+	res_ptr = sn_nsdl_get_resource(handle, sizeof(res1_path)-1, res1_path);
 	TEST_ASSERT_NOT_NULL(res_ptr);
 	TEST_ASSERT_EQUAL_INT8_ARRAY(message_payload, res_ptr->resource, sizeof(message_payload));
 
@@ -619,12 +570,12 @@ void test_libnsdl_delete_resource(void)
 	sn_nsdl_resource_info_s *res_ptr;
 	int8_t ret_val;
 
-	ret_val = sn_nsdl_delete_resource(sizeof(res4_path)-1, res4_path);
+	ret_val = sn_nsdl_delete_resource(handle, sizeof(res4_path)-1, res4_path);
 
 	TEST_ASSERT_EQUAL(0, ret_val);
 
 	//get resource and read res value
-	res_ptr = sn_nsdl_get_resource(sizeof(res4_path)-1, res4_path);
+	res_ptr = sn_nsdl_get_resource(handle, sizeof(res4_path)-1, res4_path);
 	TEST_ASSERT_NULL(res_ptr);
 }
 
@@ -649,7 +600,7 @@ void own_free(void *ptr)
 	free(ptr);
 }
 
-uint8_t nsdl_tx_dummy(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr)
+uint8_t nsdl_tx_dummy(struct nsdl_s *handle, sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr)
 {
 	message_temp_ptr = malloc(data_len);
 	memcpy(message_temp_ptr, data_ptr, data_len);
@@ -675,12 +626,12 @@ uint8_t nsdl_tx_dummy(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data
 #endif
 }
 
-uint8_t nsdl_rx_dummy(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr)
+uint8_t nsdl_rx_dummy(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr)
 {
 
 }
 
-uint8_t dynamic_callback(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr, sn_proto_info_s *protocol_ptr)
+uint8_t dynamic_callback(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr, sn_nsdl_capab_e protocol)
 {
 
 }

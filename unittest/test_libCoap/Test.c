@@ -48,9 +48,11 @@ static uint8_t coap_message_wrong_code_7[4] 	= {0x40, 0xe4, 0x12, 0x34};
 
 void *own_alloc(uint16_t size);
 void own_free(void *ptr);
-uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr);
 
-int8_t rx_callback(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr);
+struct coap_s *handle;
+
+uint8_t tx_function(uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr, void *param);
+int8_t rx_callback(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr, void *param);
 
 /* non-test function declarations */
 void fill_with_random(uint8_t *ptr, uint16_t len);
@@ -69,10 +71,9 @@ void tearDown(void)
 
 void test_libcoap_init(void)
 {
-	uint8_t ret_val = sn_coap_protocol_init(&own_alloc, &own_free, &tx_function, &rx_callback);
-	sn_coap_builder_and_parser_init(&own_alloc, &own_free);
+	handle = sn_coap_protocol_init(&own_alloc, &own_free, &tx_function, &rx_callback);
 
-	TEST_ASSERT_EQUAL(0, ret_val);
+	TEST_ASSERT_NOT_NULL(handle);
 }
 
 
@@ -303,7 +304,7 @@ void test_libcoap_parser_parse_message_without_options(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_no_options), coap_message_no_options);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_no_options), coap_message_no_options, NULL);
 
 	TEST_ASSERT_NOT_NULL(coap_header_ptr);
 
@@ -311,7 +312,7 @@ void test_libcoap_parser_parse_message_without_options(void)
 	TEST_ASSERT_EQUAL(COAP_MSG_CODE_RESPONSE_CHANGED, coap_header_ptr->msg_code);
 	TEST_ASSERT_EQUAL(0x1234, coap_header_ptr->msg_id);
 
-	sn_coap_parser_release_allocated_coap_msg_mem(coap_header_ptr);
+	sn_coap_parser_release_allocated_coap_msg_mem(handle, coap_header_ptr);
 }
 
 /**
@@ -324,7 +325,7 @@ void test_libcoap_parser_parse_message_with_payload_and_token(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_token_payload), coap_message_token_payload);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_token_payload), coap_message_token_payload, NULL);
 
 	TEST_ASSERT_NOT_NULL(coap_header_ptr);
 
@@ -338,7 +339,7 @@ void test_libcoap_parser_parse_message_with_payload_and_token(void)
 	TEST_ASSERT_EQUAL(3, coap_header_ptr->payload_len);
 	TEST_ASSERT_EQUAL_INT8_ARRAY(option_short, coap_header_ptr->payload_ptr, sizeof(option_short));
 
-	sn_coap_parser_release_allocated_coap_msg_mem(coap_header_ptr);
+	sn_coap_parser_release_allocated_coap_msg_mem(handle, coap_header_ptr);
 }
 
 /**
@@ -351,7 +352,7 @@ void test_libcoap_parser_parse_message_with_small_option(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_option_short), coap_message_option_short);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_option_short), coap_message_option_short, NULL);
 
 	TEST_ASSERT_NOT_NULL(coap_header_ptr);
 	TEST_ASSERT_NOT_NULL(coap_header_ptr->options_list_ptr);
@@ -363,7 +364,7 @@ void test_libcoap_parser_parse_message_with_small_option(void)
 	TEST_ASSERT_EQUAL(sizeof(option_short), coap_header_ptr->options_list_ptr->proxy_uri_len);
 	TEST_ASSERT_EQUAL_INT8_ARRAY(option_short, coap_header_ptr->options_list_ptr->proxy_uri_ptr, sizeof(option_short));
 
-	sn_coap_parser_release_allocated_coap_msg_mem(coap_header_ptr);
+	sn_coap_parser_release_allocated_coap_msg_mem(handle, coap_header_ptr);
 }
 
 
@@ -377,7 +378,7 @@ void test_libcoap_parser_parse_message_with_multiple_options(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_multiple_options), coap_message_multiple_options);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_multiple_options), coap_message_multiple_options, NULL);
 
 	TEST_ASSERT_NOT_NULL(coap_header_ptr);
 	TEST_ASSERT_NOT_NULL(coap_header_ptr->options_list_ptr);
@@ -400,7 +401,7 @@ void test_libcoap_parser_parse_message_with_multiple_options(void)
 	TEST_ASSERT_EQUAL_INT8_ARRAY(option_short, coap_header_ptr->token_ptr, sizeof(option_short));
 
 
-	sn_coap_parser_release_allocated_coap_msg_mem(coap_header_ptr);
+	sn_coap_parser_release_allocated_coap_msg_mem(handle, coap_header_ptr);
 }
 
 /*******************************************************************************/
@@ -438,10 +439,13 @@ void test_libcoap_negative_parse_with_null_pointer(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(NULL, sizeof(coap_message_no_options), coap_message_no_options);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, NULL, sizeof(coap_message_no_options), coap_message_no_options, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 
-	coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_no_options), NULL);
+	coap_header_ptr = sn_coap_protocol_parse(NULL, &coap_address, sizeof(coap_message_no_options), coap_message_no_options, NULL);
+	TEST_ASSERT_NULL(coap_header_ptr);
+
+	coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_no_options), NULL, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 }
 
@@ -455,7 +459,7 @@ void test_libcoap_negative_parse_with_coap_packet_len_null(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, 0, coap_message_no_options);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, 0, coap_message_no_options, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 }
 
@@ -469,7 +473,7 @@ void test_libcoap_negative_parse_with_wrong_coap_packet_len(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, (sizeof(coap_message_multiple_options)-1), coap_message_multiple_options);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, (sizeof(coap_message_multiple_options)-1), coap_message_multiple_options, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 }
 
@@ -483,7 +487,7 @@ void test_libcoap_negative_parse_with_wrong_coap_version(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_wrong_version), coap_message_wrong_version);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_wrong_version), coap_message_wrong_version, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 }
 
@@ -497,7 +501,7 @@ void test_libcoap_negative_parse_malformed_coap(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_malformed), coap_message_malformed);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_malformed), coap_message_malformed, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 }
 
@@ -511,7 +515,7 @@ void test_libcoap_negative_parse_empty_con(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_empty_con), coap_message_empty_con);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_empty_con), coap_message_empty_con, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 
 }
@@ -526,7 +530,7 @@ void test_libcoap_negative_parse_wrong_code_1(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_wrong_code_1), coap_message_wrong_code_1);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_wrong_code_1), coap_message_wrong_code_1, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 
 }
@@ -541,7 +545,7 @@ void test_libcoap_negative_parse_wrong_code_6(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_wrong_code_6), coap_message_wrong_code_6);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_wrong_code_6), coap_message_wrong_code_6, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 
 }
@@ -556,7 +560,7 @@ void test_libcoap_negative_parse_wrong_code_7(void)
 {
 	coap_address.addr_ptr = address;
 
-	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(&coap_address, sizeof(coap_message_wrong_code_7), coap_message_wrong_code_7);
+	sn_coap_hdr_s *coap_header_ptr = sn_coap_protocol_parse(handle, &coap_address, sizeof(coap_message_wrong_code_7), coap_message_wrong_code_7, NULL);
 	TEST_ASSERT_NULL(coap_header_ptr);
 
 }
@@ -582,12 +586,12 @@ void own_free(void *ptr)
 	free(ptr);
 }
 
-uint8_t tx_function(sn_nsdl_capab_e protocol, uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr)
+uint8_t tx_function(uint8_t *data_ptr, uint16_t data_len, sn_nsdl_addr_s *address_ptr, void *param)
 {
 	return 0;
 }
 
-int8_t rx_callback(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr)
+int8_t rx_callback(sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *address_ptr, void *param)
 {
 	return 0;
 }
