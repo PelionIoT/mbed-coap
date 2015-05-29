@@ -1,10 +1,13 @@
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
+
 /**
  *
  * \file sn_grs.c
  *
  * \brief General resource server.
  *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  */
 #include <string.h>
 #include <stdlib.h>

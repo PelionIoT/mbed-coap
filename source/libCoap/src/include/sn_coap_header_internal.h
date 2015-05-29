@@ -1,9 +1,12 @@
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
+
 /**
  * \file sn_coap_header_internal.h
  *
  * \brief Header file for CoAP Header part
  *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  */
 
 #ifdef __cplusplus

@@ -1,11 +1,13 @@
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
+
 /**
  *\file sn_coap_parser.c
  *
  * \brief CoAP Header parser
  *
  * Functionality: Parses CoAP Header
- *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  *
  */
 
@@ -259,7 +261,7 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
         /* Option number 15 reserved for payload marker. This is handled as a error! */
         else if(option_number == 15)
         	return -1;
-        
+
         /* Add previous option to option delta and get option number */
         option_number += previous_option_number;
 

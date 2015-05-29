@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011-2014 ARM. All rights reserved.
+ */
+
 /**
  * \file sn_coap_header_check.c
  *
@@ -5,7 +9,6 @@
  *
  * Functionality: Checks validity of CoAP Header
  *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  */
 
 /* * * * INCLUDE FILES * * * */

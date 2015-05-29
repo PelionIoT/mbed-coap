@@ -1,9 +1,12 @@
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
+
 /**
  * \file sn_coap_protocol_internal.h
  *
  * \brief Header file for CoAP Protocol part
  *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  */
 
 #ifndef SN_COAP_PROTOCOL_INTERNAL_H_

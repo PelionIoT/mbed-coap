@@ -1,9 +1,11 @@
-/**
+/*
+ * Copyright (c) 2011-2014 ARM. All rights reserved.
+ */
+
+ /**
  * \file sn_nsdl.h
  *
  * \brief libNsdl generic header file
- *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
  *
  */
 

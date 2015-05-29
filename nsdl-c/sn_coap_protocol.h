@@ -1,10 +1,11 @@
+/*
+ * Copyright (c) 2011-2015 ARM. All rights reserved.
+ */
+
 /**
  * \file sn_coap_protocol.h
  *
  * \brief CoAP C-library User protocol interface header file
- *
- * Copyright (c) 2011 - 2014 ARM. All rights reserved.
- *
  */
 
 #ifdef __cplusplus
