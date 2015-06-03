@@ -116,7 +116,7 @@ typedef enum sn_coap_content_format_
     COAP_CT_XML			        = 41,
     COAP_CT_OCTET_STREAM		= 42,
     COAP_CT_EXI			        = 47,
-    COAP_CT_JSON			    = 50,
+    COAP_CT_JSON			    = 50
 } sn_coap_content_format_e;
 
 /**
