@@ -7,8 +7,6 @@
 *.Scr
 *.uvgui.*
 build/
-developer_release*
-enterprise_release*
 *.dep
 *.ewd
 *.ewt
@@ -25,10 +23,9 @@ Backup*
 *.lib
 *.crf
 *.uvopt
-libEdtls
 *.out
 docs/
-*.zip
-build
 yotta_modules
 yotta_targets
+test/nsdl-c/unittest/coverages
+test/nsdl-c/unittest/results
