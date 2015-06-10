@@ -72,7 +72,7 @@ static int8_t			sn_nsdl_resolve_lwm2m_address				(struct nsdl_s *handle, uint8_t
 static int8_t 			sn_nsdl_process_oma_tlv						(struct nsdl_s *handle, uint8_t *data_ptr, uint16_t data_len);
 static void 			sn_nsdl_check_oma_bs_status					(struct nsdl_s *handle);
 static int8_t 			sn_nsdl_create_oma_device_object_base		(struct nsdl_s *handle, sn_nsdl_oma_device_t *oma_device_setup_ptr, sn_nsdl_oma_binding_and_mode_t binding_and_mode);
-
+static int8_t 			set_endpoint_info							(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
 
 int8_t sn_nsdl_destroy(struct nsdl_s *handle)
 {
@@ -209,8 +209,8 @@ uint16_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_
 	memset(register_message_ptr, 0, sizeof(sn_coap_hdr_s));
 
 	/* Fill message fields -> confirmable post to specified NSP path */
-	register_message_ptr->msg_type 	= 	COAP_MSG_TYPE_CONFIRMABLE;
-	register_message_ptr->msg_code 	= 	COAP_MSG_CODE_REQUEST_POST;
+	register_message_ptr->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+	register_message_ptr->msg_code = COAP_MSG_CODE_REQUEST_POST;
 
 	/* Allocate memory for the extended options list */
 	register_message_ptr->options_list_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_options_list_s));
@@ -239,6 +239,24 @@ uint16_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_
 			return 0;
 		}
 	}
+
+	/* Clean (possible) existing and save new endpoint info to handle */
+	if(set_endpoint_info(handle, endpoint_info_ptr) == -1)
+	{
+		if(register_message_ptr->payload_ptr)
+		{
+			handle->sn_nsdl_free(register_message_ptr->payload_ptr);
+			register_message_ptr->payload_ptr = NULL;
+		}
+
+		register_message_ptr->uri_path_ptr = NULL;
+		register_message_ptr->options_list_ptr->uri_host_ptr = NULL;
+
+		sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
+
+		return 0;
+	}
+
 	/* Build and send coap message to NSP */
 	message_id = sn_nsdl_internal_coap_send(handle, register_message_ptr, handle->nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_REGISTER);
 
@@ -252,66 +270,6 @@ uint16_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_
 	register_message_ptr->options_list_ptr->uri_host_ptr = NULL;
 
 	sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
-
-	if(handle->ep_information_ptr)
-	{
-		if(handle->ep_information_ptr->domain_name_ptr)
-		{
-			handle->sn_nsdl_free(handle->ep_information_ptr->domain_name_ptr);
-			handle->ep_information_ptr->domain_name_ptr = 0;
-			handle->ep_information_ptr->domain_name_len = 0;
-		}
-
-		if(handle->ep_information_ptr->endpoint_name_ptr)
-		{
-			handle->sn_nsdl_free(handle->ep_information_ptr->endpoint_name_ptr);
-			handle->ep_information_ptr->endpoint_name_ptr = 0;
-			handle->ep_information_ptr->endpoint_name_len = 0;
-		}
-
-		if(endpoint_info_ptr->domain_name_ptr)
-		{
-
-			if(!handle->ep_information_ptr->domain_name_ptr)
-			{
-				handle->ep_information_ptr->domain_name_ptr = handle->sn_nsdl_alloc(endpoint_info_ptr->domain_name_len);
-			}
-			if(!handle->ep_information_ptr->domain_name_ptr)
-			{
-				return 0;
-			}
-
-			memcpy(handle->ep_information_ptr->domain_name_ptr, endpoint_info_ptr->domain_name_ptr, endpoint_info_ptr->domain_name_len);
-			handle->ep_information_ptr->domain_name_len = endpoint_info_ptr->domain_name_len;
-
-		}
-
-		if(endpoint_info_ptr->endpoint_name_ptr)
-		{
-
-			if(!handle->ep_information_ptr->endpoint_name_ptr)
-			{
-				handle->ep_information_ptr->endpoint_name_ptr = handle->sn_nsdl_alloc(endpoint_info_ptr->endpoint_name_len);
-			}
-			if(!handle->ep_information_ptr->endpoint_name_ptr)
-			{
-				if(handle->ep_information_ptr->domain_name_ptr)
-				{
-					handle->sn_nsdl_free(handle->ep_information_ptr->domain_name_ptr);
-					handle->ep_information_ptr->domain_name_ptr  = 0;
-					handle->ep_information_ptr->domain_name_len = 0;
-				}
-				return 0;
-			}
-
-			memcpy(handle->ep_information_ptr->endpoint_name_ptr, endpoint_info_ptr->endpoint_name_ptr, endpoint_info_ptr->endpoint_name_len);
-			handle->ep_information_ptr->endpoint_name_len = endpoint_info_ptr->endpoint_name_len;
-
-		}
-
-		handle->ep_information_ptr->binding_and_mode = endpoint_info_ptr->binding_and_mode;
-		handle->ep_information_ptr->ds_register_mode = endpoint_info_ptr->ds_register_mode;
-	}
 
 	return message_id;
 }
@@ -2148,6 +2106,62 @@ static void sn_nsdl_check_oma_bs_status(struct nsdl_s *handle)
 	{
 		handle->sn_nsdl_oma_bs_done_cb(handle->nsp_address_ptr);
 	}
+}
+
+static int8_t set_endpoint_info(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr)
+{
+	if(!handle->ep_information_ptr)
+		return -1;
+
+
+	if(handle->ep_information_ptr->domain_name_ptr)
+	{
+		handle->sn_nsdl_free(handle->ep_information_ptr->domain_name_ptr);
+		handle->ep_information_ptr->domain_name_ptr = 0;
+		handle->ep_information_ptr->domain_name_len = 0;
+	}
+
+	if(handle->ep_information_ptr->endpoint_name_ptr)
+	{
+		handle->sn_nsdl_free(handle->ep_information_ptr->endpoint_name_ptr);
+		handle->ep_information_ptr->endpoint_name_ptr = 0;
+		handle->ep_information_ptr->endpoint_name_len = 0;
+	}
+
+	if(endpoint_info_ptr->domain_name_ptr && endpoint_info_ptr->domain_name_len)
+	{
+		handle->ep_information_ptr->domain_name_ptr = handle->sn_nsdl_alloc(endpoint_info_ptr->domain_name_len);
+
+		if(!handle->ep_information_ptr->domain_name_ptr)
+			return -1;
+
+		memcpy(handle->ep_information_ptr->domain_name_ptr, endpoint_info_ptr->domain_name_ptr, endpoint_info_ptr->domain_name_len);
+		handle->ep_information_ptr->domain_name_len = endpoint_info_ptr->domain_name_len;
+	}
+
+	if(endpoint_info_ptr->endpoint_name_ptr && endpoint_info_ptr->endpoint_name_len)
+	{
+		handle->ep_information_ptr->endpoint_name_ptr = handle->sn_nsdl_alloc(endpoint_info_ptr->endpoint_name_len);
+
+		if(!handle->ep_information_ptr->endpoint_name_ptr)
+		{
+			if(handle->ep_information_ptr->domain_name_ptr)
+			{
+				handle->sn_nsdl_free(handle->ep_information_ptr->domain_name_ptr);
+				handle->ep_information_ptr->domain_name_ptr = 0;
+				handle->ep_information_ptr->domain_name_len = 0;
+			}
+			return -1;
+		}
+
+		memcpy(handle->ep_information_ptr->endpoint_name_ptr, endpoint_info_ptr->endpoint_name_ptr, endpoint_info_ptr->endpoint_name_len);
+		handle->ep_information_ptr->endpoint_name_len = endpoint_info_ptr->endpoint_name_len;
+	}
+
+	handle->ep_information_ptr->binding_and_mode = endpoint_info_ptr->binding_and_mode;
+	handle->ep_information_ptr->ds_register_mode = endpoint_info_ptr->ds_register_mode;
+
+	return 0;
 }
 
 /* Wrapper */
