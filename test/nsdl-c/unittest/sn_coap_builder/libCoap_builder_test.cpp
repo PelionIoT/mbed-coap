@@ -51,7 +51,7 @@ TEST_GROUP(libCoap_builder)
     }
 };
 
-TEST(libCoap_builder, build_response)
+TEST(libCoap_builder, build_confirmable_response)
 {
     struct coap_s handle;
     sn_coap_hdr_s *response = NULL;
@@ -70,10 +70,41 @@ TEST(libCoap_builder, build_response)
     response = sn_coap_build_response(&handle, &coap_header,COAP_MSG_CODE_RESPONSE_CONTENT);
 
     CHECK(response != NULL);
+    CHECK(response->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT);
+    CHECK(response->msg_id == 12);
+    CHECK(response->msg_code == COAP_MSG_CODE_RESPONSE_CONTENT);
 
     own_free(response);
-
 }
+
+TEST(libCoap_builder, build_non_confirmable_response)
+{
+    struct coap_s handle;
+    sn_coap_hdr_s *response = NULL;
+    uint8_t token_val = 0x99;
+
+    handle.sn_coap_protocol_malloc = &own_alloc;
+    handle.sn_coap_protocol_free = &own_free;
+
+    coap_header.msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
+    coap_header.msg_code = COAP_MSG_CODE_REQUEST_GET;
+    coap_header.msg_id = 12;
+    coap_header.token_len = 1;
+    coap_header.token_ptr = &token_val;
+
+    response = sn_coap_build_response(&handle, &coap_header,COAP_MSG_CODE_RESPONSE_CONTENT);
+
+    CHECK(response != NULL);
+    CHECK(response->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE);
+    CHECK(response->msg_code == COAP_MSG_CODE_RESPONSE_CONTENT);
+    CHECK(response->token_ptr != NULL);
+    CHECK(memcmp(response->token_ptr, coap_header.token_ptr, coap_header.token_len) == 0);
+    CHECK(response->token_len == coap_header.token_len);
+
+    own_free(response->token_ptr);
+    own_free(response);
+}
+
 
 TEST(libCoap_builder, build_message_negative_cases)
 {
@@ -199,4 +230,3 @@ TEST(libCoap_builder, build_message_options_block2)
     coap_header.options_list_ptr->block2_len = 2;
     CHECK(sn_coap_builder(buffer, &coap_header) == 8);
 }
-
