@@ -170,8 +170,7 @@ typedef struct sn_coap_options_list_ {
     uint16_t    location_path_len;  /**< 0-255 bytes. Repeatable */
     uint8_t    *location_path_ptr;  /**< Must be set to NULL if not used */
 
-    uint8_t     uri_port_len;       /**< 0-2 bytes. */
-    uint8_t    *uri_port_ptr;       /**< Must be set to NULL if not used */
+    int32_t     uri_port;           /**< Value 0-65535. -1 if not used */
 
     uint16_t    location_query_len; /**< 0-255 bytes. Repeatable */
     uint8_t    *location_query_ptr; /**< Must be set to NULL if not used */

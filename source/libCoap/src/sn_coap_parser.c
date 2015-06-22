@@ -100,6 +100,7 @@ sn_coap_options_list_s *sn_coap_parser_alloc_options(struct coap_s *handle, sn_c
     memset(coap_msg_ptr->options_list_ptr, 0x00, sizeof(sn_coap_options_list_s));
 
     coap_msg_ptr->options_list_ptr->max_age = COAP_OPTION_MAX_AGE_DEFAULT;
+    coap_msg_ptr->options_list_ptr->uri_port = COAP_OPTION_URI_PORT_NONE;
     coap_msg_ptr->options_list_ptr->accept = COAP_CT_NONE;
 
     return coap_msg_ptr->options_list_ptr;
@@ -171,10 +172,6 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
 
             if (freed_coap_msg_ptr->options_list_ptr->location_path_ptr != NULL) {
                 handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->location_path_ptr);
-            }
-
-            if (freed_coap_msg_ptr->options_list_ptr->uri_port_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->uri_port_ptr);
             }
 
             if (freed_coap_msg_ptr->options_list_ptr->location_query_ptr != NULL) {
@@ -447,21 +444,12 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
 
 
             case COAP_OPTION_URI_PORT:
-                if ((option_len > 2) || dst_coap_msg_ptr->options_list_ptr->uri_port_ptr) {
+                if ((option_len > 2) || dst_coap_msg_ptr->options_list_ptr->uri_port != COAP_OPTION_URI_PORT_NONE) {
                     return -1;
                 }
-                dst_coap_msg_ptr->options_list_ptr->uri_port_len = option_len;
                 (*packet_data_pptr)++;
 
-                if (option_len) {
-                    dst_coap_msg_ptr->options_list_ptr->uri_port_ptr = handle->sn_coap_protocol_malloc(option_len);
-
-                    if (dst_coap_msg_ptr->options_list_ptr->uri_port_ptr == NULL) {
-                        return -1;
-                    }
-                    memcpy(dst_coap_msg_ptr->options_list_ptr->uri_port_ptr, *packet_data_pptr, option_len);
-                    (*packet_data_pptr) += option_len;
-                }
+                dst_coap_msg_ptr->options_list_ptr->uri_port = sn_coap_parser_options_parse_uint(packet_data_pptr, option_len);
                 break;
 
             case COAP_OPTION_LOCATION_QUERY:

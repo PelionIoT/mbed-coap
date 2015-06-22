@@ -274,14 +274,12 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
                     return 0;
                 }
             }
-            /* URI PORT - Length of this option is 0-2 bytes */
-            if (src_coap_msg_ptr->options_list_ptr->uri_port_ptr != NULL) {
-                returned_byte_count++;
-                if (src_coap_msg_ptr->options_list_ptr->uri_port_len > 2) {
+            /* URI PORT - An integer option, up to 2 bytes */
+            if (src_coap_msg_ptr->options_list_ptr->uri_port != COAP_OPTION_URI_PORT_NONE) {
+                if ((uint32_t) src_coap_msg_ptr->options_list_ptr->uri_port > 0xffff) {
                     return 0;
                 }
-
-                returned_byte_count += src_coap_msg_ptr->options_list_ptr->uri_port_len;
+                returned_byte_count += sn_coap_builder_options_build_add_uint_option(NULL, src_coap_msg_ptr->options_list_ptr->uri_port, COAP_OPTION_URI_PORT);
             }
             /* lOCATION QUERY - Repeatable option. Length of this option is 0-255 bytes */
             if (src_coap_msg_ptr->options_list_ptr->location_query_ptr != NULL) {
@@ -459,7 +457,7 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
             previous_option_number = (COAP_OPTION_OBSERVE);
         }
 
-        if (src_coap_msg_ptr->options_list_ptr->uri_port_ptr != NULL) {
+        if (src_coap_msg_ptr->options_list_ptr->uri_port != COAP_OPTION_URI_PORT_NONE) {
             previous_option_number = (COAP_OPTION_URI_PORT);
         }
 
@@ -662,8 +660,10 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
         }
 
         /* * * * Build Uri-Port option * * * */
-        sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->uri_port_len,
-                     src_coap_msg_ptr->options_list_ptr->uri_port_ptr, COAP_OPTION_URI_PORT, &previous_option_number);
+        if (src_coap_msg_ptr->options_list_ptr->uri_port != COAP_OPTION_URI_PORT_NONE) {
+            sn_coap_builder_options_build_add_uint_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->uri_port,
+                         COAP_OPTION_URI_PORT, &previous_option_number);
+        }
 
         /* * * * Build Location-Path option  * * * */
         sn_coap_builder_options_build_add_multiple_option(dst_packet_data_pptr, &src_coap_msg_ptr->options_list_ptr->location_path_ptr,
