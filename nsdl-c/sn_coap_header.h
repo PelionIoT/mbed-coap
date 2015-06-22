@@ -198,11 +198,9 @@ typedef struct sn_coap_options_list_ {
     uint16_t    uri_query_len;      /**< 1-255 bytes. Repeatable */
     uint8_t    *uri_query_ptr;      /**< Must be set to NULL if not used */
 
-    uint8_t     block1_len;         /**< 0-3 bytes. */
-    uint8_t    *block1_ptr;         /**< Not for User */
+    int32_t     block1;             /**< Value 0-0xffffff. -1 if not used. Not for user */
 
-    uint8_t     block2_len;         /**< 0-3 bytes. */
-    uint8_t    *block2_ptr;         /**< Not for User */
+    int32_t     block2;             /**< Value 0-0xffffff. -1 if not used. Not for user */
 
     uint8_t     size1_len;         /**< 0-4 bytes. */
     uint8_t    *size1_ptr;         /**< Not for User */
