@@ -2372,15 +2372,7 @@ static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coa
             memcpy(destination_header_ptr->options_list_ptr->observe_ptr, source_header_ptr->options_list_ptr->observe_ptr, source_header_ptr->options_list_ptr->observe_len);
         }
 
-        if (source_header_ptr->options_list_ptr->accept_ptr) {
-            destination_header_ptr->options_list_ptr->accept_len = source_header_ptr->options_list_ptr->accept_len;
-            destination_header_ptr->options_list_ptr->accept_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->options_list_ptr->accept_len);
-            if (!destination_header_ptr->options_list_ptr->accept_ptr) {
-                sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
-                return 0;
-            }
-            memcpy(destination_header_ptr->options_list_ptr->accept_ptr, source_header_ptr->options_list_ptr->accept_ptr, source_header_ptr->options_list_ptr->accept_len);
-        }
+        destination_header_ptr->options_list_ptr->accept = source_header_ptr->options_list_ptr->accept;
 
         if (source_header_ptr->options_list_ptr->uri_query_ptr) {
             destination_header_ptr->options_list_ptr->uri_query_len = source_header_ptr->options_list_ptr->uri_query_len;

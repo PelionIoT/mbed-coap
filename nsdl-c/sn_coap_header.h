@@ -181,8 +181,7 @@ typedef struct sn_coap_options_list_ {
     uint8_t     observe_len;        /**< 0-2 bytes. */
     uint8_t    *observe_ptr;        /**< Must be set to NULL if not used */
 
-    uint8_t     accept_len;         /**< 0-2 bytes. Repeatable */
-    uint8_t     *accept_ptr;        /**< Must be set to NULL if not used */
+    sn_coap_content_format_e accept; /**< Value 0-65535. COAP_CT_NONE if not used */
 
     uint16_t    uri_query_len;      /**< 1-255 bytes. Repeatable */
     uint8_t    *uri_query_ptr;      /**< Must be set to NULL if not used */

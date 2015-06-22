@@ -99,6 +99,8 @@ sn_coap_options_list_s *sn_coap_parser_alloc_options(struct coap_s *handle, sn_c
     /* XXX not technically legal to memset pointers to 0 */
     memset(coap_msg_ptr->options_list_ptr, 0x00, sizeof(sn_coap_options_list_s));
 
+    coap_msg_ptr->options_list_ptr->accept = COAP_CT_NONE;
+
     return coap_msg_ptr->options_list_ptr;
 }
 
@@ -196,9 +198,6 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
 
             if (freed_coap_msg_ptr->options_list_ptr->block1_ptr != NULL) {
                 handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->block1_ptr);
-            }
-            if (freed_coap_msg_ptr->options_list_ptr->accept_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->accept_ptr);
             }
 
             if (freed_coap_msg_ptr->options_list_ptr->size1_ptr != NULL) {
@@ -576,15 +575,13 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                 break;
 
             case COAP_OPTION_ACCEPT:
-                ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr, message_left,
-                             &dst_coap_msg_ptr->options_list_ptr->accept_ptr, (uint16_t *)&dst_coap_msg_ptr->options_list_ptr->accept_len,
-                             COAP_OPTION_ACCEPT, option_len);
-                if (ret_status >= 0) {
-                    i += (ret_status - 1); /* i += is because possible several Options are handled by sn_coap_parser_options_parse_multiple_options() */
-                } else {
+                if ((option_len > 2) || (dst_coap_msg_ptr->options_list_ptr->accept != COAP_CT_NONE)) {
                     return -1;
                 }
 
+                (*packet_data_pptr)++;
+
+                dst_coap_msg_ptr->options_list_ptr->accept = (sn_coap_content_format_e) sn_coap_parser_options_parse_uint(packet_data_pptr, option_len);
                 break;
 
             case COAP_OPTION_SIZE1:
