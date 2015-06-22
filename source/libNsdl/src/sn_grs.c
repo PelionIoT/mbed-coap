@@ -435,9 +435,9 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
                                 }
                                 memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
                             }
-                            if (coap_packet_ptr->content_type_ptr) {
+                            if (coap_packet_ptr->content_format != COAP_CT_NONE) {
                                 if (resource_temp_ptr->resource_parameters_ptr) {
-                                    resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
+                                    resource_temp_ptr->resource_parameters_ptr->coap_content_type = coap_packet_ptr->content_format;
                                 }
                             }
                             status = COAP_MSG_CODE_RESPONSE_CHANGED;
@@ -458,9 +458,9 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
                                 }
                                 memcpy(resource_temp_ptr->resource, coap_packet_ptr->payload_ptr, resource_temp_ptr->resourcelen);
                             }
-                            if (coap_packet_ptr->content_type_ptr) {
+                            if (coap_packet_ptr->content_format != COAP_CT_NONE) {
                                 if (resource_temp_ptr->resource_parameters_ptr) {
-                                    resource_temp_ptr->resource_parameters_ptr->coap_content_type = *coap_packet_ptr->content_type_ptr;
+                                    resource_temp_ptr->resource_parameters_ptr->coap_content_type = coap_packet_ptr->content_format;
                                 }
                             }
                             status = COAP_MSG_CODE_RESPONSE_CHANGED;
@@ -565,21 +565,9 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
         if (status == COAP_MSG_CODE_RESPONSE_CONTENT) {
             /* Add content type if other than default */
             if (resource_temp_ptr->resource_parameters_ptr) {
+                /* XXXX Why "if != 0"? 0 means text/plain, and is not the default for CoAP - this prevents setting text/plain? */
                 if (resource_temp_ptr->resource_parameters_ptr->coap_content_type != 0) {
-                    response_message_hdr_ptr->content_type_len = 1;
-                    response_message_hdr_ptr->content_type_ptr = handle->sn_grs_alloc(response_message_hdr_ptr->content_type_len);
-                    if (!response_message_hdr_ptr->content_type_ptr) {
-                        sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, response_message_hdr_ptr);
-
-                        if (coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr) {
-                            handle->sn_grs_free(coap_packet_ptr->payload_ptr);
-                            coap_packet_ptr->payload_ptr = 0;
-                        }
-
-                        sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, coap_packet_ptr);
-                        return SN_NSDL_FAILURE;
-                    }
-                    memcpy(response_message_hdr_ptr->content_type_ptr, &resource_temp_ptr->resource_parameters_ptr->coap_content_type, response_message_hdr_ptr->content_type_len);
+                    response_message_hdr_ptr->content_format = (sn_coap_content_format_e) resource_temp_ptr->resource_parameters_ptr->coap_content_type;
                 }
             }
 
@@ -697,19 +685,7 @@ static int8_t sn_grs_core_request(struct nsdl_s *handle, sn_nsdl_addr_s *src_add
     response_message_hdr_ptr->msg_code = COAP_MSG_CODE_RESPONSE_CONTENT;
     response_message_hdr_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
     response_message_hdr_ptr->msg_id = coap_packet_ptr->msg_id;
-    response_message_hdr_ptr->content_type_len = 1;
-    response_message_hdr_ptr->content_type_ptr = handle->grs->sn_grs_alloc(1);
-    if (!response_message_hdr_ptr->content_type_ptr) {
-        if (coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr) {
-            handle->grs->sn_grs_free(coap_packet_ptr->payload_ptr);
-            coap_packet_ptr->payload_ptr = 0;
-        }
-        sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
-        handle->grs->sn_grs_free(response_message_hdr_ptr);
-        return SN_NSDL_FAILURE;
-    }
-
-    *response_message_hdr_ptr->content_type_ptr = wellknown_content_format;
+    response_message_hdr_ptr->content_format = wellknown_content_format;
 
     sn_nsdl_build_registration_body(handle, response_message_hdr_ptr, 0);
 

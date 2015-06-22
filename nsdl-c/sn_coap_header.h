@@ -119,13 +119,14 @@ typedef enum sn_coap_option_numbers_ {
  * \brief Enumeration for CoAP Content Format codes
  */
 typedef enum sn_coap_content_format_ {
-    COAP_CT_NONE                = -1,
+    COAP_CT_NONE                = -1, // internal
     COAP_CT_TEXT_PLAIN          = 0,
     COAP_CT_LINK_FORMAT         = 40,
     COAP_CT_XML                 = 41,
     COAP_CT_OCTET_STREAM        = 42,
     COAP_CT_EXI                 = 47,
-    COAP_CT_JSON                = 50
+    COAP_CT_JSON                = 50,
+    COAP_CT__MAX                = 0xffff
 } sn_coap_content_format_e;
 
 /**
@@ -230,8 +231,7 @@ typedef struct sn_coap_hdr_ {
     uint8_t                 token_len;          /**< 1-8 bytes. */
     uint8_t                *token_ptr;          /**< Must be set to NULL if not used */
 
-    uint8_t                 content_type_len;   /**< 0-2 bytes. */
-    uint8_t                *content_type_ptr;   /**< Must be set to NULL if not used */
+    sn_coap_content_format_e content_format;    /**< Set to COAP_CT_NONE if not used */
 
     /* Here are not so often used Options */
     sn_coap_options_list_s *options_list_ptr;   /**< Must be set to NULL if not used */
