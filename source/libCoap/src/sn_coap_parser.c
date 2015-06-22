@@ -248,6 +248,24 @@ static void sn_coap_parser_header_parse(uint8_t **packet_data_pptr, sn_coap_hdr_
 }
 
 /**
+ * \brief Parses a variable-length uint value from an option
+ *
+ * \param **packet_data_pptr is source of option data to be parsed
+ * \param option_len is length of option data (will be 0-4)
+ *
+ * \return Return value is value of uint
+ */
+static uint32_t sn_coap_parser_options_parse_uint(uint8_t **packet_data_pptr, uint8_t option_len)
+{
+    uint32_t value = 0;
+    while (option_len--) {
+        value <<= 8;
+        value |= *(*packet_data_pptr)++;
+    }
+    return value;
+}
+
+/**
  * \fn static uint8_t sn_coap_parser_options_parse(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr)
  *
  * \brief Parses CoAP message's Options part from given Packet data

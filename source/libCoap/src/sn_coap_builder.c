@@ -44,6 +44,7 @@ static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, uin
 static int16_t  sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet_data_pptr, uint16_t option_len, uint8_t *option_ptr, sn_coap_option_numbers_e option_number, uint16_t *previous_option_number);
 static int16_t  sn_coap_builder_options_build_add_zero_length_option(uint8_t **dst_packet_data_pptr, uint8_t option_length, uint8_t option_exist, sn_coap_option_numbers_e option_number, uint16_t *previous_option_number);
 static int16_t  sn_coap_builder_options_build_add_multiple_option(uint8_t **dst_packet_data_pptr, uint8_t **src_pptr, uint16_t *src_len_ptr, sn_coap_option_numbers_e option, uint16_t *previous_option_number);
+static uint8_t  sn_coap_builder_options_build_add_uint_option(uint8_t **dst_packet_data_pptr, uint32_t value, sn_coap_option_numbers_e option_number, uint16_t *previous_option_number);
 static uint8_t  sn_coap_builder_options_get_option_part_count(uint16_t query_len, uint8_t *query_ptr, sn_coap_option_numbers_e option);
 static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option_string(uint16_t query_len, uint8_t *query_ptr, uint8_t query_index, sn_coap_option_numbers_e option);
 static int16_t  sn_coap_builder_options_get_option_part_position(uint16_t query_len, uint8_t *query_ptr, uint8_t query_index, sn_coap_option_numbers_e option);
@@ -870,6 +871,45 @@ int16_t sn_coap_builder_options_build_add_zero_length_option(uint8_t **dst_packe
         return 1;
     }
     return 0;
+}
+
+/**
+ * \brief Constructs a uint Options part of Packet data
+ *
+ * \param **dst_packet_data_pptr is destination for built Packet data; NULL
+ *        to compute size only.
+ *
+ * \param option_value is Option value to be added
+ *
+ * \param option_number is Option number to be added
+ *
+ * \return Return value is total option size, or -1 in write failure case
+ */
+static uint8_t sn_coap_builder_options_build_add_uint_option(uint8_t **dst_packet_data_pptr, uint32_t option_value, sn_coap_option_numbers_e option_number, uint16_t *previous_option_number)
+{
+    uint8_t payload[4];
+    uint8_t len = 0;
+
+    /* Construct the variable-length payload representing the value */
+    while (option_value) {
+        if (option_value & 0xff000000) {
+            payload[len++] = option_value >> 24;
+        }
+
+        option_value <<= 8;
+    }
+
+    /* If output pointer isn't NULL, write it out */
+    if (dst_packet_data_pptr) {
+        int16_t ret = sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, len, payload, option_number, previous_option_number);
+        /* Allow for failure returns when writing (why even permit failure returns?) */
+        if (ret < 0) {
+            return ret;
+        }
+    }
+
+    /* Return the total option size */
+    return 1 + len;
 }
 
 /**
