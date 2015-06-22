@@ -2290,15 +2290,7 @@ static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coa
             return 0;
         }
 
-        if (source_header_ptr->options_list_ptr->max_age_ptr) {
-            destination_header_ptr->options_list_ptr->max_age_len = source_header_ptr->options_list_ptr->max_age_len;
-            destination_header_ptr->options_list_ptr->max_age_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->options_list_ptr->max_age_len);
-            if (!destination_header_ptr->options_list_ptr->max_age_ptr) {
-                sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
-                return 0;
-            }
-            memcpy(destination_header_ptr->options_list_ptr->max_age_ptr, source_header_ptr->options_list_ptr->max_age_ptr, source_header_ptr->options_list_ptr->max_age_len);
-        }
+        destination_header_ptr->options_list_ptr->max_age = source_header_ptr->options_list_ptr->max_age;
 
         if (source_header_ptr->options_list_ptr->proxy_uri_ptr) {
             destination_header_ptr->options_list_ptr->proxy_uri_len = source_header_ptr->options_list_ptr->proxy_uri_len;

@@ -156,8 +156,7 @@ typedef enum sn_coap_status_ {
  */
 typedef struct sn_coap_options_list_ {
 
-    uint8_t     max_age_len;        /**< 0-4 bytes. */
-    uint8_t    *max_age_ptr;        /**< Must be set to NULL if not used */
+    uint32_t    max_age;            /**< Value in seconds (default is 60) */
 
     uint16_t    proxy_uri_len;      /**< 1-1034 bytes. */
     uint8_t    *proxy_uri_ptr;      /**< Must be set to NULL if not used */

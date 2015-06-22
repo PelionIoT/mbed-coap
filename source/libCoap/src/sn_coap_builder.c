@@ -213,14 +213,9 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
 
                 returned_byte_count += sn_coap_builder_options_build_add_uint_option(NULL, src_coap_msg_ptr->options_list_ptr->accept, COAP_OPTION_ACCEPT);
             }
-            /* MAX AGE - Length of this option is 0-4 bytes */
-            if (src_coap_msg_ptr->options_list_ptr->max_age_ptr != NULL) {
-                returned_byte_count++;
-                if (src_coap_msg_ptr->options_list_ptr->max_age_len > 4) {
-                    return 0;
-                }
-
-                returned_byte_count += src_coap_msg_ptr->options_list_ptr->max_age_len;
+            /* MAX AGE - An integer option, omitted for default. Up to 4 bytes */
+            if (src_coap_msg_ptr->options_list_ptr->max_age != COAP_OPTION_MAX_AGE_DEFAULT) {
+                returned_byte_count += sn_coap_builder_options_build_add_uint_option(NULL, src_coap_msg_ptr->options_list_ptr->max_age, COAP_OPTION_MAX_AGE);
             }
             /* PROXY URI - Length of this option is  1-1034 bytes */
             if (src_coap_msg_ptr->options_list_ptr->proxy_uri_ptr != NULL) {
@@ -446,7 +441,7 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
                 !src_coap_msg_ptr->options_list_ptr->block1_ptr         &&
                 !src_coap_msg_ptr->options_list_ptr->proxy_uri_ptr      &&
                 !block_option                                           &&
-                !src_coap_msg_ptr->options_list_ptr->max_age_ptr        &&
+                src_coap_msg_ptr->options_list_ptr->max_age == COAP_OPTION_MAX_AGE_DEFAULT &&
                 !src_coap_msg_ptr->options_list_ptr->size1_ptr          &&
                 !src_coap_msg_ptr->options_list_ptr->size2_ptr) {
             return 0;
@@ -478,7 +473,7 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
         if (src_coap_msg_ptr->content_format != COAP_CT_NONE) {
             previous_option_number = (COAP_OPTION_CONTENT_FORMAT);
         }
-        if (src_coap_msg_ptr->options_list_ptr->max_age_ptr != NULL) {
+        if (src_coap_msg_ptr->options_list_ptr->max_age != COAP_OPTION_MAX_AGE_DEFAULT) {
             if ((COAP_OPTION_MAX_AGE - previous_option_number) > 12) {
                 needed_space += 1;
             }
@@ -688,8 +683,10 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
 
     if (src_coap_msg_ptr->options_list_ptr != NULL) {
         /* * * * Build Max-Age option  * * * */
-        sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->max_age_len,
-                     src_coap_msg_ptr->options_list_ptr->max_age_ptr, COAP_OPTION_MAX_AGE, &previous_option_number);
+        if (src_coap_msg_ptr->options_list_ptr->max_age != COAP_OPTION_MAX_AGE_DEFAULT) {
+            sn_coap_builder_options_build_add_uint_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->max_age,
+                         COAP_OPTION_MAX_AGE, &previous_option_number);
+        }
 
         /* * * * Build Uri-Query option  * * * * */
         sn_coap_builder_options_build_add_multiple_option(dst_packet_data_pptr, &src_coap_msg_ptr->options_list_ptr->uri_query_ptr,

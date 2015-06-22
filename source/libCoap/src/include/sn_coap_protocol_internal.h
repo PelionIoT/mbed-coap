@@ -108,6 +108,8 @@ extern "C" {
 #define SN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE UINT16_MAX
 #endif
 
+/* * For Option handling * */
+#define COAP_OPTION_MAX_AGE_DEFAULT                 60 /**< Default value of Max-Age if option not present */
 
 /* * * * * * * * * * * * * * */
 /* * * * ENUMERATIONS  * * * */
