@@ -331,7 +331,7 @@ extern void sn_nsdl_nsp_lost(struct nsdl_s *handle);
 /**
  * \fn extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
  *                                                  uint8_t *payload_ptr, uint16_t payload_len,
- *                                                  uint8_t *observe_ptr, uint8_t observe_len,
+ *                                                  sn_coap_observe_e observe,
  *                                                  sn_coap_msg_type_e message_type, sn_coap_content_format_e content_format)
  *
  *
@@ -342,8 +342,7 @@ extern void sn_nsdl_nsp_lost(struct nsdl_s *handle);
  * \param   token_len       Token length
  * \param   *payload_ptr    Pointer to payload to be sent
  * \param   payload_len     Payload length
- * \param   *observe_ptr    Pointer to observe number to be sent
- * \param   observe_len     Observe number len
+ * \param   observe         Observe option value to be sent
  * \param   message_type    Observation message type (confirmable or non-confirmable)
  * \param   content_format  Observation message payload content format
  *
@@ -352,7 +351,7 @@ extern void sn_nsdl_nsp_lost(struct nsdl_s *handle);
  */
 extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
         uint8_t *payload_ptr, uint16_t payload_len,
-        uint8_t *observe_ptr, uint8_t observe_len,
+        sn_coap_observe_e observe,
         sn_coap_msg_type_e message_type,
         sn_coap_content_format_e content_format);
 

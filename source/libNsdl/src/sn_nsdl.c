@@ -513,7 +513,7 @@ int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle)
 
 uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
         uint8_t *payload_ptr, uint16_t payload_len,
-        uint8_t *observe_ptr, uint8_t observe_len,
+        sn_coap_observe_e observe,
         sn_coap_msg_type_e message_type, sn_coap_content_format_e content_format)
 {
     return sn_nsdl_send_observation_notification_with_uri_path(handle,
@@ -571,8 +571,7 @@ uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *hand
     notification_message_ptr->uri_path_ptr = uri_path_ptr;
 
     /* Fill observe */
-    notification_message_ptr->options_list_ptr->observe_len = observe_len;
-    notification_message_ptr->options_list_ptr->observe_ptr = observe_ptr;
+    notification_message_ptr->options_list_ptr->observe = observe;
 
     /* Fill content format */
     notification_message_ptr->content_format = content_format;
@@ -587,7 +586,6 @@ uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *hand
     /* Free memory */
     notification_message_ptr->uri_path_ptr = NULL;
     notification_message_ptr->payload_ptr = NULL;
-    notification_message_ptr->options_list_ptr->observe_ptr = NULL;
     notification_message_ptr->token_ptr = NULL;
 
     sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, notification_message_ptr);

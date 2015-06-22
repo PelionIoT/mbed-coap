@@ -130,6 +130,22 @@ typedef enum sn_coap_content_format_ {
 } sn_coap_content_format_e;
 
 /**
+ * \brief Enumeration for CoAP Observe option values
+ *
+ * draft-ietf-core-observe-16
+ */
+typedef enum sn_coap_observe_ {
+    COAP_OBSERVE_NONE           = -1, // internal
+
+    // Values for GET requests
+    COAP_OBSERVE_REGISTER       = 0,
+    COAP_OBSERVE_DEREGISTER     = 1,
+
+    // In responses, value is a 24-bit opaque sequence number
+    COAP_OBSERVE__MAX   = 0xffffff
+} sn_coap_observe_e;
+
+/**
  * \brief Enumeration for CoAP status, used in CoAP Header
  */
 typedef enum sn_coap_status_ {
@@ -175,9 +191,7 @@ typedef struct sn_coap_options_list_ {
     uint16_t    location_query_len; /**< 0-255 bytes. Repeatable */
     uint8_t    *location_query_ptr; /**< Must be set to NULL if not used */
 
-    uint8_t     observe;
-    uint8_t     observe_len;        /**< 0-2 bytes. */
-    uint8_t    *observe_ptr;        /**< Must be set to NULL if not used */
+    int32_t     observe;            /**< Value 0-0xffffff. -1 if not used */
 
     sn_coap_content_format_e accept; /**< Value 0-65535. COAP_CT_NONE if not used */
 
