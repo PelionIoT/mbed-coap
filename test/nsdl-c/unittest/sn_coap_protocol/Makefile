@@ -1,0 +1,17 @@
+include ../makefile_defines.txt
+
+COMPONENT_NAME = libCoap_unit
+SRC_FILES = \
+        ../../../../source/libCoap/src/sn_coap_protocol.c 
+
+TEST_SRC_FILES = \
+	main.cpp \
+        libCoap_protocol_test.cpp \
+        ../stubs/sn_coap_builder_stub.c \
+        ../stubs/sn_coap_parser_stub.c \
+        ../stubs/sn_coap_header_check_stub.c \
+        ../stubs/ns_list_stub.c
+
+include ../MakefileWorker.mk
+
+CPPUTESTFLAGS += -DFEA_TRACE_SUPPORT -DSN_COAP_DUPLICATION_MAX_MSGS_COUNT=4 -DSN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE=128 -DENABLE_RESENDINGS=1
