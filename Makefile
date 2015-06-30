@@ -40,3 +40,7 @@ $(eval $(call generate_rules,$(LIB),$(SRCS)))
 .PHONY: release
 release:
 	7z a nsdl-c_$(VERSION).zip *.a *.lib include
+
+.PHONY: deploy_to
+deploy_to: all
+	tar --transform 's,^,nsdl-c/,' --append -f $(TO) *.a
