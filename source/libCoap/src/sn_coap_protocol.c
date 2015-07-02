@@ -201,7 +201,12 @@ struct coap_s *sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), vo
 
 	message_id = rand() % 400 + 100;
 #else
-	message_id = 100;
+    message_id = 100;
+#endif
+
+#if defined TARGET_LIKE_MBED
+    srand(time(NULL));
+    message_id = rand() % 400 + 100;
 #endif
 
 	return handle;
