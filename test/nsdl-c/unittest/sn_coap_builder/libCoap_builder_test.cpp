@@ -13,16 +13,15 @@ sn_coap_options_list_s option_list;
 uint8_t buffer[64];
 uint8_t temp[10];
 
-struct coap_s
-{      
+struct coap_s {
     void *(*sn_coap_protocol_malloc)(uint16_t);
-    void (*sn_coap_protocol_free)(void*);
+    void (*sn_coap_protocol_free)(void *);
 
-    uint8_t (*sn_coap_tx_callback)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void*);
+    uint8_t (*sn_coap_tx_callback)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *);
     int8_t (*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *);
 };
 
-static void* own_alloc(uint16_t size)
+static void *own_alloc(uint16_t size)
 {
     return malloc(size);
 }
@@ -34,8 +33,7 @@ static void own_free(void *ptr)
 
 TEST_GROUP(libCoap_builder)
 {
-    void setup()
-    {
+    void setup() {
         memset(&coap_header, 0, sizeof(sn_coap_hdr_s));
         memset(&option_list, 0, sizeof(sn_coap_options_list_s));
 
@@ -45,8 +43,7 @@ TEST_GROUP(libCoap_builder)
         coap_header.msg_id = 12;
     }
 
-    void teardown()
-    {
+    void teardown() {
 
     }
 };
@@ -67,7 +64,7 @@ TEST(libCoap_builder, build_confirmable_response)
     CHECK(sn_coap_build_response(NULL, NULL, 0) == NULL);
     CHECK(sn_coap_build_response(&handle, NULL, 0) == NULL);
     CHECK(sn_coap_build_response(NULL, &coap_header, 0) == NULL);
-    response = sn_coap_build_response(&handle, &coap_header,COAP_MSG_CODE_RESPONSE_CONTENT);
+    response = sn_coap_build_response(&handle, &coap_header, COAP_MSG_CODE_RESPONSE_CONTENT);
 
     CHECK(response != NULL);
     CHECK(response->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT);
@@ -92,7 +89,7 @@ TEST(libCoap_builder, build_non_confirmable_response)
     coap_header.token_len = 1;
     coap_header.token_ptr = &token_val;
 
-    response = sn_coap_build_response(&handle, &coap_header,COAP_MSG_CODE_RESPONSE_CONTENT);
+    response = sn_coap_build_response(&handle, &coap_header, COAP_MSG_CODE_RESPONSE_CONTENT);
 
     CHECK(response != NULL);
     CHECK(response->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE);

@@ -19,8 +19,8 @@ extern "C" {
 
 /**
  * \fn struct coap_s *sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
-		uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
-		int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *)
+        uint8_t (*used_tx_callback_ptr)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
+        int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *)
  *
  * \brief Initializes CoAP Protocol part. When using libNsdl, sn_nsdl_init() calls this function.
  *
@@ -31,15 +31,15 @@ extern "C" {
  * \param *used_tx_callback_ptr function callback pointer to tx function for sending coap messages
  *
  * \param *used_rx_callback_ptr used to return CoAP header struct with status COAP_STATUS_BUILDER_MESSAGE_SENDING_FAILED
- * 		  when re-sendings exceeded. If set to NULL, no error message is returned.
+ *        when re-sendings exceeded. If set to NULL, no error message is returned.
  *
- * \return 	Pointer to handle when success
- * 			Null if failed
+ * \return  Pointer to handle when success
+ *          Null if failed
  */
 
-extern struct coap_s *sn_coap_protocol_init(void* (*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void*),
-										uint8_t (*used_tx_callback_ptr)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *),
-										int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *));
+extern struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void *),
+        uint8_t (*used_tx_callback_ptr)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *),
+        int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *));
 
 /**
  * \fn int8_t sn_coap_protocol_destroy(void)
@@ -75,7 +75,7 @@ extern int8_t sn_coap_protocol_destroy(struct coap_s *handle);
  *         If there is not enough memory (or User given limit exceeded) for storing
  *         resending messages, situation is ignored.
  */
-extern int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void* param);
+extern int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param);
 
 /**
  * \fn sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
@@ -99,24 +99,24 @@ extern int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst
  *          -Failure in parsed header of non-confirmable message\ŋ
  *          -Out of memory (malloc() returns NULL)
  */
-extern sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr, void*);
+extern sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr, void *);
 
 /**
  * \fn int8_t sn_coap_protocol_exec(uint32_t current_time)
  *
  * \brief Sends CoAP messages from re-sending queue, if there is any.
- * 		  Cleans also old messages from the duplication list and from block receiving list
+ *        Cleans also old messages from the duplication list and from block receiving list
  *
  *        This function can be called e.g. once in a second but also more frequently.
  *
  * \param current_time is System time in seconds. This time is
  *        used for message re-sending timing and to identify old saved data.
  *
- * \return 	0 if success
- * 			-1 if failed
+ * \return  0 if success
+ *          -1 if failed
  */
 
-extern int8_t 			   sn_coap_protocol_exec(uint32_t current_time);
+extern int8_t              sn_coap_protocol_exec(uint32_t current_time);
 
 /**
  * \fn int8_t sn_coap_protocol_set_block_size(uint16_t block_size)
@@ -124,10 +124,10 @@ extern int8_t 			   sn_coap_protocol_exec(uint32_t current_time);
  * \brief If block transfer is enabled, this function changes the block size.
  *
  * \param uint16_t block_size maximum size of CoAP payload. Valid sizes are 16, 32, 64, 128, 256, 512 and 1024 bytes
- * \return 	0 = success
- * 			-1 = failure
+ * \return  0 = success
+ *          -1 = failure
  */
-extern int8_t 			   sn_coap_protocol_set_block_size(uint16_t block_size);
+extern int8_t              sn_coap_protocol_set_block_size(uint16_t block_size);
 
 /**
  * \fn int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
@@ -135,10 +135,10 @@ extern int8_t 			   sn_coap_protocol_set_block_size(uint16_t block_size);
  * \brief If dublicate message detection is enabled, this function changes buffer size.
  *
  * \param uint8_t message_count max number of messages saved for duplicate control
- * \return 	0 = success
- * 			-1 = failure
+ * \return  0 = success
+ *          -1 = failure
  */
-extern int8_t 			   sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count);
+extern int8_t              sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count);
 
 /**
  * \fn int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_intervall)
@@ -147,10 +147,10 @@ extern int8_t 			   sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_c
  *
  * \param uint8_t resending_count max number of resendings for message
  * \param uint8_t resending_intervall message resending intervall in seconds
- * \return 	0 = success
- * 			-1 = failure
+ * \return  0 = success
+ *          -1 = failure
  */
-extern int8_t 			   sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_interval);
+extern int8_t              sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_interval);
 
 /**
  * \fn int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
@@ -160,17 +160,17 @@ extern int8_t 			   sn_coap_protocol_set_retransmission_parameters(uint8_t resen
  *
  * \param uint8_t buffer_size_messages queue size - maximum number of messages to be saved to queue
  * \param uint8_t buffer_size_bytes queue size - maximum size of messages saved to queue
- * \return 	0 = success
- * 			-1 = failure
+ * \return  0 = success
+ *          -1 = failure
  */
-extern int8_t			   sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes);
+extern int8_t              sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes);
 
 /**
  * \fn void sn_coap_protocol_clear_retransmission_buffer(void)
  *
  * \brief If re-transmissions are enabled, this function removes all messages from the retransmission queue.
  */
-extern void 			   sn_coap_protocol_clear_retransmission_buffer(void);
+extern void                sn_coap_protocol_clear_retransmission_buffer(void);
 
 #endif /* SN_COAP_PROTOCOL_H_ */
 

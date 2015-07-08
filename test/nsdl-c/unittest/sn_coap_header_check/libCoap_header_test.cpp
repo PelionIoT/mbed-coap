@@ -12,26 +12,24 @@
 
 TEST_GROUP(libCoap_header_check)
 {
-    void setup()
-    {
+    void setup() {
 
     }
 
-    void teardown()
-    {
+    void teardown() {
 
     }
 };
 
 TEST(libCoap_header_check, header_check)
 {
-	sn_coap_hdr_s coap_header;
+    sn_coap_hdr_s coap_header;
 
-	memset(&coap_header, 0, sizeof(sn_coap_hdr_s));
-	coap_header.msg_type = COAP_MSG_TYPE_CONFIRMABLE;
-	coap_header.msg_code = COAP_MSG_CODE_REQUEST_GET;
+    memset(&coap_header, 0, sizeof(sn_coap_hdr_s));
+    coap_header.msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    coap_header.msg_code = COAP_MSG_CODE_REQUEST_GET;
 
-	/* Happy-happy case */
+    /* Happy-happy case */
     CHECK(sn_coap_header_validity_check(&coap_header, (coap_version_e)COAP_VERSION_1) == 0);
 
 

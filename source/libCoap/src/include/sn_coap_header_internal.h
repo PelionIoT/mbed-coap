@@ -22,7 +22,7 @@ extern "C" {
 /* * * * * * * * * * * */
 
 #define COAP_VERSION                                COAP_VERSION_1 /* Tells which IETF CoAP specification version the CoAP message supports. */
-                                                                   /* This value is written to CoAP message header part. */
+/* This value is written to CoAP message header part. */
 
 /* CoAP Header defines */
 #define COAP_HEADER_LENGTH                          4   /* Fixed Header length of CoAP message as bytes */
@@ -45,8 +45,7 @@ extern "C" {
 /**
  * \brief This structure is returned by sn_coap_exec() for sending
  */
-typedef struct sn_nsdl_transmit_
-{
+typedef struct sn_nsdl_transmit_ {
     sn_nsdl_addr_s         *dst_addr_ptr;
 
     sn_nsdl_capab_e         protocol;
@@ -58,7 +57,7 @@ typedef struct sn_nsdl_transmit_
 /* * * * * * * * * * * * * * * * * * * * * * */
 /* * * * EXTERNAL FUNCTION PROTOTYPES  * * * */
 /* * * * * * * * * * * * * * * * * * * * * * */
-extern int8_t         	sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_version_e coap_version);
+extern int8_t           sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_version_e coap_version);
 
 #endif /* SN_COAP_HEADER_INTERNAL_H_ */
 

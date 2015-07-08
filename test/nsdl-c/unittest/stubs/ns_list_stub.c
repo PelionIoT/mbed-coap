@@ -8,19 +8,19 @@ void ns_list_link_init_(ns_list_link_t *link)
 {
 }
 
-void ns_list_add_to_start_(ns_list_t *list, ns_list_offset_t offset, void * restrict entry)
+void ns_list_add_to_start_(ns_list_t *list, ns_list_offset_t offset, void *restrict entry)
 {
 }
 
-void ns_list_add_after_(ns_list_t *list, ns_list_offset_t offset, void *current, void * restrict entry)
+void ns_list_add_after_(ns_list_t *list, ns_list_offset_t offset, void *current, void *restrict entry)
 {
 }
 
-void ns_list_add_before_(ns_list_offset_t offset, void *current, void * restrict entry)
+void ns_list_add_before_(ns_list_offset_t offset, void *current, void *restrict entry)
 {
 }
 
-void ns_list_add_to_end_(ns_list_t *list, ns_list_offset_t offset, void * restrict entry)
+void ns_list_add_to_end_(ns_list_t *list, ns_list_offset_t offset, void *restrict entry)
 {
 }
 
@@ -40,7 +40,7 @@ void ns_list_remove_(ns_list_t *list, ns_list_offset_t offset, void *removed)
 {
 }
 
-void ns_list_replace_(ns_list_t *list, ns_list_offset_t offset, void *current, void * restrict replacement)
+void ns_list_replace_(ns_list_t *list, ns_list_offset_t offset, void *current, void *restrict replacement)
 {
 }
 

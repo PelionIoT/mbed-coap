@@ -9,9 +9,9 @@
 
 
 
-int main(int ac, char** av)
+int main(int ac, char **av)
 {
-	return CommandLineTestRunner::RunAllTests(ac, av);
+    return CommandLineTestRunner::RunAllTests(ac, av);
 }
 
 IMPORT_TEST_GROUP(libCoap_protocol);

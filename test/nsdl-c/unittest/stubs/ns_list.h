@@ -67,11 +67,10 @@ extern "C" {
  *
  * Users should not use this type directly, but use the NS_LIST_HEAD() macro.
  */
-typedef struct ns_list
-{
-	void *first_entry;		///< Pointer to first entry, or NULL if list is empty
-	void **last_nextptr;	///< Pointer to last entry's `next` pointer, or
-							///< to head's `first_entry` pointer if list is empty
+typedef struct ns_list {
+    void *first_entry;      ///< Pointer to first entry, or NULL if list is empty
+    void **last_nextptr;    ///< Pointer to last entry's `next` pointer, or
+    ///< to head's `first_entry` pointer if list is empty
 } ns_list_t;
 
 /** \brief Declare a list head type
@@ -108,10 +107,10 @@ typedef struct ns_list
 #define NS_LIST_HEAD(entry_type, field) \
 union \
 { \
-	ns_list_t slist; \
-	NS_STATIC_ASSERT(offsetof(entry_type, field) <= UINT_FAST8_MAX, "link offset too large") \
-	char (*offset)[offsetof(entry_type, field)]; \
-	entry_type *type; \
+    ns_list_t slist; \
+    NS_STATIC_ASSERT(offsetof(entry_type, field) <= UINT_FAST8_MAX, "link offset too large") \
+    char (*offset)[offsetof(entry_type, field)]; \
+    entry_type *type; \
 }
 
 /// \privatesection
@@ -147,8 +146,8 @@ union \
 #define NS_PTR_MATCH_(a, b, str) ((void) 0)
 #elif defined __GNUC__
 #define NS_PTR_MATCH_(a, b, str) __extension__ \
-	({ NS_STATIC_ASSERT(__builtin_types_compatible_p(__typeof__ (*(a)), __typeof__ (*(b))), \
-						str) })
+    ({ NS_STATIC_ASSERT(__builtin_types_compatible_p(__typeof__ (*(a)), __typeof__ (*(b))), \
+                        str) })
 #else
 #define NS_PTR_MATCH_(a, b, str) ((void) sizeof ((a) == (b)))
 #endif
@@ -172,7 +171,7 @@ union \
 
 /** \brief Internal macro to check types of input entry pointer. */
 #define NS_LIST_TYPECHECK_(list, entry) \
-	(NS_PTR_MATCH_((list)->type, (entry), "incorrect entry type for list"), (entry))
+    (NS_PTR_MATCH_((list)->type, (entry), "incorrect entry type for list"), (entry))
 
 /** \brief Type used to pass link offset to underlying functions
  *
@@ -191,10 +190,9 @@ typedef uint_fast8_t ns_list_offset_t;
  *
  * NB - the list implementation relies on next being the first member.
  */
-typedef struct ns_list_link
-{
-	void *next;		///< Pointer to next entry, or NULL if none
-	void **prev;	///< Pointer to previous entry's (or head's) next pointer
+typedef struct ns_list_link {
+    void *next;     ///< Pointer to next entry, or NULL if none
+    void **prev;    ///< Pointer to previous entry's (or head's) next pointer
 } ns_list_link_t;
 
 /** \brief "Poison" value placed in unattached entries' link pointers.
@@ -209,24 +207,24 @@ typedef struct ns_list_link
  * ns_list_link_init() for more discussion.
  */
 #define NS_LIST_LINK_INIT(name) \
-	NS_FUNNY_INTPTR_OK \
-	{ NS_LIST_POISON, NS_LIST_POISON } \
-	NS_FUNNY_INTPTR_RESTORE
+    NS_FUNNY_INTPTR_OK \
+    { NS_LIST_POISON, NS_LIST_POISON } \
+    NS_FUNNY_INTPTR_RESTORE
 
 /** \privatesection
  *  Internal functions - designed to be accessed using corresponding macros above
  */
 void ns_list_init_(ns_list_t *list);
 void ns_list_link_init_(ns_list_link_t *link);
-void ns_list_add_to_start_(ns_list_t *list, ns_list_offset_t link_offset, void * restrict entry);
-void ns_list_add_to_end_(ns_list_t *list, ns_list_offset_t link_offset, void * restrict entry);
-void ns_list_add_before_(ns_list_offset_t link_offset, void *before, void * restrict entry);
-void ns_list_add_after_(ns_list_t *list, ns_list_offset_t link_offset, void *after, void * restrict entry);
+void ns_list_add_to_start_(ns_list_t *list, ns_list_offset_t link_offset, void *restrict entry);
+void ns_list_add_to_end_(ns_list_t *list, ns_list_offset_t link_offset, void *restrict entry);
+void ns_list_add_before_(ns_list_offset_t link_offset, void *before, void *restrict entry);
+void ns_list_add_after_(ns_list_t *list, ns_list_offset_t link_offset, void *after, void *restrict entry);
 void *ns_list_get_next_(ns_list_offset_t link_offset, const void *current);
 void *ns_list_get_previous_(const ns_list_t *list, ns_list_offset_t link_offset, const void *current);
 void *ns_list_get_last_(const ns_list_t *list,  ns_list_offset_t offset);
 void ns_list_remove_(ns_list_t *list, ns_list_offset_t link_offset, void *entry);
-void ns_list_replace_(ns_list_t *list, ns_list_offset_t link_offset, void *current, void * restrict replacement);
+void ns_list_replace_(ns_list_t *list, ns_list_offset_t link_offset, void *current, void *restrict replacement);
 void ns_list_concatenate_(ns_list_t *dst, ns_list_t *src, ns_list_offset_t offset);
 uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset);
 
@@ -304,7 +302,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * ~~~
  */
 #define NS_LIST_DEFINE(name, type, field) \
-	NS_LIST_HEAD(type, field) NS_LIST_NAME_INIT(name)
+    NS_LIST_HEAD(type, field) NS_LIST_NAME_INIT(name)
 
 /** \hideinitializer \brief Add an entry to the start of the linked list.
  *
@@ -314,7 +312,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \param entry `(entry_t * restrict)` Pointer to new entry to add.
  */
 #define ns_list_add_to_start(list, entry) \
-	ns_list_add_to_start_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, entry))
+    ns_list_add_to_start_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, entry))
 
 /** \hideinitializer \brief Add an entry to the end of the linked list.
  *
@@ -322,7 +320,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \param entry `(entry_t * restrict)` Pointer to new entry to add.
  */
 #define ns_list_add_to_end(list, entry) \
-	ns_list_add_to_end_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, entry))
+    ns_list_add_to_end_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, entry))
 
 /** \hideinitializer \brief Add an entry before a specified entry.
  *
@@ -331,7 +329,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \param entry  `(entry_t * restrict)` Pointer to new entry to add.
  */
 #define ns_list_add_before(list, before, entry) \
-	ns_list_add_before_(NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, before), NS_LIST_TYPECHECK_(list, entry))
+    ns_list_add_before_(NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, before), NS_LIST_TYPECHECK_(list, entry))
 
 /** \hideinitializer \brief Add an entry after a specified entry.
  *
@@ -342,7 +340,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \param entry `(entry_t * restrict)` Pointer to new entry to add.
  */
 #define ns_list_add_after(list, after, entry) \
-	ns_list_add_after_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, after), NS_LIST_TYPECHECK_(list, entry))
+    ns_list_add_after_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, after), NS_LIST_TYPECHECK_(list, entry))
 
 /** \brief Check if a list is empty.
  *
@@ -370,7 +368,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \return                            NULL if current entry is first.
  */
 #define ns_list_get_previous(list, current) \
-	NS_LIST_TYPECAST_(list, ns_list_get_previous_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, current)))
+    NS_LIST_TYPECAST_(list, ns_list_get_previous_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, current)))
 
 /** \hideinitializer \brief Get the next entry.
  *
@@ -381,7 +379,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \return                            NULL if current entry is last.
  */
 #define ns_list_get_next(list, current) \
-	NS_LIST_TYPECAST_(list, ns_list_get_next_(NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, current)))
+    NS_LIST_TYPECAST_(list, ns_list_get_next_(NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, current)))
 
 /** \hideinitializer \brief Get the last entry.
  *
@@ -391,7 +389,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \return                        NULL if list is empty.
  */
 #define ns_list_get_last(list) \
-	NS_LIST_TYPECAST_(list, ns_list_get_last_(&(list)->slist, NS_LIST_OFFSET_(list)))
+    NS_LIST_TYPECAST_(list, ns_list_get_last_(&(list)->slist, NS_LIST_OFFSET_(list)))
 
 /** \hideinitializer \brief Remove an entry.
  *
@@ -399,7 +397,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \param entry `(entry_t *)` Entry on list to be removed.
  */
 #define ns_list_remove(list, entry) \
-	ns_list_remove_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, entry))
+    ns_list_remove_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, entry))
 
 /** \hideinitializer \brief Replace an entry.
  *
@@ -408,7 +406,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \param replacement `(entry_t * restrict)` New entry to be the replacement.
  */
 #define ns_list_replace(list, current, replacement) \
-	ns_list_replace_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, current), NS_LIST_TYPECHECK_(list, replacement))
+    ns_list_replace_(&(list)->slist, NS_LIST_OFFSET_(list), NS_LIST_TYPECHECK_(list, current), NS_LIST_TYPECHECK_(list, replacement))
 
 /** \hideinitializer \brief Concatenate two lists.
  *
@@ -420,8 +418,8 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  *
  */
 #define ns_list_concatenate(dst, src) \
-		(NS_PTR_MATCH_(dst, src, "concatenating different list types"), \
-		ns_list_concatenate_(&(dst)->slist, &(src)->slist, NS_LIST_OFFSET_(src)))
+        (NS_PTR_MATCH_(dst, src, "concatenating different list types"), \
+        ns_list_concatenate_(&(dst)->slist, &(src)->slist, NS_LIST_OFFSET_(src)))
 
 /** \brief Iterate forwards over a list.
  *
@@ -469,7 +467,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \param list `(const list_t *)` Pointer to list - evaluated multiple times.
  */
 #define ns_list_foreach(type, e, list) \
-	for (type *e = ns_list_get_first(list); e; e = ns_list_get_next(list, e))
+    for (type *e = ns_list_get_first(list); e; e = ns_list_get_next(list, e))
 
 /** \brief Iterate forwards over a list, where user may delete.
  *
@@ -489,8 +487,8 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * \param list `(list_t *)`  Pointer to list - evaluated multiple times.
  */
 #define ns_list_foreach_safe(type, e, list) \
-	for (type *e = ns_list_get_first(list), *_next; \
-		e && (_next = ns_list_get_next(list, e), true); e = _next)
+    for (type *e = ns_list_get_first(list), *_next; \
+        e && (_next = ns_list_get_next(list, e), true); e = _next)
 
 /** \brief Iterate backwards over a list.
  *
@@ -498,7 +496,7 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * Iterating forwards is *slightly* more efficient.
  */
 #define ns_list_foreach_reverse(type, e, list) \
-	for (type *e = ns_list_get_last(list); e; e = ns_list_get_previous(list, e))
+    for (type *e = ns_list_get_last(list); e; e = ns_list_get_previous(list, e))
 
 /** \brief Iterate backwards over a list, where user may delete.
  *
@@ -506,8 +504,8 @@ uint_fast16_t ns_list_count_(const ns_list_t *list, ns_list_offset_t link_offset
  * Iterating forwards is *slightly* more efficient.
  */
 #define ns_list_foreach_reverse_safe(type, e, list) \
-	for (type *e = ns_list_get_last(list), *_next; \
-		e && (_next = ns_list_get_previous(list, e), true); e = _next)
+    for (type *e = ns_list_get_last(list), *_next; \
+        e && (_next = ns_list_get_previous(list, e), true); e = _next)
 
 /** \hideinitializer \brief Count entries on a list
  *
