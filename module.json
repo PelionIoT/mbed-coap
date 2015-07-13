@@ -14,7 +14,7 @@
     "source/libCoap/src/include"
   ],
   "dependencies": {
-    "mbed-client-libservice": "~2.0.8"
+    "mbed-client-libservice": "~3.0.0"
   },
   "targetDependencies": {}
 }
