@@ -1,5 +1,5 @@
 {
-  "name": "mbed-client",
+  "name": "mbed-client-c",
   "version": "0.1.5",
   "description": "Nanostack NSDL and COAP library",
   "keywords": [
