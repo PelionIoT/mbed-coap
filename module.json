@@ -7,7 +7,7 @@
     "nanostack"
   ],
   "private": true,
-  "license": "Proprietary, all rights reserved.",
+  "license": "Apache-2.0",
   "extraIncludes": [
     "nsdl-c",
     "source/libNsdl/src/include",
