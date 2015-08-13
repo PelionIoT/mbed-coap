@@ -229,7 +229,7 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
     message_left = packet_len - ((*packet_data_pptr) - packet_data_start_ptr);
 
     /* Loop all Options */
-    while ((**packet_data_pptr != 0xff) && message_left) {
+    while (message_left && (**packet_data_pptr != 0xff)) {
 
         /* Get option length WITHOUT extensions */
         uint16_t option_len = (**packet_data_pptr & 0x0F);
@@ -628,7 +628,7 @@ static int8_t sn_coap_parser_options_parse_multiple_options(struct coap_s *handl
         (*packet_data_pptr) += option_number_len;
         temp_parsed_uri_query_ptr += option_number_len;
 
-        if (((**packet_data_pptr >> COAP_OPTIONS_OPTION_NUMBER_SHIFT) != 0) || (temp_parsed_uri_query_ptr - *dst_pptr) >= uri_query_needed_heap) {
+        if ((temp_parsed_uri_query_ptr - *dst_pptr) >= uri_query_needed_heap || ((**packet_data_pptr >> COAP_OPTIONS_OPTION_NUMBER_SHIFT) != 0)) {
             return returned_option_counter;
         }
 
@@ -693,12 +693,11 @@ static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_
         i += option_number_len;
         ret_value += option_number_len + 1; /* + 1 is for separator */
 
+        if(ret_value >= packet_left_len)
+        	break;
+
         if ((*(packet_data_ptr + i) >> COAP_OPTIONS_OPTION_NUMBER_SHIFT) != 0) {
-            if (ret_value != 0) {
-                return (ret_value - 1);    /* -1 because last Part path does not include separator */
-            } else {
-                return 0;
-            }
+        	return (ret_value - 1);    /* -1 because last Part path does not include separator */
         }
 
         option_number_len = (*(packet_data_ptr + i) & 0x0F);
@@ -707,8 +706,8 @@ static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_
             i++;
             option_number_len = *(packet_data_ptr + i) + 13;
         } else if (option_number_len == 14) {
-            option_number_len = *(packet_data_ptr + 2);
-            option_number_len += (*(packet_data_ptr + 1) << 8) + 269;
+            option_number_len = *(packet_data_ptr + i + 2);
+            option_number_len += (*(packet_data_ptr + i + 1) << 8) + 269;
             i += 2;
         } else if (option_number_len == 15) {
             return -1;
