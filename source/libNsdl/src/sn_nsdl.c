@@ -346,6 +346,10 @@ uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uin
         return 0;
     }
 
+    if (!sn_nsdl_is_ep_registered(handle)){
+    	return 0;
+    }
+
     memset(&temp_parameters, 0, sizeof(sn_nsdl_ep_parameters_s));
 
     temp_parameters.lifetime_len = lt_len;
