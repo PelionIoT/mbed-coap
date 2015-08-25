@@ -1,5 +1,17 @@
 /*
- * Copyright (c) 2011-2015 ARM. All rights reserved.
+ * Copyright (c) 2011-2015 ARM Limited. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ * Licensed under the Apache License, Version 2.0 (the License); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /**
  * \file sn_nsdl.c
@@ -332,6 +344,10 @@ uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uin
     /* Check parameters */
     if (handle == NULL) {
         return 0;
+    }
+
+    if (!sn_nsdl_is_ep_registered(handle)){
+    	return 0;
     }
 
     memset(&temp_parameters, 0, sizeof(sn_nsdl_ep_parameters_s));
@@ -1330,19 +1346,20 @@ static uint8_t sn_nsdl_calculate_uri_query_option_len(sn_nsdl_ep_parameters_s *e
         number_of_parameters++;
     }
 
-    if ((endpoint_info_ptr->binding_and_mode != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE)) {
-        return_value += BS_QUEUE_MODE_PARAMATER_LEN;
-        if (endpoint_info_ptr->binding_and_mode & 0x01) {
-            return_value++;
-        }
-        if (endpoint_info_ptr->binding_and_mode & 0x04) {
-            return_value++;
-        }
-        if ((endpoint_info_ptr->binding_and_mode & 0x02) && ((endpoint_info_ptr->binding_and_mode & 0x04) || (endpoint_info_ptr->binding_and_mode & 0x01))) {
-            return_value++;
-        }
+    if (((endpoint_info_ptr->binding_and_mode & 0x04) || (endpoint_info_ptr->binding_and_mode & 0x01)) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE)) {
+		return_value += BS_QUEUE_MODE_PARAMATER_LEN;
 
-        number_of_parameters++;
+		if (endpoint_info_ptr->binding_and_mode & 0x01) {
+			return_value++;
+		}
+		if (endpoint_info_ptr->binding_and_mode & 0x04) {
+			return_value++;
+		}
+		if ((endpoint_info_ptr->binding_and_mode & 0x02) && ((endpoint_info_ptr->binding_and_mode & 0x04) || (endpoint_info_ptr->binding_and_mode & 0x01))) {
+			return_value++;
+		}
+
+		number_of_parameters++;
     }
 
     if (number_of_parameters != 0) {
@@ -1443,27 +1460,27 @@ static int8_t sn_nsdl_fill_uri_query_options(struct nsdl_s *handle, sn_nsdl_ep_p
     /* If queue-mode is configured, fill needed fields    */
     /******************************************************/
 
-    if ((parameter_ptr->binding_and_mode != 0) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE)) {
-        if (temp_ptr != source_msg_ptr->options_list_ptr->uri_query_ptr) {
-            *temp_ptr++ = '&';
-        }
+    if (((parameter_ptr->binding_and_mode & 0x01) || (parameter_ptr->binding_and_mode & 0x04)) && (msg_type == SN_NSDL_EP_REGISTER_MESSAGE)) {
+		if (temp_ptr != source_msg_ptr->options_list_ptr->uri_query_ptr) {
+			*temp_ptr++ = '&';
+		}
 
-        memcpy(temp_ptr, bs_queue_mode, sizeof(bs_queue_mode));
-        temp_ptr += BS_QUEUE_MODE_PARAMATER_LEN;
+		memcpy(temp_ptr, bs_queue_mode, sizeof(bs_queue_mode));
+		temp_ptr += BS_QUEUE_MODE_PARAMATER_LEN;
 
-        if (parameter_ptr->binding_and_mode & 0x01) {
-            *temp_ptr++ = 'U';
-            if (parameter_ptr->binding_and_mode & 0x02) {
-                *temp_ptr++ = 'Q';
-            }
-        }
+		if (parameter_ptr->binding_and_mode & 0x01) {
+			*temp_ptr++ = 'U';
+			if (parameter_ptr->binding_and_mode & 0x02) {
+				*temp_ptr++ = 'Q';
+			}
+		}
 
-        if (parameter_ptr->binding_and_mode & 0x04) {
-            *temp_ptr++ = 'S';
-            if ((parameter_ptr->binding_and_mode & 0x02) && !(parameter_ptr->binding_and_mode & 0x01)) {
-                *temp_ptr++ = 'Q';
-            }
-        }
+		if (parameter_ptr->binding_and_mode & 0x04) {
+			*temp_ptr++ = 'S';
+			if ((parameter_ptr->binding_and_mode & 0x02) && !(parameter_ptr->binding_and_mode & 0x01)) {
+				*temp_ptr++ = 'Q';
+			}
+		}
     }
 
     return SN_NSDL_SUCCESS;

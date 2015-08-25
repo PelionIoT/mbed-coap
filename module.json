@@ -1,20 +1,20 @@
 {
   "name": "mbed-client-c",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Nanostack NSDL and COAP library",
   "keywords": [
     "coap",
     "nanostack"
   ],
   "private": true,
-  "license": "Proprietary, all rights reserved.",
+  "license": "Apache-2.0",
   "extraIncludes": [
     "nsdl-c",
     "source/libNsdl/src/include",
     "source/libCoap/src/include"
   ],
   "dependencies": {
-    "mbed-client-libservice": "~3.0.0"
+    "nanostack-libservice": "~3.0.0"
   },
   "targetDependencies": {}
 }
