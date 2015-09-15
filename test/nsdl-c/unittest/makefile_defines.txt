@@ -13,6 +13,7 @@ INCLUDE_DIRS =\
   ../../../../../libService/libService\
   ../../../../nsdl-c\
   ../../../../source/libCoap/src/include\
+  ../../../../source/libNsdl/src/include\
   /usr/include\
   $(CPPUTEST_HOME)/include\
 
