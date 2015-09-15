@@ -55,6 +55,9 @@ extern int8_t                       sn_nsdl_build_registration_body(struct nsdl_
  */
 extern int8_t sn_grs_destroy(struct grs_s *handle)
 {
+    if( handle == NULL ){
+        return 0;
+    }
     ns_list_foreach_safe(sn_nsdl_resource_info_s, tmp, &handle->resource_root_list) {
         ns_list_remove(&handle->resource_root_list, tmp);
         --handle->resource_root_count;
@@ -112,7 +115,7 @@ extern struct grs_s *sn_grs_init(uint8_t (*sn_grs_tx_callback_ptr)(struct nsdl_s
 
     /* Check parameters */
     if (sn_grs_alloc == NULL || sn_grs_free == NULL ||
-            sn_grs_tx_callback_ptr == NULL) {
+        sn_grs_tx_callback_ptr == NULL || sn_grs_rx_callback_ptr == NULL) {
         return NULL;
     }
 
@@ -142,6 +145,10 @@ extern struct grs_s *sn_grs_init(uint8_t (*sn_grs_tx_callback_ptr)(struct nsdl_s
 extern sn_grs_resource_list_s *sn_grs_list_resource(struct grs_s *handle, uint16_t pathlen, uint8_t *path)
 {
     sn_grs_resource_list_s *grs_resource_list_ptr = NULL;
+
+    if( handle == NULL || path == NULL){
+        return NULL;
+    }
 
     /* Allocate memory for the resource list to be filled */
     grs_resource_list_ptr = handle->sn_grs_alloc(sizeof(sn_grs_resource_list_s));
@@ -199,7 +206,7 @@ fail:
 
 extern void sn_grs_free_resource_list(struct grs_s *handle, sn_grs_resource_list_s *list)
 {
-    if (!list) {
+    if (!list || !handle) {
         return;
     }
 
@@ -219,11 +226,17 @@ extern void sn_grs_free_resource_list(struct grs_s *handle, sn_grs_resource_list
 
 extern const sn_nsdl_resource_info_s *sn_grs_get_first_resource(struct grs_s *handle)
 {
+    if( !handle ){
+        return NULL;
+    }
     return ns_list_get_first(&handle->resource_root_list);
 }
 
 extern const sn_nsdl_resource_info_s *sn_grs_get_next_resource(struct grs_s *handle, const sn_nsdl_resource_info_s *sn_grs_current_resource)
 {
+    if( !handle || !sn_grs_current_resource ){
+        return NULL;
+    }
     return ns_list_get_next(&handle->resource_root_list, sn_grs_current_resource);
 }
 
@@ -260,6 +273,10 @@ extern int8_t sn_grs_update_resource(struct grs_s *handle, sn_nsdl_resource_info
 {
     /* Local variables */
     sn_nsdl_resource_info_s     *resource_temp  = NULL;
+
+    if( !res || !handle ){
+        return SN_NSDL_FAILURE;
+    }
 
     /* Search resource */
     resource_temp = sn_grs_search_resource(handle, res->pathlen, res->path, SN_GRS_SEARCH_METHOD);
@@ -299,7 +316,7 @@ extern int8_t sn_grs_update_resource(struct grs_s *handle, sn_nsdl_resource_info
 
 extern int8_t sn_grs_create_resource(struct grs_s *handle, sn_nsdl_resource_info_s *res)
 {
-    if (!res) {
+    if (!res || !handle) {
         return SN_NSDL_FAILURE;
     }
 
@@ -346,6 +363,9 @@ extern int8_t sn_grs_create_resource(struct grs_s *handle, sn_nsdl_resource_info
 */
 extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src_addr_ptr)
 {
+    if( !coap_packet_ptr || !nsdl_handle){
+        return SN_NSDL_FAILURE;
+    }
 
     sn_nsdl_resource_info_s *resource_temp_ptr  = NULL;
     sn_coap_msg_code_e      status              = COAP_MSG_CODE_EMPTY;
@@ -449,6 +469,8 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
                             if (sn_grs_delete_resource(handle, coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr) == SN_NSDL_SUCCESS) {
                                 status = COAP_MSG_CODE_RESPONSE_DELETED;
                             } else {
+                                //This is dead code (Currently only time delete fails is when resource is not found
+                                //and sn_grs_search_resource is used with same arguments above!)
                                 status = COAP_MSG_CODE_RESPONSE_INTERNAL_SERVER_ERROR;
                             }
                         } else {
@@ -523,10 +545,6 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
             response_message_hdr_ptr->token_len = coap_packet_ptr->token_len;
             response_message_hdr_ptr->token_ptr = handle->sn_grs_alloc(response_message_hdr_ptr->token_len);
             if (!response_message_hdr_ptr->token_ptr) {
-                if (response_message_hdr_ptr->payload_ptr) {
-                    handle->sn_grs_free(response_message_hdr_ptr->payload_ptr);
-                    response_message_hdr_ptr->payload_ptr = 0;
-                }
                 sn_coap_parser_release_allocated_coap_msg_mem(handle->coap, response_message_hdr_ptr);
 
                 if (coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr) {
@@ -607,6 +625,10 @@ extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *ad
     uint8_t     *message_ptr = NULL;
     uint16_t    message_len = 0;
     uint8_t     ret_val = 0;
+
+    if( !handle ){
+        return SN_NSDL_FAILURE;
+    }
 
     /* Calculate message length */
     message_len = sn_coap_builder_calc_needed_packet_data_size(coap_hdr_ptr);
@@ -717,7 +739,7 @@ sn_nsdl_resource_info_s *sn_grs_search_resource(struct grs_s *handle, uint16_t p
     uint8_t                     *path_temp_ptr          = NULL;
 
     /* Check parameters */
-    if (!pathlen || !path) {
+    if (!handle || !pathlen || !path) {
         return NULL;
     }
 
@@ -737,7 +759,6 @@ sn_nsdl_resource_info_s *sn_grs_search_resource(struct grs_s *handle, uint16_t p
             }
         }
     }
-
     /* Search also subresources, eg. dr/x -> returns dr/x/1, dr/x/2 etc... */
     else if (search_method == SN_GRS_DELETE_METHOD) {
         /* Scan all nodes on list */
@@ -775,7 +796,7 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_resource
     sn_nsdl_resource_info_s *resource_copy_ptr = NULL;
 
     /* Allocate memory for the resource info copy */
-    if (!resource_ptr->pathlen) {
+    if (!resource_ptr->pathlen) { //Dead code
         return SN_NSDL_FAILURE;
     }
     resource_copy_ptr = handle->sn_grs_alloc(sizeof(sn_nsdl_resource_info_s));
@@ -966,11 +987,14 @@ static int8_t sn_grs_resource_info_free(struct grs_s *handle, sn_nsdl_resource_i
 
         return SN_NSDL_SUCCESS;
     }
-    return SN_NSDL_FAILURE;
+    return SN_NSDL_FAILURE; //Dead code?
 }
 
 void sn_grs_mark_resources_as_registered(struct nsdl_s *handle)
 {
+    if( !handle ){
+        return;
+    }
 
     const sn_nsdl_resource_info_s *temp_resource;
 

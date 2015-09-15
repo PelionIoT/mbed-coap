@@ -367,18 +367,20 @@ extern char *sn_nsdl_get_version(void);
 extern int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet, uint16_t packet_len, sn_nsdl_addr_s *src);
 
 /**
- * \fn extern int8_t sn_nsdl_exec(uint32_t time);
+ * \fn extern int8_t sn_nsdl_exec(struct nsdl_s *handle, uint32_t time);
  *
  * \brief CoAP retransmission function.
  *
  * Used to give execution time for the mbed Device C Client library for retransmissions.
+ *
+ * \param   *handle Pointer to nsdl-library handle
  *
  * \param  time Time in seconds.
  *
  * \return  0   Success
  * \return  -1  Failure
  */
-extern int8_t sn_nsdl_exec(uint32_t time);
+extern int8_t sn_nsdl_exec(struct nsdl_s *handle, uint32_t time);
 
 /**
  * \fn  extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);

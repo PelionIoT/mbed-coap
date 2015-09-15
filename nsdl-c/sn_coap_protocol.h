@@ -114,12 +114,14 @@ extern int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst
 extern sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr, void *);
 
 /**
- * \fn int8_t sn_coap_protocol_exec(uint32_t current_time)
+ * \fn int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
  *
  * \brief Sends CoAP messages from re-sending queue, if there is any.
  *        Cleans also old messages from the duplication list and from block receiving list
  *
  *        This function can be called e.g. once in a second but also more frequently.
+ *
+ * \param *handle Pointer to CoAP library handle
  *
  * \param current_time is System time in seconds. This time is
  *        used for message re-sending timing and to identify old saved data.
@@ -128,7 +130,7 @@ extern sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr
  *          -1 if failed
  */
 
-extern int8_t              sn_coap_protocol_exec(uint32_t current_time);
+extern int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time);
 
 /**
  * \fn int8_t sn_coap_protocol_set_block_size(uint16_t block_size)
@@ -178,11 +180,13 @@ extern int8_t              sn_coap_protocol_set_retransmission_parameters(uint8_
 extern int8_t              sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes);
 
 /**
- * \fn void sn_coap_protocol_clear_retransmission_buffer(void)
+ * \fn void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
+ *
+ * \param *handle Pointer to CoAP library handle
  *
  * \brief If re-transmissions are enabled, this function removes all messages from the retransmission queue.
  */
-extern void                sn_coap_protocol_clear_retransmission_buffer(void);
+extern void                sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle);
 
 #endif /* SN_COAP_PROTOCOL_H_ */
 

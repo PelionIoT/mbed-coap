@@ -26,7 +26,11 @@
 #include "ns_types.h"
 #include "sn_coap_header.h"
 
+#include "sn_coap_header_check_stub.h"
+
+sn_coap_header_check_stub_def sn_coap_header_check_stub;
+
 int8_t sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_version_e coap_version)
 {
-    return 0;
+    return sn_coap_header_check_stub.expectedInt8;
 }

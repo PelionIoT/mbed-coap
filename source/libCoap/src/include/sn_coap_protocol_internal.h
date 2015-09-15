@@ -25,6 +25,7 @@
 #define SN_COAP_PROTOCOL_INTERNAL_H_
 
 #include "ns_list.h"
+#include "sn_coap_header_internal.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,7 +63,9 @@ struct coap_s {
 
 /* Init value for the maximum count of messages to be stored for duplication detection          */
 /* Setting of this value to 0 will disable duplication check, also reduce use of ROM memory     */
+#ifndef SN_COAP_DUPLICATION_MAX_MSGS_COUNT
 #define SN_COAP_DUPLICATION_MAX_MSGS_COUNT              0
+#endif
 /* Maximum allowed number of saved messages for duplicate searching */
 #define SN_COAP_MAX_ALLOWED_DUPLICATION_MESSAGE_COUNT   6
 
