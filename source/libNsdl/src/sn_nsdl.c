@@ -769,8 +769,8 @@ int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_devic
 
 char *sn_nsdl_get_version(void)
 {
-#if defined(YOTTA_COMPONENT_VERSION)
-    return YOTTA_COMPONENT_VERSION;
+#if defined(YOTTA_MBED_CLIENT_C_VERSION_STRING)
+    return YOTTA_MBED_CLIENT_C_VERSION_STRING;
 #elif defined(VERSION)
     return VERSION;
 #else
