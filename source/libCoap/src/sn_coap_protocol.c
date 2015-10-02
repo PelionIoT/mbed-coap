@@ -210,7 +210,7 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
 
     /* Randomize global message ID */
 #if defined __linux__ || defined TARGET_LIKE_MBED
-    srand(time(NULL));
+    srand(rand()^time(NULL));
 
     message_id = rand() % 400 + 100;
 #else
