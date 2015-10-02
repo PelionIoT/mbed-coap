@@ -43,4 +43,4 @@ release:
 
 .PHONY: deploy_to
 deploy_to: all
-	tar --transform 's,^,nsdl-c/,' --append -f $(TO) *.a
+	tar --transform 's,^,nsdl-c/,' --append -f $(TO) *.a nsdl-c
