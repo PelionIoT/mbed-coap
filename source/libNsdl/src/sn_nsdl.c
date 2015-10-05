@@ -377,7 +377,7 @@ uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uin
 
     /* Fill message fields -> confirmable post to specified NSP path */
     register_message_ptr->msg_type  =   COAP_MSG_TYPE_CONFIRMABLE;
-    register_message_ptr->msg_code  =   COAP_MSG_CODE_REQUEST_PUT;
+    register_message_ptr->msg_code  =   COAP_MSG_CODE_REQUEST_POST;
 
     register_message_ptr->uri_path_len  =   sizeof(resource_path_ptr) + handle->ep_information_ptr->domain_name_len + handle->ep_information_ptr->endpoint_name_len + 2;    /* = rd/domain/endpoint */
 
