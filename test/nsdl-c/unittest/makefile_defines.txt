@@ -10,12 +10,12 @@ INCLUDE_DIRS =\
   ../stubs\
   ../../../..\
   ../../../../source\
-  ../../../../../libService/libService\
   ../../../../nsdl-c\
+  ../../../../../mbed-client-libservice/mbed-client-libservice\
   ../../../../source/libCoap/src/include\
   ../../../../source/libNsdl/src/include\
   /usr/include\
   $(CPPUTEST_HOME)/include\
 
 CPPUTESTFLAGS = -D__thumb2__ -w
-CPPUTEST_CFLAGS += -std=gnu99 
+CPPUTEST_CFLAGS += -std=gnu99
