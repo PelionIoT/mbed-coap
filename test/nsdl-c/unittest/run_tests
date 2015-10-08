@@ -31,7 +31,7 @@ cd coverages
 
 lcov -q -d ../. -c -o app.info
 lcov -q -r app.info "/test*" -o app.info
-lcov -q -r app.info "/libService*" -o app.info
+lcov -q -r app.info "/mbed-client-libservice*" -o app.info
 lcov -q -r app.info "/usr*" -o app.info
 genhtml --no-branch-coverage app.info
 cd ..

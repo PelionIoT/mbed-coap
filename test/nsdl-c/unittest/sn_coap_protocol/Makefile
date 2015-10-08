@@ -7,10 +7,10 @@ SRC_FILES = \
 TEST_SRC_FILES = \
 	main.cpp \
         libCoap_protocol_test.cpp \
-        ../../../../../libService/exported-libs/mbed-client-libservice/source/libList/ns_list.c \
         ../stubs/sn_coap_builder_stub.c \
         ../stubs/sn_coap_parser_stub.c \
         ../stubs/sn_coap_header_check_stub.c \
+        ../stubs/ns_list_stub.c \
 
 include ../MakefileWorker.mk
 
