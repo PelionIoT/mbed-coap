@@ -1,9 +1,5 @@
 # need unity.h:
-unittest/libCoap/*
-unittest/libNsdl/*
-test/nsdl-c/unittest/*
-test/nsdl-c/unittest/sn_coap_builder/*
-test/nsdl-c/unittest/sn_coap_header_check/*
-test/nsdl-c/unittest/sn_coap_protocol/*
-test/nsdl-c/unittest/stubs/*
+unittest/*
+test/*
 doxygen/*
+
