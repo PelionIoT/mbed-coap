@@ -49,7 +49,7 @@ $(CLEANDIRS):
 $(CLEANTESTDIRS):
 	@make -C $(@:clean-%=%) clean
 
-#include ../libService/toolchain_rules.mk
+include ../libService/toolchain_rules.mk
 
 $(eval $(call generate_rules,$(LIB),$(SRCS)))
 
