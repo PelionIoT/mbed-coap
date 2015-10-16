@@ -40,15 +40,6 @@ TESTDIRS := $(UNITTESTS:%=build-%)
 CLEANTESTDIRS := $(UNITTESTS:%=clean-%)
 COVERAGEFILE := ./lcov/coverage.info
 
-$(TESTDIRS):
-	@make -C $(@:build-%=%)
-
-$(CLEANDIRS):
-	@make -C $(@:clean-%=%) clean
-
-$(CLEANTESTDIRS):
-	@make -C $(@:clean-%=%) clean
-
 include ../libService/toolchain_rules.mk
 
 $(eval $(call generate_rules,$(LIB),$(SRCS)))
@@ -87,6 +78,15 @@ test: $(TESTDIRS)
 .PHONY: deploy_to
 deploy_to: all
 	tar --transform 's,^,nsdl-c/,' --append -f $(TO) *.a
+
+$(TESTDIRS):
+	@make -C $(@:build-%=%)
+
+$(CLEANDIRS):
+	@make -C $(@:clean-%=%) clean
+
+$(CLEANTESTDIRS):
+	@make -C $(@:clean-%=%) clean
 
 clean-extra: $(CLEANDIRS) \
 	$(CLEANTESTDIRS)
