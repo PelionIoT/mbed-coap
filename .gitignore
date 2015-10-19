@@ -32,4 +32,5 @@ test/nsdl-c/unittest/results
 .yotta.json
 coverage/
 lcov/
+upload.tar.gz
 
