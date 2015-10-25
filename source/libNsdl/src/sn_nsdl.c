@@ -311,26 +311,39 @@ uint16_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle)
         unregister_message_ptr->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
         unregister_message_ptr->msg_code = COAP_MSG_CODE_REQUEST_DELETE;
 
-        unregister_message_ptr->uri_path_len = (RESOURCE_DIR_LEN + 1 + handle->ep_information_ptr->domain_name_len + 1 + handle->ep_information_ptr->endpoint_name_len);
-        unregister_message_ptr->uri_path_ptr = handle->sn_nsdl_alloc(unregister_message_ptr->uri_path_len);
-        if (!unregister_message_ptr->uri_path_ptr) {
-            sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, unregister_message_ptr);
-            return 0;
+        if(handle->ep_information_ptr->location_ptr) {
+            unregister_message_ptr->uri_path_len = handle->ep_information_ptr->location_len;
+            unregister_message_ptr->uri_path_ptr = handle->sn_nsdl_alloc(unregister_message_ptr->uri_path_len);
+            if (!unregister_message_ptr->uri_path_ptr) {
+                sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, unregister_message_ptr);
+                return 0;
+            }
+
+            temp_ptr = unregister_message_ptr->uri_path_ptr;
+
+            memcpy(temp_ptr , handle->ep_information_ptr->location_ptr, handle->ep_information_ptr->location_len);
+        } else {
+            unregister_message_ptr->uri_path_len = (RESOURCE_DIR_LEN + 1 + handle->ep_information_ptr->domain_name_len + 1 + handle->ep_information_ptr->endpoint_name_len);
+            unregister_message_ptr->uri_path_ptr = handle->sn_nsdl_alloc(unregister_message_ptr->uri_path_len);
+            if (!unregister_message_ptr->uri_path_ptr) {
+                sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, unregister_message_ptr);
+                return 0;
+            }
+
+            temp_ptr = unregister_message_ptr->uri_path_ptr;
+
+            memcpy(temp_ptr, resource_path_ptr, RESOURCE_DIR_LEN);
+            temp_ptr += RESOURCE_DIR_LEN;
+
+            *temp_ptr++ = '/';
+
+            memcpy(temp_ptr , handle->ep_information_ptr->domain_name_ptr, handle->ep_information_ptr->domain_name_len);
+            temp_ptr += handle->ep_information_ptr->domain_name_len;
+
+            *temp_ptr++ = '/';
+
+            memcpy(temp_ptr , handle->ep_information_ptr->endpoint_name_ptr, handle->ep_information_ptr->endpoint_name_len);
         }
-
-        temp_ptr = unregister_message_ptr->uri_path_ptr;
-
-        memcpy(temp_ptr, resource_path_ptr, RESOURCE_DIR_LEN);
-        temp_ptr += RESOURCE_DIR_LEN;
-
-        *temp_ptr++ = '/';
-
-        memcpy(temp_ptr , handle->ep_information_ptr->domain_name_ptr, handle->ep_information_ptr->domain_name_len);
-        temp_ptr += handle->ep_information_ptr->domain_name_len;
-
-        *temp_ptr++ = '/';
-
-        memcpy(temp_ptr , handle->ep_information_ptr->endpoint_name_ptr, handle->ep_information_ptr->endpoint_name_len);
 
         /* Send message */
         message_id = sn_nsdl_internal_coap_send(handle, unregister_message_ptr, handle->nsp_address_ptr->omalw_address_ptr, SN_NSDL_MSG_UNREGISTER);
@@ -379,29 +392,43 @@ uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uin
     register_message_ptr->msg_type  =   COAP_MSG_TYPE_CONFIRMABLE;
     register_message_ptr->msg_code  =   COAP_MSG_CODE_REQUEST_POST;
 
-    register_message_ptr->uri_path_len  =   sizeof(resource_path_ptr) + handle->ep_information_ptr->domain_name_len + handle->ep_information_ptr->endpoint_name_len + 2;    /* = rd/domain/endpoint */
+    if(handle->ep_information_ptr->location_ptr) {
+        register_message_ptr->uri_path_len  =   handle->ep_information_ptr->location_len;    /* = Only location set by Device Server*/
 
-    register_message_ptr->uri_path_ptr  =   handle->sn_nsdl_alloc(register_message_ptr->uri_path_len);
-    if (!register_message_ptr->uri_path_ptr) {
-        sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
-        return 0;
+        register_message_ptr->uri_path_ptr  =   handle->sn_nsdl_alloc(register_message_ptr->uri_path_len);
+        if (!register_message_ptr->uri_path_ptr) {
+            sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
+            return 0;
+        }
+
+        temp_ptr = register_message_ptr->uri_path_ptr;
+
+        /* location */
+        memcpy(temp_ptr, handle->ep_information_ptr->location_ptr, handle->ep_information_ptr->location_len);
+    } else {
+        register_message_ptr->uri_path_len  =   sizeof(resource_path_ptr) + handle->ep_information_ptr->domain_name_len + handle->ep_information_ptr->endpoint_name_len + 2;    /* = rd/domain/endpoint */
+
+        register_message_ptr->uri_path_ptr  =   handle->sn_nsdl_alloc(register_message_ptr->uri_path_len);
+        if (!register_message_ptr->uri_path_ptr) {
+            sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
+            return 0;
+        }
+
+        temp_ptr = register_message_ptr->uri_path_ptr;
+
+        /* rd/ */
+        memcpy(temp_ptr, resource_path_ptr, sizeof(resource_path_ptr));
+        temp_ptr += sizeof(resource_path_ptr);
+        *temp_ptr++ = '/';
+
+        /* rd/DOMAIN/ */
+        memcpy(temp_ptr, handle->ep_information_ptr->domain_name_ptr, handle->ep_information_ptr->domain_name_len);
+        temp_ptr += handle->ep_information_ptr->domain_name_len;
+        *temp_ptr++ = '/';
+
+        /* rd/domain/ENDPOINT */
+        memcpy(temp_ptr, handle->ep_information_ptr->endpoint_name_ptr, handle->ep_information_ptr->endpoint_name_len);
     }
-
-    temp_ptr = register_message_ptr->uri_path_ptr;
-
-    /* rd/ */
-    memcpy(temp_ptr, resource_path_ptr, sizeof(resource_path_ptr));
-    temp_ptr += sizeof(resource_path_ptr);
-    *temp_ptr++ = '/';
-
-    /* rd/DOMAIN/ */
-    memcpy(temp_ptr, handle->ep_information_ptr->domain_name_ptr, handle->ep_information_ptr->domain_name_len);
-    temp_ptr += handle->ep_information_ptr->domain_name_len;
-    *temp_ptr++ = '/';
-
-    /* rd/domain/ENDPOINT */
-    memcpy(temp_ptr, handle->ep_information_ptr->endpoint_name_ptr, handle->ep_information_ptr->endpoint_name_len);
-
 
     /* Allocate memory for the extended options list */
     register_message_ptr->options_list_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_options_list_s));
@@ -433,6 +460,18 @@ uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uin
     sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, register_message_ptr);
 
     return message_id;
+}
+
+int8_t sn_nsdl_set_endpoint_location(struct nsdl_s *handle, uint8_t *location_ptr, uint8_t location_len)
+{
+    if(!handle && !location_ptr && (location_len == 0)) {
+        return -1;
+    }
+    handle->ep_information_ptr->location_ptr = handle->sn_nsdl_alloc(location_len);
+    memcpy(handle->ep_information_ptr->location_ptr, location_ptr, location_len);
+    handle->ep_information_ptr->location_len = location_len;
+
+    return 0;
 }
 
 void sn_nsdl_nsp_lost(struct nsdl_s *handle)

@@ -97,6 +97,9 @@ typedef struct sn_nsdl_ep_parameters_ {
     sn_nsdl_registration_mode_t ds_register_mode;       /**< Defines registration mode */
     sn_nsdl_oma_binding_and_mode_t binding_and_mode;    /**< Defines endpoints binding and mode */
 
+    uint8_t     *location_ptr;                          /**< Endpoint location in server, optional parameter,default is NULL */
+    uint8_t     location_len;
+
 } sn_nsdl_ep_parameters_s;
 
 /**
@@ -281,6 +284,20 @@ extern uint16_t sn_nsdl_unregister_endpoint(struct nsdl_s *handle);
  * \return  registration update message ID, 0 if failed
  */
 extern uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uint8_t lt_len);
+
+/**
+ * \fn extern int8_t sn_nsdl_set_endpoint_location(struct nsdl_s *handle, uint8_t *location_ptr, uint8_t location_len);
+ *
+ * \brief Sets the location receievd from Device Server.
+ *
+ * \param *handle   Pointer to nsdl-library handle
+ * \param *lt_ptr   Pointer to location value string , eg. "s322j4k"
+ * \param lt_len    Length of the location string
+ *
+ * \return  success, 0 if failed -1
+ */
+extern int8_t sn_nsdl_set_endpoint_location(struct nsdl_s *handle, uint8_t *location_ptr, uint8_t location_len);
+
 
 /**
  * \fn extern int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle)
