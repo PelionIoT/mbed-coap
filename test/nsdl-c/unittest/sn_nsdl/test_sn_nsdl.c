@@ -57,10 +57,12 @@ bool test_sn_nsdl_destroy()
     handle->oma_bs_address_ptr = (uint8_t*)malloc(5);
 
     handle->ep_information_ptr = (sn_nsdl_ep_parameters_s *)malloc(sizeof(sn_nsdl_ep_parameters_s));
+    memset(handle->ep_information_ptr,0,sizeof(sn_nsdl_ep_parameters_s));
     handle->ep_information_ptr->endpoint_name_ptr = (uint8_t*)malloc(5);
     handle->ep_information_ptr->domain_name_ptr = (uint8_t*)malloc(5);
     handle->ep_information_ptr->type_ptr = (uint8_t*)malloc(5);
     handle->ep_information_ptr->lifetime_ptr = (uint8_t*)malloc(5);
+    handle->ep_information_ptr->location_ptr = (uint8_t*)malloc(5);
 
     handle->nsp_address_ptr = (sn_nsdl_oma_server_info_t *)malloc(sizeof(sn_nsdl_oma_server_info_t));
     handle->nsp_address_ptr->omalw_address_ptr = (sn_nsdl_addr_s*)malloc(sizeof(sn_nsdl_addr_s));
@@ -427,6 +429,26 @@ bool test_sn_nsdl_unregister_endpoint()
         return false;
     }
 
+    u_int8_t loc[] = {"location"};
+
+    handle->ep_information_ptr->location_ptr = (uint8_t*)malloc(sizeof(loc));
+    handle->ep_information_ptr->location_len = (uint8_t)sizeof(loc);
+
+    retCounter = 1;
+    handle->sn_nsdl_endpoint_registered = 1;
+    sn_coap_builder_stub.expectedUint16 = 1;
+    if( 0 != sn_nsdl_unregister_endpoint(handle) ){
+        return false;
+    }
+
+    retCounter = 2;
+    handle->sn_nsdl_endpoint_registered = 1;
+    sn_coap_builder_stub.expectedUint16 = 1;
+    sn_coap_protocol_stub.expectedInt16 = -1;
+    if( 0 != sn_nsdl_unregister_endpoint(handle) ){
+        return false;
+    }
+
     sn_nsdl_destroy(handle);
     return true;
 }
@@ -534,7 +556,95 @@ bool test_sn_nsdl_update_registration()
         return false;
     }
 
+    u_int8_t loc[] = {"location"};
+
+    handle->ep_information_ptr->location_ptr = (uint8_t*)malloc(sizeof(loc));
+    handle->ep_information_ptr->location_len = (uint8_t)sizeof(loc);
+
+    sn_grs_stub.info2ndRetCounter = 1;
+    sn_grs_stub.infoRetCounter = 1;
+    sn_grs_stub.expectedInfo = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
+    memset( sn_grs_stub.expectedInfo->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    retCounter = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_REGISTERING;
+    //set_endpoint_info == -1
+    val = sn_nsdl_update_registration(handle, NULL, 0);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr);
+    free(sn_grs_stub.expectedInfo);
+
+    if( 0 != val ){
+        return false;
+    }
+
+    sn_grs_stub.info2ndRetCounter = 2;
+    sn_grs_stub.infoRetCounter = 2;
+    sn_grs_stub.expectedInfo = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
+    memset( sn_grs_stub.expectedInfo->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    retCounter = 2;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_REGISTERING;
+    //set_endpoint_info == -1
+    val = sn_nsdl_update_registration(handle, NULL, 0);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr);
+    free(sn_grs_stub.expectedInfo);
+
+    if( 0 != val ){
+        return false;
+    }
+
     sn_nsdl_destroy(handle);
+    return true;
+}
+
+bool test_sn_nsdl_set_endpoint_location()
+{
+
+    u_int8_t loc[] = {"location"};
+
+    uint8_t* location_ptr = (uint8_t*)malloc(sizeof(loc));
+    uint8_t location_len = (uint8_t)sizeof(loc);
+
+    sn_grs_stub.retNull = false;
+    retCounter = 4;
+    sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
+
+    struct nsdl_s* handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
+
+
+    if(sn_nsdl_set_endpoint_location(NULL,location_ptr,location_len) != -1){
+        return false;
+    }
+
+    if(sn_nsdl_set_endpoint_location(NULL,NULL,location_len) != -1){
+        return false;
+    }
+
+    if(sn_nsdl_set_endpoint_location(handle,NULL,location_len) != -1){
+        return false;
+    }
+
+    if(sn_nsdl_set_endpoint_location(handle,location_ptr,0) != -1){
+        return false;
+    }
+
+    if(sn_nsdl_set_endpoint_location(NULL,location_ptr,0) != -1){
+        return false;
+    }
+
+    retCounter = 1;
+
+    if(sn_nsdl_set_endpoint_location(handle,location_ptr,location_len) != 0){
+        return false;
+    }
+
+    sn_nsdl_destroy(handle);
+    free(location_ptr);
+
     return true;
 }
 

@@ -20,6 +20,8 @@ bool test_sn_nsdl_unregister_endpoint();
 
 bool test_sn_nsdl_update_registration();
 
+bool test_sn_nsdl_set_endpoint_location();
+
 bool test_sn_nsdl_nsp_lost();
 
 bool test_sn_nsdl_is_ep_registered();
