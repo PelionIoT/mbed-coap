@@ -40,6 +40,11 @@ TEST(sn_nsdl, test_sn_nsdl_update_registration)
     CHECK(test_sn_nsdl_update_registration());
 }
 
+TEST(sn_nsdl, test_sn_nsdl_set_endpoint_location)
+{
+    CHECK(test_sn_nsdl_set_endpoint_location());
+}
+
 TEST(sn_nsdl, test_sn_nsdl_nsp_lost)
 {
     CHECK(test_sn_nsdl_nsp_lost());
@@ -49,7 +54,6 @@ TEST(sn_nsdl, test_sn_nsdl_is_ep_registered)
 {
     CHECK(test_sn_nsdl_is_ep_registered());
 }
-
 
 TEST(sn_nsdl, test_sn_nsdl_send_observation_notification)
 {

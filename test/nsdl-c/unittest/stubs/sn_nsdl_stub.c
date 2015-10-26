@@ -64,6 +64,11 @@ uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uin
     return sn_nsdl_stub.expectedUint16;
 }
 
+int8_t sn_nsdl_set_endpoint_location(struct nsdl_s *handle, uint8_t *loc_ptr, uint8_t loc_len)
+{
+    return sn_nsdl_stub.expectedInt8;
+}
+
 void sn_nsdl_nsp_lost(struct nsdl_s *handle)
 {
 }
