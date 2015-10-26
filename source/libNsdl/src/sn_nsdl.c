@@ -104,6 +104,11 @@ int8_t sn_nsdl_destroy(struct nsdl_s *handle)
             handle->ep_information_ptr->domain_name_ptr = 0;
             handle->ep_information_ptr->domain_name_len = 0;
         }
+        if (handle->ep_information_ptr->location_ptr) {
+            handle->sn_nsdl_free(handle->ep_information_ptr->location_ptr);
+            handle->ep_information_ptr->location_ptr = 0;
+            handle->ep_information_ptr->location_len = 0;
+        }
         if (handle->ep_information_ptr->type_ptr) {
             handle->sn_nsdl_free(handle->ep_information_ptr->type_ptr);
             handle->ep_information_ptr->type_ptr = 0;
@@ -464,7 +469,7 @@ uint16_t sn_nsdl_update_registration(struct nsdl_s *handle, uint8_t *lt_ptr, uin
 
 int8_t sn_nsdl_set_endpoint_location(struct nsdl_s *handle, uint8_t *location_ptr, uint8_t location_len)
 {
-    if(!handle && !location_ptr && (location_len == 0)) {
+    if(!handle || !location_ptr || (location_len == 0)) {
         return -1;
     }
     handle->ep_information_ptr->location_ptr = handle->sn_nsdl_alloc(location_len);
