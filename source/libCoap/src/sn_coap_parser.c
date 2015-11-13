@@ -683,6 +683,9 @@ static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_
         if(ret_value >= packet_left_len)
             break;
 
+        if( i == packet_left_len )
+            break;
+
         if ((*(packet_data_ptr + i) >> COAP_OPTIONS_OPTION_NUMBER_SHIFT) != 0) {
             return (ret_value - 1);    /* -1 because last Part path does not include separator */
         }
