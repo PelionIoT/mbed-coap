@@ -28,15 +28,20 @@
 #include "sn_coap_header_check_stub.h"
 
 int retCounter = 0;
+static coap_s *coap_handle = NULL;
+void myFree(void* addr);
+void* myMalloc(uint16_t size);
+uint8_t null_tx_cb(uint8_t *a, uint16_t b, sn_nsdl_addr_s *c, void *d);
 
 TEST_GROUP(libCoap_protocol)
 {
     void setup() {
-        retCounter = 0;
+        retCounter = 1;
+        coap_handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
     }
 
     void teardown() {
-
+        sn_coap_protocol_destroy(coap_handle);
     }
 };
 
@@ -75,6 +80,7 @@ TEST(libCoap_protocol, sn_coap_protocol_destroy)
     handle->sn_coap_protocol_malloc = &myMalloc;
 
     CHECK( 0 == sn_coap_protocol_destroy(handle));
+
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_init_null_func_ptrs)
@@ -96,37 +102,38 @@ TEST(libCoap_protocol, sn_coap_protocol_init_null_malloc)
 TEST(libCoap_protocol, sn_coap_protocol_set_block_size)
 {
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
-    CHECK( 0 == sn_coap_protocol_set_block_size(16) );
+    CHECK( 0 == sn_coap_protocol_set_block_size(coap_handle,16) );
+    CHECK( -1 == sn_coap_protocol_set_block_size(NULL,1) );
 #endif
-
-    CHECK( -1 == sn_coap_protocol_set_block_size(1) );
+    CHECK( -1 == sn_coap_protocol_set_block_size(coap_handle,1) );    
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_set_duplicate_buffer_size)
 {
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
-    CHECK( 0 == sn_coap_protocol_set_duplicate_buffer_size(3));
+    CHECK( 0 == sn_coap_protocol_set_duplicate_buffer_size(coap_handle,3));
+    CHECK( -1 == sn_coap_protocol_set_duplicate_buffer_size(NULL,3));
 #endif
-    CHECK( -1 == sn_coap_protocol_set_duplicate_buffer_size(999));
+    CHECK( -1 == sn_coap_protocol_set_duplicate_buffer_size(coap_handle,999));        
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_set_retransmission_parameters)
 {
 #if ENABLE_RESENDINGS
-    CHECK( 0 == sn_coap_protocol_set_retransmission_parameters(3,0) );
-
-    CHECK( 0 == sn_coap_protocol_set_retransmission_parameters(3, 10) );
-#endif
-
-    CHECK( -1 == sn_coap_protocol_set_retransmission_parameters(999,0) );
+    CHECK( 0 == sn_coap_protocol_set_retransmission_parameters(coap_handle,3,0) );
+    CHECK( 0 == sn_coap_protocol_set_retransmission_parameters(coap_handle,3, 10) );
+    CHECK( -1 == sn_coap_protocol_set_retransmission_parameters(NULL,3,0) );
+#endif    
+    CHECK( -1 == sn_coap_protocol_set_retransmission_parameters(coap_handle,999,0) )
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_set_retransmission_buffer)
 {
 #if ENABLE_RESENDINGS
-    CHECK( 0 == sn_coap_protocol_set_retransmission_buffer(3,3) );
+    CHECK( 0 == sn_coap_protocol_set_retransmission_buffer(coap_handle,3,3) );
+    CHECK( -1 == sn_coap_protocol_set_retransmission_buffer(NULL,3,3) );
 #endif
-    CHECK( -1 == sn_coap_protocol_set_retransmission_buffer(3,999) );
+    CHECK( -1 == sn_coap_protocol_set_retransmission_buffer(coap_handle,3,999) );
 }
 
 //TEST(libCoap_protocol, sn_coap_protocol_clear_retransmission_buffer)
@@ -198,7 +205,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     //Test variations of sn_coap_convert_block_size here -->
     for( int i=0; i < 8; i++ ){
         uint16_t multiplier = 16*pow(2, i);
-        sn_coap_protocol_set_block_size(multiplier);
+        sn_coap_protocol_set_block_size(handle,multiplier);
         hdr.payload_ptr = (uint8_t*)malloc(multiplier + 20);
         memset(hdr.payload_ptr, '1', multiplier + 20);
         hdr.payload_len = multiplier + 20;
@@ -216,7 +223,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
         hdr.payload_ptr = NULL;
         hdr.payload_len = 0;
     }
-    sn_coap_protocol_set_block_size(SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE);
+    sn_coap_protocol_set_block_size(handle,SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE);
 
     // <-- Test variations of sn_coap_convert_block_size here
 
@@ -417,7 +424,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     CHECK( NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL) );
 
     //Test sn_coap_handle_blockwise_message, block1_ptr != NULL -->
-    sn_coap_protocol_set_duplicate_buffer_size(1);
+    sn_coap_protocol_set_duplicate_buffer_size(handle,1);
 
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
@@ -1010,7 +1017,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
 
     //Test sn_coap_handle_blockwise_message, block2_ptr != NULL -->
-    sn_coap_protocol_set_duplicate_buffer_size(1);
+    sn_coap_protocol_set_duplicate_buffer_size(handle,1);
 
     // block2_ptr length == 1,2,3 -->
 
@@ -1715,7 +1722,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     sn_coap_builder_stub.expectedInt16 = 1;
     retCounter = 10;
-    sn_coap_protocol_set_retransmission_buffer(0,0);
+    sn_coap_protocol_set_retransmission_buffer(handle,0,0);
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL != ret );
     free(payload);
@@ -1772,7 +1779,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     sn_coap_builder_stub.expectedInt16 = 1;
     retCounter = 10;
-    sn_coap_protocol_set_retransmission_buffer(2,1);
+    sn_coap_protocol_set_retransmission_buffer(handle,2,1);
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL != ret );
     free(payload);
@@ -2129,7 +2136,7 @@ TEST(libCoap_protocol, sn_coap_protocol_exec2)
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
 
-    sn_coap_protocol_set_retransmission_parameters(0, 5);
+    sn_coap_protocol_set_retransmission_parameters(handle,0, 5);
     CHECK(0 == sn_coap_protocol_exec(handle, 600));
 
     sn_coap_builder_stub.expectedInt16 = 0;

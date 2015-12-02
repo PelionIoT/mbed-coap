@@ -590,6 +590,54 @@ extern sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_
  */
 extern void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr);
 
+/**
+ * \fn int8_t sn_nsdl_set_retransmission_parameters(struct nsdl_s *handle, uint8_t resending_count, uint8_t resending_intervall)
+ *
+ * \brief  If re-transmissions are enabled, this function changes resending count and interval.
+ *
+ * \param *handle Pointer to library handle
+ * \param uint8_t resending_count max number of resendings for message
+ * \param uint8_t resending_intervall message resending intervall in seconds
+ * \return  0 = success, -1 = failure
+ */
+extern int8_t sn_nsdl_set_retransmission_parameters(struct nsdl_s *handle, uint8_t resending_count, uint8_t resending_interval);
+
+/**
+ * \fn int8_t sn_nsdl_set_retransmission_buffer(struct nsdl_s *handle, uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
+ *
+ * \brief If re-transmissions are enabled, this function changes message retransmission queue size.
+ *  Set size to '0' to disable feature. If both are set to '0', then re-sendings are disabled.
+ *
+ * \param *handle Pointer to library handle
+ * \param uint8_t buffer_size_messages queue size - maximum number of messages to be saved to queue
+ * \param uint8_t buffer_size_bytes queue size - maximum size of messages saved to queue
+ * \return  0 = success, -1 = failure
+ */
+extern int8_t sn_nsdl_set_retransmission_buffer(struct nsdl_s *handle,
+        uint8_t buffer_size_messages, uint16_t buffer_size_bytes);
+
+/**
+ * \fn int8_t sn_nsdl_set_block_size(struct nsdl_s *handle, uint16_t block_size)
+ *
+ * \brief If block transfer is enabled, this function changes the block size.
+ *
+ * \param *handle Pointer to library handle
+ * \param uint16_t block_size maximum size of CoAP payload. Valid sizes are 16, 32, 64, 128, 256, 512 and 1024 bytes
+ * \return  0 = success, -1 = failure
+ */
+extern int8_t sn_nsdl_set_block_size(struct nsdl_s *handle, uint16_t block_size);
+
+/**
+ * \fn int8_t sn_nsdl_set_duplicate_buffer_size(struct nsdl_s *handle,uint8_t message_count)
+ *
+ * \brief If dublicate message detection is enabled, this function changes buffer size.
+ *
+ * \param *handle Pointer to library handle
+ * \param uint8_t message_count max number of messages saved for duplicate control
+ * \return  0 = success, -1 = failure
+ */
+extern int8_t sn_nsdl_set_duplicate_buffer_size(struct nsdl_s *handle, uint8_t message_count);
+
 #ifdef __cplusplus
 }
 #endif
