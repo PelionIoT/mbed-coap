@@ -41,6 +41,7 @@ TEST_GROUP(libCoap_protocol)
     }
 
     void teardown() {
+        retCounter = 0;
         sn_coap_protocol_destroy(coap_handle);
     }
 };
@@ -74,13 +75,15 @@ int8_t null_rx_cb(sn_coap_hdr_s *a, sn_nsdl_addr_s *b, void *c)
 TEST(libCoap_protocol, sn_coap_protocol_destroy)
 {
     CHECK( -1 == sn_coap_protocol_destroy(NULL));
-
-    struct coap_s * handle = (struct coap_s *)malloc(sizeof(struct coap_s));
+    int temp = sizeof(struct coap_s);
+    struct coap_s *handle = (struct coap_s *)malloc(sizeof(struct coap_s));
     handle->sn_coap_protocol_free = &myFree;
     handle->sn_coap_protocol_malloc = &myMalloc;
-
+    ns_list_init(&handle->linked_list_resent_msgs);
+    ns_list_init(&handle->linked_list_duplication_msgs);
+    ns_list_init(&handle->linked_list_blockwise_sent_msgs);
+    ns_list_init(&handle->linked_list_blockwise_received_payloads);
     CHECK( 0 == sn_coap_protocol_destroy(handle));
-
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_init_null_func_ptrs)

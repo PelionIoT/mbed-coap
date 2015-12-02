@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h> /* For libary malloc() */
 #include <string.h> /* For memset() and memcpy() */
-#ifdef __linux__
+#if defined __linux__ || defined TARGET_LIKE_MBED
 #include <time.h>
 #endif
 
@@ -168,23 +168,17 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
     /* If pointer = 0, then re-sending does not return error when failed */
     handle->sn_coap_rx_callback = used_rx_callback_ptr;
 
-    ns_list_init(&handle->linked_list_resent_msgs);
 
-    handle->system_time = 0;    /* System time seconds */
-    handle->sn_coap_resending_queue_msgs = 0;
-    handle->sn_coap_resending_queue_bytes = 0;
-    handle->sn_coap_resending_count = 0;
-    handle->sn_coap_resending_intervall = 0;
-    handle->sn_coap_duplication_buffer_size = 0;
-    handle->sn_coap_block_data_size = 0;
 
 #if ENABLE_RESENDINGS  /* If Message resending is not used at all, this part of code will not be compiled */
 
     /* * * * Create Linked list for storing active resending messages  * * * */
+    ns_list_init(&handle->linked_list_resent_msgs);
     handle->sn_coap_resending_queue_msgs = SN_COAP_RESENDING_QUEUE_SIZE_MSGS;
     handle->sn_coap_resending_queue_bytes = SN_COAP_RESENDING_QUEUE_SIZE_BYTES;
     handle->sn_coap_resending_intervall = DEFAULT_RESPONSE_TIMEOUT;
     handle->sn_coap_resending_count = SN_COAP_RESENDING_MAX_COUNT;
+
 
 #endif /* ENABLE_RESENDINGS */
 
@@ -205,7 +199,6 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
     /* Randomize global message ID */
 #if defined __linux__ || defined TARGET_LIKE_MBED
     srand(rand()^time(NULL));
-
     message_id = rand() % 400 + 100;
 #else
     message_id = 100;

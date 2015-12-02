@@ -1562,7 +1562,7 @@ static bool validateParameters(sn_nsdl_ep_parameters_s *parameter_ptr)
 static bool validate(uint8_t* ptr, uint32_t len, char illegalChar)
 {
     if( ptr ){
-        for( int i=0; i < len; i++ ){
+        for( uint32_t i=0; i < len; i++ ){
             if( ptr[i] == illegalChar ){
                 return false;
             }
