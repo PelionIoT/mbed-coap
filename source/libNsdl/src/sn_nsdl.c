@@ -2346,6 +2346,9 @@ extern void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coa
 extern int8_t sn_nsdl_set_retransmission_parameters(struct nsdl_s *handle,
     uint8_t resending_count, uint8_t resending_interval)
 {    
+    if (handle == NULL) {
+        return SN_NSDL_FAILURE;
+    }
     return sn_coap_protocol_set_retransmission_parameters(handle->grs->coap,
                                                           resending_count,resending_interval);
 }
@@ -2353,17 +2356,26 @@ extern int8_t sn_nsdl_set_retransmission_parameters(struct nsdl_s *handle,
 extern int8_t sn_nsdl_set_retransmission_buffer(struct nsdl_s *handle,
         uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
 {
+    if (handle == NULL) {
+        return SN_NSDL_FAILURE;
+    }
     return sn_coap_protocol_set_retransmission_buffer(handle->grs->coap,
                                                       buffer_size_messages, buffer_size_messages);
 }
 
 extern int8_t sn_nsdl_set_block_size(struct nsdl_s *handle, uint16_t block_size)
 {
+    if (handle == NULL) {
+        return SN_NSDL_FAILURE;
+    }
     return sn_coap_protocol_set_block_size(handle->grs->coap, block_size);
 }
 
 extern int8_t sn_nsdl_set_duplicate_buffer_size(struct nsdl_s *handle, uint8_t message_count)
 {
+    if (handle == NULL) {
+        return SN_NSDL_FAILURE;
+    }
     return sn_coap_protocol_set_duplicate_buffer_size(handle->grs->coap, message_count);
 }
 

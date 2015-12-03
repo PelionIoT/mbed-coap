@@ -66,6 +66,14 @@ bool test_sn_nsdl_build_response();
 
 bool test_sn_nsdl_release_allocated_coap_msg_mem();
 
+bool test_sn_nsdl_set_retransmission_parameters();
+
+bool test_sn_nsdl_set_retransmission_buffer();
+
+bool test_sn_nsdl_set_block_size();
+
+bool test_sn_nsdl_set_duplicate_buffer_size();
+
 #ifdef __cplusplus
 }
 #endif
