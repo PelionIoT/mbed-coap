@@ -209,6 +209,8 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
 
 int8_t sn_coap_protocol_set_block_size(struct coap_s *handle, uint16_t block_size)
 {
+    (void) handle;
+    (void) block_size;
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
     if (handle == NULL) {
         return -1;
@@ -234,6 +236,8 @@ int8_t sn_coap_protocol_set_block_size(struct coap_s *handle, uint16_t block_siz
 
 int8_t sn_coap_protocol_set_duplicate_buffer_size(struct coap_s *handle, uint8_t message_count)
 {
+    (void) handle;
+    (void) message_count;
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
     if (handle == NULL) {
         return -1;

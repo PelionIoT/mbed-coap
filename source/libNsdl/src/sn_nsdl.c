@@ -2360,7 +2360,7 @@ extern int8_t sn_nsdl_set_retransmission_buffer(struct nsdl_s *handle,
         return SN_NSDL_FAILURE;
     }
     return sn_coap_protocol_set_retransmission_buffer(handle->grs->coap,
-                                                      buffer_size_messages, buffer_size_messages);
+                                                      buffer_size_messages, buffer_size_bytes);
 }
 
 extern int8_t sn_nsdl_set_block_size(struct nsdl_s *handle, uint16_t block_size)
