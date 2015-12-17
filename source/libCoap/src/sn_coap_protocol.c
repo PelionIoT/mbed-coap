@@ -66,8 +66,8 @@ static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle,
 #endif
 #if ENABLE_RESENDINGS
 static void                  sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param);
-static sn_nsdl_transmit_s   *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *coap_msg_ptr);
-static void                  sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
+static coap_send_msg_s      *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *coap_msg_ptr);
+static void                  sn_coap_protocol_linked_list_send_msg_remove(coap_send_msg_s *removed_msg_ptr);
 static coap_send_msg_s      *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len);
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handle, coap_send_msg_s *freed_send_msg_ptr);
 static uint16_t              sn_coap_count_linked_list_size(const coap_send_msg_list_t *linked_list_ptr);
@@ -667,7 +667,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
 
         /* Check if there is ongoing active message resendings */
         if (stored_resending_msgs_count > 0) {
-            sn_nsdl_transmit_s *removed_msg_ptr = NULL;
+            coap_send_msg_s *removed_msg_ptr = NULL;
 
             /* Check if received message was confirmation for some active resending message */
 
@@ -675,7 +675,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
 
             if (removed_msg_ptr != NULL) {
                 /* Remove resending message from active message resending Linked list */
-                sn_coap_protocol_linked_list_send_msg_remove(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id);
+                sn_coap_protocol_linked_list_send_msg_remove(removed_msg_ptr);
             }
         }
     }
@@ -720,10 +720,6 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
                 if (stored_msg_ptr->resending_counter > sn_coap_resending_count) {
                     coap_version_e coap_version = COAP_VERSION_UNKNOWN;
 
-                    /* Get message ID from stored sending message */
-                    uint16_t temp_msg_id = (stored_msg_ptr->send_msg_ptr->packet_ptr[2] << 8);
-                    temp_msg_id += (uint16_t)stored_msg_ptr->send_msg_ptr->packet_ptr[3];
-
                     /* If RX callback have been defined.. */
                     if (stored_msg_ptr->coap->sn_coap_rx_callback != 0) {
                         sn_coap_hdr_s *tmp_coap_hdr_ptr;
@@ -739,7 +735,7 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
                         }
                     }
                     /* Remove message from Linked list */
-                    sn_coap_protocol_linked_list_send_msg_remove(handle, stored_msg_ptr->send_msg_ptr->dst_addr_ptr, temp_msg_id);
+                    sn_coap_protocol_linked_list_send_msg_remove(stored_msg_ptr);
                 } else {
                     /* Send message  */
                     stored_msg_ptr->coap->sn_coap_tx_callback(stored_msg_ptr->send_msg_ptr->packet_ptr,
@@ -842,7 +838,7 @@ static void sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, s
  *         list or NULL if message not found
  *****************************************************************************/
 
-static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *coap_msg_ptr)
+static coap_send_msg_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *coap_msg_ptr)
 {
     /* Loop all stored resending messages Linked list */
     ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &global_linked_list_resent_msgs) {
@@ -850,13 +846,13 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_
         uint16_t temp_msg_id = (stored_msg_ptr->send_msg_ptr->packet_ptr[2] << 8);
         temp_msg_id += (uint16_t)stored_msg_ptr->send_msg_ptr->packet_ptr[3];
 
-        uint8_t token_len = (stored_msg_ptr->send_msg_ptr->packet_ptr[0] & 0x08);
+        uint8_t token_len = (stored_msg_ptr->send_msg_ptr->packet_ptr[0] & 0x0f);
 
         /* If message's Message ID is same than is searched */
         if (temp_msg_id == coap_msg_ptr->msg_id) {
             if(token_len){
                 if((token_len == coap_msg_ptr->token_len) && !memcmp(coap_msg_ptr->token_ptr, &stored_msg_ptr->send_msg_ptr->packet_ptr[4], token_len)){
-                    return stored_msg_ptr->send_msg_ptr;
+                    return stored_msg_ptr;
                 }
                 return NULL;
             }
@@ -865,7 +861,7 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_
                 /* If message's Source address port is same than is searched */
                 if (stored_msg_ptr->send_msg_ptr->dst_addr_ptr->port == src_addr_ptr->port) {
                     /* * * Message found, return pointer to that stored resending message * * * */
-                    return stored_msg_ptr->send_msg_ptr;
+                    return stored_msg_ptr;
                 }
             }
         }
@@ -883,34 +879,17 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_
  * \param msg_id is searching key for removed message
  *****************************************************************************/
 
-static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
+static void sn_coap_protocol_linked_list_send_msg_remove(coap_send_msg_s *stored_msg_ptr)
 {
-    /* Loop all stored resending messages in Linked list */
-    ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &global_linked_list_resent_msgs) {
-        /* Get message ID from stored resending message */
-        uint16_t temp_msg_id = (stored_msg_ptr->send_msg_ptr->packet_ptr[2] << 8);
-        temp_msg_id += (uint16_t)stored_msg_ptr->send_msg_ptr->packet_ptr[3];
 
-        /* If message's Message ID is same than is searched */
-        if (temp_msg_id == msg_id) {
-            /* If message's Source address is same than is searched */
-            if (0 == memcmp(src_addr_ptr->addr_ptr, stored_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr, src_addr_ptr->addr_len)) {
-                /* If message's Source address port is same than is searched */
-                if (stored_msg_ptr->send_msg_ptr->dst_addr_ptr->port == src_addr_ptr->port) {
-                    /* * * Message found * * */
+    /* Remove message from Linked list */
+    ns_list_remove(&global_linked_list_resent_msgs, stored_msg_ptr);
+    --global_count_resent_msgs;
 
-                    /* Remove message from Linked list */
-                    ns_list_remove(&global_linked_list_resent_msgs, stored_msg_ptr);
-                    --global_count_resent_msgs;
+    /* Free memory of stored message */
+    sn_coap_protocol_release_allocated_send_msg_mem(stored_msg_ptr->coap, stored_msg_ptr);
 
-                    /* Free memory of stored message */
-                    sn_coap_protocol_release_allocated_send_msg_mem(handle, stored_msg_ptr);
-
-                    return;
-                }
-            }
-        }
-    }
+    return;
 }
 #endif /* ENABLE_RESENDINGS */
 
