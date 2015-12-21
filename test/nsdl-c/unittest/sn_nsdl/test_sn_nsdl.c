@@ -2394,3 +2394,75 @@ bool test_sn_nsdl_release_allocated_coap_msg_mem()
     sn_nsdl_destroy(handle);
     return true;
 }
+
+bool test_sn_nsdl_set_retransmission_parameters()
+{
+    struct nsdl_s* handle = NULL;
+    if (sn_nsdl_set_retransmission_parameters(handle, 10, 10) == 0){
+        return false;
+    }
+    retCounter = 4;
+    sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
+    handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
+    sn_coap_protocol_stub.expectedInt8 = 0;
+
+    if (sn_nsdl_set_retransmission_parameters(handle, 10, 10) != 0){
+        return false;
+    }
+    sn_nsdl_destroy(handle);
+    return true;
+}
+
+bool test_sn_nsdl_set_retransmission_buffer()
+{
+    struct nsdl_s* handle = NULL;
+    if (sn_nsdl_set_retransmission_buffer(handle,3,3 ) == 0){
+        return false;
+    }
+    retCounter = 4;
+    sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
+    handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
+    sn_coap_protocol_stub.expectedInt8 = 0;
+
+    if (sn_nsdl_set_retransmission_buffer(handle,3,3 ) != 0){
+        return false;
+    }
+    sn_nsdl_destroy(handle);
+    return true;
+}
+
+bool test_sn_nsdl_set_block_size()
+{
+    struct nsdl_s* handle = NULL;
+    if (sn_nsdl_set_block_size(handle,16) == 0){
+        return false;
+    }
+    retCounter = 4;
+    sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
+    handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
+    sn_coap_protocol_stub.expectedInt8 = 0;
+
+    if (sn_nsdl_set_block_size(handle,16) != 0){
+        return false;
+    }
+    sn_nsdl_destroy(handle);
+    return true;
+}
+
+bool test_sn_nsdl_set_duplicate_buffer_size()
+{
+    struct nsdl_s* handle = NULL;
+    if (sn_nsdl_set_duplicate_buffer_size(handle,999) == 0){
+        return false;
+    }
+    retCounter = 4;
+    sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
+    handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
+    sn_coap_protocol_stub.expectedInt8 = 0;
+
+    if (sn_nsdl_set_duplicate_buffer_size(handle,999) != 0){
+        return false;
+    }
+    sn_nsdl_destroy(handle);
+    return true;
+}

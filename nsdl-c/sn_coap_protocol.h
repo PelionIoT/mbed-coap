@@ -141,7 +141,7 @@ extern int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time
  * \return  0 = success
  *          -1 = failure
  */
-extern int8_t              sn_coap_protocol_set_block_size(uint16_t block_size);
+extern int8_t sn_coap_protocol_set_block_size(struct coap_s *handle, uint16_t block_size);
 
 /**
  * \fn int8_t sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count)
@@ -152,7 +152,7 @@ extern int8_t              sn_coap_protocol_set_block_size(uint16_t block_size);
  * \return  0 = success
  *          -1 = failure
  */
-extern int8_t              sn_coap_protocol_set_duplicate_buffer_size(uint8_t message_count);
+extern int8_t sn_coap_protocol_set_duplicate_buffer_size(struct coap_s *handle, uint8_t message_count);
 
 /**
  * \fn int8_t sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_intervall)
@@ -161,10 +161,10 @@ extern int8_t              sn_coap_protocol_set_duplicate_buffer_size(uint8_t me
  *
  * \param uint8_t resending_count max number of resendings for message
  * \param uint8_t resending_intervall message resending intervall in seconds
- * \return  0 = success
- *          -1 = failure
+ * \return  0 = success, -1 = failure
  */
-extern int8_t              sn_coap_protocol_set_retransmission_parameters(uint8_t resending_count, uint8_t resending_interval);
+extern int8_t sn_coap_protocol_set_retransmission_parameters(struct coap_s *handle,
+        uint8_t resending_count, uint8_t resending_interval);
 
 /**
  * \fn int8_t sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes)
@@ -174,10 +174,10 @@ extern int8_t              sn_coap_protocol_set_retransmission_parameters(uint8_
  *
  * \param uint8_t buffer_size_messages queue size - maximum number of messages to be saved to queue
  * \param uint8_t buffer_size_bytes queue size - maximum size of messages saved to queue
- * \return  0 = success
- *          -1 = failure
+ * \return  0 = success, -1 = failure
  */
-extern int8_t              sn_coap_protocol_set_retransmission_buffer(uint8_t buffer_size_messages, uint16_t buffer_size_bytes);
+extern int8_t sn_coap_protocol_set_retransmission_buffer(struct coap_s *handle,
+        uint8_t buffer_size_messages, uint16_t buffer_size_bytes);
 
 /**
  * \fn void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
@@ -186,7 +186,7 @@ extern int8_t              sn_coap_protocol_set_retransmission_buffer(uint8_t bu
  *
  * \brief If re-transmissions are enabled, this function removes all messages from the retransmission queue.
  */
-extern void                sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle);
+extern void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle);
 
 #endif /* SN_COAP_PROTOCOL_H_ */
 

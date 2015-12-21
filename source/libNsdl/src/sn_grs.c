@@ -144,6 +144,7 @@ extern struct grs_s *sn_grs_init(uint8_t (*sn_grs_tx_callback_ptr)(struct nsdl_s
 
 extern sn_grs_resource_list_s *sn_grs_list_resource(struct grs_s *handle, uint16_t pathlen, uint8_t *path)
 {
+    (void) pathlen;
     sn_grs_resource_list_s *grs_resource_list_ptr = NULL;
 
     if( handle == NULL || path == NULL){

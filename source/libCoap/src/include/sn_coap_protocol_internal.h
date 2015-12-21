@@ -31,13 +31,6 @@
 extern "C" {
 #endif
 
-struct coap_s {
-    void *(*sn_coap_protocol_malloc)(uint16_t);
-    void (*sn_coap_protocol_free)(void *);
-
-    uint8_t (*sn_coap_tx_callback)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *);
-    int8_t (*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *);
-};
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
@@ -87,6 +80,7 @@ struct coap_s {
 #endif
 
 
+
 /* * * * * * * * * * * * * * */
 /* * * * ENUMERATIONS  * * * */
 /* * * * * * * * * * * * * * */
@@ -94,6 +88,8 @@ struct coap_s {
 /* * * * * * * * * * * * * */
 /* * * * STRUCTURES  * * * */
 /* * * * * * * * * * * * * */
+
+
 
 
 /* Structure which is stored to Linked list for message sending purposes */
@@ -156,6 +152,37 @@ typedef struct coap_blockwise_payload_ {
 } coap_blockwise_payload_s;
 
 typedef NS_LIST_HEAD(coap_blockwise_payload_s, link) coap_blockwise_payload_list_t;
+
+struct coap_s {
+    void *(*sn_coap_protocol_malloc)(uint16_t);
+    void (*sn_coap_protocol_free)(void *);
+
+    uint8_t (*sn_coap_tx_callback)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *);
+    int8_t (*sn_coap_rx_callback)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *);
+
+    #if ENABLE_RESENDINGS /* If Message resending is not used at all, this part of code will not be compiled */
+        coap_send_msg_list_t linked_list_resent_msgs; /* Active resending messages are stored to this Linked list */
+        uint16_t count_resent_msgs;
+    #endif
+
+    #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
+        coap_duplication_info_list_t  linked_list_duplication_msgs; /* Messages for duplicated messages detection is stored to this Linked list */
+        uint16_t                      count_duplication_msgs;
+    #endif
+
+    #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
+        coap_blockwise_msg_list_t     linked_list_blockwise_sent_msgs; /* Blockwise message to to be sent is stored to this Linked list */
+        coap_blockwise_payload_list_t linked_list_blockwise_received_payloads; /* Blockwise payload to to be received is stored to this Linked list */
+    #endif
+
+    uint32_t system_time;    /* System time seconds */
+    uint16_t sn_coap_block_data_size;
+    uint8_t sn_coap_resending_queue_msgs;
+    uint8_t sn_coap_resending_queue_bytes;
+    uint8_t sn_coap_resending_count;
+    uint8_t sn_coap_resending_intervall;
+    uint8_t sn_coap_duplication_buffer_size;
+};
 
 #ifdef __cplusplus
 }

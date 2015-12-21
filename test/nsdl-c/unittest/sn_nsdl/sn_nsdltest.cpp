@@ -155,3 +155,26 @@ TEST(sn_nsdl, test_sn_nsdl_release_allocated_coap_msg_mem)
 {
     CHECK(test_sn_nsdl_release_allocated_coap_msg_mem());
 }
+
+TEST(sn_nsdl, test_sn_nsdl_set_retransmission_parameters)
+{
+    CHECK(test_sn_nsdl_set_retransmission_parameters());
+}
+
+TEST(sn_nsdl, test_sn_nsdl_set_retransmission_buffer)
+{
+    CHECK(test_sn_nsdl_set_retransmission_buffer());
+}
+
+TEST(sn_nsdl, test_sn_nsdl_set_block_size)
+{
+    CHECK(test_sn_nsdl_set_block_size());
+}
+
+TEST(sn_nsdl, test_sn_nsdl_set_duplicate_buffer_size)
+{
+    CHECK(test_sn_nsdl_set_duplicate_buffer_size());
+}
+
+
+
