@@ -1086,7 +1086,7 @@ static int16_t sn_coap_builder_options_get_option_part_position(uint16_t query_l
 static void sn_coap_builder_payload_build(uint8_t **dst_packet_data_pptr, sn_coap_hdr_s *src_coap_msg_ptr)
 {
     /* Check if Payload is used at all */
-    if (src_coap_msg_ptr->payload_ptr != NULL) {
+    if (src_coap_msg_ptr->payload_len && src_coap_msg_ptr->payload_ptr != NULL) {
         /* Write Payload marker */
 
         **dst_packet_data_pptr = 0xff;
