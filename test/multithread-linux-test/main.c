@@ -44,6 +44,23 @@ void own_free(void *ptr)
     free(ptr);
 }
 
+void arg_init(void)
+{
+    memcpy(arg_dst,"::1",32); 	//default localhost
+    arg_sport=5683;
+    arg_dport=5683;
+}
+
+
+void usage_show(void)
+{
+    printf("Usage:\n\n"
+
+            "multithread-linux-test [-d 127.0.0.1] \n"
+            "-d	NSP IPv4 address (default = ::1)\n"
+            "-dp NSP port number (default = 5683)\n");
+}
+
 /* function to be executed by the new thread */
 void* create_endpoint(void *arg)
 {    
@@ -72,8 +89,58 @@ void* create_endpoint(void *arg)
     }    
 }
 
-int main()
+int main(int argc, char **argv)
 {    
+    uint8_t i;
+    arg_init();
+
+    if (argc<1)
+    {
+        usage_show();
+    }
+    else
+    {
+        i=1; //argv[0] is the command itself
+
+        argc--; //get the real number of arguments
+        while (i<=argc)
+        {
+            //check arguments
+            if (!(strcmp("-h",argv[i])))
+            {
+                usage_show();
+                stop_pgm("");
+            }
+            else if (!(strcmp("-d",argv[i])))
+            {
+                if (i++==argc) stop_pgm("Argument missed for option -d\n");
+                memcpy(arg_dst,argv[i],strlen((const char*)argv[i])+1);
+                i++;
+                continue;
+            }
+            else if (!(strcmp("-p",argv[i])))
+            {
+                if (i++==argc) stop_pgm("Argument missed for option -p\n");
+                arg_port=atoi(argv[i]);
+                i++;
+                continue;
+            }
+            else if (!(strcmp("-dp",argv[i])))
+            {
+                if (i++==argc) stop_pgm("Argument missed for option -dp\n");
+                arg_dport=atoi(argv[i]);
+                i++;
+                continue;
+            }
+            else
+            {
+                usage_show();
+                stop_pgm("\n--- Argument error ---\n");
+            }
+
+        }
+    }
+
     pthread_t threads[NUMTHREADS];
     for (int index = 0; index < NUMTHREADS; index++) {        
         pthread_create(&threads[index], NULL, create_endpoint, (void *) &index);        

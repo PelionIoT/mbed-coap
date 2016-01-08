@@ -69,7 +69,7 @@ static void ctrl_c_handle_function();
 typedef void (*signalhandler_t)(int);
 void coap_exec_poll_function(int thread_id);
 int16_t receive_msg(thread_data_struct_s *data_item, uint8_t *buf);
-uint8_t general_resource_cb(struct nsdl_s *handle, sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *address, sn_nsdl_capab_e protocol, sn_nsdl_addr_s *received_packet_address);
+uint8_t general_resource_cb(struct nsdl_s *handle, sn_coap_hdr_s *coap_ptr, sn_nsdl_addr_s *address, sn_nsdl_capab_e protocol);
 int8_t compare_uripaths(sn_coap_hdr_s *coap_header, const uint8_t *uri_path_to_compare);
 void send_ack(struct nsdl_s *handle, sn_coap_hdr_s *received_coap_ptr, sn_nsdl_addr_s *address);
 
@@ -146,7 +146,7 @@ int register_endpoint(int port, sn_nsdl_ep_parameters_s *endpoint, int thread_id
     data_item->handle = sn_nsdl_init(&tx_function, &rx_function, &own_alloc, &own_free);
     inet_pton(AF_INET, arg_dst, &nsp_addr);
 
-    set_NSP_address(data_item->handle, nsp_addr, 5683, SN_NSDL_ADDRESS_TYPE_IPV4);
+    set_NSP_address(data_item->handle, nsp_addr, arg_dport, SN_NSDL_ADDRESS_TYPE_IPV4);
     ns_list_add_to_start(&data_list, data_item);
 
     pthread_create(&coap_exec_thread, NULL, (void *)coap_exec_poll_function, data_item->thread_id);
@@ -219,6 +219,7 @@ int16_t receive_msg(thread_data_struct_s *data_item, uint8_t *buf)
         data_item->received_packet_address.port = ntohs(data_item->sa_dst.sin_port);
         data_item->received_packet_address.type = SN_NSDL_ADDRESS_TYPE_IPV4;
         data_item->received_packet_address.addr_len = 4;
+        memcpy(data_item->received_packet_address.addr_ptr, &data_item->sa_dst.sin_addr, 4);
         printf("\nRX %s.%d [%d B] - thread id: %d\n", rcv_in_addr, ntohs(data_item->sa_dst.sin_port), rcv_size, data_item->thread_id);
     }
     return rcv_size;
@@ -239,9 +240,12 @@ uint8_t tx_function(struct nsdl_s *handle, sn_nsdl_capab_e protocol,
 
     if (data_item != NULL) {
         printf("TX function - thread id: %d\n", data_item->thread_id);
+        ns_list_remove(&data_list, data_item);
         data_item->sa_dst.sin_family = AF_INET;
         data_item->sa_dst.sin_port = htons(address->port);        
-        memcpy(&data_item->sa_dst.sin_addr, address->addr_ptr, address->addr_len);        
+        memcpy(&data_item->sa_dst.sin_addr, address->addr_ptr, address->addr_len);
+        ns_list_add_to_end(&data_list, data_item);
+
         int ret = sendto(data_item->sock_server,
                          data,
                          len,
@@ -373,7 +377,7 @@ void coap_exec_poll_function(int thread_id)
 
 /* This is callback for other DYNAMIC resources */
 uint8_t general_resource_cb(struct nsdl_s *handle, sn_coap_hdr_s *received_coap_ptr,
-                            sn_nsdl_addr_s *address, sn_nsdl_capab_e protocol, sn_nsdl_addr_s *received_packet_address)
+                            sn_nsdl_addr_s *address, sn_nsdl_capab_e protocol)
 {    
     sn_coap_hdr_s *coap_res_ptr = 0;
     thread_data_struct_s *data_item = NULL;
@@ -397,7 +401,7 @@ uint8_t general_resource_cb(struct nsdl_s *handle, sn_coap_hdr_s *received_coap_
         /* This makes delayed response, first ack and after that real value */
         if(compare_uripaths(received_coap_ptr, res_temp))
         {
-            send_ack(data_item->handle,received_coap_ptr, address);
+            send_ack(data_item->handle,received_coap_ptr, &data_item->received_packet_address);
             if(coap_res_ptr->token_ptr) {
                 own_free(coap_res_ptr->token_ptr);
             }
