@@ -199,6 +199,8 @@ typedef struct sn_nsdl_resource_info_ {
 
     ns_list_link_t                  link;
 
+    uint8_t                         publish_uri;
+
 } sn_nsdl_resource_info_s;
 
 /**

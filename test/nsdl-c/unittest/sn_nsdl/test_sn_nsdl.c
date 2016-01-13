@@ -272,6 +272,7 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->resource[0] = 'a';
     sn_grs_stub.expectedInfo->resource[1] = '\0';
     sn_grs_stub.expectedInfo->resourcelen = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
     //sn_nsdl_build_registration_body == SN_NSDL_FAILURE
     int8_t val = sn_nsdl_register_endpoint(handle, eptr);
 
@@ -342,6 +343,7 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->resource[0] = 'a';
     sn_grs_stub.expectedInfo->resource[1] = '\0';
     sn_grs_stub.expectedInfo->resourcelen = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
     eptr->binding_and_mode = 0x06;
     retCounter = 7;
 
@@ -507,6 +509,7 @@ bool test_sn_nsdl_update_registration()
     sn_grs_stub.expectedInfo->resource[0] = 'a';
     sn_grs_stub.expectedInfo->resource[1] = '\0';
     sn_grs_stub.expectedInfo->resourcelen = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
     int8_t val = sn_nsdl_update_registration(handle, NULL, 0);
 
     free(sn_grs_stub.expectedInfo->resource);
