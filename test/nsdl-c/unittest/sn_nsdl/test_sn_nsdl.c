@@ -295,6 +295,7 @@ bool test_sn_nsdl_register_endpoint()
     memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
     sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
     sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
     eptr->binding_and_mode = 0x06;
     retCounter = 4;
     //set_endpoint_info == -1
@@ -548,6 +549,7 @@ bool test_sn_nsdl_update_registration()
     sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
     memset( sn_grs_stub.expectedInfo->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
     sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
     retCounter = 4;
     sn_grs_stub.expectedInfo->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_REGISTERING;
     //set_endpoint_info == -1
@@ -571,6 +573,7 @@ bool test_sn_nsdl_update_registration()
     sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
     memset( sn_grs_stub.expectedInfo->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
     sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
     retCounter = 1;
     sn_grs_stub.expectedInfo->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_REGISTERING;
     //set_endpoint_info == -1
@@ -589,6 +592,7 @@ bool test_sn_nsdl_update_registration()
     sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
     memset( sn_grs_stub.expectedInfo->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
     sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
     retCounter = 2;
     sn_grs_stub.expectedInfo->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_REGISTERING;
     //set_endpoint_info == -1
