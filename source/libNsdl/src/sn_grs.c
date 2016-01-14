@@ -812,6 +812,7 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_resource
     resource_copy_ptr->resourcelen = resource_ptr->resourcelen;
     resource_copy_ptr->sn_grs_dyn_res_callback = resource_ptr->sn_grs_dyn_res_callback;
     resource_copy_ptr->access = resource_ptr->access;
+    resource_copy_ptr->publish_uri = resource_ptr->publish_uri;
 
     /* Remove '/' - chars from the beginning and from the end */
 
