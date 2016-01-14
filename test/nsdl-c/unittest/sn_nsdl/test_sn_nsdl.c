@@ -531,6 +531,7 @@ bool test_sn_nsdl_update_registration()
     memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
     sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
     sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
     retCounter = 3;
     //set_endpoint_info == -1
     //sn_nsdl_build_registration_body == SN_NSDL_FAILURE

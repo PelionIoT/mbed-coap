@@ -1293,7 +1293,7 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
     resource_temp_ptr = sn_grs_get_first_resource(handle->grs);
 
     while (resource_temp_ptr) {
-        if (resource_temp_ptr->resource_parameters_ptr) {
+        if (resource_temp_ptr->resource_parameters_ptr && resource_temp_ptr->publish_uri) {
             if (updating_registeration && resource_temp_ptr->resource_parameters_ptr->registered == SN_NDSL_RESOURCE_REGISTERED) {
                 resource_temp_ptr = sn_grs_get_next_resource(handle->grs, resource_temp_ptr);
                 continue;
