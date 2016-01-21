@@ -502,7 +502,8 @@ int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle)
 uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
         uint8_t *payload_ptr, uint16_t payload_len,
         uint8_t *observe_ptr, uint8_t observe_len,
-        sn_coap_msg_type_e message_type, uint8_t content_type)
+        sn_coap_msg_type_e message_type, uint8_t content_type,
+        uint8_t *uri_path_ptr, uint16_t uri_path_len)
 {
     sn_coap_hdr_s   *notification_message_ptr;
     uint16_t        return_msg_id = 0;
@@ -540,6 +541,9 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
     notification_message_ptr->payload_len = payload_len;
     notification_message_ptr->payload_ptr = payload_ptr;
 
+    notification_message_ptr->uri_path_len = uri_path_len;
+    notification_message_ptr->uri_path_ptr = uri_path_ptr;
+
     /* Fill observe */
     notification_message_ptr->options_list_ptr->observe_len = observe_len;
     notification_message_ptr->options_list_ptr->observe_ptr = observe_ptr;
@@ -558,7 +562,7 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
     }
 
     /* Free memory */
-
+    notification_message_ptr->uri_path_ptr = NULL;
     notification_message_ptr->payload_ptr = NULL;
     notification_message_ptr->options_list_ptr->observe_ptr = NULL;
     notification_message_ptr->token_ptr = NULL;

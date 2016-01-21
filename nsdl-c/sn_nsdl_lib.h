@@ -341,7 +341,9 @@ extern void sn_nsdl_nsp_lost(struct nsdl_s *handle);
  * \param   *observe_ptr    Pointer to observe number to be sent
  * \param   observe_len     Observe number len
  * \param   message_type    Observation message type (confirmable or non-confirmable)
- * \param   contetnt_type   Observation message payload contetnt type
+ * \param   content_type    Observation message payload contetnt type
+ * \param   uri_path_ptr    Pointer to uri path to bee sent
+ * \param   uri_path_len    Uri path len
  *
  * \return  !0  Success, observation messages message ID
  * \return  0   Failure
@@ -349,7 +351,10 @@ extern void sn_nsdl_nsp_lost(struct nsdl_s *handle);
 extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
         uint8_t *payload_ptr, uint16_t payload_len,
         uint8_t *observe_ptr, uint8_t observe_len,
-        sn_coap_msg_type_e message_type, uint8_t content_type);
+        sn_coap_msg_type_e message_type,
+        uint8_t content_type,
+        uint8_t *uri_path_ptr,
+        uint16_t uri_path_len);
 
 /**
  * \fn extern uint32_t sn_nsdl_get_version(void)
