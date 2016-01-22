@@ -541,6 +541,7 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
     notification_message_ptr->payload_len = payload_len;
     notification_message_ptr->payload_ptr = payload_ptr;
 
+    /* Fill uri path */
     notification_message_ptr->uri_path_len = uri_path_len;
     notification_message_ptr->uri_path_ptr = uri_path_ptr;
 

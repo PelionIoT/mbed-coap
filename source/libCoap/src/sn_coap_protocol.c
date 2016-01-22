@@ -311,6 +311,10 @@ void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
                 handle->sn_coap_protocol_free(tmp->send_msg_ptr->packet_ptr);
                 tmp->send_msg_ptr->packet_ptr = 0;
             }
+            if (tmp->send_msg_ptr->uri_path_ptr) {
+                handle->sn_coap_protocol_free(tmp->send_msg_ptr->uri_path_ptr);
+                tmp->send_msg_ptr->uri_path_ptr = 0;
+            }
             handle->sn_coap_protocol_free(tmp->send_msg_ptr);
             tmp->send_msg_ptr = 0;
         }
@@ -675,10 +679,12 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
 
             if (removed_msg_ptr != NULL) {
                 if (returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_RESET) {
-                    returned_dst_coap_msg_ptr->uri_path_ptr = handle->sn_coap_protocol_malloc(removed_msg_ptr->uri_path_len);
-                    if (returned_dst_coap_msg_ptr->uri_path_ptr != NULL) {
-                        memcpy(returned_dst_coap_msg_ptr->uri_path_ptr, removed_msg_ptr->uri_path_ptr, removed_msg_ptr->uri_path_len);
-                        returned_dst_coap_msg_ptr->uri_path_len = removed_msg_ptr->uri_path_len;
+                    if(removed_msg_ptr->uri_path_len) {
+                        returned_dst_coap_msg_ptr->uri_path_ptr = handle->sn_coap_protocol_malloc(removed_msg_ptr->uri_path_len);
+                        if (returned_dst_coap_msg_ptr->uri_path_ptr != NULL) {
+                            memcpy(returned_dst_coap_msg_ptr->uri_path_ptr, removed_msg_ptr->uri_path_ptr, removed_msg_ptr->uri_path_len);
+                            returned_dst_coap_msg_ptr->uri_path_len = removed_msg_ptr->uri_path_len;
+                        }
                     }
                 }
                 /* Remove resending message from active message resending Linked list */
@@ -1415,6 +1421,11 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handl
             if (freed_send_msg_ptr->send_msg_ptr->packet_ptr != NULL) {
                 handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->packet_ptr);
                 freed_send_msg_ptr->send_msg_ptr->packet_ptr = 0;
+            }
+
+            if (freed_send_msg_ptr->send_msg_ptr->uri_path_ptr != NULL) {
+                handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->uri_path_ptr);
+                freed_send_msg_ptr->send_msg_ptr->uri_path_ptr = 0;
             }
 
             handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr);

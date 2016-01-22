@@ -720,6 +720,15 @@ bool test_sn_nsdl_send_observation_notification()
         return false;
     }
 
+    u_int8_t path[] = {"13/0/1"};
+    uint8_t* uri_path_ptr = (uint8_t*)malloc(sizeof(path));
+    uint8_t uri_path_len = (uint8_t)sizeof(path);
+    retCounter = 2;
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1,uri_path_ptr,uri_path_len) ){
+        return false;
+    }
+    free(uri_path_ptr);
+
     retCounter = 2;
     sn_grs_stub.int8SuccessCounter = 0;
     sn_grs_stub.expectedInt8 = SN_NSDL_FAILURE;

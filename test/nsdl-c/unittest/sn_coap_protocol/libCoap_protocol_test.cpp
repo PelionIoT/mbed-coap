@@ -1962,6 +1962,52 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_release_allocated_coap_msg_mem(handle, ret);
 
     sn_coap_protocol_destroy(handle);
+
+    retCounter = 1;
+    handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_RESET;
+    sn_coap_parser_stub.expectedHeader->msg_id = 18;
+
+    memset(&tmp_addr, 0, sizeof(sn_nsdl_addr_s));
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+    dst_packet_data_ptr[2]=0;
+    dst_packet_data_ptr[3]=18;
+
+    tmp_addr.addr_ptr = (uint8_t*)malloc(5);
+    memset(tmp_addr.addr_ptr, '1', 5);
+    tmp_addr.port = 0;
+
+    retCounter = 21;
+    sn_coap_builder_stub.expectedInt16 = 5;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(3);
+    tmp_hdr.msg_id = 18;
+    tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    tmp_hdr.payload_len = SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE + 20;
+    tmp_hdr.uri_path_ptr = (uint8_t*)malloc(7);
+    snprintf((char *)tmp_hdr.uri_path_ptr, 7, "13/0/1");
+    tmp_hdr.uri_path_len = 7;
+
+    sn_coap_protocol_build(handle, &tmp_addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.uri_path_ptr);
+    free(tmp_hdr.options_list_ptr->block2_ptr);
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(tmp_addr.addr_ptr);
+    free(dst_packet_data_ptr);
+
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret != NULL );
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, ret);
+
+    sn_coap_protocol_destroy(handle);
+
     retCounter = 1;
     handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
 
@@ -1988,6 +2034,9 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     tmp_hdr.msg_id = 18;
     tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
     tmp_hdr.payload_len = SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE + 20;
+    tmp_hdr.uri_path_ptr = (uint8_t*)malloc(7);
+    snprintf((char *)tmp_hdr.uri_path_ptr, 7, "13/0/1");
+    tmp_hdr.uri_path_len = 7;
     sn_coap_protocol_build(handle, &tmp_addr, dst_packet_data_ptr, &tmp_hdr, NULL);
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
@@ -2000,11 +2049,11 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     CHECK( ret != NULL );
     sn_coap_parser_release_allocated_coap_msg_mem(handle, ret);
 
-
+    free(tmp_hdr.uri_path_ptr);
     free(packet_data_ptr);
     free(addr->addr_ptr);
     free(addr);
-    sn_coap_protocol_destroy(handle);
+    sn_coap_protocol_destroy(handle);    
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_exec)
