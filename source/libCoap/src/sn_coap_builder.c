@@ -175,16 +175,20 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
         }
 
         /* URI PATH - Repeatable option. Length of one option is 0-255 */
-        if (src_coap_msg_ptr->uri_path_ptr != NULL) {
-            repeatable_option_size = sn_coap_builder_options_calc_option_size(src_coap_msg_ptr->uri_path_len,
-                                     src_coap_msg_ptr->uri_path_ptr, COAP_OPTION_URI_PATH);
-            if (repeatable_option_size) {
-                returned_byte_count += repeatable_option_size;
-            } else {
-                return 0;
+        /* Do not add uri-path for notification message.
+         * Uri-path is needed for cancelling observation with RESET message */
+        if (!src_coap_msg_ptr->options_list_ptr ||
+                (src_coap_msg_ptr->options_list_ptr && !src_coap_msg_ptr->options_list_ptr->observe_len && !src_coap_msg_ptr->options_list_ptr->observe_ptr)) {
+            if (src_coap_msg_ptr->uri_path_ptr != NULL) {
+                repeatable_option_size = sn_coap_builder_options_calc_option_size(src_coap_msg_ptr->uri_path_len,
+                                         src_coap_msg_ptr->uri_path_ptr, COAP_OPTION_URI_PATH);
+                if (repeatable_option_size) {
+                    returned_byte_count += repeatable_option_size;
+                } else {
+                    return 0;
+                }
             }
         }
-
         /* CONTENT TYPE - Length of this option is 0-2 bytes */
         if (src_coap_msg_ptr->content_type_ptr != NULL) {
             returned_byte_count++;
@@ -617,7 +621,8 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
     /* * * * Build Uri-Path option * * * */
     /* Do not add uri-path for notification message.
      * Uri-path is needed for cancelling observation with RESET message */
-    if (!src_coap_msg_ptr->options_list_ptr->observe_len && !src_coap_msg_ptr->options_list_ptr->observe_ptr)
+    if (!src_coap_msg_ptr->options_list_ptr ||
+            (src_coap_msg_ptr->options_list_ptr && !src_coap_msg_ptr->options_list_ptr->observe_len && !src_coap_msg_ptr->options_list_ptr->observe_ptr))
         sn_coap_builder_options_build_add_multiple_option(dst_packet_data_pptr, &src_coap_msg_ptr->uri_path_ptr,
                  &src_coap_msg_ptr->uri_path_len, COAP_OPTION_URI_PATH);
 
