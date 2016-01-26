@@ -28,6 +28,8 @@ bool test_sn_nsdl_is_ep_registered();
 
 bool test_sn_nsdl_send_observation_notification();
 
+bool test_sn_nsdl_send_observation_notification_with_uri_path();
+
 bool test_sn_nsdl_oma_bootstrap();
 
 bool test_sn_nsdl_get_certificates();
