@@ -79,12 +79,9 @@ int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle)
 }
 
 uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
-       uint8_t *payload_ptr, uint16_t payload_len,
-       uint8_t *observe_ptr, uint8_t observe_len,
-       sn_coap_msg_type_e message_type,
-       uint8_t content_type,
-       uint8_t *uri_path_ptr,
-       uint16_t uri_path_len)
+        uint8_t *payload_ptr, uint16_t payload_len,
+        uint8_t *observe_ptr, uint8_t observe_len,
+        sn_coap_msg_type_e message_type, uint8_t content_type)
 {
     return sn_nsdl_stub.expectedUint16;
 }
