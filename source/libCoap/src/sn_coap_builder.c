@@ -615,7 +615,10 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
                      &src_coap_msg_ptr->options_list_ptr->location_path_len, COAP_OPTION_LOCATION_PATH);
     }
     /* * * * Build Uri-Path option * * * */
-    sn_coap_builder_options_build_add_multiple_option(dst_packet_data_pptr, &src_coap_msg_ptr->uri_path_ptr,
+    /* Do not add uri-path for notification message.
+     * Uri-path is needed for cancelling observation with RESET message */
+    if (!src_coap_msg_ptr->options_list_ptr->observe_len && !src_coap_msg_ptr->options_list_ptr->observe_ptr)
+        sn_coap_builder_options_build_add_multiple_option(dst_packet_data_pptr, &src_coap_msg_ptr->uri_path_ptr,
                  &src_coap_msg_ptr->uri_path_len, COAP_OPTION_URI_PATH);
 
     /* * * * Build Content-Type option * * * */
