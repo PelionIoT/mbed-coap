@@ -60,6 +60,11 @@ TEST(sn_nsdl, test_sn_nsdl_send_observation_notification)
     CHECK(test_sn_nsdl_send_observation_notification());
 }
 
+TEST(sn_nsdl, test_sn_nsdl_send_observation_notification_with_uri_path)
+{
+    CHECK(test_sn_nsdl_send_observation_notification_with_uri_path());
+}
+
 TEST(sn_nsdl, test_sn_nsdl_oma_bootstrap)
 {
     CHECK(test_sn_nsdl_oma_bootstrap());

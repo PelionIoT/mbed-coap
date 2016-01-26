@@ -693,49 +693,88 @@ bool test_sn_nsdl_is_ep_registered()
 
 bool test_sn_nsdl_send_observation_notification()
 {
-    if( 0 != sn_nsdl_send_observation_notification(NULL, NULL, 0,NULL,0,NULL,0,0,0, NULL,0) ){
+    if( 0 != sn_nsdl_send_observation_notification(NULL, NULL, 0,NULL,0,NULL,0,0,0) ){
+        return false;
+    }
+    sn_grs_stub.retNull = false;
+    sn_grs_stub.expectedInt8 = SN_NSDL_SUCCESS;
+    retCounter = 4;
+    sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
+    struct nsdl_s* handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
+
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,0) ){
+        return false;
+    }
+
+    retCounter = 1;
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,0) ){
+        return false;
+    }
+
+    retCounter = 2;
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1) ){
+        return false;
+    }
+
+    retCounter = 2;
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1) ){
+        return false;
+    }
+
+    retCounter = 2;
+    sn_grs_stub.int8SuccessCounter = 0;
+    sn_grs_stub.expectedInt8 = SN_NSDL_FAILURE;
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1) ){
+        return false;
+    }
+
+    sn_nsdl_destroy(handle);
+    return true;
+}
+
+bool test_sn_nsdl_send_observation_notification_with_uri_path()
+{
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(NULL, NULL, 0,NULL,0,NULL,0,0,0, NULL,0) ){
         return false;
     }
     sn_grs_stub.retNull = false;
     retCounter = 4;
     sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
     struct nsdl_s* handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
-
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,0,NULL,0) ){
+    u_int8_t path[] = {"13/0/1"};
+    uint8_t* uri_path_ptr = (uint8_t*)malloc(sizeof(path));
+    uint8_t uri_path_len = (uint8_t)sizeof(path);
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,0,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
     retCounter = 1;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,0,NULL,0) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,0,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
     retCounter = 2;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1,NULL,0) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,1,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
     retCounter = 2;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1,NULL,0) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,1,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
-    u_int8_t path[] = {"13/0/1"};
-    uint8_t* uri_path_ptr = (uint8_t*)malloc(sizeof(path));
-    uint8_t uri_path_len = (uint8_t)sizeof(path);
     retCounter = 2;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1,uri_path_ptr,uri_path_len) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,1,uri_path_ptr,uri_path_len) ){
         return false;
     }
-    free(uri_path_ptr);
 
     retCounter = 2;
     sn_grs_stub.int8SuccessCounter = 0;
     sn_grs_stub.expectedInt8 = SN_NSDL_FAILURE;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1,NULL,0) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,1,NULL,0) ){
         return false;
     }
-
+    free(uri_path_ptr);
     sn_nsdl_destroy(handle);
     return true;
 }
