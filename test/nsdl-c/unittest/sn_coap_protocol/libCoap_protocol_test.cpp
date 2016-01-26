@@ -568,13 +568,10 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
     sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
 
-    sn_coap_parser_stub.expectedHeader->payload_ptr = (uint8_t*)malloc(17);
-    sn_coap_parser_stub.expectedHeader->payload_len = 17;
-
     retCounter = 6;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED == ret->coap_status );
-    free(sn_coap_parser_stub.expectedHeader->payload_ptr);
+    free(ret->payload_ptr);
     free(sn_coap_parser_stub.expectedHeader->options_list_ptr->block1_ptr);
     free(list);
     free(sn_coap_parser_stub.expectedHeader);
