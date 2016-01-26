@@ -356,6 +356,8 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
     header.options_list_ptr->uri_query_len = 0;
     CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
 
+    free(header.options_list_ptr->observe_ptr);
+    header.options_list_ptr->observe_ptr = NULL;
     header.options_list_ptr->observe = 1;
 
     header.options_list_ptr->uri_query_len = 4;
@@ -370,15 +372,7 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
 
     header.options_list_ptr->block1_len = 2;
     header.payload_len = 1;
-    CHECK(431 == sn_coap_builder_calc_needed_packet_data_size(&header));
-
-    free(header.options_list_ptr->observe_ptr);
-    header.options_list_ptr->observe_ptr = NULL;
-    header.options_list_ptr->observe_len = 0;
-    header.options_list_ptr->block1_len = 2;
-    header.payload_len = 1;
     CHECK(722 == sn_coap_builder_calc_needed_packet_data_size(&header));
-
     // <--
 
     free(header.options_list_ptr->block1_ptr);
