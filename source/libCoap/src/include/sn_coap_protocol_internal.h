@@ -72,7 +72,7 @@ extern "C" {
 /* Note: Current Coap implementation supports Blockwise transfers specification version draft-ietf-core-block-03    */
 /* Note: This define is common for both received and sent Blockwise messages                                        */
 #ifndef SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
-#define SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE          0 /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
+#define SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE          1024 /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
 #endif
 
 #ifndef SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED

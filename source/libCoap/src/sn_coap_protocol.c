@@ -1734,10 +1734,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     return 0;
                 }
 
-                //TODO: This might cause crashes, but if not deleted leaks memory?
-                if( received_coap_msg_ptr->payload_ptr ){
-                    free(received_coap_msg_ptr->payload_ptr);
-                }
+                // In block message case, payload_ptr freeing must be done in application level
                 received_coap_msg_ptr->payload_ptr = temp_whole_payload_ptr;
                 received_coap_msg_ptr->payload_len = whole_payload_len;
 

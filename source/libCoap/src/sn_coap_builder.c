@@ -51,11 +51,6 @@ static uint8_t  sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_c
 /* * * * GLOBAL DECLARATIONS * * * */
 static uint16_t global_previous_option_number = 0;      /* Previous Option number in CoAP message */
 
-/* * * * EXTERN VARIABLES * * * */
-#if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
-extern uint16_t     sn_coap_block_data_size;                /* From sn_coap_protocol_ieft_draft_12.c */
-#endif
-
 sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
 {
     sn_coap_hdr_s *coap_res_ptr;
@@ -351,7 +346,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
 
         /* * * * * PAYLOAD * * * * */
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
-        if ((src_coap_msg_ptr->payload_len > sn_coap_block_data_size) && (sn_coap_block_data_size > 0)) {
+        if ((src_coap_msg_ptr->payload_len > SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE) && (SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE > 0)) {
             /* Two bytes for Block option */
             returned_byte_count += 2;
 
@@ -361,7 +356,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
                 returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 2);
             }
             /* Add maximum payload at one Blockwise message */
-            returned_byte_count += sn_coap_block_data_size;
+            returned_byte_count += SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE;
             returned_byte_count ++;                 /* For payload marker */
         } else {
             returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 0);
