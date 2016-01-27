@@ -26,6 +26,7 @@
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
+#include "sn_coap_protocol_internal.h"
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
 
@@ -1065,7 +1066,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
     uint8_t     *coap_message_ptr   = NULL;
     uint16_t    coap_message_len    = 0;
 
-    coap_message_len = sn_coap_builder_calc_needed_packet_data_size(coap_header_ptr);
+    coap_message_len = sn_coap_builder_calc_needed_packet_data_size(coap_header_ptr, handle->grs->coap->sn_coap_block_data_size);
 
     if (coap_message_len == 0) {
         return 0;

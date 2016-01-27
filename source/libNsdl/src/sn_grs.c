@@ -29,6 +29,7 @@
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
+#include "sn_coap_protocol_internal.h"
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
 
@@ -632,7 +633,7 @@ extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *ad
     }
 
     /* Calculate message length */
-    message_len = sn_coap_builder_calc_needed_packet_data_size(coap_hdr_ptr);
+    message_len = sn_coap_builder_calc_needed_packet_data_size(coap_hdr_ptr, handle->grs->coap->sn_coap_block_data_size);
 
     /* Allocate memory for message and check was allocating successfully */
     message_ptr = handle->grs->sn_grs_alloc(message_len);

@@ -429,6 +429,9 @@ bool test_sn_grs_process_coap()
         return false;
     }
 
+    sn_coap_protocol_stub.expectedCoap = (struct coap_s*)malloc(sizeof(struct coap_s));
+    memset(sn_coap_protocol_stub.expectedCoap, 0, sizeof(struct coap_s));
+
     struct nsdl_s* handle = (struct nsdl_s*)malloc(sizeof(struct nsdl_s));
     memset(handle, 0, sizeof(struct nsdl_s));
 
@@ -490,6 +493,8 @@ bool test_sn_grs_process_coap()
     if( SN_NSDL_SUCCESS != sn_grs_process_coap(handle, hdr, addr) ){
         return false;
     }
+
+
     sn_nsdl_stub.allocatePayloadPtr = false;
 
     hdr = (sn_coap_hdr_s*)malloc(sizeof(sn_coap_hdr_s));
@@ -942,7 +947,8 @@ bool test_sn_grs_process_coap()
     }
 
 
-
+    free(sn_coap_protocol_stub.expectedCoap);
+    sn_coap_protocol_stub.expectedCoap = NULL;
     free(addr);
     sn_grs_destroy(handle->grs);
     free(handle);
@@ -954,6 +960,8 @@ bool test_sn_grs_send_coap_message()
     if( SN_NSDL_FAILURE != sn_grs_send_coap_message(NULL, NULL, NULL) ){
         return false;
     }
+    sn_coap_protocol_stub.expectedCoap = (struct coap_s*)malloc(sizeof(struct coap_s));
+    memset(sn_coap_protocol_stub.expectedCoap, 0, sizeof(struct coap_s));
 
     struct nsdl_s* handle = (struct nsdl_s*)malloc(sizeof(struct nsdl_s));
     memset(handle, 0, sizeof(struct nsdl_s));
@@ -976,7 +984,7 @@ bool test_sn_grs_send_coap_message()
     }
 
     retCounter = 1;
-    sn_coap_protocol_stub.expectedInt16 = -1;
+    sn_coap_protocol_stub.expectedInt16 = -1;    
     if( SN_NSDL_FAILURE != sn_grs_send_coap_message(handle, NULL, NULL) ){
         return false;
     }
@@ -993,7 +1001,8 @@ bool test_sn_grs_send_coap_message()
     if( SN_NSDL_SUCCESS != sn_grs_send_coap_message(handle, NULL, NULL) ){
         return false;
     }
-
+    free(sn_coap_protocol_stub.expectedCoap);
+    sn_coap_protocol_stub.expectedCoap = NULL;
     sn_grs_destroy(handle->grs);
     free(handle);
     return true;
