@@ -51,6 +51,11 @@ static uint8_t  sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_c
 /* * * * GLOBAL DECLARATIONS * * * */
 static uint16_t global_previous_option_number = 0;      /* Previous Option number in CoAP message */
 
+/* * * * EXTERN VARIABLES * * * */
+#if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
+extern uint16_t     sn_coap_block_data_size;                /* From sn_coap_protocol_ieft_draft_12.c */
+#endif
+
 sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
 {
     sn_coap_hdr_s *coap_res_ptr;
@@ -170,16 +175,20 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
         }
 
         /* URI PATH - Repeatable option. Length of one option is 0-255 */
-        if (src_coap_msg_ptr->uri_path_ptr != NULL) {
-            repeatable_option_size = sn_coap_builder_options_calc_option_size(src_coap_msg_ptr->uri_path_len,
-                                     src_coap_msg_ptr->uri_path_ptr, COAP_OPTION_URI_PATH);
-            if (repeatable_option_size) {
-                returned_byte_count += repeatable_option_size;
-            } else {
-                return 0;
+        /* Do not add uri-path for notification message.
+         * Uri-path is needed for cancelling observation with RESET message */
+        if (!src_coap_msg_ptr->options_list_ptr ||
+                (src_coap_msg_ptr->options_list_ptr && !src_coap_msg_ptr->options_list_ptr->observe_len && !src_coap_msg_ptr->options_list_ptr->observe_ptr)) {
+            if (src_coap_msg_ptr->uri_path_ptr != NULL) {
+                repeatable_option_size = sn_coap_builder_options_calc_option_size(src_coap_msg_ptr->uri_path_len,
+                                         src_coap_msg_ptr->uri_path_ptr, COAP_OPTION_URI_PATH);
+                if (repeatable_option_size) {
+                    returned_byte_count += repeatable_option_size;
+                } else {
+                    return 0;
+                }
             }
         }
-
         /* CONTENT TYPE - Length of this option is 0-2 bytes */
         if (src_coap_msg_ptr->content_type_ptr != NULL) {
             returned_byte_count++;
@@ -342,7 +351,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
 
         /* * * * * PAYLOAD * * * * */
 #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
-        if ((src_coap_msg_ptr->payload_len > SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE) && (SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE > 0)) {
+        if ((src_coap_msg_ptr->payload_len > sn_coap_block_data_size) && (sn_coap_block_data_size > 0)) {
             /* Two bytes for Block option */
             returned_byte_count += 2;
 
@@ -352,7 +361,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
                 returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 2);
             }
             /* Add maximum payload at one Blockwise message */
-            returned_byte_count += SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE;
+            returned_byte_count += sn_coap_block_data_size;
             returned_byte_count ++;                 /* For payload marker */
         } else {
             returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 0);
@@ -610,7 +619,11 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
                      &src_coap_msg_ptr->options_list_ptr->location_path_len, COAP_OPTION_LOCATION_PATH);
     }
     /* * * * Build Uri-Path option * * * */
-    sn_coap_builder_options_build_add_multiple_option(dst_packet_data_pptr, &src_coap_msg_ptr->uri_path_ptr,
+    /* Do not add uri-path for notification message.
+     * Uri-path is needed for cancelling observation with RESET message */
+    if (!src_coap_msg_ptr->options_list_ptr ||
+            (src_coap_msg_ptr->options_list_ptr && !src_coap_msg_ptr->options_list_ptr->observe_len && !src_coap_msg_ptr->options_list_ptr->observe_ptr))
+        sn_coap_builder_options_build_add_multiple_option(dst_packet_data_pptr, &src_coap_msg_ptr->uri_path_ptr,
                  &src_coap_msg_ptr->uri_path_len, COAP_OPTION_URI_PATH);
 
     /* * * * Build Content-Type option * * * */

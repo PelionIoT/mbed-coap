@@ -569,6 +569,81 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
     return return_msg_id;
 }
 
+uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
+        uint8_t *payload_ptr, uint16_t payload_len,
+        uint8_t *observe_ptr, uint8_t observe_len,
+        sn_coap_msg_type_e message_type, uint8_t content_type,
+        uint8_t *uri_path_ptr, uint16_t uri_path_len)
+{
+    sn_coap_hdr_s   *notification_message_ptr;
+    uint16_t        return_msg_id = 0;
+
+    /* Check parameters */
+    if (handle == NULL) {
+        return 0;
+    }
+
+    /* Allocate and initialize memory for header struct */
+    notification_message_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
+    if (notification_message_ptr == NULL) {
+        return 0;
+    }
+
+    memset(notification_message_ptr, 0, sizeof(sn_coap_hdr_s));
+
+    notification_message_ptr->options_list_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_options_list_s));
+    if (notification_message_ptr->options_list_ptr  == NULL) {
+        handle->sn_nsdl_free(notification_message_ptr);
+        return 0;
+    }
+
+    memset(notification_message_ptr->options_list_ptr , 0, sizeof(sn_coap_options_list_s));
+
+    /* Fill header */
+    notification_message_ptr->msg_type = message_type;
+    notification_message_ptr->msg_code = COAP_MSG_CODE_RESPONSE_CONTENT;
+
+    /* Fill token */
+    notification_message_ptr->token_len = token_len;
+    notification_message_ptr->token_ptr = token_ptr;
+
+    /* Fill payload */
+    notification_message_ptr->payload_len = payload_len;
+    notification_message_ptr->payload_ptr = payload_ptr;
+
+    /* Fill uri path */
+    notification_message_ptr->uri_path_len = uri_path_len;
+    notification_message_ptr->uri_path_ptr = uri_path_ptr;
+
+    /* Fill observe */
+    notification_message_ptr->options_list_ptr->observe_len = observe_len;
+    notification_message_ptr->options_list_ptr->observe_ptr = observe_ptr;
+
+    /* Fill content type */
+    if (content_type) {
+        notification_message_ptr->content_type_len = 1;
+        notification_message_ptr->content_type_ptr = &content_type;
+    }
+
+    /* Send message */
+    if (sn_nsdl_send_coap_message(handle, handle->nsp_address_ptr->omalw_address_ptr, notification_message_ptr) == SN_NSDL_FAILURE) {
+        return_msg_id = 0;
+    } else {
+        return_msg_id = notification_message_ptr->msg_id;
+    }
+
+    /* Free memory */
+    notification_message_ptr->uri_path_ptr = NULL;
+    notification_message_ptr->payload_ptr = NULL;
+    notification_message_ptr->options_list_ptr->observe_ptr = NULL;
+    notification_message_ptr->token_ptr = NULL;
+    notification_message_ptr->content_type_ptr = NULL;
+
+    sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, notification_message_ptr);
+
+    return return_msg_id;
+}
+
 /* * * * * * * * * * */
 /* ~ OMA functions ~ */
 /* * * * * * * * * * */
