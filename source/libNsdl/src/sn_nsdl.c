@@ -26,6 +26,7 @@
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
+#include "sn_coap_protocol_internal.h"
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
 
@@ -504,69 +505,17 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
         uint8_t *observe_ptr, uint8_t observe_len,
         sn_coap_msg_type_e message_type, uint8_t content_type)
 {
-    sn_coap_hdr_s   *notification_message_ptr;
-    uint16_t        return_msg_id = 0;
-
-    /* Check parameters */
-    if (handle == NULL) {
-        return 0;
-    }
-
-    /* Allocate and initialize memory for header struct */
-    notification_message_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_hdr_s));
-    if (notification_message_ptr == NULL) {
-        return 0;
-    }
-
-    memset(notification_message_ptr, 0, sizeof(sn_coap_hdr_s));
-
-    notification_message_ptr->options_list_ptr = handle->sn_nsdl_alloc(sizeof(sn_coap_options_list_s));
-    if (notification_message_ptr->options_list_ptr  == NULL) {
-        handle->sn_nsdl_free(notification_message_ptr);
-        return 0;
-    }
-
-    memset(notification_message_ptr->options_list_ptr , 0, sizeof(sn_coap_options_list_s));
-
-    /* Fill header */
-    notification_message_ptr->msg_type = message_type;
-    notification_message_ptr->msg_code = COAP_MSG_CODE_RESPONSE_CONTENT;
-
-    /* Fill token */
-    notification_message_ptr->token_len = token_len;
-    notification_message_ptr->token_ptr = token_ptr;
-
-    /* Fill payload */
-    notification_message_ptr->payload_len = payload_len;
-    notification_message_ptr->payload_ptr = payload_ptr;
-
-    /* Fill observe */
-    notification_message_ptr->options_list_ptr->observe_len = observe_len;
-    notification_message_ptr->options_list_ptr->observe_ptr = observe_ptr;
-
-    /* Fill content type */
-    if (content_type) {
-        notification_message_ptr->content_type_len = 1;
-        notification_message_ptr->content_type_ptr = &content_type;
-    }
-
-    /* Send message */
-    if (sn_nsdl_send_coap_message(handle, handle->nsp_address_ptr->omalw_address_ptr, notification_message_ptr) == SN_NSDL_FAILURE) {
-        return_msg_id = 0;
-    } else {
-        return_msg_id = notification_message_ptr->msg_id;
-    }
-
-    /* Free memory */
-
-    notification_message_ptr->payload_ptr = NULL;
-    notification_message_ptr->options_list_ptr->observe_ptr = NULL;
-    notification_message_ptr->token_ptr = NULL;
-    notification_message_ptr->content_type_ptr = NULL;
-
-    sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, notification_message_ptr);
-
-    return return_msg_id;
+    return sn_nsdl_send_observation_notification_with_uri_path(handle,
+                                                               token_ptr,
+                                                               token_len,
+                                                               payload_ptr,
+                                                               payload_len,
+                                                               observe_ptr,
+                                                               observe_len,
+                                                               message_type,
+                                                               content_type,
+                                                               NULL,
+                                                               0);
 }
 
 uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
@@ -1065,7 +1014,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
     uint8_t     *coap_message_ptr   = NULL;
     uint16_t    coap_message_len    = 0;
 
-    coap_message_len = sn_coap_builder_calc_needed_packet_data_size(coap_header_ptr);
+    coap_message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_header_ptr, handle->grs->coap->sn_coap_block_data_size);
 
     if (coap_message_len == 0) {
         return 0;
