@@ -38,12 +38,22 @@ sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap
     return sn_coap_builder_stub.expectedHeader;
 }
 
-int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_size)
+int16_t sn_coap_builder_2(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_size)
 {
     return sn_coap_builder_stub.expectedInt16;
 }
 
-uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_size)
+int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
+{
+    return sn_coap_builder_stub.expectedInt16;
+}
+
+uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_size)
+{
+    return sn_coap_builder_stub.expectedUint16;
+}
+
+uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr)
 {
     return sn_coap_builder_stub.expectedUint16;
 }

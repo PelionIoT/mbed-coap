@@ -181,7 +181,7 @@ struct coap_s {
     uint8_t sn_coap_resending_queue_bytes;
     uint8_t sn_coap_resending_count;
     uint8_t sn_coap_resending_intervall;
-    uint8_t sn_coap_duplication_buffer_size;
+    uint8_t sn_coap_duplication_buffer_size;    
 };
 
 #ifdef __cplusplus
