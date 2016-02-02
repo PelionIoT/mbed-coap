@@ -1262,12 +1262,13 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
             }
 
             /* ;obs */
+            /* This is not needed anymore, server can issue observe to any resource directly
             if (resource_temp_ptr->resource_parameters_ptr->observable) {
                 *temp_ptr++ = ';';
                 memcpy(temp_ptr, obs_parameter, OBS_PARAMETER_LEN);
                 temp_ptr += OBS_PARAMETER_LEN;
             }
-
+            */
             /* ;aobs;id= */
             /* todo: aosb not supported ATM */
             /*
@@ -1351,10 +1352,11 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
                 return_value += sn_nsdl_itoa_len(resource_temp_ptr->resource_parameters_ptr->coap_content_type);
             }
 
+            /* This is not needed anymore, server can issue observe to any resource directly
             if (resource_temp_ptr->resource_parameters_ptr->observable) {
-                /* ;obs */
-                return_value += 4;
+                return_value += 4; // ;obs
             }
+            */
             /*todo: aobs not supported ATM */
             /*
             if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
