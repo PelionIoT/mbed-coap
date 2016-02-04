@@ -58,7 +58,7 @@ static void                  sn_coap_protocol_linked_list_blockwise_payload_stor
 static uint8_t              *sn_coap_protocol_linked_list_blockwise_payload_search(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_remove(struct coap_s *handle, coap_blockwise_payload_s *removed_payload_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(struct coap_s *handle);
-static uint16_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr);
+static uint32_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_remove_old_data(struct coap_s *handle);
 static sn_coap_hdr_s        *sn_coap_handle_blockwise_message(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr, void *param);
 static int8_t                sn_coap_convert_block_size(uint16_t block_size);
@@ -1271,7 +1271,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_remove(struct coap_s 
 }
 
 /**************************************************************************//**
- * \fn static uint16_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(sn_nsdl_addr_s *src_addr_ptr)
+ * \fn static uint32_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(sn_nsdl_addr_s *src_addr_ptr)
  *
  * \brief Counts length of Payloads in Linked list (Address as key)
  *
@@ -1280,9 +1280,9 @@ static void sn_coap_protocol_linked_list_blockwise_payload_remove(struct coap_s 
  * \return Return value is length of Payloads as bytes
  *****************************************************************************/
 
-static uint16_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr)
+static uint32_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr)
 {
-    uint16_t ret_whole_payload_len = 0;
+    uint32_t ret_whole_payload_len = 0;
     /* Loop all stored blockwise payloads in Linked list */
     ns_list_foreach(coap_blockwise_payload_s, searched_payload_info_ptr, &handle->linked_list_blockwise_received_payloads) {
         /* If payload's Source address is same than is searched */
@@ -1726,14 +1726,15 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 /* Store last Blockwise payload to Linked list */
                 uint16_t payload_len            = 0;
                 uint8_t *payload_ptr            = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len);
-                uint16_t whole_payload_len      = sn_coap_protocol_linked_list_blockwise_payloads_get_len(handle, src_addr_ptr);
+                uint32_t whole_payload_len      = sn_coap_protocol_linked_list_blockwise_payloads_get_len(handle, src_addr_ptr);
                 uint8_t *temp_whole_payload_ptr = NULL;
 
-                temp_whole_payload_ptr = handle->sn_coap_protocol_malloc(whole_payload_len);
-                if (!temp_whole_payload_ptr) {
+                temp_whole_payload_ptr = handle->sn_coap_protocol_malloc(whole_payload_len);                
+                if (temp_whole_payload_ptr == NULL || whole_payload_len > UINT16_MAX) {
                     sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
+                    handle->sn_coap_protocol_free(temp_whole_payload_ptr);
                     return 0;
-                }
+                }                
 
                 // In block message case, payload_ptr freeing must be done in application level
                 received_coap_msg_ptr->payload_ptr = temp_whole_payload_ptr;
