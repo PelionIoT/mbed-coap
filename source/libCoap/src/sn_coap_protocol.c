@@ -1734,7 +1734,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
                     handle->sn_coap_protocol_free(temp_whole_payload_ptr);
                     return 0;
-                }                
+                }
 
                 // In block message case, payload_ptr freeing must be done in application level
                 received_coap_msg_ptr->payload_ptr = temp_whole_payload_ptr;
