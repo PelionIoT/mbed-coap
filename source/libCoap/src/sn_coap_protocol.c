@@ -1729,7 +1729,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 uint32_t whole_payload_len      = sn_coap_protocol_linked_list_blockwise_payloads_get_len(handle, src_addr_ptr);
                 uint8_t *temp_whole_payload_ptr = NULL;
 
-                temp_whole_payload_ptr = handle->sn_coap_protocol_malloc(whole_payload_len);                
+                temp_whole_payload_ptr = handle->sn_coap_protocol_malloc(whole_payload_len);
                 if (temp_whole_payload_ptr == NULL || whole_payload_len > UINT16_MAX) {
                     sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
                     handle->sn_coap_protocol_free(temp_whole_payload_ptr);
