@@ -561,7 +561,6 @@ extern int8_t set_NSP_address(struct nsdl_s *handle, uint8_t *NSP_address, uint1
  */
 extern int8_t sn_nsdl_destroy(struct nsdl_s *handle);
 
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 /**
  * \fn extern uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
  *
@@ -599,7 +598,6 @@ extern int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certifica
  * \param   *handle Pointer to nsdl-library handle
  */
 extern int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr);
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 
 /**
  * \fn sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
