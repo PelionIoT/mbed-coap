@@ -56,7 +56,7 @@
 static uint8_t      ep_name_parameter_string[]  = {'e', 'p', '='};      /* Endpoint name. A unique name for the registering node in a domain.  */
 static uint8_t      resource_path_ptr[]         = {'r', 'd'};           /* For resource directory */
 static uint8_t      resource_type_parameter[]   = {'r', 't', '='};      /* Resource type. Only once for registration */
-static uint8_t      obs_parameter[]             = {'o', 'b', 's'};      /* Observable */
+//static uint8_t      obs_parameter[]             = {'o', 'b', 's'};      /* Observable */
 //static uint8_t    aobs_parameter[]            = {'a','o','b','s',';','i','d','='};    /* Auto-observable - TBD */
 static uint8_t      if_description_parameter[]  = {'i', 'f', '='};      /* Interface description. Only once */
 static uint8_t      ep_lifetime_parameter[]     = {'l', 't', '='};      /* Lifetime. Number of seconds that this registration will be valid for. Must be updated within this time, or will be removed. */
@@ -666,8 +666,10 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     handle->sn_nsdl_free(bootstrap_coap_header.options_list_ptr);
 
     return message_id;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#else
     return 0;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+
 }
 
 omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle)
@@ -716,8 +718,9 @@ omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle)
 
     /* return filled list */
     return certi_list_ptr;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#else
     return NULL;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list_t *certificate_ptr, uint8_t certificate_chain)
@@ -760,8 +763,9 @@ int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list
     resource_ptr->resourcelen = certificate_ptr->certificate_len[1];
 
     return SN_NSDL_SUCCESS;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#else
     return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr)
@@ -842,8 +846,9 @@ int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_devic
     handle->sn_nsdl_free(resource_temp);
 
     return SN_NSDL_SUCCESS;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#else
     return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE    
 }
 
 char *sn_nsdl_get_version(void)
@@ -1185,8 +1190,9 @@ static int8_t sn_nsdl_create_oma_device_object_base(struct nsdl_s *handle, sn_ns
 
     handle->sn_nsdl_free(new_resource.resource_parameters_ptr);
     return SN_NSDL_SUCCESS;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#else
     return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 /**
@@ -2095,8 +2101,9 @@ static int8_t sn_nsdl_resolve_lwm2m_address(struct nsdl_s *handle, uint8_t *uri,
     }
 
     return SN_NSDL_SUCCESS;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#else
     return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 
@@ -2220,8 +2227,9 @@ int8_t sn_nsdl_process_oma_tlv(struct nsdl_s *handle, uint8_t *data_ptr, uint16_
     }
 
     return SN_NSDL_SUCCESS;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#else
     return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 static void sn_nsdl_check_oma_bs_status(struct nsdl_s *handle)
