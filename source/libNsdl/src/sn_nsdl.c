@@ -56,7 +56,7 @@
 static uint8_t      ep_name_parameter_string[]  = {'e', 'p', '='};      /* Endpoint name. A unique name for the registering node in a domain.  */
 static uint8_t      resource_path_ptr[]         = {'r', 'd'};           /* For resource directory */
 static uint8_t      resource_type_parameter[]   = {'r', 't', '='};      /* Resource type. Only once for registration */
-static uint8_t      obs_parameter[]             = {'o', 'b', 's'};      /* Observable */
+//static uint8_t      obs_parameter[]             = {'o', 'b', 's'};      /* Observable */
 //static uint8_t    aobs_parameter[]            = {'a','o','b','s',';','i','d','='};    /* Auto-observable - TBD */
 static uint8_t      if_description_parameter[]  = {'i', 'f', '='};      /* Interface description. Only once */
 static uint8_t      ep_lifetime_parameter[]     = {'l', 't', '='};      /* Lifetime. Number of seconds that this registration will be valid for. Must be updated within this time, or will be removed. */
@@ -593,13 +593,14 @@ uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *hand
     return return_msg_id;
 }
 
+
 /* * * * * * * * * * */
 /* ~ OMA functions ~ */
 /* * * * * * * * * * */
 
 uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr)
 {
-
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     /* Local variables */
     sn_coap_hdr_s bootstrap_coap_header;
     uint8_t *uri_query_tmp_ptr;
@@ -665,10 +666,15 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     handle->sn_nsdl_free(bootstrap_coap_header.options_list_ptr);
 
     return message_id;
+#else
+    return 0;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+
 }
 
 omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     sn_nsdl_resource_info_s *resource_ptr = 0;;
     omalw_certificate_list_t *certi_list_ptr = 0;
 
@@ -712,11 +718,14 @@ omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle)
 
     /* return filled list */
     return certi_list_ptr;
-
+#else
+    return NULL;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list_t *certificate_ptr, uint8_t certificate_chain)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     (void)certificate_chain;
 
     /* Check pointers */
@@ -754,10 +763,14 @@ int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list
     resource_ptr->resourcelen = certificate_ptr->certificate_len[1];
 
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     sn_nsdl_resource_info_s *resource_temp = 0;
     uint8_t path[8] = "3/0/11/0";
 
@@ -833,6 +846,9 @@ int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_devic
     handle->sn_nsdl_free(resource_temp);
 
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE    
 }
 
 char *sn_nsdl_get_version(void)
@@ -900,7 +916,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
         sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
         return retval;
     }
-
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     /* * If OMA bootstrap message... * */
     if (src_ptr && (handle->oma_bs_address_len == src_ptr->addr_len) && (handle->oma_bs_port == src_ptr->port) && !memcmp(handle->oma_bs_address_ptr, src_ptr->addr_ptr, handle->oma_bs_address_len)) {
         /* TLV message. Parse message and check status of the OMA bootstrap  */
@@ -968,7 +984,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
 
         return SN_NSDL_SUCCESS;
     }
-
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 
     /* * * * * * * * * * * * * * * */
     /* Other messages are for GRS  */
@@ -1076,6 +1092,7 @@ static void sn_nsdl_resolve_nsp_address(struct nsdl_s *handle)
 
 static int8_t sn_nsdl_create_oma_device_object_base(struct nsdl_s *handle, sn_nsdl_oma_device_t *oma_device_setup_ptr, sn_nsdl_oma_binding_and_mode_t binding_and_mode)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     sn_nsdl_resource_info_s new_resource;
     uint8_t object_path[8] = "3/0/11/0";
     uint8_t resource_temp[3];
@@ -1173,6 +1190,9 @@ static int8_t sn_nsdl_create_oma_device_object_base(struct nsdl_s *handle, sn_ns
 
     handle->sn_nsdl_free(new_resource.resource_parameters_ptr);
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 /**
@@ -1852,6 +1872,7 @@ static uint32_t sn_nsdl_ahextoi(uint8_t *ptr, uint8_t len)
 
 static int8_t sn_nsdl_resolve_lwm2m_address(struct nsdl_s *handle, uint8_t *uri, uint16_t uri_len)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     if( uri_len < 2 ){
         return SN_NSDL_FAILURE;
     }
@@ -2080,11 +2101,15 @@ static int8_t sn_nsdl_resolve_lwm2m_address(struct nsdl_s *handle, uint8_t *uri,
     }
 
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 
 int8_t sn_nsdl_process_oma_tlv(struct nsdl_s *handle, uint8_t *data_ptr, uint16_t data_len)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     uint8_t *temp_ptr = data_ptr;
     uint8_t type = 0;
     uint16_t identifier = 0;
@@ -2202,10 +2227,14 @@ int8_t sn_nsdl_process_oma_tlv(struct nsdl_s *handle, uint8_t *data_ptr, uint16_
     }
 
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 static void sn_nsdl_check_oma_bs_status(struct nsdl_s *handle)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     /* Check OMA BS status */
     if ((handle->nsp_address_ptr->omalw_server_security == PSK) && (handle->nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE)) {
         /* call cb that oma bootstrap is done */
@@ -2220,6 +2249,7 @@ static void sn_nsdl_check_oma_bs_status(struct nsdl_s *handle)
             handle->sn_nsdl_oma_bs_done_cb(handle->nsp_address_ptr);
         }
     }
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 static int8_t set_endpoint_info(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr)
