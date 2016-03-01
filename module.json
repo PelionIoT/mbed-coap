@@ -1,6 +1,6 @@
 {
   "name": "mbed-client-c",
-  "version": "2.2.8",
+  "version": "2.2.9",
   "description": "Nanostack NSDL and COAP library",
   "keywords": [
     "coap",
