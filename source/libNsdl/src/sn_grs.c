@@ -634,7 +634,11 @@ extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *ad
 
     /* Calculate message length */
     message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_hdr_ptr, handle->grs->coap->sn_coap_block_data_size);
-
+    // If sending notification message and blockwise transfer is used add extra byte for Block2 option.
+    if ((coap_hdr_ptr) && (coap_hdr_ptr->payload_len > handle->grs->coap->sn_coap_block_data_size) &&
+            (handle->grs->coap->sn_coap_block_data_size > 0) && (coap_hdr_ptr->options_list_ptr->observe_ptr)) {
+        message_len++;
+    }
     /* Allocate memory for message and check was allocating successfully */
     message_ptr = handle->grs->sn_grs_alloc(message_len);
     if (message_ptr == NULL) {
