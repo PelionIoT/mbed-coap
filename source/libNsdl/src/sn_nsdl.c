@@ -881,12 +881,6 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
         return SN_NSDL_FAILURE;
     }
 
-    if (coap_packet_ptr->coap_status == COAP_STATUS_PARSER_ERROR_IN_HEADER) {
-        sn_nsdl_send_coap_message(handle, src_ptr, coap_packet_ptr);
-        sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
-        return SN_NSDL_SUCCESS;
-    }
-
     /* Check, if coap itself sends response, or block receiving is ongoing... */
     if (coap_packet_ptr->coap_status != COAP_STATUS_OK && coap_packet_ptr->coap_status != COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED) {
         sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);

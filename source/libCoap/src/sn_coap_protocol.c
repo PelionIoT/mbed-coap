@@ -536,9 +536,10 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
         return NULL;
     }
     /* * * * Send bad request response if parsing fails * * * */
-    if (returned_dst_coap_msg_ptr->coap_status == COAP_STATUS_PARSER_ERROR_IN_HEADER) {
-        returned_dst_coap_msg_ptr->msg_code = COAP_MSG_CODE_RESPONSE_BAD_REQUEST;
-        return returned_dst_coap_msg_ptr;
+    if (returned_dst_coap_msg_ptr->coap_status == COAP_STATUS_PARSER_ERROR_IN_HEADER) {        
+        sn_coap_protocol_send_rst(handle, returned_dst_coap_msg_ptr->msg_id, src_addr_ptr, param);
+        sn_coap_parser_release_allocated_coap_msg_mem(handle, returned_dst_coap_msg_ptr);
+        return NULL;
     }
 
     /* * * * Check validity of parsed Header values  * * * */
@@ -547,7 +548,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
         if (((returned_dst_coap_msg_ptr->msg_code >> 5) == 1) ||        // if class == 1
                 ((returned_dst_coap_msg_ptr->msg_code >> 5) == 6) ||    // if class == 6
                 ((returned_dst_coap_msg_ptr->msg_code >> 5) == 7)) {    // if class == 7
-            sn_coap_protocol_send_rst(handle, returned_dst_coap_msg_ptr->msg_id, src_addr_ptr, handle);
+            sn_coap_protocol_send_rst(handle, returned_dst_coap_msg_ptr->msg_id, src_addr_ptr, param);
         }
 
         /* Release memory of CoAP message */
