@@ -70,20 +70,18 @@ sn_coap_hdr_s *sn_coap_parser(struct coap_s *handle, uint16_t packet_data_len, u
     /* * * * Header parsing, move pointer over the header...  * * * */
     sn_coap_parser_header_parse(&data_temp_ptr, parsed_and_returned_coap_msg_ptr, coap_version_ptr);
 
-
     /* * * * Options parsing, move pointer over the options... * * * */
-    if (sn_coap_parser_options_parse(handle, &data_temp_ptr, parsed_and_returned_coap_msg_ptr, packet_data_ptr, packet_data_len) != 0) {
-        /* Release memory of CoAP message */
-        sn_coap_parser_release_allocated_coap_msg_mem(handle, parsed_and_returned_coap_msg_ptr);
-        return NULL;
+    if (sn_coap_parser_options_parse(handle, &data_temp_ptr, parsed_and_returned_coap_msg_ptr, packet_data_ptr, packet_data_len) != 0) {        
+        parsed_and_returned_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_ERROR_IN_HEADER;
+        return parsed_and_returned_coap_msg_ptr;
     }
 
     /* * * * Payload parsing * * * */
     if (sn_coap_parser_payload_parse(packet_data_len, packet_data_ptr, &data_temp_ptr, parsed_and_returned_coap_msg_ptr) == -1) {
-        /* Release memory of CoAP message */
-        sn_coap_parser_release_allocated_coap_msg_mem(handle, parsed_and_returned_coap_msg_ptr);
-        return NULL;
+        parsed_and_returned_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_ERROR_IN_HEADER;
+        return parsed_and_returned_coap_msg_ptr;
     }
+
     /* * * * Return parsed CoAP message  * * * * */
     return parsed_and_returned_coap_msg_ptr;
 }

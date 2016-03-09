@@ -334,7 +334,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 #if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
     uint16_t original_payload_len = 0;
 #endif
-
     /* * * * Check given pointers  * * * */
     if ((dst_addr_ptr == NULL) || (dst_packet_data_ptr == NULL) || (src_coap_msg_ptr == NULL) || handle == NULL) {
         return -2;
@@ -362,7 +361,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
     /* If blockwising needed */
     if ((src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
         /* * * * Add Blockwise option to send CoAP message * * */
-
         if (src_coap_msg_ptr->options_list_ptr == NULL) {
             /* Allocate memory for less used options */
             src_coap_msg_ptr->options_list_ptr = handle->sn_coap_protocol_malloc(sizeof(sn_coap_options_list_s));
@@ -415,7 +413,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
         /* Store original Payload length */
         original_payload_len = src_coap_msg_ptr->payload_len;
-
         /* Change Payload length of send message because Payload is blockwised */
         src_coap_msg_ptr->payload_len = handle->sn_coap_block_data_size;
     }
@@ -537,6 +534,11 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     if (returned_dst_coap_msg_ptr == NULL) {
         /* Memory allocation error in parser */
         return NULL;
+    }
+    /* * * * Send bad request response if parsing fails * * * */
+    if (returned_dst_coap_msg_ptr->coap_status == COAP_STATUS_PARSER_ERROR_IN_HEADER) {
+        returned_dst_coap_msg_ptr->msg_code = COAP_MSG_CODE_RESPONSE_BAD_REQUEST;
+        return returned_dst_coap_msg_ptr;
     }
 
     /* * * * Check validity of parsed Header values  * * * */
@@ -696,7 +698,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
 #endif /* ENABLE_RESENDINGS */
 
     /* * * * Return parsed CoAP message  * * * */
-    return (returned_dst_coap_msg_ptr);
+    return returned_dst_coap_msg_ptr;
 }
 
 
