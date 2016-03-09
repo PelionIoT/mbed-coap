@@ -413,6 +413,12 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_header_check_stub.expectedInt8 = 1;
+    sn_coap_parser_stub.expectedHeader->coap_status = COAP_STATUS_PARSER_ERROR_IN_HEADER;    
+    CHECK( NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL) );
+
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_header_check_stub.expectedInt8 = 1;
     sn_coap_parser_stub.expectedHeader->msg_code = sn_coap_msg_code_e(COAP_MSG_CODE_RESPONSE_PROXYING_NOT_SUPPORTED + 60);
 
     CHECK( NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL) );
