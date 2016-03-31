@@ -56,8 +56,8 @@ extern "C" {
 
 /* Init value for the maximum count of messages to be stored for duplication detection          */
 /* Setting of this value to 0 will disable duplication check, also reduce use of ROM memory     */
-#ifndef SN_COAP_DUPLICATION_MAX_MSGS_COUNT
-#define SN_COAP_DUPLICATION_MAX_MSGS_COUNT              0
+#ifndef YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
+#define YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT              0
 #endif
 /* Maximum allowed number of saved messages for duplicate searching */
 #define SN_COAP_MAX_ALLOWED_DUPLICATION_MESSAGE_COUNT   6
@@ -165,7 +165,7 @@ struct coap_s {
         uint16_t count_resent_msgs;
     #endif
 
-    #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
+    #if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
         coap_duplication_info_list_t  linked_list_duplication_msgs; /* Messages for duplicated messages detection is stored to this Linked list */
         uint16_t                      count_duplication_msgs;
     #endif
@@ -181,7 +181,7 @@ struct coap_s {
     uint8_t sn_coap_resending_queue_bytes;
     uint8_t sn_coap_resending_count;
     uint8_t sn_coap_resending_intervall;
-    uint8_t sn_coap_duplication_buffer_size;    
+    uint8_t sn_coap_duplication_buffer_size;
 };
 
 #ifdef __cplusplus
