@@ -40,7 +40,6 @@
 #include "sn_coap_protocol.h"
 #include "sn_coap_header_internal.h"
 #include "sn_coap_protocol_internal.h"
-#include "mbed-trace/mbed_trace.h"
 
 /* * * * * * * * * * * * * * * * * * * * */
 /* * * * LOCAL FUNCTION PROTOTYPES * * * */
@@ -188,14 +187,12 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
     /* * * * Create Linked list for storing Duplication info * * * */
     ns_list_init(&handle->linked_list_duplication_msgs);
     handle->sn_coap_duplication_buffer_size = SN_COAP_DUPLICATION_MAX_MSGS_COUNT;
-    tr_debug("SN_COAP_DUPLICATION_MAX_MSGS_COUNT %d", handle->sn_coap_duplication_buffer_size);
 #endif
 
 #if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
     /* * * * Create Linked list for storing Duplication info * * * */
     ns_list_init(&handle->linked_list_duplication_msgs);
     handle->sn_coap_duplication_buffer_size = YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT;
-    tr_debug("YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT %d", handle->sn_coap_duplication_buffer_size);
 #endif
 
 #if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
