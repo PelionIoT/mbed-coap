@@ -46,7 +46,7 @@
 /* * * * * * * * * * * * * * * * * * * * */
 
 static void                  sn_coap_protocol_send_rst(struct coap_s *handle, uint16_t msg_id, sn_nsdl_addr_s *addr_ptr, void *param);
-#if defined(YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT) || defined(SN_COAP_DUPLICATION_MAX_MSGS_COUNT)/* If Message duplication detection is not used at all, this part of code will not be compiled */
+#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT/* If Message duplication detection is not used at all, this part of code will not be compiled */
 static void                  sn_coap_protocol_linked_list_duplication_info_store(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static int8_t                sn_coap_protocol_linked_list_duplication_info_search(struct coap_s *handle, sn_nsdl_addr_s *scr_addr_ptr, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_duplication_info_remove(struct coap_s *handle, uint8_t *scr_addr_ptr, uint16_t port, uint16_t msg_id);
@@ -89,7 +89,7 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
 
 #endif
 
-#if defined(YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT) || defined(SN_COAP_DUPLICATION_MAX_MSGS_COUNT) /* If Message duplication detection is not used at all, this part of code will not be compiled */
+#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
     ns_list_foreach_safe(coap_duplication_info_s, tmp, &handle->linked_list_duplication_msgs) {
         if (tmp->coap == handle) {
             if (tmp->addr_ptr) {
@@ -182,13 +182,6 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
 
 #endif /* ENABLE_RESENDINGS */
 
-/* Keep backward compatibility */
-#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
-    /* * * * Create Linked list for storing Duplication info * * * */
-    ns_list_init(&handle->linked_list_duplication_msgs);
-    handle->sn_coap_duplication_buffer_size = SN_COAP_DUPLICATION_MAX_MSGS_COUNT;
-#endif
-
 #if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
     /* * * * Create Linked list for storing Duplication info * * * */
     ns_list_init(&handle->linked_list_duplication_msgs);
@@ -245,7 +238,7 @@ int8_t sn_coap_protocol_set_duplicate_buffer_size(struct coap_s *handle, uint8_t
 {
     (void) handle;
     (void) message_count;
-#if defined(YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT) || defined(SN_COAP_DUPLICATION_MAX_MSGS_COUNT)
+#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
     if (handle == NULL) {
         return -1;
     }
@@ -598,7 +591,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     }
 #endif /* !YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
 
-#if defined(YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT) || defined(SN_COAP_DUPLICATION_MAX_MSGS_COUNT)/* If Message duplication is used, this part of code will not be compiled */
+#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT/* If Message duplication is used, this part of code will not be compiled */
 
     /* * * * Manage received CoAP message duplicate detection  * * * */
 
@@ -725,7 +718,7 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
 #endif
 
 
-#if defined(YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT) || defined(SN_COAP_DUPLICATION_MAX_MSGS_COUNT)
+#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
     /* * * * Remove old duplication messages * * * */
     sn_coap_protocol_linked_list_duplication_info_remove_old_ones(handle);
 #endif
@@ -961,7 +954,7 @@ static void sn_coap_protocol_send_rst(struct coap_s *handle, uint16_t msg_id, sn
     handle->sn_coap_tx_callback(packet_ptr, 4, addr_ptr, param);
 
 }
-#if defined(YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT) || defined(SN_COAP_DUPLICATION_MAX_MSGS_COUNT) /* If Message duplication detection is not used at all, this part of code will not be compiled */
+#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
 
 /**************************************************************************//**
  * \fn static void sn_coap_protocol_linked_list_duplication_info_store(sn_nsdl_addr_s *addr_ptr, uint16_t msg_id)
