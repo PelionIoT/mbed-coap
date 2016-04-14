@@ -763,8 +763,10 @@ sn_nsdl_resource_info_s *sn_grs_search_resource(struct grs_s *handle, uint16_t p
     else if (search_method == SN_GRS_DELETE_METHOD) {
         /* Scan all nodes on list */
         ns_list_foreach(sn_nsdl_resource_info_s, resource_search_temp, &handle->resource_root_list) {
+            uint8_t *temp_path = resource_search_temp->path;
             if (resource_search_temp->pathlen > pathlen &&
-                    0 == memcmp(resource_search_temp->path, path, pathlen)) {
+                    (*(temp_path + (uint8_t)pathlen) == '/') &&
+                    0 == memcmp(resource_search_temp->path, path_temp_ptr, pathlen)) {
                 return resource_search_temp;
             }
         }
