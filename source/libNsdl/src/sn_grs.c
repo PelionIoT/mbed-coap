@@ -33,7 +33,6 @@
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
 
-
 /* Defines */
 #define WELLKNOWN_PATH_LEN              16
 #define WELLKNOWN_PATH                  (".well-known/core")
@@ -736,9 +735,9 @@ static int8_t sn_grs_core_request(struct nsdl_s *handle, sn_nsdl_addr_s *src_add
 
 sn_nsdl_resource_info_s *sn_grs_search_resource(struct grs_s *handle, uint16_t pathlen, uint8_t *path, uint8_t search_method)
 {
+
     /* Local variables */
     uint8_t                     *path_temp_ptr          = NULL;
-
     /* Check parameters */
     if (!handle || !pathlen || !path) {
         return NULL;
@@ -764,11 +763,8 @@ sn_nsdl_resource_info_s *sn_grs_search_resource(struct grs_s *handle, uint16_t p
     else if (search_method == SN_GRS_DELETE_METHOD) {
         /* Scan all nodes on list */
         ns_list_foreach(sn_nsdl_resource_info_s, resource_search_temp, &handle->resource_root_list) {
-            uint8_t *temp_ptr = resource_search_temp->path;
-
-            /* If found, return pointer */
-            if ((*(temp_ptr + (uint8_t)pathlen) == '/')
-                    && !memcmp(resource_search_temp->path, path_temp_ptr, pathlen)) {
+            if (resource_search_temp->pathlen > pathlen &&
+                    0 == memcmp(resource_search_temp->path, path, pathlen)) {
                 return resource_search_temp;
             }
         }
