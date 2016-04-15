@@ -56,9 +56,20 @@ extern "C" {
 
 /* Init value for the maximum count of messages to be stored for duplication detection          */
 /* Setting of this value to 0 will disable duplication check, also reduce use of ROM memory     */
-#ifndef YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
-#define YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT              0
+
+// Keep the old flag to maintain backward compatibility
+#ifndef SN_COAP_DUPLICATION_MAX_MSGS_COUNT
+#define SN_COAP_DUPLICATION_MAX_MSGS_COUNT              0
 #endif
+
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT > 0
+    #define YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT SN_COAP_DUPLICATION_MAX_MSGS_COUNT
+#else
+    #ifndef YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
+    #define YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT       0
+    #endif
+#endif
+
 /* Maximum allowed number of saved messages for duplicate searching */
 #define SN_COAP_MAX_ALLOWED_DUPLICATION_MESSAGE_COUNT   6
 

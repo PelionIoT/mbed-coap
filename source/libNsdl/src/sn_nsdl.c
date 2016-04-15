@@ -56,7 +56,9 @@
 static uint8_t      ep_name_parameter_string[]  = {'e', 'p', '='};      /* Endpoint name. A unique name for the registering node in a domain.  */
 static uint8_t      resource_path_ptr[]         = {'r', 'd'};           /* For resource directory */
 static uint8_t      resource_type_parameter[]   = {'r', 't', '='};      /* Resource type. Only once for registration */
+#ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
 static uint8_t      obs_parameter[]             = {'o', 'b', 's'};      /* Observable */
+#endif
 //static uint8_t    aobs_parameter[]            = {'a','o','b','s',';','i','d','='};    /* Auto-observable - TBD */
 static uint8_t      if_description_parameter[]  = {'i', 'f', '='};      /* Interface description. Only once */
 static uint8_t      ep_lifetime_parameter[]     = {'l', 't', '='};      /* Lifetime. Number of seconds that this registration will be valid for. Must be updated within this time, or will be removed. */
@@ -1283,12 +1285,13 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
 
             /* ;obs */
              // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
+#ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
             if (resource_temp_ptr->resource_parameters_ptr->observable) {
                 *temp_ptr++ = ';';
                 memcpy(temp_ptr, obs_parameter, OBS_PARAMETER_LEN);
                 temp_ptr += OBS_PARAMETER_LEN;
             }
-
+#endif
             /* ;aobs;id= */
             /* todo: aosb not supported ATM */
             /*
@@ -1371,12 +1374,12 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
                 return_value += 6; // all but not content
                 return_value += sn_nsdl_itoa_len(resource_temp_ptr->resource_parameters_ptr->coap_content_type);
             }
-
+#ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
             // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
             if (resource_temp_ptr->resource_parameters_ptr->observable) {
                 return_value += 4; // ;obs
             }
-
+#endif
             /*todo: aobs not supported ATM */
             /*
             if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
