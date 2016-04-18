@@ -20,4 +20,4 @@ echo
 yt target x86-linux-native
 yt up
 make -f Makefile.test test
-make -f Makefile.test test clean
+#make -f Makefile.test test clean
