@@ -267,17 +267,115 @@ bool test_sn_grs_delete_resource()
     res->path[1] = '\0';
     ns_list_add_to_start(&handle->resource_root_list, res);
     ++handle->resource_root_count;
+
     sn_nsdl_resource_info_s* res2 = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
     memset(res2, 0, sizeof(sn_nsdl_resource_info_s));
-    res2->path = (uint8_t*)malloc(2);
-    res2->pathlen = 1;
+    res2->path = (uint8_t*)malloc(4);
+    res2->pathlen = 3;
     res2->path[0] = 'a';
-    res2->path[1] = '\0';
+    res2->path[1] = '/';
+    res2->path[2] = '1';
+    res2->path[3] = '\0';
     ns_list_add_to_start(&handle->resource_root_list, res2);
     ++handle->resource_root_count;
 
     uint8_t path[2] = {'a', '\0'};
     if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, 1, &path) ){
+        return false;
+    }
+
+    if (handle->resource_root_count != 0) {
+        return false;
+    }
+
+    sn_nsdl_resource_info_s* res3 = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset(res3, 0, sizeof(sn_nsdl_resource_info_s));
+    res3->path = (uint8_t*)malloc(2);
+    res3->pathlen = 1;
+    res3->path[0] = 'a';
+    res3->path[1] = '\0';
+    ns_list_add_to_start(&handle->resource_root_list, res3);
+    ++handle->resource_root_count;
+
+    /* a/1 */
+    sn_nsdl_resource_info_s* res4 = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset(res4, 0, sizeof(sn_nsdl_resource_info_s));
+    res4->path = (uint8_t*)malloc(4);
+    res4->pathlen = 3;
+    res4->path[0] = 'a';
+    res4->path[1] = '/';
+    res4->path[2] = '1';
+    res4->path[3] = '\0';
+    ns_list_add_to_start(&handle->resource_root_list, res4);
+    ++handle->resource_root_count;
+
+    /* a/1/0 */
+    sn_nsdl_resource_info_s* res5 = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset(res5, 0, sizeof(sn_nsdl_resource_info_s));
+    res5->path = (uint8_t*)malloc(6);
+    res5->pathlen = 5;
+    res5->path[0] = 'a';
+    res5->path[1] = '/';
+    res5->path[2] = '1';
+    res5->path[3] = '/';
+    res5->path[4] = '0';
+    res5->path[5] = '\0';
+    ns_list_add_to_start(&handle->resource_root_list, res5);
+    ++handle->resource_root_count;
+
+    /* a/10 */
+    sn_nsdl_resource_info_s* res6 = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset(res6, 0, sizeof(sn_nsdl_resource_info_s));
+    res6->path = (uint8_t*)malloc(5);
+    res6->pathlen = 4;
+    res6->path[0] = 'a';
+    res6->path[1] = '/';
+    res6->path[2] = '1';
+    res6->path[3] = '0';
+    res6->path[4] = '\0';
+    ns_list_add_to_start(&handle->resource_root_list, res6);
+    ++handle->resource_root_count;
+
+
+    /* a/10/0 */
+    sn_nsdl_resource_info_s* res7 = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset(res7, 0, sizeof(sn_nsdl_resource_info_s));
+    res7->path = (uint8_t*)malloc(7);
+    res7->pathlen = 6;
+    res7->path[0] = 'a';
+    res7->path[1] = '/';
+    res7->path[2] = '1';
+    res7->path[3] = '0';
+    res7->path[4] = '/';
+    res7->path[5] = '0';
+    res7->path[6] = '\0';
+    ns_list_add_to_start(&handle->resource_root_list, res7);
+    ++handle->resource_root_count;
+
+    uint8_t path2[4] = {'a', '/', '1', '\0'};
+    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, 3, &path2) ){
+        return false;
+    }
+
+    // "a/1" and "a/1/0" removed
+    if (handle->resource_root_count != 3) {
+        return false;
+    }
+
+    uint8_t path3[5] = {'a', '/', '1', '0', '\0'};
+    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, 4, &path3) ){
+        return false;
+    }
+
+    if (handle->resource_root_count != 1) {
+        return false;
+    }
+
+    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, 1, &path) ){
+        return false;
+    }
+
+    if (handle->resource_root_count != 0) {
         return false;
     }
 
@@ -1007,6 +1105,7 @@ bool test_sn_grs_send_coap_message()
     free(handle);
     return true;
 }
+
 
 bool test_sn_grs_search_resource()
 {
