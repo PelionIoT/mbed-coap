@@ -619,6 +619,7 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     }
 
     handle->sn_nsdl_oma_bs_done_cb = bootstrap_endpoint_info_ptr->oma_bs_status_cb;
+    handle->sn_nsdl_oma_bs_done_cb_handle = bootstrap_endpoint_info_ptr->oma_bs_status_cb_handle;
 
     /* Init CoAP header struct */
     memset(&bootstrap_coap_header, 0, sizeof(sn_coap_hdr_s));
@@ -2244,12 +2245,19 @@ static void sn_nsdl_check_oma_bs_status(struct nsdl_s *handle)
         if(handle->sn_nsdl_oma_bs_done_cb != 0){
             handle->sn_nsdl_oma_bs_done_cb(handle->nsp_address_ptr);
         }
+        if(handle->sn_nsdl_oma_bs_done_cb_handle != 0){
+            handle->sn_nsdl_oma_bs_done_cb_handle(handle->nsp_address_ptr, handle);
+        }
+
     } else if ((handle->nsp_address_ptr->omalw_server_security == CERTIFICATE) && (handle->nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE) &&
                ((sn_nsdl_get_resource(handle, 5, (void *)"0/0/5") != 0) &&
                 (sn_nsdl_get_resource(handle, 5, (void *)"0/0/4") != 0) &&
                 (sn_nsdl_get_resource(handle, 5, (void *)"0/0/3") != 0))) {
         if( handle->sn_nsdl_oma_bs_done_cb ){
             handle->sn_nsdl_oma_bs_done_cb(handle->nsp_address_ptr);
+        }
+        if( handle->sn_nsdl_oma_bs_done_cb_handle ){
+            handle->sn_nsdl_oma_bs_done_cb_handle(handle->nsp_address_ptr, handle);
         }
     }
 #endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE

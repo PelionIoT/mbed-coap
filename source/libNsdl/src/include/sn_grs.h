@@ -68,7 +68,8 @@ struct nsdl_s {
     uint8_t oma_bs_address_len;                                                 /* Bootstrap address length */
     uint16_t oma_bs_port;                                                       /* Bootstrap port */
     void (*sn_nsdl_oma_bs_done_cb)(sn_nsdl_oma_server_info_t *server_info_ptr); /* Callback to inform application when bootstrap is done */
-
+    void (*sn_nsdl_oma_bs_done_cb_handle)(sn_nsdl_oma_server_info_t *server_info_ptr,
+                                          struct nsdl_s *handle); /* Callback to inform application when bootstrap is done with nsdl handle */
     sn_nsdl_ep_parameters_s *ep_information_ptr;    // Endpoint parameters, Name, Domain etc..
     sn_nsdl_oma_server_info_t *nsp_address_ptr;     // NSP server address information
     uint8_t sn_nsdl_endpoint_registered;
