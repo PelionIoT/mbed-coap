@@ -35,6 +35,10 @@ void myBootstrapCallback(sn_nsdl_oma_server_info_t *server_info_ptr){
 
 }
 
+void myBootstrapCallbackHandle(sn_nsdl_oma_server_info_t *server_info_ptr, struct nsdl_s *a){
+
+}
+
 uint8_t nsdl_tx_callback(struct nsdl_s *a, sn_nsdl_capab_e b, uint8_t *c, uint16_t d, sn_nsdl_addr_s *e)
 {
 
@@ -1553,6 +1557,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
 
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
 
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
         return false;
@@ -1583,6 +1588,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
 
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
 
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
         return false;
@@ -1916,6 +1922,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_len = 3;
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
 
     handle->nsp_address_ptr->omalw_address_ptr->addr_ptr = (uint8_t*)malloc(3);
 
@@ -1949,6 +1956,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_len = 11;
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
 
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
         return false;
@@ -1980,6 +1988,8 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_len = 12;
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
+
 
     retCounter = 1;
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
@@ -2015,6 +2025,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_len = 13;
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
 
     retCounter = 1;
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
@@ -2048,6 +2059,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_len = 11;
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
 
     retCounter = 1;
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
@@ -2084,6 +2096,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_len = 14;
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
 
     retCounter = 1;
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
@@ -2119,6 +2132,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_len = 13;
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
 
     retCounter = 1;
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
@@ -2157,6 +2171,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_len = 276;
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
     handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
 
     retCounter = 1;
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
