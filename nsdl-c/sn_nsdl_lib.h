@@ -226,6 +226,8 @@ typedef struct sn_nsdl_oma_server_info_ {
  */
 typedef struct sn_nsdl_bs_ep_info_ {
     void (*oma_bs_status_cb)(sn_nsdl_oma_server_info_t *);  /**< Callback for OMA bootstrap status */
+    void (*oma_bs_status_cb_handle)(sn_nsdl_oma_server_info_t *,
+                                    struct nsdl_s *);  /**< Callback for OMA bootstrap status with nsdl handle */
     sn_nsdl_oma_device_t *device_object;                    /**< OMA LWM2M mandatory device resources */
 } sn_nsdl_bs_ep_info_t;
 
