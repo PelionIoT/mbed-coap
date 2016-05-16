@@ -67,6 +67,7 @@ typedef enum sn_coap_msg_code_ {
     COAP_MSG_CODE_RESPONSE_VALID                        = 67,
     COAP_MSG_CODE_RESPONSE_CHANGED                      = 68,
     COAP_MSG_CODE_RESPONSE_CONTENT                      = 69,
+    COAP_MSG_CODE_RESPONSE_CONTINUE                     = 95,
     COAP_MSG_CODE_RESPONSE_BAD_REQUEST                  = 128,
     COAP_MSG_CODE_RESPONSE_UNAUTHORIZED                 = 129,
     COAP_MSG_CODE_RESPONSE_BAD_OPTION                   = 130,
