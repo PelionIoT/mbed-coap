@@ -490,7 +490,7 @@ bool test_sn_nsdl_update_registration()
         return false;
     }
 
-    retCounter = 3;
+    retCounter = 4;
     sn_grs_stub.infoRetCounter = 2;
     sn_grs_stub.expectedInfo = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
     memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
@@ -515,6 +515,8 @@ bool test_sn_nsdl_update_registration()
     sn_grs_stub.expectedInfo->resource[1] = '\0';
     sn_grs_stub.expectedInfo->resourcelen = 1;
     sn_grs_stub.expectedInfo->publish_uri = 1;
+
+    sn_coap_builder_stub.expectedUint16 = 1;
     int8_t val = sn_nsdl_update_registration(handle, NULL, 0);
 
     free(sn_grs_stub.expectedInfo->resource);
@@ -1233,6 +1235,37 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->options_list_ptr->location_path_ptr[2] = '/';
 
     handle->register_msg_id = 5;
+    retCounter = 2;
+    if( 0 != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
+        return false;
+    }
+    free(handle->ep_information_ptr->endpoint_name_ptr);
+    handle->ep_information_ptr->endpoint_name_ptr = NULL;
+    free(handle->ep_information_ptr->domain_name_ptr);
+    handle->ep_information_ptr->domain_name_ptr = NULL;
+
+    sn_coap_builder_stub.expectedHeader = NULL;
+
+    sn_coap_protocol_stub.expectedHeader = (sn_coap_hdr_s*)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_protocol_stub.expectedHeader->coap_status = 6;
+    sn_coap_protocol_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_DELETE + 1;
+    sn_coap_protocol_stub.expectedHeader->payload_ptr = (uint8_t*)malloc(2);
+    sn_coap_protocol_stub.expectedHeader->msg_id = 5;
+    sn_coap_protocol_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CHANGED;
+    sn_coap_protocol_stub.expectedHeader->options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(sn_coap_protocol_stub.expectedHeader->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_protocol_stub.expectedHeader->options_list_ptr->location_path_ptr = (uint8_t*)malloc(3);
+    sn_coap_protocol_stub.expectedHeader->options_list_ptr->location_path_len = 3;
+
+    sn_coap_protocol_stub.expectedHeader->options_list_ptr->location_path_ptr[0] = '/';
+    sn_coap_protocol_stub.expectedHeader->options_list_ptr->location_path_ptr[1] = '/';
+    sn_coap_protocol_stub.expectedHeader->options_list_ptr->location_path_ptr[2] = '/';
+
+    handle->register_msg_id = 0;
+    handle->unregister_msg_id = 0;
+    handle->update_register_msg_id = 5;
+
     retCounter = 2;
     if( 0 != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
         return false;
