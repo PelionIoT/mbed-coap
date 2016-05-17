@@ -81,6 +81,9 @@ struct nsdl_s {
     uint8_t (*sn_nsdl_rx_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *);
     void (*sn_nsdl_oma_bs_done_cb_handle)(sn_nsdl_oma_server_info_t *server_info_ptr,
                                           struct nsdl_s *handle); /* Callback to inform application when bootstrap is done with nsdl handle */
+    uint16_t update_register_msg_id;
+    uint16_t register_msg_len;
+    uint16_t update_register_msg_len;
 };
 
 /***** Function prototypes *****/

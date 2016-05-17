@@ -749,7 +749,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     retCounter = 2;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL != ret );
-    CHECK( COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status );
+    CHECK( COAP_STATUS_OK == ret->coap_status );
     free(payload);
     free(sn_coap_parser_stub.expectedHeader->options_list_ptr->block1_ptr);
     free(list);

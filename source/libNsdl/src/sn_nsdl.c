@@ -1032,6 +1032,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
 {
     uint8_t     *coap_message_ptr   = NULL;
     uint16_t    coap_message_len    = 0;
+    uint16_t    coap_header_len     = 0;
 
     coap_message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_header_ptr, handle->grs->coap->sn_coap_block_data_size);
 
@@ -1044,6 +1045,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
         return 0;
     }
 
+    coap_header_len = coap_header_ptr->payload_len;
     /* Build message */
     if (sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle) < 0) {
         handle->sn_nsdl_free(coap_message_ptr);
@@ -1054,11 +1056,15 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
     if (coap_header_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE) {
         if (message_description == SN_NSDL_MSG_REGISTER) {
             handle->register_msg_id = coap_header_ptr->msg_id;
+            handle->register_msg_len = coap_header_len;
         }
-        if (message_description == SN_NSDL_MSG_UNREGISTER) {
+        else if (message_description == SN_NSDL_MSG_UNREGISTER) {
             handle->unregister_msg_id = coap_header_ptr->msg_id;
         }
-
+        else if (message_description == SN_NSDL_MSG_UPDATE) {
+            handle->update_register_msg_id = coap_header_ptr->msg_id;
+            handle->update_register_msg_len = coap_header_len;
+        }
     }
 
     handle->sn_nsdl_tx_callback(handle, SN_NSDL_PROTOCOL_COAP, coap_message_ptr, coap_message_len, dst_addr_ptr);
@@ -1637,19 +1643,34 @@ static int8_t sn_nsdl_local_rx_function(struct nsdl_s *handle, sn_coap_hdr_s *co
         return -1;
     }
 
-    if (coap_packet_ptr->msg_id == handle->register_msg_id) {
-        if (coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CREATED) {
+    bool is_reg_msg = false;
+    bool is_update_reg_msg = false;
+    bool is_unreg_msg = false;
+    if (coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CREATED) {
+        if (handle->grs->coap->sn_coap_block_data_size > 0) {
+            handle->register_msg_id += handle->register_msg_len / handle->grs->coap->sn_coap_block_data_size;
+        }
+        if (coap_packet_ptr->msg_id == handle->register_msg_id) {
             handle->sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_IS_REGISTERED;
+            is_reg_msg = true;
             sn_grs_mark_resources_as_registered(handle);
             if (sn_nsdl_resolve_ep_information(handle, coap_packet_ptr) != SN_NSDL_SUCCESS) {
                 return SN_NSDL_FAILURE;
             }
+        }
+    }
 
-            handle->register_msg_id = 0;
+    else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CHANGED) {
+        if (handle->grs->coap->sn_coap_block_data_size > 0) {
+            handle->update_register_msg_id += handle->update_register_msg_len / handle->grs->coap->sn_coap_block_data_size;
+        }
+        if (coap_packet_ptr->msg_id == handle->update_register_msg_id) {
+            is_update_reg_msg = true;
         }
     }
 
     if (coap_packet_ptr->msg_id == handle->unregister_msg_id) {
+        is_unreg_msg = true;
         if (coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_DELETED) {
             if (handle->ep_information_ptr->endpoint_name_ptr) {
                 handle->sn_nsdl_free(handle->ep_information_ptr->endpoint_name_ptr);
@@ -1661,13 +1682,23 @@ static int8_t sn_nsdl_local_rx_function(struct nsdl_s *handle, sn_coap_hdr_s *co
                 handle->ep_information_ptr->domain_name_ptr = 0;
                 handle->ep_information_ptr->domain_name_len = 0;
             }
-
-            handle->unregister_msg_id = 0;
         }
     }
 
     /* No messages to wait for, or message was not response to our request */
-    return handle->sn_nsdl_rx_callback(handle, coap_packet_ptr, address_ptr);
+    int ret = handle->sn_nsdl_rx_callback(handle, coap_packet_ptr, address_ptr);
+    if (is_reg_msg) {
+        handle->register_msg_id = 0;
+        handle->register_msg_len = 0;
+    }
+    else if (is_unreg_msg) {
+        handle->unregister_msg_id = 0;
+    }
+    else if (is_update_reg_msg) {
+        handle->update_register_msg_id = 0;
+        handle->update_register_msg_len = 0;
+    }
+    return ret;
 }
 
 /**
