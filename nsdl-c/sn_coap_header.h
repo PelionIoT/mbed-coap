@@ -106,6 +106,7 @@ typedef enum sn_coap_option_numbers_ {
     COAP_OPTION_LOCATION_QUERY  = 20,
     COAP_OPTION_BLOCK2          = 23,
     COAP_OPTION_BLOCK1          = 27,
+    COAP_OPTION_SIZE2           = 28,
     COAP_OPTION_PROXY_URI       = 35,
     COAP_OPTION_PROXY_SCHEME    = 39,
     COAP_OPTION_SIZE1           = 60
@@ -190,6 +191,9 @@ typedef struct sn_coap_options_list_ {
 
     uint8_t     block2_len;         /**< 0-3 bytes. */
     uint8_t    *block2_ptr;         /**< Not for User */
+
+    uint8_t     size1_len;         /**< 0-4 bytes. */
+    uint8_t    *size1_ptr;         /**< Not for User */
 } sn_coap_options_list_s;
 
 

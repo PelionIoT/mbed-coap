@@ -13,7 +13,8 @@
     "source/libCoap/src/include"
   ],
   "dependencies": {
-    "nanostack-libservice": "^3.0.0"
+    "nanostack-libservice": "^3.0.0",
+    "mbed-trace": ">=0.2.0,<2.0.0"
   },
   "targetDependencies": {}
 }

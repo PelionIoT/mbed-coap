@@ -12,6 +12,7 @@ INCLUDE_DIRS =\
   ../../../../source\
   ../../../../nsdl-c\
   ../../../../yotta_modules/nanostack-libservice/mbed-client-libservice\
+  ../../../../yotta_modules/mbed-trace\
   ../../../../../libService/libService\
   ../../../../source/libCoap/src/include\
   ../../../../source/libNsdl/src/include\

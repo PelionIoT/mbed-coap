@@ -539,6 +539,36 @@ bool test_sn_coap_parser_options_parsing_switches()
                                                                                                                                                                     }else{
                                                                                                                                                                         if (hdr)
                                                                                                                                                                             sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
+                                                                                                                                                                        ptr[5] = 216; //13 | 8
+                                                                                                                                                                        ptr[6] = 47;
+                                                                                                                                                                        retCounter = 3;
+                                                                                                                                                                        hdr = sn_coap_parser(coap, 8, ptr, ver);
+                                                                                                                                                                        if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
+                                                                                                                                                                            ret = false;
+                                                                                                                                                                        }else{
+                                                                                                                                                                            if (hdr)
+                                                                                                                                                                                sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
+                                                                                                                                                                            ptr[5] = 209; //13 | 1
+                                                                                                                                                                            ptr[6] = 47;
+                                                                                                                                                                            retCounter = 3;
+                                                                                                                                                                            hdr = sn_coap_parser(coap, 8, ptr, ver);
+                                                                                                                                                                            if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
+                                                                                                                                                                                ret = false;
+                                                                                                                                                                            }else{
+                                                                                                                                                                                if (hdr)
+                                                                                                                                                                                    sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
+                                                                                                                                                                                ptr[5] = 210; //13 | 2
+                                                                                                                                                                                ptr[6] = 47;
+                                                                                                                                                                                retCounter = 4;
+                                                                                                                                                                                hdr = sn_coap_parser(coap, 8, ptr, ver);
+                                                                                                                                                                                if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
+                                                                                                                                                                                    ret = false;
+                                                                                                                                                                                }else{
+                                                                                                                                                                                    if (hdr)
+                                                                                                                                                                                        sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
+                                                                                                                                                                                }
+                                                                                                                                                                            }
+                                                                                                                                                                        }
                                                                                                                                                                     }
                                                                                                                                                                 }
                                                                                                                                                             }
