@@ -56,9 +56,20 @@ extern "C" {
 
 /* Init value for the maximum count of messages to be stored for duplication detection          */
 /* Setting of this value to 0 will disable duplication check, also reduce use of ROM memory     */
+
+// Keep the old flag to maintain backward compatibility
 #ifndef SN_COAP_DUPLICATION_MAX_MSGS_COUNT
 #define SN_COAP_DUPLICATION_MAX_MSGS_COUNT              0
 #endif
+
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT > 0
+    #define YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT SN_COAP_DUPLICATION_MAX_MSGS_COUNT
+#else
+    #ifndef YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
+    #define YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT       0
+    #endif
+#endif
+
 /* Maximum allowed number of saved messages for duplicate searching */
 #define SN_COAP_MAX_ALLOWED_DUPLICATION_MESSAGE_COUNT   6
 
@@ -71,8 +82,8 @@ extern "C" {
 /* Setting of this value to 0 will disable this feature, and also reduce use of ROM memory                          */
 /* Note: Current Coap implementation supports Blockwise transfers specification version draft-ietf-core-block-03    */
 /* Note: This define is common for both received and sent Blockwise messages                                        */
-#ifndef SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE
-#define SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE          128 /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
+#ifndef YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#define YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE          0 /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
 #endif
 
 #ifndef SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED
@@ -165,12 +176,12 @@ struct coap_s {
         uint16_t count_resent_msgs;
     #endif
 
-    #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
+    #if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
         coap_duplication_info_list_t  linked_list_duplication_msgs; /* Messages for duplicated messages detection is stored to this Linked list */
         uint16_t                      count_duplication_msgs;
     #endif
 
-    #if SN_COAP_BLOCKWISE_MAX_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
+    #if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
         coap_blockwise_msg_list_t     linked_list_blockwise_sent_msgs; /* Blockwise message to to be sent is stored to this Linked list */
         coap_blockwise_payload_list_t linked_list_blockwise_received_payloads; /* Blockwise payload to to be received is stored to this Linked list */
     #endif

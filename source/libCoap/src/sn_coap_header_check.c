@@ -89,6 +89,7 @@ int8_t sn_coap_header_validity_check(sn_coap_hdr_s *src_coap_msg_ptr, coap_versi
         case COAP_MSG_CODE_RESPONSE_SERVICE_UNAVAILABLE:
         case COAP_MSG_CODE_RESPONSE_GATEWAY_TIMEOUT:
         case COAP_MSG_CODE_RESPONSE_PROXYING_NOT_SUPPORTED:
+        case COAP_MSG_CODE_RESPONSE_CONTINUE:
             break;      /* Ok cases */
         default:
             return -1;      /* Failed case */

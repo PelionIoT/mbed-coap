@@ -26,6 +26,7 @@
 #include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol.h"
+#include "sn_coap_protocol_internal.h"
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
 
@@ -55,7 +56,9 @@
 static uint8_t      ep_name_parameter_string[]  = {'e', 'p', '='};      /* Endpoint name. A unique name for the registering node in a domain.  */
 static uint8_t      resource_path_ptr[]         = {'r', 'd'};           /* For resource directory */
 static uint8_t      resource_type_parameter[]   = {'r', 't', '='};      /* Resource type. Only once for registration */
+#ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
 static uint8_t      obs_parameter[]             = {'o', 'b', 's'};      /* Observable */
+#endif
 //static uint8_t    aobs_parameter[]            = {'a','o','b','s',';','i','d','='};    /* Auto-observable - TBD */
 static uint8_t      if_description_parameter[]  = {'i', 'f', '='};      /* Interface description. Only once */
 static uint8_t      ep_lifetime_parameter[]     = {'l', 't', '='};      /* Lifetime. Number of seconds that this registration will be valid for. Must be updated within this time, or will be removed. */
@@ -504,6 +507,25 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
         uint8_t *observe_ptr, uint8_t observe_len,
         sn_coap_msg_type_e message_type, uint8_t content_type)
 {
+    return sn_nsdl_send_observation_notification_with_uri_path(handle,
+                                                               token_ptr,
+                                                               token_len,
+                                                               payload_ptr,
+                                                               payload_len,
+                                                               observe_ptr,
+                                                               observe_len,
+                                                               message_type,
+                                                               content_type,
+                                                               NULL,
+                                                               0);
+}
+
+uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
+        uint8_t *payload_ptr, uint16_t payload_len,
+        uint8_t *observe_ptr, uint8_t observe_len,
+        sn_coap_msg_type_e message_type, uint8_t content_type,
+        uint8_t *uri_path_ptr, uint16_t uri_path_len)
+{
     sn_coap_hdr_s   *notification_message_ptr;
     uint16_t        return_msg_id = 0;
 
@@ -540,6 +562,10 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
     notification_message_ptr->payload_len = payload_len;
     notification_message_ptr->payload_ptr = payload_ptr;
 
+    /* Fill uri path */
+    notification_message_ptr->uri_path_len = uri_path_len;
+    notification_message_ptr->uri_path_ptr = uri_path_ptr;
+
     /* Fill observe */
     notification_message_ptr->options_list_ptr->observe_len = observe_len;
     notification_message_ptr->options_list_ptr->observe_ptr = observe_ptr;
@@ -558,7 +584,7 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
     }
 
     /* Free memory */
-
+    notification_message_ptr->uri_path_ptr = NULL;
     notification_message_ptr->payload_ptr = NULL;
     notification_message_ptr->options_list_ptr->observe_ptr = NULL;
     notification_message_ptr->token_ptr = NULL;
@@ -569,13 +595,14 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
     return return_msg_id;
 }
 
+
 /* * * * * * * * * * */
 /* ~ OMA functions ~ */
 /* * * * * * * * * * */
 
 uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr)
 {
-
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     /* Local variables */
     sn_coap_hdr_s bootstrap_coap_header;
     uint8_t *uri_query_tmp_ptr;
@@ -592,6 +619,7 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     }
 
     handle->sn_nsdl_oma_bs_done_cb = bootstrap_endpoint_info_ptr->oma_bs_status_cb;
+    handle->sn_nsdl_oma_bs_done_cb_handle = bootstrap_endpoint_info_ptr->oma_bs_status_cb_handle;
 
     /* Init CoAP header struct */
     memset(&bootstrap_coap_header, 0, sizeof(sn_coap_hdr_s));
@@ -641,10 +669,15 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     handle->sn_nsdl_free(bootstrap_coap_header.options_list_ptr);
 
     return message_id;
+#else
+    return 0;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+
 }
 
 omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     sn_nsdl_resource_info_s *resource_ptr = 0;;
     omalw_certificate_list_t *certi_list_ptr = 0;
 
@@ -688,11 +721,14 @@ omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle)
 
     /* return filled list */
     return certi_list_ptr;
-
+#else
+    return NULL;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list_t *certificate_ptr, uint8_t certificate_chain)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     (void)certificate_chain;
 
     /* Check pointers */
@@ -730,10 +766,14 @@ int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list
     resource_ptr->resourcelen = certificate_ptr->certificate_len[1];
 
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     sn_nsdl_resource_info_s *resource_temp = 0;
     uint8_t path[8] = "3/0/11/0";
 
@@ -809,6 +849,9 @@ int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_devic
     handle->sn_nsdl_free(resource_temp);
 
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE    
 }
 
 char *sn_nsdl_get_version(void)
@@ -876,7 +919,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
         sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
         return retval;
     }
-
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     /* * If OMA bootstrap message... * */
     if (src_ptr && (handle->oma_bs_address_len == src_ptr->addr_len) && (handle->oma_bs_port == src_ptr->port) && !memcmp(handle->oma_bs_address_ptr, src_ptr->addr_ptr, handle->oma_bs_address_len)) {
         /* TLV message. Parse message and check status of the OMA bootstrap  */
@@ -944,7 +987,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
 
         return SN_NSDL_SUCCESS;
     }
-
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 
     /* * * * * * * * * * * * * * * */
     /* Other messages are for GRS  */
@@ -989,8 +1032,9 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
 {
     uint8_t     *coap_message_ptr   = NULL;
     uint16_t    coap_message_len    = 0;
+    uint16_t    coap_header_len     = 0;
 
-    coap_message_len = sn_coap_builder_calc_needed_packet_data_size(coap_header_ptr);
+    coap_message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_header_ptr, handle->grs->coap->sn_coap_block_data_size);
 
     if (coap_message_len == 0) {
         return 0;
@@ -1001,6 +1045,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
         return 0;
     }
 
+    coap_header_len = coap_header_ptr->payload_len;
     /* Build message */
     if (sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle) < 0) {
         handle->sn_nsdl_free(coap_message_ptr);
@@ -1011,11 +1056,15 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
     if (coap_header_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE) {
         if (message_description == SN_NSDL_MSG_REGISTER) {
             handle->register_msg_id = coap_header_ptr->msg_id;
+            handle->register_msg_len = coap_header_len;
         }
-        if (message_description == SN_NSDL_MSG_UNREGISTER) {
+        else if (message_description == SN_NSDL_MSG_UNREGISTER) {
             handle->unregister_msg_id = coap_header_ptr->msg_id;
         }
-
+        else if (message_description == SN_NSDL_MSG_UPDATE) {
+            handle->update_register_msg_id = coap_header_ptr->msg_id;
+            handle->update_register_msg_len = coap_header_len;
+        }
     }
 
     handle->sn_nsdl_tx_callback(handle, SN_NSDL_PROTOCOL_COAP, coap_message_ptr, coap_message_len, dst_addr_ptr);
@@ -1052,6 +1101,7 @@ static void sn_nsdl_resolve_nsp_address(struct nsdl_s *handle)
 
 static int8_t sn_nsdl_create_oma_device_object_base(struct nsdl_s *handle, sn_nsdl_oma_device_t *oma_device_setup_ptr, sn_nsdl_oma_binding_and_mode_t binding_and_mode)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     sn_nsdl_resource_info_s new_resource;
     uint8_t object_path[8] = "3/0/11/0";
     uint8_t resource_temp[3];
@@ -1149,6 +1199,9 @@ static int8_t sn_nsdl_create_oma_device_object_base(struct nsdl_s *handle, sn_ns
 
     handle->sn_nsdl_free(new_resource.resource_parameters_ptr);
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 /**
@@ -1238,12 +1291,14 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
             }
 
             /* ;obs */
+             // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
+#ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
             if (resource_temp_ptr->resource_parameters_ptr->observable) {
                 *temp_ptr++ = ';';
                 memcpy(temp_ptr, obs_parameter, OBS_PARAMETER_LEN);
                 temp_ptr += OBS_PARAMETER_LEN;
             }
-
+#endif
             /* ;aobs;id= */
             /* todo: aosb not supported ATM */
             /*
@@ -1326,11 +1381,12 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
                 return_value += 6; // all but not content
                 return_value += sn_nsdl_itoa_len(resource_temp_ptr->resource_parameters_ptr->coap_content_type);
             }
-
+#ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
+            // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
             if (resource_temp_ptr->resource_parameters_ptr->observable) {
-                /* ;obs */
-                return_value += 4;
+                return_value += 4; // ;obs
             }
+#endif
             /*todo: aobs not supported ATM */
             /*
             if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
@@ -1587,19 +1643,34 @@ static int8_t sn_nsdl_local_rx_function(struct nsdl_s *handle, sn_coap_hdr_s *co
         return -1;
     }
 
-    if (coap_packet_ptr->msg_id == handle->register_msg_id) {
-        if (coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CREATED) {
+    bool is_reg_msg = false;
+    bool is_update_reg_msg = false;
+    bool is_unreg_msg = false;
+    if (coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CREATED) {
+        if (handle->grs->coap->sn_coap_block_data_size > 0) {
+            handle->register_msg_id += handle->register_msg_len / handle->grs->coap->sn_coap_block_data_size;
+        }
+        if (coap_packet_ptr->msg_id == handle->register_msg_id) {
             handle->sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_IS_REGISTERED;
+            is_reg_msg = true;
             sn_grs_mark_resources_as_registered(handle);
             if (sn_nsdl_resolve_ep_information(handle, coap_packet_ptr) != SN_NSDL_SUCCESS) {
                 return SN_NSDL_FAILURE;
             }
+        }
+    }
 
-            handle->register_msg_id = 0;
+    else if (coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CHANGED) {
+        if (handle->grs->coap->sn_coap_block_data_size > 0) {
+            handle->update_register_msg_id += handle->update_register_msg_len / handle->grs->coap->sn_coap_block_data_size;
+        }
+        if (coap_packet_ptr->msg_id == handle->update_register_msg_id) {
+            is_update_reg_msg = true;
         }
     }
 
     if (coap_packet_ptr->msg_id == handle->unregister_msg_id) {
+        is_unreg_msg = true;
         if (coap_packet_ptr->msg_code == COAP_MSG_CODE_RESPONSE_DELETED) {
             if (handle->ep_information_ptr->endpoint_name_ptr) {
                 handle->sn_nsdl_free(handle->ep_information_ptr->endpoint_name_ptr);
@@ -1611,13 +1682,23 @@ static int8_t sn_nsdl_local_rx_function(struct nsdl_s *handle, sn_coap_hdr_s *co
                 handle->ep_information_ptr->domain_name_ptr = 0;
                 handle->ep_information_ptr->domain_name_len = 0;
             }
-
-            handle->unregister_msg_id = 0;
         }
     }
 
     /* No messages to wait for, or message was not response to our request */
-    return handle->sn_nsdl_rx_callback(handle, coap_packet_ptr, address_ptr);
+    int ret = handle->sn_nsdl_rx_callback(handle, coap_packet_ptr, address_ptr);
+    if (is_reg_msg) {
+        handle->register_msg_id = 0;
+        handle->register_msg_len = 0;
+    }
+    else if (is_unreg_msg) {
+        handle->unregister_msg_id = 0;
+    }
+    else if (is_update_reg_msg) {
+        handle->update_register_msg_id = 0;
+        handle->update_register_msg_len = 0;
+    }
+    return ret;
 }
 
 /**
@@ -1826,6 +1907,7 @@ static uint32_t sn_nsdl_ahextoi(uint8_t *ptr, uint8_t len)
 
 static int8_t sn_nsdl_resolve_lwm2m_address(struct nsdl_s *handle, uint8_t *uri, uint16_t uri_len)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     if( uri_len < 2 ){
         return SN_NSDL_FAILURE;
     }
@@ -2054,11 +2136,15 @@ static int8_t sn_nsdl_resolve_lwm2m_address(struct nsdl_s *handle, uint8_t *uri,
     }
 
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 
 int8_t sn_nsdl_process_oma_tlv(struct nsdl_s *handle, uint8_t *data_ptr, uint16_t data_len)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     uint8_t *temp_ptr = data_ptr;
     uint8_t type = 0;
     uint16_t identifier = 0;
@@ -2176,16 +2262,24 @@ int8_t sn_nsdl_process_oma_tlv(struct nsdl_s *handle, uint8_t *data_ptr, uint16_
     }
 
     return SN_NSDL_SUCCESS;
+#else
+    return SN_NSDL_FAILURE;
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 static void sn_nsdl_check_oma_bs_status(struct nsdl_s *handle)
 {
+#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
     /* Check OMA BS status */
     if ((handle->nsp_address_ptr->omalw_server_security == PSK) && (handle->nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE)) {
         /* call cb that oma bootstrap is done */
         if(handle->sn_nsdl_oma_bs_done_cb != 0){
             handle->sn_nsdl_oma_bs_done_cb(handle->nsp_address_ptr);
         }
+        if(handle->sn_nsdl_oma_bs_done_cb_handle != 0){
+            handle->sn_nsdl_oma_bs_done_cb_handle(handle->nsp_address_ptr, handle);
+        }
+
     } else if ((handle->nsp_address_ptr->omalw_server_security == CERTIFICATE) && (handle->nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE) &&
                ((sn_nsdl_get_resource(handle, 5, (void *)"0/0/5") != 0) &&
                 (sn_nsdl_get_resource(handle, 5, (void *)"0/0/4") != 0) &&
@@ -2193,7 +2287,11 @@ static void sn_nsdl_check_oma_bs_status(struct nsdl_s *handle)
         if( handle->sn_nsdl_oma_bs_done_cb ){
             handle->sn_nsdl_oma_bs_done_cb(handle->nsp_address_ptr);
         }
+        if( handle->sn_nsdl_oma_bs_done_cb_handle ){
+            handle->sn_nsdl_oma_bs_done_cb_handle(handle->nsp_address_ptr, handle);
+        }
     }
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 static int8_t set_endpoint_info(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr)

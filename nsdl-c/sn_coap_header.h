@@ -67,6 +67,7 @@ typedef enum sn_coap_msg_code_ {
     COAP_MSG_CODE_RESPONSE_VALID                        = 67,
     COAP_MSG_CODE_RESPONSE_CHANGED                      = 68,
     COAP_MSG_CODE_RESPONSE_CONTENT                      = 69,
+    COAP_MSG_CODE_RESPONSE_CONTINUE                     = 95,
     COAP_MSG_CODE_RESPONSE_BAD_REQUEST                  = 128,
     COAP_MSG_CODE_RESPONSE_UNAUTHORIZED                 = 129,
     COAP_MSG_CODE_RESPONSE_BAD_OPTION                   = 130,
@@ -279,13 +280,13 @@ extern void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle,
  *
  * \param *dst_packet_data_ptr is pointer to allocated destination to built CoAP packet
  *
- * \param *src_coap_msg_ptr is pointer to source structure for building Packet data
+ * \param *src_coap_msg_ptr is pointer to source structure for building Packet data 
  *
  * \return Return value is byte count of built Packet data. In failure cases:\n
  *          -1 = Failure in given CoAP header structure\n
  *          -2 = Failure in given pointer (= NULL)
  */
-extern int16_t        sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
+extern int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr);
 
 /**
  * \fn uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr)
@@ -293,12 +294,43 @@ extern int16_t        sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_
  * \brief Calculates needed Packet data memory size for given CoAP message
  *
  * \param *src_coap_msg_ptr is pointer to data which needed Packet
- *          data length is calculated
+ *          data length is calculated 
  *
  * \return Return value is count of needed memory as bytes for build Packet data
  *          Null if failed
  */
 extern uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr);
+
+/**
+ * \fn int16_t sn_coap_builder_2(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr,  uint16_t blockwise_size)
+ *
+ * \brief Builds an outgoing message buffer from a CoAP header structure.
+ *
+ * \param *dst_packet_data_ptr is pointer to allocated destination to built CoAP packet
+ *
+ * \param *src_coap_msg_ptr is pointer to source structure for building Packet data
+ *
+ * \param blockwise_payload_size Blockwise message maximum payload size
+ *
+ * \return Return value is byte count of built Packet data. In failure cases:\n
+ *          -1 = Failure in given CoAP header structure\n
+ *          -2 = Failure in given pointer (= NULL)
+ */
+extern int16_t sn_coap_builder_2(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_payload_size);
+
+/**
+ * \fn uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_payload_size)
+ *
+ * \brief Calculates needed Packet data memory size for given CoAP message
+ *
+ * \param *src_coap_msg_ptr is pointer to data which needed Packet
+ *          data length is calculated
+ * \param blockwise_payload_size Blockwise message maximum payload size
+ *
+ * \return Return value is count of needed memory as bytes for build Packet data
+ *          Null if failed
+ */
+extern uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_payload_size);
 
 /**
  * \fn sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)

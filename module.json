@@ -1,6 +1,6 @@
 {
   "name": "mbed-client-c",
-  "version": "2.2.1",
+  "version": "2.5.0",
   "description": "Nanostack NSDL and COAP library",
   "keywords": [
     "coap",
@@ -13,7 +13,7 @@
     "source/libCoap/src/include"
   ],
   "dependencies": {
-    "nanostack-libservice": "~3.0.0"
+    "nanostack-libservice": "^3.0.0"
   },
   "targetDependencies": {}
 }

@@ -1,5 +1,17 @@
 /*
- * Copyright (c) 2011-2015 ARM. All rights reserved.
+ * Copyright (c) 2015 ARM Limited. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ * Licensed under the Apache License, Version 2.0 (the License); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <string.h>
@@ -78,10 +90,22 @@ int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle)
     return sn_nsdl_stub.expectedInt8;
 }
 
+uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
+       uint8_t *payload_ptr, uint16_t payload_len,
+       uint8_t *observe_ptr, uint8_t observe_len,
+       sn_coap_msg_type_e message_type,
+       uint8_t content_type,
+       uint8_t *uri_path_ptr,
+       uint16_t uri_path_len)
+{
+    return sn_nsdl_stub.expectedUint16;
+}
+
 uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
-        uint8_t *payload_ptr, uint16_t payload_len,
-        uint8_t *observe_ptr, uint8_t observe_len,
-        sn_coap_msg_type_e message_type, uint8_t content_type)
+       uint8_t *payload_ptr, uint16_t payload_len,
+       uint8_t *observe_ptr, uint8_t observe_len,
+       sn_coap_msg_type_e message_type,
+       uint8_t content_type)
 {
     return sn_nsdl_stub.expectedUint16;
 }
