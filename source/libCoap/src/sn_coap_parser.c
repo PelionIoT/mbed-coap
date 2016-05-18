@@ -155,6 +155,10 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
                 handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->accept_ptr);
             }
 
+            if (freed_coap_msg_ptr->options_list_ptr->size1_ptr != NULL) {
+                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->size1_ptr);
+            }
+
             handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr);
         }
 
