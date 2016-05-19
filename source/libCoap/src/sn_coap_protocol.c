@@ -331,6 +331,7 @@ void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
 int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr,
                                uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param)
 {
+    tr_debug("sn_coap_protocol_build");
     int16_t  byte_count_built     = 0;
 #if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
     uint16_t original_payload_len = 0;
@@ -375,6 +376,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
         /* Check if Request message */
         if (src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED) {
+            tr_debug("sn_coap_protocol_build  blockwise request");
             /* Add Blockwise option, use Block1 because Request payload */
             src_coap_msg_ptr->options_list_ptr->block1_len = 1;
             if( src_coap_msg_ptr->options_list_ptr->block1_ptr ){
@@ -387,6 +389,30 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
                 handle->sn_coap_protocol_free(src_coap_msg_ptr->options_list_ptr);
                 src_coap_msg_ptr->options_list_ptr = 0;
                 return -2;
+            }
+
+            /* Add size1 parameter */
+            tr_debug("sn_coap_protocol_build  blockwise request - payload len %d", src_coap_msg_ptr->payload_len);
+
+            if(src_coap_msg_ptr->payload_len < 0xFF) {
+                src_coap_msg_ptr->options_list_ptr->size1_len = 1;
+            } else if(src_coap_msg_ptr->payload_len < 0xFFFF) {
+                src_coap_msg_ptr->options_list_ptr->size1_len = 2;
+            } else {
+                src_coap_msg_ptr->options_list_ptr->size1_len = 0;
+            }
+
+            if( src_coap_msg_ptr->options_list_ptr->size1_ptr ){
+                handle->sn_coap_protocol_free(src_coap_msg_ptr->options_list_ptr->size1_ptr);
+                src_coap_msg_ptr->options_list_ptr->size1_ptr = 0;
+            }
+            src_coap_msg_ptr->options_list_ptr->size1_ptr =
+                    handle->sn_coap_protocol_malloc(src_coap_msg_ptr->options_list_ptr->size1_len);
+            if (src_coap_msg_ptr->options_list_ptr->size1_ptr) {
+                for (int i = 0; i < src_coap_msg_ptr->options_list_ptr->size1_len; i++) {
+                    src_coap_msg_ptr->options_list_ptr->size1_ptr[i] =
+                            (src_coap_msg_ptr->payload_len >> ((src_coap_msg_ptr->options_list_ptr->size1_len - i - 1) * 8));
+                }
             }
 
             *(src_coap_msg_ptr->options_list_ptr->block1_ptr) = 0x08;       /* First block  (BLOCK NUMBER, 4 MSB bits) + More to come (MORE, 1 bit) */
@@ -1565,7 +1591,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                         return 0;
                     }
 
-
                     *(src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1_ptr + (src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1_len - 1)) = block_temp;
                     if (src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1_len == 3) {
                         *(src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1_ptr + 2) = block_number << 4;
@@ -1589,7 +1614,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     /* Not last block */
                     else {
                         /* set more - bit */
-                    tr_debug("sn_coap_handle_blockwise_message - block1 option - build next message, set more bit");
+                        tr_debug("sn_coap_handle_blockwise_message - block1 option - build next message, set more bit");
                         *(src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1_ptr + (src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1_len - 1)) |= 0x08;
                         src_coap_blockwise_ack_msg_ptr->payload_len = block_size;
                         src_coap_blockwise_ack_msg_ptr->payload_ptr = src_coap_blockwise_ack_msg_ptr->payload_ptr + (block_size * block_number);
@@ -1641,7 +1666,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
         else {
             tr_debug("sn_coap_handle_blockwise_message - block1 receiving code: %d",received_coap_msg_ptr->msg_code );
             if (received_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) {
-                tr_debug("sn_coap_handle_blockwise_message - block1 receiving, payload(%d) more than block size", received_coap_msg_ptr->payload_len);
                 received_coap_msg_ptr->payload_len = handle->sn_coap_block_data_size;
             }
 
@@ -1676,9 +1700,14 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                              8*(received_coap_msg_ptr->options_list_ptr->size1_len- 1 - i);
                     }
                 tr_debug("sn_coap_handle_blockwise_message - block1 msg size %d", total_message_size);
-                // -1 to add space for null terminator
-                if (total_message_size > UINT16_MAX - 1) {
+                if (total_message_size > UINT16_MAX) {
                     src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE;
+                    src_coap_blockwise_ack_msg_ptr->options_list_ptr->size1_ptr = handle->sn_coap_protocol_malloc(2);
+                    if (src_coap_blockwise_ack_msg_ptr->options_list_ptr->size1_ptr) {
+                        src_coap_blockwise_ack_msg_ptr->options_list_ptr->size1_ptr[0] = 0xff;
+                        src_coap_blockwise_ack_msg_ptr->options_list_ptr->size1_ptr[1] = 0xff;
+                        src_coap_blockwise_ack_msg_ptr->options_list_ptr->size1_len = 2;
+                    }
                 } else if (received_coap_msg_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET) {
                     src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_RESPONSE_CONTENT;
                 } else if (received_coap_msg_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST) {
