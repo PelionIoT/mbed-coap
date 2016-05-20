@@ -296,6 +296,7 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
 
     header.content_type_len = 2;
     sn_coap_options_list_s opt_list;
+    memset(&opt_list, 0, sizeof(sn_coap_options_list_s));
     header.options_list_ptr = &opt_list;
     header.options_list_ptr->accept_ptr = (uint8_t*)malloc(6);
     header.options_list_ptr->accept_len = 6;
@@ -372,15 +373,25 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
     header.payload_len = 1;
     CHECK(431 == sn_coap_builder_calc_needed_packet_data_size(&header));
 
+
+    header.options_list_ptr->size1_ptr = (uint8_t*)malloc(6);
+    header.options_list_ptr->size1_len = 6;
+    CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
+
+    /*free(header.options_list_ptr->size1_ptr);
+    header.options_list_ptr->size1_ptr = NULL;
+    header.options_list_ptr->size1_len = 0;*/
+
     free(header.options_list_ptr->observe_ptr);
     header.options_list_ptr->observe_ptr = NULL;
     header.options_list_ptr->observe_len = 0;
     header.options_list_ptr->block1_len = 2;
+    header.options_list_ptr->size1_len = 2;
     header.payload_len = 1;
-    CHECK(722 == sn_coap_builder_calc_needed_packet_data_size(&header));
+    CHECK(726 == sn_coap_builder_calc_needed_packet_data_size(&header));
 
     // <--
-
+    free(header.options_list_ptr->size1_ptr);
     free(header.options_list_ptr->block1_ptr);
     free(header.options_list_ptr->block2_ptr);
     free(header.options_list_ptr->uri_query_ptr);

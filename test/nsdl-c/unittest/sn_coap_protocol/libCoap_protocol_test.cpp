@@ -181,6 +181,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
 
     retCounter = 0;
     hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
     hdr.options_list_ptr->block1_ptr = (uint8_t*)malloc(3);
     CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
     hdr.options_list_ptr = NULL;
@@ -196,6 +197,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr.payload_len = YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
     hdr.msg_code = COAP_MSG_CODE_RESPONSE_BAD_REQUEST;
     hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
     hdr.options_list_ptr->block2_ptr = (uint8_t*)malloc(1);
     retCounter = 0;
     CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
@@ -274,24 +276,44 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
-    free(hdr.options_list_ptr->block1_ptr);
-    hdr.options_list_ptr->block1_ptr = NULL;
-    free(hdr.options_list_ptr);
-    hdr.options_list_ptr = NULL;
+    free(hdr.payload_ptr);
+    hdr.payload_ptr = (uint8_t*)malloc(UINT16_MAX);
+    memset(hdr.payload_ptr, '1', UINT16_MAX);
+    hdr.payload_len = UINT16_MAX;
+
+    retCounter = 6;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+
+    free(hdr.payload_ptr);
+    hdr.payload_ptr = (uint8_t*)malloc(UINT16_MAX - 1);
+    memset(hdr.payload_ptr, '1', UINT16_MAX - 1);
+    hdr.payload_len = UINT16_MAX - 1;
+
+    retCounter = 6;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     sn_coap_protocol_destroy(handle);
     handle = NULL;
     retCounter = 1;
     handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
-
+    free(hdr.options_list_ptr->block1_ptr);
+    hdr.options_list_ptr->block1_ptr = NULL;
+    free(hdr.options_list_ptr->size1_ptr);
+    hdr.options_list_ptr->size1_ptr = NULL;
+    free(hdr.options_list_ptr);
+    hdr.options_list_ptr = NULL;
     //Test sn_coap_protocol_copy_header here -->
-    retCounter = 8;
+    retCounter = 9;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
     CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     free(hdr.options_list_ptr->block1_ptr);
     hdr.options_list_ptr->block1_ptr = NULL;
+    free(hdr.options_list_ptr->size1_ptr);
+    hdr.options_list_ptr->size1_ptr = NULL;
     free(hdr.options_list_ptr);
     hdr.options_list_ptr = NULL;
 
@@ -306,6 +328,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr2->content_type_len = 3;
 
     hdr2->options_list_ptr = (sn_coap_options_list_s *)malloc(sizeof(sn_coap_options_list_s));
+    memset(hdr2->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
     hdr2->options_list_ptr->accept_ptr = (uint8_t*)malloc(3);
     hdr2->options_list_ptr->accept_len = 3;
     hdr2->options_list_ptr->block1_ptr = (uint8_t*)malloc(3);
@@ -331,10 +354,12 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr2->options_list_ptr->uri_port_len = 3;
     hdr2->options_list_ptr->uri_query_ptr = (uint8_t*)malloc(3);
     hdr2->options_list_ptr->uri_query_len = 3;
+    hdr2->options_list_ptr->size1_ptr = (uint8_t*)malloc(3);
+    hdr2->options_list_ptr->size1_len = 3;
 
     hdr2->payload_ptr = (uint8_t*)malloc(3);
 
-    for( int i=0; i < 16; i++ ){
+    for( int i=0; i < 17; i++ ){
         retCounter = 3 + i;
         sn_coap_builder_stub.expectedInt16 = 1;
         hdr2->payload_len = YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
@@ -342,7 +367,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
         CHECK( -2 == rett );
     }
 
-    retCounter = 19;
+    retCounter = 20;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr2->payload_len = YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL));
@@ -727,6 +752,39 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     free(list);
     free(sn_coap_parser_stub.expectedHeader);
 
+    /* Size is more than we can handle */
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 100;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1_ptr = (uint8_t*)malloc(1);
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1_len = 1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1_ptr[0] = 0x08;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1_ptr = (uint8_t*)malloc(3);
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1_ptr[0] = 0xFF;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1_ptr[1] = 0xFF;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1_ptr[2] = 0x01;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1_len = 3;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_PUT;
+    payload = (uint8_t*)malloc(65535);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 65535;
+
+    retCounter = 10;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
+    free(payload);
+    free(sn_coap_parser_stub.expectedHeader->options_list_ptr->block1_ptr);
+    free(sn_coap_parser_stub.expectedHeader->options_list_ptr->size1_ptr);
+    free(list);
+    free(sn_coap_parser_stub.expectedHeader);
+
+
     // received_coap_msg_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE -->
 
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
@@ -796,6 +854,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -851,6 +910,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -902,6 +962,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     tmp_hdr.payload_ptr = NULL;
@@ -1065,6 +1126,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -1121,6 +1183,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -1177,6 +1240,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     tmp_hdr.payload_ptr = NULL;
@@ -1419,6 +1483,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -1468,6 +1533,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -1517,6 +1583,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -1566,6 +1633,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -1615,6 +1683,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -1666,6 +1735,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -1721,6 +1791,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -1778,6 +1849,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     free(tmp_hdr.options_list_ptr->block2_ptr);
     free(tmp_hdr.options_list_ptr->block1_ptr);
+    free(tmp_hdr.options_list_ptr->size1_ptr);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     free(tmp_addr.addr_ptr);
@@ -2056,7 +2128,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     free(packet_data_ptr);
     free(addr->addr_ptr);
     free(addr);
-    sn_coap_protocol_destroy(handle);    
+    sn_coap_protocol_destroy(handle);
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_exec)
