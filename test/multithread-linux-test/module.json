@@ -1,5 +1,5 @@
 {
-  "name": "multithread-linux-testapp",
+  "name": "multithread-linux-test",
   "version": "1.0.0",
   "description": "Example application how to use mbed-client-c library",
   "private": true,
