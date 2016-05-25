@@ -1167,7 +1167,6 @@ static void sn_coap_protocol_linked_list_duplication_info_remove_old_ones(struct
 static void sn_coap_protocol_linked_list_blockwise_msg_remove(struct coap_s *handle, coap_blockwise_msg_s *removed_msg_ptr)
 {
     if( removed_msg_ptr->coap == handle ){
-        tr_debug("sn_coap_protocol_linked_list_blockwise_msg_remove - id: [%d]", removed_msg_ptr->coap_msg_ptr->msg_id);
         ns_list_remove(&handle->linked_list_blockwise_sent_msgs, removed_msg_ptr);
 
         if( removed_msg_ptr->coap_msg_ptr ){
