@@ -378,23 +378,22 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
     header.options_list_ptr->size1_len = 6;
     CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
 
-    /*free(header.options_list_ptr->size1_ptr);
-    header.options_list_ptr->size1_ptr = NULL;
-    header.options_list_ptr->size1_len = 0;*/
+    header.options_list_ptr->size2_ptr = (uint8_t*)malloc(6);
+    header.options_list_ptr->size1_len = 2;
+    header.options_list_ptr->size2_len = 6;
+    CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
 
     free(header.options_list_ptr->observe_ptr);
     header.options_list_ptr->observe_ptr = NULL;
     header.options_list_ptr->observe_len = 0;
     header.options_list_ptr->block1_len = 2;
     header.options_list_ptr->size1_len = 2;
+    header.options_list_ptr->size2_len = 2;
     header.payload_len = 1;
-    CHECK(726 == sn_coap_builder_calc_needed_packet_data_size(&header));
+    CHECK(729 == sn_coap_builder_calc_needed_packet_data_size(&header));
 
     // <--
-    free(header.options_list_ptr->size1_ptr);
-    free(header.options_list_ptr->block1_ptr);
-    free(header.options_list_ptr->block2_ptr);
-    free(header.options_list_ptr->uri_query_ptr);
+
     //free(header.options_list_ptr->observe_ptr); Called earlier!
     free(header.options_list_ptr->location_query_ptr);
     free(header.options_list_ptr->uri_port_ptr);
@@ -404,6 +403,24 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
     free(header.options_list_ptr->proxy_uri_ptr);
     free(header.options_list_ptr->max_age_ptr);
     free(header.options_list_ptr->accept_ptr);
+    free(header.options_list_ptr->size1_ptr);
+    free(header.options_list_ptr->block1_ptr);
+    free(header.options_list_ptr->block2_ptr);
+    header.options_list_ptr->location_query_ptr = NULL;
+    header.options_list_ptr->uri_port_ptr = NULL;
+    header.options_list_ptr->location_path_ptr = NULL;
+    header.options_list_ptr->uri_host_ptr = NULL;
+    header.options_list_ptr->etag_ptr = NULL;
+    header.options_list_ptr->proxy_uri_ptr = NULL;
+    header.options_list_ptr->max_age_ptr = NULL;
+    header.options_list_ptr->accept_ptr = NULL;
+    header.options_list_ptr->size1_ptr = NULL;
+    header.options_list_ptr->block1_ptr = NULL;
+    header.options_list_ptr->block2_ptr = NULL;
+
+    CHECK(318 == sn_coap_builder_calc_needed_packet_data_size(&header));
+    free(header.options_list_ptr->size2_ptr);
+    free(header.options_list_ptr->uri_query_ptr);
 
     //Test sn_coap_builder_options_calculate_jump_need "else" case
     header.options_list_ptr = NULL;

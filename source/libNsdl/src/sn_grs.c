@@ -640,7 +640,8 @@ extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *ad
     }
 
     /* Build CoAP message */
-    if (sn_coap_protocol_build(handle->grs->coap, address_ptr, message_ptr, coap_hdr_ptr, (void *)handle) < 0) {
+    message_len = sn_coap_protocol_build(handle->grs->coap, address_ptr, message_ptr, coap_hdr_ptr, (void *)handle);
+    if (message_len < 0) {
         handle->grs->sn_grs_free(message_ptr);
         message_ptr = 0;
         return SN_NSDL_FAILURE;

@@ -36,8 +36,6 @@
 #include "sn_coap_protocol.h"
 #include "sn_coap_header_internal.h"
 #include "sn_coap_protocol_internal.h"
-#include "mbed-trace/mbed_trace.h"
-#define TRACE_GROUP "coap"
 
 /* * * * * * * * * * * * * * * * * * * * */
 /* * * * LOCAL FUNCTION PROTOTYPES * * * */
@@ -159,6 +157,10 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
                 handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->size1_ptr);
             }
 
+            if (freed_coap_msg_ptr->options_list_ptr->size2_ptr != NULL) {
+                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->size2_ptr);
+            }
+
             handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr);
         }
 
@@ -207,7 +209,6 @@ static void sn_coap_parser_header_parse(uint8_t **packet_data_pptr, sn_coap_hdr_
  */
 static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, uint8_t *packet_data_start_ptr, uint16_t packet_len)
 {
-    tr_debug("sn_coap_parser_options_parse");
     uint8_t previous_option_number = 0;
     uint8_t i                      = 0;
     int8_t  ret_status             = 0;
@@ -277,7 +278,6 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
         /* * * Parse option itself * * */
         /* Some options are handled independently in own functions */
         previous_option_number = option_number;
-        tr_debug("sn_coap_parser_options_parse - option number %d", option_number);
         /* Allocate options_list_ptr if needed */
         switch (option_number) {
             case COAP_OPTION_MAX_AGE:
@@ -293,6 +293,7 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
             case COAP_OPTION_BLOCK1:
             case COAP_OPTION_ACCEPT:
             case COAP_OPTION_SIZE1:
+            case COAP_OPTION_SIZE2:
                 if (dst_coap_msg_ptr->options_list_ptr == NULL) {
                     dst_coap_msg_ptr->options_list_ptr = handle->sn_coap_protocol_malloc(sizeof(sn_coap_options_list_s));
                     if (NULL == dst_coap_msg_ptr->options_list_ptr) {
@@ -553,6 +554,25 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                     (*packet_data_pptr) += option_len;
                 }
                 break;
+
+        case COAP_OPTION_SIZE2:
+            if ((option_len > 4) || dst_coap_msg_ptr->options_list_ptr->size2_ptr) {
+                return -1;
+            }
+            dst_coap_msg_ptr->options_list_ptr->size2_len = option_len;
+            (*packet_data_pptr)++;
+
+            if (option_len) {
+                dst_coap_msg_ptr->options_list_ptr->size2_ptr = handle->sn_coap_protocol_malloc(option_len);
+
+                if (dst_coap_msg_ptr->options_list_ptr->size2_ptr == NULL) {
+                    return -1;
+                }
+
+                memcpy(dst_coap_msg_ptr->options_list_ptr->size2_ptr, *packet_data_pptr, option_len);
+                (*packet_data_pptr) += option_len;
+            }
+            break;
 
             default:
                 return -1;
