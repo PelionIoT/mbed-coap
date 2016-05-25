@@ -1030,6 +1030,7 @@ sn_nsdl_resource_info_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pa
  */
 static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description)
 {
+
     uint8_t     *coap_message_ptr   = NULL;
     uint16_t    coap_message_len    = 0;
     uint16_t    coap_header_len     = 0;
@@ -1047,7 +1048,8 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
 
     coap_header_len = coap_header_ptr->payload_len;
     /* Build message */
-    if (sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle) < 0) {
+    coap_message_len = sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle);
+    if (coap_message_len < 0) {
         handle->sn_nsdl_free(coap_message_ptr);
         return 0;
     }
@@ -1653,7 +1655,7 @@ static int8_t sn_nsdl_local_rx_function(struct nsdl_s *handle, sn_coap_hdr_s *co
         if (coap_packet_ptr->msg_id == handle->register_msg_id) {
             handle->sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_IS_REGISTERED;
             is_reg_msg = true;
-            sn_grs_mark_resources_as_registered(handle);
+            sn_grs_mark_resources_as_registered(handle);            
             if (sn_nsdl_resolve_ep_information(handle, coap_packet_ptr) != SN_NSDL_SUCCESS) {
                 return SN_NSDL_FAILURE;
             }

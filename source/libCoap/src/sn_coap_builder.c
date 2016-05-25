@@ -138,7 +138,6 @@ int16_t sn_coap_builder_2(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_
         /* * * * * * * * * * * * * * * * * * */
         sn_coap_builder_payload_build(&dst_packet_data_ptr, src_coap_msg_ptr);
     }
-
     /* * * * Return built Packet data length * * * */
     return (dst_packet_data_ptr - base_packet_data_ptr);
 }
@@ -328,7 +327,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
                 }
             }
 
-            /* BLOCK 1 - Length of this option is 1-3 bytes*/
+            /* BLOCK 2 - Length of this option is 1-3 bytes*/
             if (src_coap_msg_ptr->options_list_ptr->block2_ptr != NULL) {
                 returned_byte_count++;
                 if (src_coap_msg_ptr->options_list_ptr->block2_len > 3 || src_coap_msg_ptr->options_list_ptr->block2_len < 1) {
@@ -338,7 +337,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
                 returned_byte_count += src_coap_msg_ptr->options_list_ptr->block2_len;
             }
 
-            /* BLOCK 2 - Length of this option is 1-3 bytes*/
+            /* BLOCK 1 - Length of this option is 1-3 bytes*/
             if (src_coap_msg_ptr->options_list_ptr->block1_ptr != NULL) {
                 returned_byte_count++;
 
@@ -357,6 +356,16 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
                 }
 
                 returned_byte_count += src_coap_msg_ptr->options_list_ptr->size1_len;
+            }
+
+            /* SIZE2 - Length of this option is 0-4 bytes */
+            if (src_coap_msg_ptr->options_list_ptr->size2_ptr != NULL) {
+                returned_byte_count++;
+                if (src_coap_msg_ptr->options_list_ptr->size2_len > 4) {
+                    return 0;
+                }
+
+                returned_byte_count += src_coap_msg_ptr->options_list_ptr->size2_len;
             }
         }
 
@@ -393,7 +402,6 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
         returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 0);
 #endif
     }
-
     return returned_byte_count;
 }
 
@@ -424,7 +432,8 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
                 !src_coap_msg_ptr->options_list_ptr->proxy_uri_ptr      &&
                 !block_option                                           &&
                 !src_coap_msg_ptr->options_list_ptr->max_age_ptr        &&
-                !src_coap_msg_ptr->options_list_ptr->size1_ptr) {
+                !src_coap_msg_ptr->options_list_ptr->size1_ptr          &&
+                !src_coap_msg_ptr->options_list_ptr->size2_ptr) {
             return 0;
         }
 
@@ -491,6 +500,12 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
             }
             previous_option_number = (COAP_OPTION_BLOCK1);
         }
+        if (src_coap_msg_ptr->options_list_ptr->size2_ptr != NULL) {
+            if ((COAP_OPTION_SIZE2 - previous_option_number) > 12) {
+                needed_space += 1;
+            }
+            previous_option_number = (COAP_OPTION_SIZE2);
+        }
         if (src_coap_msg_ptr->options_list_ptr->proxy_uri_ptr != NULL) {
             if ((COAP_OPTION_PROXY_URI - previous_option_number) > 12) {
                 needed_space += 1;
@@ -500,7 +515,6 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
             }
             previous_option_number = (COAP_OPTION_PROXY_URI);
         }
-
         if (src_coap_msg_ptr->options_list_ptr->size1_ptr != NULL) {
             if ((COAP_OPTION_SIZE1 - previous_option_number) > 12) {
                 needed_space += 1;
@@ -681,9 +695,14 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
         sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->block1_len,
                      src_coap_msg_ptr->options_list_ptr->block1_ptr, COAP_OPTION_BLOCK1, &previous_option_number);
 
+        /* * * * Build Size2 option * * * */
+        sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->size2_len,
+                     src_coap_msg_ptr->options_list_ptr->size2_ptr, COAP_OPTION_SIZE2, &previous_option_number);
+
         /* * * * Build Proxy-Uri option * * * */
         sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->proxy_uri_len,
                      src_coap_msg_ptr->options_list_ptr->proxy_uri_ptr, COAP_OPTION_PROXY_URI, &previous_option_number);
+
 
         /* * * * Build Size1 option * * * */
         sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->size1_len,

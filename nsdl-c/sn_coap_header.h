@@ -194,6 +194,9 @@ typedef struct sn_coap_options_list_ {
 
     uint8_t     size1_len;         /**< 0-4 bytes. */
     uint8_t    *size1_ptr;         /**< Not for User */
+
+    uint8_t     size2_len;         /**< 0-4 bytes. */
+    uint8_t    *size2_ptr;         /**< Not for User */
 } sn_coap_options_list_s;
 
 
