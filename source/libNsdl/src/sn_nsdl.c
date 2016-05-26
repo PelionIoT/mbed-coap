@@ -52,6 +52,10 @@
 #define SN_NSDL_MSG_UNREGISTER          2
 #define SN_NSDL_MSG_UPDATE              3
 
+#ifdef COAP_DISABLE_OBS_FEATURE
+#define YOTTA_CFG_DISABLE_OBS_FEATURE COAP_DISABLE_OBS_FEATURE
+#endif
+
 /* Constants */
 static uint8_t      ep_name_parameter_string[]  = {'e', 'p', '='};      /* Endpoint name. A unique name for the registering node in a domain.  */
 static uint8_t      resource_path_ptr[]         = {'r', 'd'};           /* For resource directory */
