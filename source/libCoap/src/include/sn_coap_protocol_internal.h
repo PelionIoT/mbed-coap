@@ -27,6 +27,10 @@
 #include "ns_list.h"
 #include "sn_coap_header_internal.h"
 
+#if defined(MBED_CONF_APP_USER_CONFIG_FILE)
+#include MBED_CONF_APP_USER_CONFIG_FILE
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -82,8 +86,13 @@ extern "C" {
 /* Setting of this value to 0 will disable this feature, and also reduce use of ROM memory                          */
 /* Note: Current Coap implementation supports Blockwise transfers specification version draft-ietf-core-block-03    */
 /* Note: This define is common for both received and sent Blockwise messages                                        */
-#ifndef YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-#define YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE          0 /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+    #define YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#else
+
+    #ifndef YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+    #define YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE          0 /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
+    #endif
 #endif
 
 #ifndef SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED
