@@ -32,8 +32,10 @@
 #include "sn_coap_protocol_internal.h"
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
+#include "mbed-trace/mbed_trace.h"
 
 /* Defines */
+#define TRACE_GROUP "coap"
 #define WELLKNOWN_PATH_LEN              16
 #define WELLKNOWN_PATH                  (".well-known/core")
 
@@ -623,6 +625,7 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
 
 extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *address_ptr, sn_coap_hdr_s *coap_hdr_ptr)
 {
+    tr_debug("sn_grs_send_coap_message");
     uint8_t     *message_ptr = NULL;
     uint16_t    message_len = 0;
     uint8_t     ret_val = 0;
@@ -633,6 +636,7 @@ extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *ad
 
     /* Calculate message length */
     message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_hdr_ptr, handle->grs->coap->sn_coap_block_data_size);
+    tr_debug("sn_grs_send_coap_message - msg len after calc: [%d]", message_len);
     /* Allocate memory for message and check was allocating successfully */
     message_ptr = handle->grs->sn_grs_alloc(message_len);
     if (message_ptr == NULL) {
@@ -641,6 +645,7 @@ extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *ad
 
     /* Build CoAP message */
     message_len = sn_coap_protocol_build(handle->grs->coap, address_ptr, message_ptr, coap_hdr_ptr, (void *)handle);
+    tr_debug("sn_grs_send_coap_message - msg len after build: [%d]", message_len);
     if (message_len < 0) {
         handle->grs->sn_grs_free(message_ptr);
         message_ptr = 0;
