@@ -1055,9 +1055,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
 
     coap_header_len = coap_header_ptr->payload_len;
     /* Build message */
-    coap_message_len = sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle);
-    tr_debug("sn_nsdl_internal_coap_send - msg len after build: [%d]", coap_message_len);
-    if (coap_message_len < 0) {
+    if (sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle) < 0) {
         handle->sn_nsdl_free(coap_message_ptr);
         return 0;
     }

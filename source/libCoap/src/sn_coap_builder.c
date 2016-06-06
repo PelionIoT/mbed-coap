@@ -1200,9 +1200,6 @@ static uint16_t sn_coap_builder_block_option_size(sn_coap_hdr_s *src_coap_msg_pt
                                                   sn_coap_option_numbers_e option,
                                                   bool is_blockwise_needed)
 {
-    (void) src_coap_msg_ptr;
-    (void) option;
-    (void) is_blockwise_needed;
 #if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
     if(!is_blockwise_needed) {
         return 0;
@@ -1230,6 +1227,9 @@ static uint16_t sn_coap_builder_block_option_size(sn_coap_hdr_s *src_coap_msg_pt
             return 0;
     }
 #else
+    (void) src_coap_msg_ptr;
+    (void) option;
+    (void) is_blockwise_needed;
     return 0;
 #endif
 }
