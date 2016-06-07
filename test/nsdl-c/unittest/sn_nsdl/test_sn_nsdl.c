@@ -368,6 +368,270 @@ bool test_sn_nsdl_register_endpoint()
         goto end;
     }
 
+    //test resource_type_len overflow
+    sn_grs_stub.info2ndRetCounter = 2;
+    sn_grs_stub.infoRetCounter = 2;
+    sn_grs_stub.expectedInfo = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_len = UINT16_MAX;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr = (uint8_t*)malloc(UINT16_MAX);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_len = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+
+    sn_grs_stub.expectedInfo->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->path[0] = 'a';
+    sn_grs_stub.expectedInfo->path[1] = '\0';
+    sn_grs_stub.expectedInfo->pathlen = 1;
+    sn_grs_stub.expectedInfo->resource = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource[0] = 'a';
+    sn_grs_stub.expectedInfo->resource[1] = '\0';
+    sn_grs_stub.expectedInfo->resourcelen = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
+    eptr->binding_and_mode = 0x06;
+    retCounter = 7;
+
+    sn_coap_builder_stub.expectedUint16 = 1;
+    sn_coap_protocol_stub.expectedInt16 = 1;
+    //passes
+    val = sn_nsdl_register_endpoint(handle, eptr);
+    free(sn_grs_stub.expectedInfo->resource);
+    free(sn_grs_stub.expectedInfo->path);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr);
+    free(sn_grs_stub.expectedInfo);
+
+    if( 0 != val ){
+        ret = false;
+        goto end;
+    }
+
+    //test interface len overflow
+    sn_grs_stub.info2ndRetCounter = 2;
+    sn_grs_stub.infoRetCounter = 2;
+    sn_grs_stub.expectedInfo = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_len = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_len = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+
+    sn_grs_stub.expectedInfo->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->path[0] = 'a';
+    sn_grs_stub.expectedInfo->path[1] = '\0';
+    sn_grs_stub.expectedInfo->pathlen = UINT16_MAX;
+    sn_grs_stub.expectedInfo->resource = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource[0] = 'a';
+    sn_grs_stub.expectedInfo->resource[1] = '\0';
+    sn_grs_stub.expectedInfo->resourcelen = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
+    eptr->binding_and_mode = 0x06;
+    retCounter = 7;
+
+    sn_coap_builder_stub.expectedUint16 = 1;
+    sn_coap_protocol_stub.expectedInt16 = 1;
+    //passes
+    val = sn_nsdl_register_endpoint(handle, eptr);
+    free(sn_grs_stub.expectedInfo->resource);
+    free(sn_grs_stub.expectedInfo->path);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr);
+    free(sn_grs_stub.expectedInfo);
+
+    if( 0 != val ){
+        ret = false;
+        goto end;
+    }
+
+    //test coap content overflow
+    sn_grs_stub.info2ndRetCounter = 2;
+    sn_grs_stub.infoRetCounter = 2;
+    sn_grs_stub.expectedInfo = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_len = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_len = UINT16_MAX - 20;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->coap_content_type = UINT8_MAX;
+
+    sn_grs_stub.expectedInfo->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->path[0] = 'a';
+    sn_grs_stub.expectedInfo->path[1] = '\0';
+    sn_grs_stub.expectedInfo->pathlen = 1;
+    sn_grs_stub.expectedInfo->resource = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource[0] = 'a';
+    sn_grs_stub.expectedInfo->resource[1] = '\0';
+    sn_grs_stub.expectedInfo->resourcelen = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
+    eptr->binding_and_mode = 0x06;
+    retCounter = 7;
+
+    sn_coap_builder_stub.expectedUint16 = 1;
+    sn_coap_protocol_stub.expectedInt16 = 1;
+    //passes
+    val = sn_nsdl_register_endpoint(handle, eptr);
+    free(sn_grs_stub.expectedInfo->resource);
+    free(sn_grs_stub.expectedInfo->path);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr);
+    free(sn_grs_stub.expectedInfo);
+
+    if( 0 != val ){
+        ret = false;
+        goto end;
+    }
+
+    //test observe len overflow
+    sn_grs_stub.info2ndRetCounter = 2;
+    sn_grs_stub.infoRetCounter = 2;
+    sn_grs_stub.expectedInfo = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_len = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_len = UINT16_MAX - 25;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->coap_content_type = 1;
+
+    sn_grs_stub.expectedInfo->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->path[0] = 'a';
+    sn_grs_stub.expectedInfo->path[1] = '\0';
+    sn_grs_stub.expectedInfo->pathlen = 1;
+    sn_grs_stub.expectedInfo->resource = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource[0] = 'a';
+    sn_grs_stub.expectedInfo->resource[1] = '\0';
+    sn_grs_stub.expectedInfo->resourcelen = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
+    eptr->binding_and_mode = 0x06;
+    retCounter = 7;
+
+    sn_coap_builder_stub.expectedUint16 = 1;
+    sn_coap_protocol_stub.expectedInt16 = 1;
+    //passes
+    val = sn_nsdl_register_endpoint(handle, eptr);
+    free(sn_grs_stub.expectedInfo->resource);
+    free(sn_grs_stub.expectedInfo->path);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr);
+    free(sn_grs_stub.expectedInfo);
+
+    if( 0 != val ){
+        ret = false;
+        goto end;
+    }
+
+    //test observe len overflow
+    sn_grs_stub.info2ndRetCounter = 2;
+    sn_grs_stub.infoRetCounter = 2;
+    sn_grs_stub.expectedInfo = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_len = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_len = UINT16_MAX - 28;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->coap_content_type = 1;
+
+    sn_grs_stub.expectedInfo->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->path[0] = 'a';
+    sn_grs_stub.expectedInfo->path[1] = '\0';
+    sn_grs_stub.expectedInfo->pathlen = 1;
+    sn_grs_stub.expectedInfo->resource = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource[0] = 'a';
+    sn_grs_stub.expectedInfo->resource[1] = '\0';
+    sn_grs_stub.expectedInfo->resourcelen = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
+    eptr->binding_and_mode = 0x06;
+    retCounter = 7;
+
+    sn_coap_builder_stub.expectedUint16 = 1;
+    sn_coap_protocol_stub.expectedInt16 = 1;
+    //passes
+    val = sn_nsdl_register_endpoint(handle, eptr);
+    free(sn_grs_stub.expectedInfo->resource);
+    free(sn_grs_stub.expectedInfo->path);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr);
+    free(sn_grs_stub.expectedInfo);
+
+    if( 0 != val ){
+        ret = false;
+        goto end;
+    }
+
+    sn_grs_stub.info2ndRetCounter = 2;
+    sn_grs_stub.infoRetCounter = 2;
+    sn_grs_stub.expectedInfo = (sn_nsdl_resource_info_s*)malloc(sizeof(sn_nsdl_resource_info_s));
+    memset( sn_grs_stub.expectedInfo, 0, sizeof(sn_nsdl_resource_info_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr = (sn_nsdl_resource_parameters_s*)malloc(sizeof(sn_nsdl_resource_parameters_s));
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_len = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[0] = 'a';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr[1] = '\0';
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_len = 1;
+    sn_grs_stub.expectedInfo->resource_parameters_ptr->observable = 1;
+    sn_grs_stub.expectedInfo->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->path[0] = 'a';
+    sn_grs_stub.expectedInfo->path[1] = '\0';
+    sn_grs_stub.expectedInfo->pathlen = 1;
+    sn_grs_stub.expectedInfo->resource = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->resource[0] = 'a';
+    sn_grs_stub.expectedInfo->resource[1] = '\0';
+    sn_grs_stub.expectedInfo->resourcelen = 1;
+    sn_grs_stub.expectedInfo->publish_uri = 1;
+    eptr->binding_and_mode = 0x06;
+    retCounter = 4;
+    sn_coap_builder_stub.expectedUint16 = 1;
+    sn_coap_protocol_stub.expectedInt16 = 1;
+    //set_endpoint_info == -1
+    val = sn_nsdl_register_endpoint(handle, eptr);
+    free(sn_grs_stub.expectedInfo->resource);
+    free(sn_grs_stub.expectedInfo->path);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->interface_description_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr->resource_type_ptr);
+    free(sn_grs_stub.expectedInfo->resource_parameters_ptr);
+    free(sn_grs_stub.expectedInfo);
+
+    if( 0 != val ){
+        ret = false;
+        goto end;
+    }
+
 end:
     free(eptr->domain_name_ptr);
     free(eptr->lifetime_ptr);
