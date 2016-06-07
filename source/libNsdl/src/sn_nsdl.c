@@ -31,6 +31,7 @@
 #include "sn_grs.h"
 #include "mbed-trace/mbed_trace.h"
 
+#define TRACE_GROUP "coap"
 /* Defines */
 #define TRACE_GROUP "coap"
 #define RESOURCE_DIR_LEN                2
@@ -80,7 +81,7 @@ static uint8_t bs_queue_mode[]                  = {'b', '='};
 static uint16_t         sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description);
 static void             sn_nsdl_resolve_nsp_address(struct nsdl_s *handle);
 int8_t                  sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *message_ptr, uint8_t updating_registeration);
-static uint16_t         sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration);
+static uint16_t         sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration, int8_t *error);
 static uint8_t          sn_nsdl_calculate_uri_query_option_len(sn_nsdl_ep_parameters_s *endpoint_info_ptr, uint8_t msg_type);
 static int8_t           sn_nsdl_fill_uri_query_options(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *parameter_ptr, sn_coap_hdr_s *source_msg_ptr, uint8_t msg_type);
 static int8_t           sn_nsdl_local_rx_function(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *address_ptr);
@@ -96,6 +97,7 @@ static int8_t           sn_nsdl_create_oma_device_object_base(struct nsdl_s *han
 static int8_t           set_endpoint_info(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
 static bool             validateParameters(sn_nsdl_ep_parameters_s *parameter_ptr);
 static bool             validate(uint8_t* ptr, uint32_t len, char illegalChar);
+static bool             sn_nsdl_check_uint_overflow(uint16_t resource_size, uint16_t param_a, uint16_t param_b);
 
 int8_t sn_nsdl_destroy(struct nsdl_s *handle)
 {
@@ -1039,7 +1041,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
 
     tr_debug("sn_nsdl_internal_coap_send");
     uint8_t     *coap_message_ptr   = NULL;
-    uint16_t    coap_message_len    = 0;
+    int32_t     coap_message_len    = 0;
     uint16_t    coap_header_len     = 0;
 
     coap_message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_header_ptr, handle->grs->coap->sn_coap_block_data_size);
@@ -1223,19 +1225,24 @@ static int8_t sn_nsdl_create_oma_device_object_base(struct nsdl_s *handle, sn_ns
  */
 int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *message_ptr, uint8_t updating_registeration)
 {
+    tr_debug("sn_nsdl_build_registration_body");
     /* Local variables */
     uint8_t                 *temp_ptr;
     const sn_nsdl_resource_info_s   *resource_temp_ptr;
 
-
     /* Calculate needed memory and allocate */
-    message_ptr->payload_len = sn_nsdl_calculate_registration_body_size(handle, updating_registeration);
-
-    /* If no resources to be registered, return SN_NSDL_SUCCESS */
-    if (!message_ptr->payload_len) {
-        return SN_NSDL_SUCCESS;
+    int8_t error = 0;
+    uint16_t msg_len = sn_nsdl_calculate_registration_body_size(handle, updating_registeration, &error);
+    if (SN_NSDL_FAILURE == error) {
+        return error;
     }
 
+    if (!msg_len) {
+        return SN_NSDL_SUCCESS;
+    } else {
+        message_ptr->payload_len = msg_len;
+    }
+    tr_debug("sn_nsdl_build_registration_body - body size: [%d]", message_ptr->payload_len);
     message_ptr->payload_ptr = handle->sn_nsdl_alloc(message_ptr->payload_len);
     if (!message_ptr->payload_ptr) {
         return SN_NSDL_FAILURE;
@@ -1336,23 +1343,25 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
 }
 
 /**
- * \fn static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration)
+ * \fn static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration, int8_t *error)
  *
  *
  * \brief   Calculates registration message payload size
  * \param   *handle                 Pointer to nsdl-library handle
- * \param   *grs_resources_list_ptr Pointer to list of GRS resources
+ * \param   *updating_registeration Pointer to list of GRS resources
+ * \param   *error                  Error code, SN_NSDL_SUCCESS or SN_NSDL_FAILURE
  *
  * \return  Needed payload size
  */
-static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration)
+static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration, int8_t *error)
 {
+    tr_debug("sn_nsdl_calculate_registration_body_size");
     /* Local variables */
     uint16_t return_value = 0;
+    *error = SN_NSDL_SUCCESS;
     const sn_nsdl_resource_info_s *resource_temp_ptr;
 
     /* check pointer */
-
     resource_temp_ptr = sn_grs_get_first_resource(handle->grs);
 
     while (resource_temp_ptr) {
@@ -1364,58 +1373,70 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
 
             /* If not first resource, then '.' will be added */
             if (return_value) {
-                return_value++;
+                if (sn_nsdl_check_uint_overflow(return_value, 1, 0)) {
+                    return_value++;
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
+                }
             }
 
             /* Count length for the resource path </path> */
-            return_value += (3 + resource_temp_ptr->pathlen);
+            if (sn_nsdl_check_uint_overflow(return_value, 3,resource_temp_ptr->pathlen)) {
+                return_value += (3 + resource_temp_ptr->pathlen);
+            } else {
+                *error = SN_NSDL_FAILURE;
+                break;
+            }
 
             /* Count lengths of the attributes */
 
             /* Resource type parameter */
             if (resource_temp_ptr->resource_parameters_ptr->resource_type_len) {
                 /* ;rt="restype" */
-                return_value += (6 + resource_temp_ptr->resource_parameters_ptr->resource_type_len);
+                if (sn_nsdl_check_uint_overflow(return_value, 6, resource_temp_ptr->resource_parameters_ptr->resource_type_len)) {
+                    return_value += (6 + resource_temp_ptr->resource_parameters_ptr->resource_type_len);
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
+                }
             }
 
             /* Interface description parameter */
             if (resource_temp_ptr->resource_parameters_ptr->interface_description_len) {
                 /* ;if="iftype" */
-                return_value += (6 + resource_temp_ptr->resource_parameters_ptr->interface_description_len);
+                if (sn_nsdl_check_uint_overflow(return_value, 6, resource_temp_ptr->resource_parameters_ptr->interface_description_len)) {
+                    return_value += (6 + resource_temp_ptr->resource_parameters_ptr->interface_description_len);
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
+                }
             }
 
             if (resource_temp_ptr->resource_parameters_ptr->coap_content_type != 0) {
                 /* ;if="content" */
-                return_value += 6; // all but not content
-                return_value += sn_nsdl_itoa_len(resource_temp_ptr->resource_parameters_ptr->coap_content_type);
+                uint8_t len = sn_nsdl_itoa_len(resource_temp_ptr->resource_parameters_ptr->coap_content_type);
+                if (sn_nsdl_check_uint_overflow(return_value, 6, len)) {
+                    return_value += (6 + len);
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
+                }
             }
 #ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
             // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
             if (resource_temp_ptr->resource_parameters_ptr->observable) {
-                return_value += 4; // ;obs
-            }
-#endif
-            /*todo: aobs not supported ATM */
-            /*
-            if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
-                    resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
-            {
-                uint8_t i = resource_temp_ptr->resource_parameters_ptr->auto_obs_len;
-                // ;aobs;id=
-                return_value += 9;
-                while(i--)
-                {
-                    return_value += sn_nsdl_itoa_len(*(resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr + i));
+                if (sn_nsdl_check_uint_overflow(return_value, 4, 0)) {
+                    return_value += 4;
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
                 }
             }
-            */
-
+#endif
         }
-
         resource_temp_ptr = sn_grs_get_next_resource(handle->grs, resource_temp_ptr);
-
-    }
-
+    }    
     return return_value;
 }
 
@@ -2485,3 +2506,17 @@ extern int8_t sn_nsdl_set_duplicate_buffer_size(struct nsdl_s *handle, uint8_t m
     return sn_coap_protocol_set_duplicate_buffer_size(handle->grs->coap, message_count);
 }
 
+bool sn_nsdl_check_uint_overflow(uint16_t resource_size, uint16_t param_a, uint16_t param_b)
+{
+    uint16_t first_check = param_a + param_b;
+    if (first_check < param_b) {
+        return false;
+    } else {
+        uint16_t total = resource_size + first_check;
+        if (total < first_check) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+}

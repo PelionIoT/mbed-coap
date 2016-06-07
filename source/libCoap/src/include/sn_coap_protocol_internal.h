@@ -27,8 +27,8 @@
 #include "ns_list.h"
 #include "sn_coap_header_internal.h"
 
-#if defined(MBED_CONF_APP_USER_CONFIG_FILE)
-#include MBED_CONF_APP_USER_CONFIG_FILE
+#if defined(MBED_CONF_APP_MBED_CLIENT_USER_CONFIG_FILE)
+#include MBED_CONF_APP_MBED_CLIENT_USER_CONFIG_FILE
 #endif
 
 #ifdef __cplusplus
