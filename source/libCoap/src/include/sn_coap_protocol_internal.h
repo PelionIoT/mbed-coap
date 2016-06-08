@@ -27,10 +27,6 @@
 #include "ns_list.h"
 #include "sn_coap_header_internal.h"
 
-#if defined(MBED_CONF_APP_MBED_CLIENT_USER_CONFIG_FILE)
-#include MBED_CONF_APP_MBED_CLIENT_USER_CONFIG_FILE
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -66,13 +62,13 @@ extern "C" {
 #define SN_COAP_DUPLICATION_MAX_MSGS_COUNT              0
 #endif
 
-#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT > 0
-    #define YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT SN_COAP_DUPLICATION_MAX_MSGS_COUNT
-#else
-    #ifndef YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
-    #define YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT       0
-    #endif
+#ifdef YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
+#define SN_COAP_DUPLICATION_MAX_MSGS_COUNT YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
+#elif defined MBED_CONF_SN_COAP_DUPLICATION_MAX_MSGS_COUNT
+#define SN_COAP_DUPLICATION_MAX_MSGS_COUNT MBED_CONF_SN_COAP_DUPLICATION_MAX_MSGS_COUNT
 #endif
+
+
 
 /* Maximum allowed number of saved messages for duplicate searching */
 #define SN_COAP_MAX_ALLOWED_DUPLICATION_MESSAGE_COUNT   6
@@ -86,14 +82,17 @@ extern "C" {
 /* Setting of this value to 0 will disable this feature, and also reduce use of ROM memory                          */
 /* Note: Current Coap implementation supports Blockwise transfers specification version draft-ietf-core-block-03    */
 /* Note: This define is common for both received and sent Blockwise messages                                        */
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-    #define YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-#else
 
-    #ifndef YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-    #define YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE          0 /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
-    #endif
+#ifdef YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#define SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#elif defined MBED_CONF_SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#define SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE MBED_CONF_SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 #endif
+
+#ifndef SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#define SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE          0  /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
+#endif
+
 
 #ifndef SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED
 #define SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED      10 /**< Maximum time in seconds of data (messages and payload) to be stored for blockwising */
@@ -185,12 +184,12 @@ struct coap_s {
         uint16_t count_resent_msgs;
     #endif
 
-    #if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
+    #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
         coap_duplication_info_list_t  linked_list_duplication_msgs; /* Messages for duplicated messages detection is stored to this Linked list */
         uint16_t                      count_duplication_msgs;
     #endif
 
-    #if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
+    #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
         coap_blockwise_msg_list_t     linked_list_blockwise_sent_msgs; /* Blockwise message to to be sent is stored to this Linked list */
         coap_blockwise_payload_list_t linked_list_blockwise_received_payloads; /* Blockwise payload to to be received is stored to this Linked list */
     #endif
