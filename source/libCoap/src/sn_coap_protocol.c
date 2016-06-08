@@ -331,7 +331,7 @@ void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
 int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr,
                                uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param)
 {
-    tr_debug("sn_coap_protocol_build");
+    tr_debug("sn_coap_protocol_build - payload len %d", src_coap_msg_ptr->payload_len);
     int16_t  byte_count_built     = 0;
 #if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
     uint16_t original_payload_len = 0;
@@ -393,13 +393,10 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
             /* Add size1 parameter */
             tr_debug("sn_coap_protocol_build  block1 request - payload len %d", src_coap_msg_ptr->payload_len);
-
             if(src_coap_msg_ptr->payload_len < 0xFF) {
                 src_coap_msg_ptr->options_list_ptr->size1_len = 1;
-            } else if(src_coap_msg_ptr->payload_len < 0xFFFF) {
-                src_coap_msg_ptr->options_list_ptr->size1_len = 2;
             } else {
-                src_coap_msg_ptr->options_list_ptr->size1_len = 0;
+                src_coap_msg_ptr->options_list_ptr->size1_len = 2;
             }
 
             if( src_coap_msg_ptr->options_list_ptr->size1_ptr ){
@@ -438,10 +435,8 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
             if(src_coap_msg_ptr->payload_len < 0xFF) {
                 src_coap_msg_ptr->options_list_ptr->size2_len = 1;
-            } else if(src_coap_msg_ptr->payload_len < 0xFFFF) {
-                src_coap_msg_ptr->options_list_ptr->size2_len = 2;
             } else {
-                src_coap_msg_ptr->options_list_ptr->size2_len = 0;
+                src_coap_msg_ptr->options_list_ptr->size2_len = 2;
             }
 
             if( src_coap_msg_ptr->options_list_ptr->size2_ptr ){

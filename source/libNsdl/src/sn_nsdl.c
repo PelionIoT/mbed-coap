@@ -33,6 +33,7 @@
 
 #define TRACE_GROUP "coap"
 /* Defines */
+#define TRACE_GROUP "coap"
 #define RESOURCE_DIR_LEN                2
 #define EP_NAME_PARAMETERS_LEN          3
 #define ET_PARAMETER_LEN                3
@@ -1038,12 +1039,13 @@ sn_nsdl_resource_info_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pa
 static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description)
 {
 
+    tr_debug("sn_nsdl_internal_coap_send");
     uint8_t     *coap_message_ptr   = NULL;
     int32_t     coap_message_len    = 0;
     uint16_t    coap_header_len     = 0;
 
     coap_message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_header_ptr, handle->grs->coap->sn_coap_block_data_size);
-
+    tr_debug("sn_nsdl_internal_coap_send - msg len after calc: [%d]", coap_message_len);
     if (coap_message_len == 0) {
         return 0;
     }
@@ -1055,8 +1057,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
 
     coap_header_len = coap_header_ptr->payload_len;
     /* Build message */
-    coap_message_len = sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle);
-    if (coap_message_len < 0) {
+    if (sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle) < 0) {
         handle->sn_nsdl_free(coap_message_ptr);
         return 0;
     }
