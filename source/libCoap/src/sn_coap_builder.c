@@ -96,7 +96,7 @@ sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap
 
 int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
 {
-    return sn_coap_builder_2(dst_packet_data_ptr, src_coap_msg_ptr, YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
+    return sn_coap_builder_2(dst_packet_data_ptr, src_coap_msg_ptr, SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
 }
 
 int16_t sn_coap_builder_2(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_payload_size)
@@ -146,7 +146,7 @@ int16_t sn_coap_builder_2(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_
 }
 uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_msg_ptr)
 {
-    return sn_coap_builder_calc_needed_packet_data_size_2(src_coap_msg_ptr, YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
+    return sn_coap_builder_calc_needed_packet_data_size_2(src_coap_msg_ptr, SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
 }
 
 uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_payload_size)
@@ -167,7 +167,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
     /* If else than Reset message because Reset message must be empty */
     if (src_coap_msg_ptr->msg_type != COAP_MSG_TYPE_RESET) {
         uint16_t repeatable_option_size = 0;
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
         bool is_blockwise_needed = false;
         if ((src_coap_msg_ptr->payload_len > blockwise_payload_size) && (blockwise_payload_size > 0)) {
             is_blockwise_needed = true;
@@ -333,7 +333,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
 
                 returned_byte_count += src_coap_msg_ptr->options_list_ptr->block1_len;
             }
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
             else if (is_blockwise_needed && src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED) {
                 returned_byte_count += 2;
                 }
@@ -346,7 +346,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
                 }
                 returned_byte_count += src_coap_msg_ptr->options_list_ptr->size1_len;
             }
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
             else if (is_blockwise_needed && src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED){
                 returned_byte_count++;
                 if(src_coap_msg_ptr->payload_len < 0xFF) {
@@ -365,7 +365,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
 
                 returned_byte_count += src_coap_msg_ptr->options_list_ptr->block2_len;
             }
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
             else if (is_blockwise_needed && src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_RESPONSE_CREATED) {
                 returned_byte_count += 2;
                 }
@@ -379,7 +379,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
 
                 returned_byte_count += src_coap_msg_ptr->options_list_ptr->size2_len;
             }
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
             else if (is_blockwise_needed && src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_RESPONSE_CREATED){
                 returned_byte_count++;
                 if(src_coap_msg_ptr->payload_len < 0xFF) {
@@ -390,7 +390,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
             }
 #endif
         }
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
         /* * * * * PAYLOAD * * * * */
         if (is_blockwise_needed) {
             /* Two bytes for Block option */
@@ -554,7 +554,7 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
             previous_option_number = (COAP_OPTION_CONTENT_FORMAT);
         }
 
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE //block_option 1 & 2 only used if this maro is defined
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE //block_option 1 & 2 only used if this maro is defined
         if (block_option == 2) {
             if ((COAP_OPTION_BLOCK2 - previous_option_number) > 12) {
                 needed_space += 1;
