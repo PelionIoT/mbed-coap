@@ -231,9 +231,6 @@ typedef struct sn_nsdl_bs_ep_info_ {
                                     struct nsdl_s *);  /**< Callback for OMA bootstrap status with nsdl handle */
 } sn_nsdl_bs_ep_info_t;
 
-
-
-
 /**
  * \fn struct nsdl_s *sn_nsdl_init  (uint8_t (*sn_nsdl_tx_cb)(sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
  *                          uint8_t (*sn_nsdl_rx_cb)(sn_coap_hdr_s *, sn_nsdl_addr_s *),
