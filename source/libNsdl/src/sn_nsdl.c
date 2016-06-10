@@ -221,7 +221,7 @@ struct nsdl_s *sn_nsdl_init(uint8_t (*sn_nsdl_tx_cb)(struct nsdl_s *, sn_nsdl_ca
 
     handle->sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_NOT_REGISTERED;
     // By default bootstrap msgs are handled in nsdl
-    handle->parse_bootstrap_msgs = true;
+    handle->handle_bootstrap_msg = true;
     return handle;
 }
 
@@ -633,6 +633,15 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     if (!bootstrap_address_ptr || !bootstrap_endpoint_info_ptr || !endpoint_info_ptr || !handle) {
         return 0;
     }
+    /* Create device object */
+    if (handle->handle_bootstrap_msg) {
+        if (sn_nsdl_create_oma_device_object_base(handle, bootstrap_endpoint_info_ptr->device_object, endpoint_info_ptr->binding_and_mode) < 0) {
+            return 0;
+        }
+
+        handle->sn_nsdl_oma_bs_done_cb = bootstrap_endpoint_info_ptr->oma_bs_status_cb;
+        handle->sn_nsdl_oma_bs_done_cb_handle = bootstrap_endpoint_info_ptr->oma_bs_status_cb_handle;
+    }
 
     /* Init CoAP header struct */
     memset(&bootstrap_coap_header, 0, sizeof(sn_coap_hdr_s));
@@ -938,7 +947,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
             (handle->oma_bs_port == src_ptr->port) &&
             !memcmp(handle->oma_bs_address_ptr, src_ptr->addr_ptr, handle->oma_bs_address_len);
     // Pass bootstrap data to application
-    if (bootstrap_msg && !handle->parse_bootstrap_msgs) {
+    if (bootstrap_msg && !handle->handle_bootstrap_msg) {
         handle->sn_nsdl_rx_callback(handle, coap_packet_ptr,src_ptr);
         return SN_NSDL_SUCCESS;
     }
