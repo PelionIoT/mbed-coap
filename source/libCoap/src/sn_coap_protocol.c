@@ -47,13 +47,13 @@
 /* * * * * * * * * * * * * * * * * * * * */
 
 static void                  sn_coap_protocol_send_rst(struct coap_s *handle, uint16_t msg_id, sn_nsdl_addr_s *addr_ptr, void *param);
-#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT/* If Message duplication detection is not used at all, this part of code will not be compiled */
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT/* If Message duplication detection is not used at all, this part of code will not be compiled */
 static void                  sn_coap_protocol_linked_list_duplication_info_store(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static int8_t                sn_coap_protocol_linked_list_duplication_info_search(struct coap_s *handle, sn_nsdl_addr_s *scr_addr_ptr, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_duplication_info_remove(struct coap_s *handle, uint8_t *scr_addr_ptr, uint16_t port, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_duplication_info_remove_old_ones(struct coap_s *handle);
 #endif
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 static void                  sn_coap_protocol_linked_list_blockwise_msg_remove(struct coap_s *handle, coap_blockwise_msg_s *removed_msg_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *handle, sn_nsdl_addr_s *addr_ptr, uint16_t stored_payload_len, uint8_t *stored_payload_ptr);
 static uint8_t              *sn_coap_protocol_linked_list_blockwise_payload_search(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length);
@@ -90,7 +90,7 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
 
 #endif
 
-#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
     ns_list_foreach_safe(coap_duplication_info_s, tmp, &handle->linked_list_duplication_msgs) {
         if (tmp->coap == handle) {
             if (tmp->addr_ptr) {
@@ -105,7 +105,7 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
     }
 #endif
 
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
     ns_list_foreach_safe(coap_blockwise_msg_s, tmp, &handle->linked_list_blockwise_sent_msgs) {
         if (tmp->coap == handle) {
             if (tmp->coap_msg_ptr) {
@@ -183,17 +183,17 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
 
 #endif /* ENABLE_RESENDINGS */
 
-#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
     /* * * * Create Linked list for storing Duplication info * * * */
     ns_list_init(&handle->linked_list_duplication_msgs);
-    handle->sn_coap_duplication_buffer_size = YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT;
+    handle->sn_coap_duplication_buffer_size = SN_COAP_DUPLICATION_MAX_MSGS_COUNT;
 #endif
 
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 
     ns_list_init(&handle->linked_list_blockwise_sent_msgs);
     ns_list_init(&handle->linked_list_blockwise_received_payloads);
-    handle->sn_coap_block_data_size = YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE;
+    handle->sn_coap_block_data_size = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE;
 
 #endif /* ENABLE_RESENDINGS */
 
@@ -212,7 +212,7 @@ int8_t sn_coap_protocol_set_block_size(struct coap_s *handle, uint16_t block_siz
 {
     (void) handle;
     (void) block_size;
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
     if (handle == NULL) {
         return -1;
     }
@@ -239,7 +239,7 @@ int8_t sn_coap_protocol_set_duplicate_buffer_size(struct coap_s *handle, uint8_t
 {
     (void) handle;
     (void) message_count;
-#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
     if (handle == NULL) {
         return -1;
     }
@@ -331,9 +331,9 @@ void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
 int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr,
                                uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param)
 {
-    tr_debug("sn_coap_protocol_build");
+    tr_debug("sn_coap_protocol_build - payload len %d", src_coap_msg_ptr->payload_len);
     int16_t  byte_count_built     = 0;
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
     uint16_t original_payload_len = 0;
 #endif
     /* * * * Check given pointers  * * * */
@@ -358,7 +358,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         }
     }
 
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 
     /* If blockwising needed */
     if ((src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
@@ -393,13 +393,10 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
             /* Add size1 parameter */
             tr_debug("sn_coap_protocol_build  block1 request - payload len %d", src_coap_msg_ptr->payload_len);
-
             if(src_coap_msg_ptr->payload_len < 0xFF) {
                 src_coap_msg_ptr->options_list_ptr->size1_len = 1;
-            } else if(src_coap_msg_ptr->payload_len < 0xFFFF) {
-                src_coap_msg_ptr->options_list_ptr->size1_len = 2;
             } else {
-                src_coap_msg_ptr->options_list_ptr->size1_len = 0;
+                src_coap_msg_ptr->options_list_ptr->size1_len = 2;
             }
 
             if( src_coap_msg_ptr->options_list_ptr->size1_ptr ){
@@ -438,10 +435,8 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
             if(src_coap_msg_ptr->payload_len < 0xFF) {
                 src_coap_msg_ptr->options_list_ptr->size2_len = 1;
-            } else if(src_coap_msg_ptr->payload_len < 0xFFFF) {
-                src_coap_msg_ptr->options_list_ptr->size2_len = 2;
             } else {
-                src_coap_msg_ptr->options_list_ptr->size2_len = 0;
+                src_coap_msg_ptr->options_list_ptr->size2_len = 2;
             }
 
             if( src_coap_msg_ptr->options_list_ptr->size2_ptr ){
@@ -490,7 +485,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
 #endif /* ENABLE_RESENDINGS */
 
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 
     /* If blockwising needed */
     if ((original_payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
@@ -560,7 +555,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
     }
 
-#endif /* YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
+#endif /* SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
 
     tr_debug("sn_coap_protocol_build - msg id: [%d], bytes: [%d]", src_coap_msg_ptr->msg_id, byte_count_built);
 
@@ -632,7 +627,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     }
 
 
-#if !YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is used, this part of code will not be compiled */
+#if !SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is used, this part of code will not be compiled */
     /* If blockwising used in received message */
     if (returned_dst_coap_msg_ptr->options_list_ptr != NULL &&
             (returned_dst_coap_msg_ptr->options_list_ptr->block1_ptr != NULL ||
@@ -642,9 +637,9 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
         //todo: send response -> not implemented
         return returned_dst_coap_msg_ptr;
     }
-#endif /* !YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
+#endif /* !SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
 
-#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT/* If Message duplication is used, this part of code will not be compiled */
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT/* If Message duplication is used, this part of code will not be compiled */
 
     /* * * * Manage received CoAP message duplicate detection  * * * */
 
@@ -678,7 +673,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     /*** And here we check if message was block message ***/
     /*** If so, we call own block handling function and ***/
     /*** return to caller.                              ***/
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 
     if (returned_dst_coap_msg_ptr->options_list_ptr != NULL &&
             (returned_dst_coap_msg_ptr->options_list_ptr->block1_ptr != NULL ||
@@ -766,13 +761,13 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
     /* * * * Store current System time * * * */
     handle->system_time = current_time;
 
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
     /* * * * Remove old blocwise data * * * */
     sn_coap_protocol_linked_list_blockwise_remove_old_data(handle);
 #endif
 
 
-#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
     /* * * * Remove old duplication messages * * * */
     sn_coap_protocol_linked_list_duplication_info_remove_old_ones(handle);
 #endif
@@ -1008,7 +1003,7 @@ static void sn_coap_protocol_send_rst(struct coap_s *handle, uint16_t msg_id, sn
     handle->sn_coap_tx_callback(packet_ptr, 4, addr_ptr, param);
 
 }
-#if YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
 
 /**************************************************************************//**
  * \fn static void sn_coap_protocol_linked_list_duplication_info_store(sn_nsdl_addr_s *addr_ptr, uint16_t msg_id)
@@ -1153,9 +1148,9 @@ static void sn_coap_protocol_linked_list_duplication_info_remove_old_ones(struct
     }
 }
 
-#endif /* YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT */
+#endif /* SN_COAP_DUPLICATION_MAX_MSGS_COUNT */
 
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 /**************************************************************************//**
  * \fn static void sn_coap_protocol_linked_list_blockwise_msg_remove(struct coap_s *handle, coap_blockwise_msg_s *removed_msg_ptr)
  *
@@ -1390,7 +1385,7 @@ static void sn_coap_protocol_linked_list_blockwise_remove_old_data(struct coap_s
     }
 }
 
-#endif /* YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
+#endif /* SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
 
 
 #if ENABLE_RESENDINGS  /* If Message resending is not used at all, this part of code will not be compiled */
@@ -1517,7 +1512,7 @@ static uint16_t sn_coap_count_linked_list_size(const coap_send_msg_list_t *linke
 
 #endif
 
-#if YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 
 /**************************************************************************//**
  * \fn static int8_t sn_coap_handle_blockwise_message(void)

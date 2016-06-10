@@ -29,8 +29,11 @@
 #include "sn_coap_protocol_internal.h"
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
+#include "mbed-trace/mbed_trace.h"
 
+#define TRACE_GROUP "coap"
 /* Defines */
+#define TRACE_GROUP "coap"
 #define RESOURCE_DIR_LEN                2
 #define EP_NAME_PARAMETERS_LEN          3
 #define ET_PARAMETER_LEN                3
@@ -53,15 +56,24 @@
 #define SN_NSDL_MSG_UPDATE              3
 #define SN_NSDL_MSG_BOOTSTRAP           4
 
-#ifdef COAP_DISABLE_OBS_FEATURE
-#define YOTTA_CFG_DISABLE_OBS_FEATURE COAP_DISABLE_OBS_FEATURE
+#ifdef YOTTA_CFG_DISABLE_OBS_FEATURE
+#define COAP_DISABLE_OBS_FEATURE YOTTA_CFG_DISABLE_OBS_FEATURE
+#elif defined MBED_CONF_COAP_DISABLE_OBS_FEATURE
+#define COAP_DISABLE_OBS_FEATURE MBED_CONF_COAP_DISABLE_OBS_FEATURE
 #endif
+
+#ifdef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#define MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#elif defined MBED_CONF_MBED_CLIENT_DISABLE_BOOSTRAP_FEATURE
+#define MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE MBED_CONF_MBED_CLIENT_DISABLE_BOOSTRAP_FEATURE
+#endif
+
 
 /* Constants */
 static uint8_t      ep_name_parameter_string[]  = {'e', 'p', '='};      /* Endpoint name. A unique name for the registering node in a domain.  */
 static uint8_t      resource_path_ptr[]         = {'r', 'd'};           /* For resource directory */
 static uint8_t      resource_type_parameter[]   = {'r', 't', '='};      /* Resource type. Only once for registration */
-#ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
+#ifndef COAP_DISABLE_OBS_FEATURE
 static uint8_t      obs_parameter[]             = {'o', 'b', 's'};      /* Observable */
 #endif
 //static uint8_t    aobs_parameter[]            = {'a','o','b','s',';','i','d','='};    /* Auto-observable - TBD */
@@ -79,7 +91,7 @@ static uint8_t bs_queue_mode[]                  = {'b', '='};
 static uint16_t         sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description);
 static void             sn_nsdl_resolve_nsp_address(struct nsdl_s *handle);
 int8_t                  sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *message_ptr, uint8_t updating_registeration);
-static uint16_t         sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration);
+static uint16_t         sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration, int8_t *error);
 static uint8_t          sn_nsdl_calculate_uri_query_option_len(sn_nsdl_ep_parameters_s *endpoint_info_ptr, uint8_t msg_type);
 static int8_t           sn_nsdl_fill_uri_query_options(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *parameter_ptr, sn_coap_hdr_s *source_msg_ptr, uint8_t msg_type);
 static int8_t           sn_nsdl_local_rx_function(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *address_ptr);
@@ -95,6 +107,7 @@ static int8_t           sn_nsdl_create_oma_device_object_base(struct nsdl_s *han
 static int8_t           set_endpoint_info(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
 static bool             validateParameters(sn_nsdl_ep_parameters_s *parameter_ptr);
 static bool             validate(uint8_t* ptr, uint32_t len, char illegalChar);
+static bool             sn_nsdl_check_uint_overflow(uint16_t resource_size, uint16_t param_a, uint16_t param_b);
 
 int8_t sn_nsdl_destroy(struct nsdl_s *handle)
 {
@@ -610,7 +623,7 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
                                sn_nsdl_ep_parameters_s *endpoint_info_ptr,
                                sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr)
 {
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     /* Local variables */
     sn_coap_hdr_s bootstrap_coap_header;
     uint8_t *uri_query_tmp_ptr;
@@ -671,13 +684,13 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     return message_id;
 #else
     return 0;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 
 }
 
 omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle)
 {
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     sn_nsdl_resource_info_s *resource_ptr = 0;;
     omalw_certificate_list_t *certi_list_ptr = 0;
 
@@ -723,12 +736,12 @@ omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle)
     return certi_list_ptr;
 #else
     return NULL;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 }
 
 int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list_t *certificate_ptr, uint8_t certificate_chain)
 {
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     (void)certificate_chain;
 
     /* Check pointers */
@@ -768,12 +781,12 @@ int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list
     return SN_NSDL_SUCCESS;
 #else
     return SN_NSDL_FAILURE;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 }
 
 int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr)
 {
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     sn_nsdl_resource_info_s *resource_temp = 0;
     uint8_t path[8] = "3/0/11/0";
 
@@ -851,7 +864,7 @@ int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_devic
     return SN_NSDL_SUCCESS;
 #else
     return SN_NSDL_FAILURE;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE    
+#endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 }
 
 char *sn_nsdl_get_version(void)
@@ -919,7 +932,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
         sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
         return retval;
     }
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     /* * If OMA bootstrap message... * */
     bool bootstrap_msg = src_ptr && (handle->oma_bs_address_len == src_ptr->addr_len) &&
             (handle->oma_bs_port == src_ptr->port) &&
@@ -996,7 +1009,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
 
         return SN_NSDL_SUCCESS;
     }
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 
     /* * * * * * * * * * * * * * * */
     /* Other messages are for GRS  */
@@ -1040,12 +1053,13 @@ sn_nsdl_resource_info_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pa
 static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description)
 {
 
+    tr_debug("sn_nsdl_internal_coap_send");
     uint8_t     *coap_message_ptr   = NULL;
-    uint16_t    coap_message_len    = 0;
+    int32_t     coap_message_len    = 0;
     uint16_t    coap_header_len     = 0;
 
     coap_message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_header_ptr, handle->grs->coap->sn_coap_block_data_size);
-
+    tr_debug("sn_nsdl_internal_coap_send - msg len after calc: [%d]", coap_message_len);
     if (coap_message_len == 0) {
         return 0;
     }
@@ -1057,8 +1071,7 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
 
     coap_header_len = coap_header_ptr->payload_len;
     /* Build message */
-    coap_message_len = sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle);
-    if (coap_message_len < 0) {
+    if (sn_coap_protocol_build(handle->grs->coap, dst_addr_ptr, coap_message_ptr, coap_header_ptr, (void *)handle) < 0) {
         handle->sn_nsdl_free(coap_message_ptr);
         return 0;
     }
@@ -1115,7 +1128,7 @@ static void sn_nsdl_resolve_nsp_address(struct nsdl_s *handle)
 
 static int8_t sn_nsdl_create_oma_device_object_base(struct nsdl_s *handle, sn_nsdl_oma_device_t *oma_device_setup_ptr, sn_nsdl_oma_binding_and_mode_t binding_and_mode)
 {
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     sn_nsdl_resource_info_s new_resource;
     uint8_t object_path[8] = "3/0/11/0";
     uint8_t resource_temp[3];
@@ -1215,7 +1228,7 @@ static int8_t sn_nsdl_create_oma_device_object_base(struct nsdl_s *handle, sn_ns
     return SN_NSDL_SUCCESS;
 #else
     return SN_NSDL_FAILURE;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 }
 
 /**
@@ -1229,19 +1242,24 @@ static int8_t sn_nsdl_create_oma_device_object_base(struct nsdl_s *handle, sn_ns
  */
 int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *message_ptr, uint8_t updating_registeration)
 {
+    tr_debug("sn_nsdl_build_registration_body");
     /* Local variables */
     uint8_t                 *temp_ptr;
     const sn_nsdl_resource_info_s   *resource_temp_ptr;
 
-
     /* Calculate needed memory and allocate */
-    message_ptr->payload_len = sn_nsdl_calculate_registration_body_size(handle, updating_registeration);
-
-    /* If no resources to be registered, return SN_NSDL_SUCCESS */
-    if (!message_ptr->payload_len) {
-        return SN_NSDL_SUCCESS;
+    int8_t error = 0;
+    uint16_t msg_len = sn_nsdl_calculate_registration_body_size(handle, updating_registeration, &error);
+    if (SN_NSDL_FAILURE == error) {
+        return error;
     }
 
+    if (!msg_len) {
+        return SN_NSDL_SUCCESS;
+    } else {
+        message_ptr->payload_len = msg_len;
+    }
+    tr_debug("sn_nsdl_build_registration_body - body size: [%d]", message_ptr->payload_len);
     message_ptr->payload_ptr = handle->sn_nsdl_alloc(message_ptr->payload_len);
     if (!message_ptr->payload_ptr) {
         return SN_NSDL_FAILURE;
@@ -1306,7 +1324,7 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
 
             /* ;obs */
              // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
-#ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
+#ifndef COAP_DISABLE_OBS_FEATURE
             if (resource_temp_ptr->resource_parameters_ptr->observable) {
                 *temp_ptr++ = ';';
                 memcpy(temp_ptr, obs_parameter, OBS_PARAMETER_LEN);
@@ -1342,23 +1360,25 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
 }
 
 /**
- * \fn static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration)
+ * \fn static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration, int8_t *error)
  *
  *
  * \brief   Calculates registration message payload size
  * \param   *handle                 Pointer to nsdl-library handle
- * \param   *grs_resources_list_ptr Pointer to list of GRS resources
+ * \param   *updating_registeration Pointer to list of GRS resources
+ * \param   *error                  Error code, SN_NSDL_SUCCESS or SN_NSDL_FAILURE
  *
  * \return  Needed payload size
  */
-static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration)
+static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, uint8_t updating_registeration, int8_t *error)
 {
+    tr_debug("sn_nsdl_calculate_registration_body_size");
     /* Local variables */
     uint16_t return_value = 0;
+    *error = SN_NSDL_SUCCESS;
     const sn_nsdl_resource_info_s *resource_temp_ptr;
 
     /* check pointer */
-
     resource_temp_ptr = sn_grs_get_first_resource(handle->grs);
 
     while (resource_temp_ptr) {
@@ -1370,58 +1390,70 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
 
             /* If not first resource, then '.' will be added */
             if (return_value) {
-                return_value++;
+                if (sn_nsdl_check_uint_overflow(return_value, 1, 0)) {
+                    return_value++;
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
+                }
             }
 
             /* Count length for the resource path </path> */
-            return_value += (3 + resource_temp_ptr->pathlen);
+            if (sn_nsdl_check_uint_overflow(return_value, 3,resource_temp_ptr->pathlen)) {
+                return_value += (3 + resource_temp_ptr->pathlen);
+            } else {
+                *error = SN_NSDL_FAILURE;
+                break;
+            }
 
             /* Count lengths of the attributes */
 
             /* Resource type parameter */
             if (resource_temp_ptr->resource_parameters_ptr->resource_type_len) {
                 /* ;rt="restype" */
-                return_value += (6 + resource_temp_ptr->resource_parameters_ptr->resource_type_len);
+                if (sn_nsdl_check_uint_overflow(return_value, 6, resource_temp_ptr->resource_parameters_ptr->resource_type_len)) {
+                    return_value += (6 + resource_temp_ptr->resource_parameters_ptr->resource_type_len);
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
+                }
             }
 
             /* Interface description parameter */
             if (resource_temp_ptr->resource_parameters_ptr->interface_description_len) {
                 /* ;if="iftype" */
-                return_value += (6 + resource_temp_ptr->resource_parameters_ptr->interface_description_len);
+                if (sn_nsdl_check_uint_overflow(return_value, 6, resource_temp_ptr->resource_parameters_ptr->interface_description_len)) {
+                    return_value += (6 + resource_temp_ptr->resource_parameters_ptr->interface_description_len);
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
+                }
             }
 
             if (resource_temp_ptr->resource_parameters_ptr->coap_content_type != 0) {
                 /* ;if="content" */
-                return_value += 6; // all but not content
-                return_value += sn_nsdl_itoa_len(resource_temp_ptr->resource_parameters_ptr->coap_content_type);
-            }
-#ifndef YOTTA_CFG_DISABLE_OBS_FEATURE
-            // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
-            if (resource_temp_ptr->resource_parameters_ptr->observable) {
-                return_value += 4; // ;obs
-            }
-#endif
-            /*todo: aobs not supported ATM */
-            /*
-            if((resource_temp_ptr->resource_parameters_ptr->auto_obs_len > 0 && resource_temp_ptr->resource_parameters_ptr->auto_obs_len <= 8) &&
-                    resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr)
-            {
-                uint8_t i = resource_temp_ptr->resource_parameters_ptr->auto_obs_len;
-                // ;aobs;id=
-                return_value += 9;
-                while(i--)
-                {
-                    return_value += sn_nsdl_itoa_len(*(resource_temp_ptr->resource_parameters_ptr->auto_obs_ptr + i));
+                uint8_t len = sn_nsdl_itoa_len(resource_temp_ptr->resource_parameters_ptr->coap_content_type);
+                if (sn_nsdl_check_uint_overflow(return_value, 6, len)) {
+                    return_value += (6 + len);
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
                 }
             }
-            */
-
+#ifndef COAP_DISABLE_OBS_FEATURE
+            // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
+            if (resource_temp_ptr->resource_parameters_ptr->observable) {
+                if (sn_nsdl_check_uint_overflow(return_value, 4, 0)) {
+                    return_value += 4;
+                } else {
+                    *error = SN_NSDL_FAILURE;
+                    break;
+                }
+            }
+#endif
         }
-
         resource_temp_ptr = sn_grs_get_next_resource(handle->grs, resource_temp_ptr);
-
-    }
-
+    }    
     return return_value;
 }
 
@@ -1921,7 +1953,7 @@ static uint32_t sn_nsdl_ahextoi(uint8_t *ptr, uint8_t len)
 
 static int8_t sn_nsdl_resolve_lwm2m_address(struct nsdl_s *handle, uint8_t *uri, uint16_t uri_len)
 {
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     if( uri_len < 2 ){
         return SN_NSDL_FAILURE;
     }
@@ -2152,13 +2184,13 @@ static int8_t sn_nsdl_resolve_lwm2m_address(struct nsdl_s *handle, uint8_t *uri,
     return SN_NSDL_SUCCESS;
 #else
     return SN_NSDL_FAILURE;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 }
 
 
 int8_t sn_nsdl_process_oma_tlv(struct nsdl_s *handle, uint8_t *data_ptr, uint16_t data_len)
 {
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     uint8_t *temp_ptr = data_ptr;
     uint8_t type = 0;
     uint16_t identifier = 0;
@@ -2278,12 +2310,12 @@ int8_t sn_nsdl_process_oma_tlv(struct nsdl_s *handle, uint8_t *data_ptr, uint16_
     return SN_NSDL_SUCCESS;
 #else
     return SN_NSDL_FAILURE;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 }
 
 static void sn_nsdl_check_oma_bs_status(struct nsdl_s *handle)
 {
-#ifndef YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     /* Check OMA BS status */
     if ((handle->nsp_address_ptr->omalw_server_security == PSK) && (handle->nsp_address_ptr->omalw_address_ptr->type != SN_NSDL_ADDRESS_TYPE_NONE)) {
         /* call cb that oma bootstrap is done */
@@ -2305,7 +2337,7 @@ static void sn_nsdl_check_oma_bs_status(struct nsdl_s *handle)
             handle->sn_nsdl_oma_bs_done_cb_handle(handle->nsp_address_ptr, handle);
         }
     }
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
+#endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 }
 
 static int8_t set_endpoint_info(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr)
@@ -2491,3 +2523,17 @@ extern int8_t sn_nsdl_set_duplicate_buffer_size(struct nsdl_s *handle, uint8_t m
     return sn_coap_protocol_set_duplicate_buffer_size(handle->grs->coap, message_count);
 }
 
+bool sn_nsdl_check_uint_overflow(uint16_t resource_size, uint16_t param_a, uint16_t param_b)
+{
+    uint16_t first_check = param_a + param_b;
+    if (first_check < param_b) {
+        return false;
+    } else {
+        uint16_t total = resource_size + first_check;
+        if (total < first_check) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
