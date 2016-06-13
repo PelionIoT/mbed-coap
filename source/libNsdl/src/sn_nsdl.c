@@ -949,6 +949,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
     // Pass bootstrap data to application
     if (bootstrap_msg && !handle->handle_bootstrap_msg) {
         handle->sn_nsdl_rx_callback(handle, coap_packet_ptr,src_ptr);
+        sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
         return SN_NSDL_SUCCESS;
     }
     // Internal handling
