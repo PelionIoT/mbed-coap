@@ -1119,10 +1119,11 @@ bool test_sn_nsdl_oma_bootstrap()
         return false;
     }
 
-    retCounter = 4;
+    retCounter = 6;
     sn_grs_stub.expectedInt8 = 0;
     sn_grs_stub.int8SuccessCounter = 3;
     param->binding_and_mode = 6;
+    sn_coap_builder_stub.expectedUint16 = 1;
     if( 0 != sn_nsdl_oma_bootstrap(handle, addr, param, info)){
         return false;
     }
@@ -1131,7 +1132,6 @@ bool test_sn_nsdl_oma_bootstrap()
     free(info);
     free(param);
     free(addr);
-
     retCounter = 1;
     sn_nsdl_destroy(handle);
     return true;
@@ -2365,6 +2365,41 @@ bool test_sn_nsdl_process_coap()
     free( handle->nsp_address_ptr->omalw_address_ptr->addr_ptr ); //Investigate why would leak if removed?
     handle->nsp_address_ptr->omalw_address_ptr->addr_ptr = NULL;
 
+    sn_coap_protocol_stub.expectedHeader = (sn_coap_hdr_s*)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_protocol_stub.expectedHeader->coap_status = 6;
+    sn_coap_protocol_stub.expectedHeader->msg_code = 0;
+    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
+    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
+    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
+    sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
+    sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
+
+    payload_ptr[0] = '/';
+    payload_ptr[1] = '/';
+    payload_ptr[2] = 's';
+    payload_ptr[3] = '.';
+    payload_ptr[4] = 't';
+    payload_ptr[5] = '.';
+    payload_ptr[6] = 'u';
+    payload_ptr[7] = '.';
+    payload_ptr[8] = 'v';
+    payload_ptr[9] = ':';
+    payload_ptr[10] = '6';
+    sn_coap_protocol_stub.expectedHeader->payload_len = 11;
+    sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
+    handle->sn_nsdl_oma_bs_done_cb = myBootstrapCallback;
+    handle->sn_nsdl_oma_bs_done_cb_handle = myBootstrapCallbackHandle;
+    handle->handle_bootstrap_msg = false;
+
+    retCounter = 1;
+    if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
+        return false;
+    }
+    free( handle->nsp_address_ptr->omalw_address_ptr->addr_ptr ); //Investigate why would leak if removed?
+    handle->nsp_address_ptr->omalw_address_ptr->addr_ptr = NULL;
+    handle->handle_bootstrap_msg = true;
     sn_coap_protocol_stub.expectedHeader = (sn_coap_hdr_s*)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
