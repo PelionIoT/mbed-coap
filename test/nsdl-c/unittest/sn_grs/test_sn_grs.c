@@ -1039,7 +1039,7 @@ bool test_sn_grs_process_coap()
     hdr->token_ptr = (uint8_t*)malloc(1);
     hdr->token_len = 1;
 
-    retCounter = 4;
+    retCounter = 6;
     if( SN_NSDL_SUCCESS != sn_grs_process_coap(handle, hdr, addr) ){
         return false;
     }

@@ -374,6 +374,7 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
     sn_coap_msg_code_e      status              = COAP_MSG_CODE_EMPTY;
     sn_coap_hdr_s           *response_message_hdr_ptr = NULL;
     struct grs_s            *handle = nsdl_handle->grs;
+    bool                    static_get_request = false;
 
     if (coap_packet_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE) {
         /* Check if .well-known/core */
@@ -416,6 +417,7 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
                     case (COAP_MSG_CODE_REQUEST_GET):
                         if (resource_temp_ptr->access & SN_GRS_GET_ALLOWED) {
                             status = COAP_MSG_CODE_RESPONSE_CONTENT;
+                            static_get_request = true;
                         } else {
                             status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
                         }
@@ -601,8 +603,18 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
 
                 memcpy(response_message_hdr_ptr->payload_ptr, resource_temp_ptr->resource, response_message_hdr_ptr->payload_len);
             }
+            // Add max-age attribute for static resources
+            if (static_get_request) {
+                response_message_hdr_ptr->options_list_ptr = handle->sn_grs_alloc(sizeof(sn_coap_options_list_s));
+                if (response_message_hdr_ptr->options_list_ptr) {
+                    response_message_hdr_ptr->options_list_ptr->max_age_ptr = handle->sn_grs_alloc(1);
+                    if (response_message_hdr_ptr->options_list_ptr->max_age_ptr) {
+                        response_message_hdr_ptr->options_list_ptr->max_age_ptr[0] = 0;
+                        response_message_hdr_ptr->options_list_ptr->max_age_len = 1;
+                    }
+                }
+            }
         }
-
         sn_grs_send_coap_message(nsdl_handle, src_addr_ptr, response_message_hdr_ptr);
 
         if (response_message_hdr_ptr->payload_ptr) {
