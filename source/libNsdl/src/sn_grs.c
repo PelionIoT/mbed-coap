@@ -603,7 +603,8 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
 
                 memcpy(response_message_hdr_ptr->payload_ptr, resource_temp_ptr->resource, response_message_hdr_ptr->payload_len);
             }
-            // Add max-age attribute for static resources
+            // Add max-age attribute for static resources. 
+            // Not a mandatory parameter, no need to return in case of memory allocation fails.
             if (static_get_request) {
                 response_message_hdr_ptr->options_list_ptr = handle->sn_grs_alloc(sizeof(sn_coap_options_list_s));
                 if (response_message_hdr_ptr->options_list_ptr) {
