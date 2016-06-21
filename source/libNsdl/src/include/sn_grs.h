@@ -84,6 +84,8 @@ struct nsdl_s {
     uint16_t update_register_msg_id;
     uint16_t register_msg_len;
     uint16_t update_register_msg_len;
+    uint16_t bootstrap_msg_id;
+    bool handle_bootstrap_msg;
 };
 
 /***** Function prototypes *****/

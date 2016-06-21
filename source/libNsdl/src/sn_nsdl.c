@@ -54,6 +54,7 @@
 #define SN_NSDL_MSG_REGISTER            1
 #define SN_NSDL_MSG_UNREGISTER          2
 #define SN_NSDL_MSG_UPDATE              3
+#define SN_NSDL_MSG_BOOTSTRAP           4
 
 #ifdef YOTTA_CFG_DISABLE_OBS_FEATURE
 #define COAP_DISABLE_OBS_FEATURE YOTTA_CFG_DISABLE_OBS_FEATURE
@@ -219,7 +220,8 @@ struct nsdl_s *sn_nsdl_init(uint8_t (*sn_nsdl_tx_cb)(struct nsdl_s *, sn_nsdl_ca
     sn_nsdl_resolve_nsp_address(handle);
 
     handle->sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_NOT_REGISTERED;
-
+    // By default bootstrap msgs are handled in nsdl
+    handle->handle_bootstrap_msg = true;
     return handle;
 }
 
@@ -617,7 +619,9 @@ uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *hand
 /* ~ OMA functions ~ */
 /* * * * * * * * * * */
 
-uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr)
+uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr,
+                               sn_nsdl_ep_parameters_s *endpoint_info_ptr,
+                               sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr)
 {
 #ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     /* Local variables */
@@ -629,14 +633,15 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     if (!bootstrap_address_ptr || !bootstrap_endpoint_info_ptr || !endpoint_info_ptr || !handle) {
         return 0;
     }
-
     /* Create device object */
-    if (sn_nsdl_create_oma_device_object_base(handle, bootstrap_endpoint_info_ptr->device_object, endpoint_info_ptr->binding_and_mode) < 0) {
-        return 0;
-    }
+    if (handle->handle_bootstrap_msg) {
+        if (sn_nsdl_create_oma_device_object_base(handle, bootstrap_endpoint_info_ptr->device_object, endpoint_info_ptr->binding_and_mode) < 0) {
+            return 0;
+        }
 
-    handle->sn_nsdl_oma_bs_done_cb = bootstrap_endpoint_info_ptr->oma_bs_status_cb;
-    handle->sn_nsdl_oma_bs_done_cb_handle = bootstrap_endpoint_info_ptr->oma_bs_status_cb_handle;
+        handle->sn_nsdl_oma_bs_done_cb = bootstrap_endpoint_info_ptr->oma_bs_status_cb;
+        handle->sn_nsdl_oma_bs_done_cb_handle = bootstrap_endpoint_info_ptr->oma_bs_status_cb_handle;
+    }
 
     /* Init CoAP header struct */
     memset(&bootstrap_coap_header, 0, sizeof(sn_coap_hdr_s));
@@ -679,7 +684,7 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     handle->oma_bs_port = bootstrap_address_ptr->port;                  /* And port */
 
     /* Send message */
-    message_id = sn_nsdl_internal_coap_send(handle, &bootstrap_coap_header, bootstrap_address_ptr, SN_NSDL_MSG_UNDEFINED);
+    message_id = sn_nsdl_internal_coap_send(handle, &bootstrap_coap_header, bootstrap_address_ptr, SN_NSDL_MSG_BOOTSTRAP);
 
     /* Free allocated memory */
     handle->sn_nsdl_free(uri_query_tmp_ptr);
@@ -938,7 +943,17 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
     }
 #ifndef MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
     /* * If OMA bootstrap message... * */
-    if (src_ptr && (handle->oma_bs_address_len == src_ptr->addr_len) && (handle->oma_bs_port == src_ptr->port) && !memcmp(handle->oma_bs_address_ptr, src_ptr->addr_ptr, handle->oma_bs_address_len)) {
+    bool bootstrap_msg = src_ptr && (handle->oma_bs_address_len == src_ptr->addr_len) &&
+            (handle->oma_bs_port == src_ptr->port) &&
+            !memcmp(handle->oma_bs_address_ptr, src_ptr->addr_ptr, handle->oma_bs_address_len);
+    // Pass bootstrap data to application
+    if (bootstrap_msg && !handle->handle_bootstrap_msg) {
+        handle->sn_nsdl_rx_callback(handle, coap_packet_ptr,src_ptr);
+        sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
+        return SN_NSDL_SUCCESS;
+    }
+    // Internal handling
+    else if (bootstrap_msg) {
         /* TLV message. Parse message and check status of the OMA bootstrap  */
         /* process. If ok, call cb function and return. Otherwise send error */
         /* and return failure.                                               */
@@ -1083,6 +1098,9 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
         else if (message_description == SN_NSDL_MSG_UPDATE) {
             handle->update_register_msg_id = coap_header_ptr->msg_id;
             handle->update_register_msg_len = coap_header_len;
+        }
+        else if (message_description == SN_NSDL_MSG_BOOTSTRAP) {
+            handle->bootstrap_msg_id = coap_header_ptr->msg_id;
         }
     }
 
