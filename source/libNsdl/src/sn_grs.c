@@ -608,6 +608,7 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
             if (static_get_request) {
                 response_message_hdr_ptr->options_list_ptr = handle->sn_grs_alloc(sizeof(sn_coap_options_list_s));
                 if (response_message_hdr_ptr->options_list_ptr) {
+                    memset(response_message_hdr_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
                     response_message_hdr_ptr->options_list_ptr->max_age_ptr = handle->sn_grs_alloc(1);
                     if (response_message_hdr_ptr->options_list_ptr->max_age_ptr) {
                         response_message_hdr_ptr->options_list_ptr->max_age_ptr[0] = 0;
