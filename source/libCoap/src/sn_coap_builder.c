@@ -58,12 +58,10 @@ sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap
         return NULL;
     }
 
-    coap_res_ptr = handle->sn_coap_protocol_malloc(sizeof(sn_coap_hdr_s));
+    coap_res_ptr = sn_coap_parser_alloc_message(handle);
     if (!coap_res_ptr) {
         return NULL;
     }
-
-    memset(coap_res_ptr, 0x00, sizeof(sn_coap_hdr_s));
 
     if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE) {
         coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
