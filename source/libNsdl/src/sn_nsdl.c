@@ -495,10 +495,7 @@ int8_t sn_nsdl_set_endpoint_location(struct nsdl_s *handle, uint8_t *location_pt
         return -1;
     }
     
-    if(handle->ep_information_ptr->location_ptr) {
-        handle->sn_nsdl_free(handle->ep_information_ptr->location_ptr);
-    }
-    
+    handle->sn_nsdl_free(handle->ep_information_ptr->location_ptr);
     handle->ep_information_ptr->location_ptr = handle->sn_nsdl_alloc(location_len);
     memcpy(handle->ep_information_ptr->location_ptr, location_ptr, location_len);
     handle->ep_information_ptr->location_len = location_len;
