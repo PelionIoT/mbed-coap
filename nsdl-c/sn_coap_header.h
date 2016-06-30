@@ -287,7 +287,7 @@ extern void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle,
  *
  * \param *dst_packet_data_ptr is pointer to allocated destination to built CoAP packet
  *
- * \param *src_coap_msg_ptr is pointer to source structure for building Packet data 
+ * \param *src_coap_msg_ptr is pointer to source structure for building Packet data
  *
  * \return Return value is byte count of built Packet data. In failure cases:\n
  *          -1 = Failure in given CoAP header structure\n
@@ -301,7 +301,7 @@ extern int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_
  * \brief Calculates needed Packet data memory size for given CoAP message
  *
  * \param *src_coap_msg_ptr is pointer to data which needed Packet
- *          data length is calculated 
+ *          data length is calculated
  *
  * \return Return value is count of needed memory as bytes for build Packet data
  *          Null if failed
@@ -353,6 +353,43 @@ extern uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *sr
  *
  */
 extern sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code);
+
+/**
+ * \brief Initialise a message structure to empty
+ *
+ * \param *coap_msg_ptr is pointer to CoAP message to initialise
+ *
+ * \return Return value is pointer passed in
+ */
+extern sn_coap_hdr_s *sn_coap_parser_init_message(sn_coap_hdr_s *coap_msg_ptr);
+
+/**
+ * \brief Allocate an empty message structure
+ *
+ * \param *handle Pointer to CoAP library handle
+ *
+ * \return Return value is pointer to an empty CoAP message.\n
+ *         In following failure cases NULL is returned:\n
+ *          -Failure in given pointer (= NULL)\n
+ *          -Failure in memory allocation (malloc() returns NULL)
+ */
+extern sn_coap_hdr_s *sn_coap_parser_alloc_message(struct coap_s *handle);
+
+/**
+ * \brief Allocate an empty options structure
+ *
+ * \param *handle Pointer to CoAP library handle
+ * \param *coap_msg_ptr is pointer to CoAP message that will contain the options
+ *
+ * If the message already has a pointer to an option structure, that pointer
+ * is returned, rather than a new structure being allocated.
+ *
+ * \return Return value is pointer to the CoAP options structure.\n
+ *         In following failure cases NULL is returned:\n
+ *          -Failure in given pointer (= NULL)\n
+ *          -Failure in memory allocation (malloc() returns NULL)
+ */
+extern sn_coap_options_list_s *sn_coap_parser_alloc_options(struct coap_s *handle, sn_coap_hdr_s *coap_msg_ptr);
 
 #ifdef __cplusplus
 }

@@ -108,7 +108,7 @@ TEST(libCoap_protocol, sn_coap_protocol_set_block_size)
     CHECK( 0 == sn_coap_protocol_set_block_size(coap_handle,16) );
     CHECK( -1 == sn_coap_protocol_set_block_size(NULL,1) );
 #endif
-    CHECK( -1 == sn_coap_protocol_set_block_size(coap_handle,1) );    
+    CHECK( -1 == sn_coap_protocol_set_block_size(coap_handle,1) );
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_set_duplicate_buffer_size)
@@ -117,7 +117,7 @@ TEST(libCoap_protocol, sn_coap_protocol_set_duplicate_buffer_size)
     CHECK( 0 == sn_coap_protocol_set_duplicate_buffer_size(coap_handle,3));
     CHECK( -1 == sn_coap_protocol_set_duplicate_buffer_size(NULL,3));
 #endif
-    CHECK( -1 == sn_coap_protocol_set_duplicate_buffer_size(coap_handle,999));        
+    CHECK( -1 == sn_coap_protocol_set_duplicate_buffer_size(coap_handle,999));
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_set_retransmission_parameters)
@@ -126,7 +126,7 @@ TEST(libCoap_protocol, sn_coap_protocol_set_retransmission_parameters)
     CHECK( 0 == sn_coap_protocol_set_retransmission_parameters(coap_handle,3,0) );
     CHECK( 0 == sn_coap_protocol_set_retransmission_parameters(coap_handle,3, 10) );
     CHECK( -1 == sn_coap_protocol_set_retransmission_parameters(NULL,3,0) );
-#endif    
+#endif
     CHECK( -1 == sn_coap_protocol_set_retransmission_parameters(coap_handle,999,0) )
 }
 
@@ -439,7 +439,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_header_check_stub.expectedInt8 = 1;
-    sn_coap_parser_stub.expectedHeader->coap_status = COAP_STATUS_PARSER_ERROR_IN_HEADER;    
+    sn_coap_parser_stub.expectedHeader->coap_status = COAP_STATUS_PARSER_ERROR_IN_HEADER;
     CHECK( NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL) );
 
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
