@@ -31,6 +31,7 @@
 #include "sn_coap_header.h"
 #include "sn_coap_builder_stub.h"
 
+
 sn_coap_builder_stub_def sn_coap_builder_stub;
 
 sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
@@ -62,4 +63,3 @@ int16_t sn_coap_builder_options_build_add_zero_length_option(uint8_t **dst_packe
 {
     return sn_coap_builder_stub.expectedInt16;
 }
-

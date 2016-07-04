@@ -25,7 +25,8 @@
 
 #include "ns_types.h"
 #include "sn_nsdl.h"
-#include "sn_coap_protocol.h"
+#include "sn_coap_header.h"
+#include "sn_coap_protocol_internal.h"
 #include "sn_coap_parser_stub.h"
 
 sn_coap_parser_def sn_coap_parser_stub;
@@ -106,4 +107,57 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
         free(freed_coap_msg_ptr);
         freed_coap_msg_ptr = NULL;
     }
+}
+
+sn_coap_hdr_s *sn_coap_parser_init_message(sn_coap_hdr_s *coap_msg_ptr)
+{
+    /* * * * Check given pointer * * * */
+    if (coap_msg_ptr == NULL) {
+        return NULL;
+    }
+
+    /* XXX not technically legal to memset pointers to 0 */
+    memset(coap_msg_ptr, 0x00, sizeof(sn_coap_hdr_s));
+
+    return coap_msg_ptr;
+}
+
+sn_coap_hdr_s *sn_coap_parser_alloc_message(struct coap_s *handle)
+{
+    sn_coap_hdr_s *returned_coap_msg_ptr;
+
+    /* * * * Check given pointer * * * */
+    if (handle == NULL) {
+        return NULL;
+    }
+
+    /* * * * Allocate memory for returned CoAP message and initialize allocated memory with with default values  * * * */
+    returned_coap_msg_ptr = handle->sn_coap_protocol_malloc(sizeof(sn_coap_hdr_s));
+
+    return sn_coap_parser_init_message(returned_coap_msg_ptr);
+}
+
+sn_coap_options_list_s *sn_coap_parser_alloc_options(struct coap_s *handle, sn_coap_hdr_s *coap_msg_ptr)
+{
+    /* * * * Check given pointers * * * */
+    if (handle == NULL || coap_msg_ptr == NULL) {
+        return NULL;
+    }
+
+    /* * * * If the message already has options, return them * * * */
+    if (coap_msg_ptr->options_list_ptr) {
+        return coap_msg_ptr->options_list_ptr;
+    }
+
+    /* * * * Allocate memory for options and initialize allocated memory with with default values  * * * */
+    coap_msg_ptr->options_list_ptr = handle->sn_coap_protocol_malloc(sizeof(sn_coap_options_list_s));
+
+    if (coap_msg_ptr->options_list_ptr == NULL) {
+        return NULL;
+    }
+
+    /* XXX not technically legal to memset pointers to 0 */
+    memset(coap_msg_ptr->options_list_ptr, 0x00, sizeof(sn_coap_options_list_s));
+
+    return coap_msg_ptr->options_list_ptr;
 }

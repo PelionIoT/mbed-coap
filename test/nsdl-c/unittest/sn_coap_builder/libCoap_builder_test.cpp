@@ -21,6 +21,7 @@
 #include "sn_coap_protocol_internal.h"
 
 #include "sn_coap_header_check_stub.h"
+#include "sn_coap_parser_stub.h"
 
 sn_coap_hdr_s coap_header;
 sn_coap_options_list_s option_list;
