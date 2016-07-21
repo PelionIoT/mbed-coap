@@ -482,8 +482,6 @@ int8_t sn_nsdl_set_endpoint_location(struct nsdl_s *handle, uint8_t *location_pt
     if(!handle || !location_ptr || (location_len == 0)) {
         return -1;
     }
-    
-    handle->sn_nsdl_free(handle->ep_information_ptr->location_ptr);
     handle->ep_information_ptr->location_ptr = handle->sn_nsdl_alloc(location_len);
     memcpy(handle->ep_information_ptr->location_ptr, location_ptr, location_len);
     handle->ep_information_ptr->location_len = location_len;
@@ -875,6 +873,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
 {
     sn_coap_hdr_s           *coap_packet_ptr    = NULL;
     sn_coap_hdr_s           *coap_response_ptr  = NULL;
+    sn_nsdl_resource_info_s *resource;
 
     /* Check parameters */
     if (handle == NULL) {
@@ -889,8 +888,23 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
         return SN_NSDL_FAILURE;
     }
 
+    if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING)
+    {
+
+        resource = sn_nsdl_get_resource(handle, coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr);if(resource)resource->save_blocks_to_flash=1;
+        if(resource && resource->save_blocks_to_flash)
+        {
+            sn_coap_protocol_block_remove(handle->grs->coap, src_ptr, coap_packet_ptr->payload_len, coap_packet_ptr->payload_ptr);
+        }
+        else
+        {
+            resource = NULL;
+        }
+
+    }
+
     /* Check, if coap itself sends response, or block receiving is ongoing... */
-    if (coap_packet_ptr->coap_status != COAP_STATUS_OK && coap_packet_ptr->coap_status != COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED) {
+    if (coap_packet_ptr->coap_status != COAP_STATUS_OK && coap_packet_ptr->coap_status != COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && !resource) {
         sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
         return SN_NSDL_SUCCESS;
     }

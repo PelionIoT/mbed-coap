@@ -1271,6 +1271,38 @@ static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(struct coa
     return NULL;
 }
 
+void sn_coap_protocol_block_remove(struct coap_s *handle, sn_nsdl_addr_s *source_address, uint16_t payload_length, void *payload)
+{
+
+    /* Loop all stored blockwise payloads in Linked list */
+    ns_list_foreach(coap_blockwise_payload_s, stored_payload_info_ptr, &handle->linked_list_blockwise_received_payloads) {
+
+        /* If payload's Source address is not the same than is searched */
+        if (memcmp(source_address->addr_ptr, stored_payload_info_ptr->addr_ptr, source_address->addr_len)) {
+            continue;
+        }
+
+        /* If payload's Source address port is not the same than is searched */
+        if (stored_payload_info_ptr->port != source_address->port) {
+            continue;
+        }
+
+        /* Check the payload */
+        if(payload_length != stored_payload_info_ptr->payload_len){
+            continue;
+        }
+
+        if(!memcmp(stored_payload_info_ptr->payload_ptr, payload, stored_payload_info_ptr->payload_len))
+        {
+            /* Everything matches, remove and return. */
+            sn_coap_protocol_linked_list_blockwise_payload_remove(handle, stored_payload_info_ptr);
+            return;
+        }
+
+    }
+
+}
+
 /**************************************************************************//**
  * \fn static void sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(struct coap_s *handle)
  *
