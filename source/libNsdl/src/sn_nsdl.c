@@ -891,7 +891,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
     if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING)
     {
 
-        resource = sn_nsdl_get_resource(handle, coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr);if(resource)resource->save_blocks_to_flash=1;
+        resource = sn_nsdl_get_resource(handle, coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr);
         if(resource && resource->save_blocks_to_flash)
         {
             sn_coap_protocol_block_remove(handle->grs->coap, src_ptr, coap_packet_ptr->payload_len, coap_packet_ptr->payload_ptr);
