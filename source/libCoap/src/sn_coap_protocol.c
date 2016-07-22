@@ -1273,6 +1273,10 @@ static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(struct coa
 
 void sn_coap_protocol_block_remove(struct coap_s *handle, sn_nsdl_addr_s *source_address, uint16_t payload_length, void *payload)
 {
+    
+    if(!handle || !source_address || !payload){
+        return;
+    }
 
     /* Loop all stored blockwise payloads in Linked list */
     ns_list_foreach(coap_blockwise_payload_s, stored_payload_info_ptr, &handle->linked_list_blockwise_received_payloads) {
