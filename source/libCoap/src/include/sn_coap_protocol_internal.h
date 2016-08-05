@@ -90,7 +90,7 @@ extern "C" {
 #endif
 
 #ifndef SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-#define SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE          128  /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
+#define SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE          0  /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
 #endif
 
 
@@ -99,7 +99,7 @@ extern "C" {
 #endif
 
 #ifndef SN_COAP_MAX_BLOCK1_MESSAGE_SIZE
-#define SN_COAP_MAX_BLOCK1_MESSAGE_SIZE 74000
+#define SN_COAP_MAX_BLOCK1_MESSAGE_SIZE UINT32_MAX
 #endif
 
 /* * * * * * * * * * * * * * */
