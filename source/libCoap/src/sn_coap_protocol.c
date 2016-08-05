@@ -327,6 +327,27 @@ void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
 #endif
 }
 
+int8_t sn_coap_protocol_delete_retransmission(struct coap_s *handle, uint16_t msg_id)
+{
+#if ENABLE_RESENDINGS /* If Message resending is not used at all, this part of code will not be compiled */
+    if (handle == NULL) {
+        return -1;
+    }
+    ns_list_foreach_safe(coap_send_msg_s, tmp, &handle->linked_list_resent_msgs) {
+        if (tmp->send_msg_ptr && tmp->send_msg_ptr->packet_ptr ) {
+            uint16_t temp_msg_id = (tmp->send_msg_ptr->packet_ptr[2] << 8);
+            temp_msg_id += (uint16_t)tmp->send_msg_ptr->packet_ptr[3];
+            if(temp_msg_id == msg_id){
+                ns_list_remove(&handle->linked_list_resent_msgs, tmp);
+                --handle->count_resent_msgs;
+                sn_coap_protocol_release_allocated_send_msg_mem(handle, tmp);
+                return 0;
+            }
+        }
+    }
+#endif
+    return -2;
+}
 
 int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr,
                                uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param)

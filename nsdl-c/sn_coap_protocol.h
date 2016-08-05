@@ -188,6 +188,17 @@ extern int8_t sn_coap_protocol_set_retransmission_buffer(struct coap_s *handle,
  */
 extern void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle);
 
+/**
+ * \fn void sn_coap_protocol_delete_retransmission(struct coap_s *handle)
+ *
+ * \param *handle Pointer to CoAP library handle
+ * \msg_id message ID to be removed
+ * \return returns 0 when success, -1 for invalid parameter, -2 if message was not found
+ *
+ * \brief If re-transmissions are enabled, this function removes message from retransmission buffer.
+ */
+extern int8_t sn_coap_protocol_delete_retransmission(struct coap_s *handle, uint16_t msg_id);
+
 #endif /* SN_COAP_PROTOCOL_H_ */
 
 #ifdef __cplusplus
