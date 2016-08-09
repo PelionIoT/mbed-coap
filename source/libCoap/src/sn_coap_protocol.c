@@ -1743,10 +1743,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     }
 
                 tr_debug("sn_coap_handle_blockwise_message - block1 received - incoming size: [%d]", total_message_size);
-                uint32_t max_size = UINT16_MAX;
-                if (SN_COAP_MAX_BLOCK1_MESSAGE_SIZE > 0) {
-                    max_size = SN_COAP_MAX_BLOCK1_MESSAGE_SIZE;
-                }
+                uint32_t max_size = SN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE;
                 if (total_message_size > max_size) {
                     // Include maximum size that stack can handle into response
                     src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE;
