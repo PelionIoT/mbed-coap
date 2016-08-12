@@ -201,6 +201,8 @@ typedef struct sn_nsdl_resource_info_ {
 
     uint8_t                         publish_uri;
 
+    uint8_t                         external_memory_block;
+
 } sn_nsdl_resource_info_s;
 
 /**
