@@ -173,8 +173,8 @@ typedef struct sn_nsdl_resource_parameters_ {
 
 //    uint8_t     mime_content_type;
 
-    uint8_t     observable:2;
-    uint8_t     registered:2;
+    unsigned int     observable:2;
+    unsigned int     registered:2;
 } sn_nsdl_resource_parameters_s;
 
 /**
