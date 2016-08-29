@@ -851,7 +851,7 @@ int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_devic
     return SN_NSDL_SUCCESS;
 #else
     return SN_NSDL_FAILURE;
-#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE    
+#endif //YOTTA_CFG_DISABLE_BOOTSTRAP_FEATURE
 }
 
 char *sn_nsdl_get_version(void)
@@ -1218,7 +1218,6 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
     /* Local variables */
     uint8_t                 *temp_ptr;
     const sn_nsdl_resource_info_s   *resource_temp_ptr;
-
 
     /* Calculate needed memory and allocate */
     message_ptr->payload_len = sn_nsdl_calculate_registration_body_size(handle, updating_registeration);
@@ -2395,6 +2394,15 @@ extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_in
     return sn_grs_create_resource(handle->grs, res);
 }
 
+extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res)
+{
+    if (!handle || !res) {
+        return SN_NSDL_FAILURE;
+    }
+
+    return sn_grs_put_resource(handle->grs, res);
+}
+
 extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
 {
     /* Check parameters */
@@ -2443,7 +2451,7 @@ extern void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coa
 
 extern int8_t sn_nsdl_set_retransmission_parameters(struct nsdl_s *handle,
     uint8_t resending_count, uint8_t resending_interval)
-{    
+{
     if (handle == NULL) {
         return SN_NSDL_FAILURE;
     }

@@ -21,7 +21,6 @@
 extern "C" {
 #endif
 
-
 #define SN_GRS_RESOURCE_ALREADY_EXISTS  -2
 #define SN_GRS_INVALID_PATH             -3
 #define SN_GRS_LIST_ADDING_FAILURE      -4
@@ -119,6 +118,8 @@ extern int8_t                           sn_grs_send_coap_message(struct nsdl_s *
 extern int8_t                           sn_grs_create_resource(struct grs_s *handle, sn_nsdl_resource_info_s *res);
 extern int8_t                           sn_grs_delete_resource(struct grs_s *handle, uint16_t pathlen, uint8_t *path);
 extern void                             sn_grs_mark_resources_as_registered(struct nsdl_s *handle);
+
+extern int8_t                           sn_grs_put_resource(struct grs_s *handle, sn_nsdl_resource_info_s *res);
 
 #ifdef __cplusplus
 }
