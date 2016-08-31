@@ -60,9 +60,9 @@ deploy_to: all
 
 FETCH_SUB_MODULES := $(LIBS:%=fetch-%)
 .PHONY: $(FETCH_SUB_MODULES)
-$(FETCH_SUB_MODULES): $(LIBS) $(SUBMODULE_BASE_PATH)
+$(FETCH_SUB_MODULES): $(SUBMODULE_BASE_PATH)
 	@echo $@
-	make -C $(SUBMODULE_BASE_PATH)/$(@:fetch-%=%) -f Makefile.standalone fetch_source SUBMODULE_BASE_PATH=$(SUBMODULE_BASE_PATH) CC=gcc 
+	make -C $(SUBMODULE_BASE_PATH)/$(@:fetch-%=%) -f Makefile.standalone fetch_source SUBMODULE_BASE_PATH=$(SUBMODULE_BASE_PATH) CC=$(CC) 
 
 
 # create the submodule dir if one does not exist
