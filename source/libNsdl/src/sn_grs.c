@@ -358,6 +358,8 @@ int8_t sn_grs_put_resource(struct grs_s *handle, sn_nsdl_resource_info_s *res)
         return SN_GRS_RESOURCE_ALREADY_EXISTS;
     }
 
+    res->path = sn_grs_convert_uri((uint16_t*)&res->pathlen, res->path);
+
     if (res->resource_parameters_ptr) {
         res->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_NOT_REGISTERED;
     }
