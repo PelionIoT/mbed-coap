@@ -358,7 +358,7 @@ extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uin
 /**
  * \fn extern uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
  *                                                  uint8_t *payload_ptr, uint16_t payload_len,
- *                                                  uint8_t *observe_ptr, uint8_t observe_len,
+ *                                                  sn_coap_observe_e observe,
  *                                                  sn_coap_msg_type_e message_type, uint8_t content_type,
  *                                                  uint8_t *uri_path_ptr,
  *                                                  uint16_t uri_path_len)
@@ -371,8 +371,7 @@ extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uin
  * \param   token_len       Token length
  * \param   *payload_ptr    Pointer to payload to be sent
  * \param   payload_len     Payload length
- * \param   *observe_ptr    Pointer to observe number to be sent
- * \param   observe_len     Observe number len
+ * \param   observe         Observe option value to be sent
  * \param   message_type    Observation message type (confirmable or non-confirmable)
  * \param   content_type    Observation message payload contetnt type
  * \param   uri_path_ptr    Pointer to uri path to be sent
@@ -383,7 +382,7 @@ extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uin
  */
 extern uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
         uint8_t *payload_ptr, uint16_t payload_len,
-        uint8_t *observe_ptr, uint8_t observe_len,
+        sn_coap_observe_e observe,
         sn_coap_msg_type_e message_type,
         uint8_t content_type,
         uint8_t *uri_path_ptr,

@@ -65,7 +65,7 @@ extern struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16
 extern int8_t sn_coap_protocol_destroy(struct coap_s *handle);
 
 /**
- * \fn int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr)
+ * \fn int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param)
  *
  * \brief Builds Packet data from given CoAP header structure to be sent
  *

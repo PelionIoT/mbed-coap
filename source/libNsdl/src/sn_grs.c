@@ -594,11 +594,7 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
             // Not a mandatory parameter, no need to return in case of memory allocation fails.
             if (static_get_request) {
                 if (sn_coap_parser_alloc_options(handle->coap, response_message_hdr_ptr)) {
-                    response_message_hdr_ptr->options_list_ptr->max_age_ptr = handle->sn_grs_alloc(1);
-                    if (response_message_hdr_ptr->options_list_ptr->max_age_ptr) {
-                        response_message_hdr_ptr->options_list_ptr->max_age_ptr[0] = 0;
-                        response_message_hdr_ptr->options_list_ptr->max_age_len = 1;
-                    }
+                    response_message_hdr_ptr->options_list_ptr->max_age = 0;
                 }
             }
         }

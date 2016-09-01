@@ -821,7 +821,7 @@ bool test_sn_coap_parser_options_count_needed_memory_multiple_option()
     if (hdr)
         sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
 
-end:    
+end:
     free(ver);
     free(coap);
     free(ptr);
@@ -995,22 +995,18 @@ bool test_sn_coap_parser_release_allocated_coap_msg_mem()
     sn_coap_hdr_s* ptr = (sn_coap_hdr_s*)myMalloc(sizeof(sn_coap_hdr_s));
     ptr->uri_path_ptr = (uint8_t*)malloc(sizeof(uint8_t));
     ptr->token_ptr = (uint8_t*)malloc(sizeof(uint8_t));
-    ptr->content_type_ptr = (uint8_t*)malloc(sizeof(uint8_t));
     //ptr->payload_ptr = (uint8_t*)malloc(sizeof(uint8_t));
     ptr->options_list_ptr = (sn_coap_options_list_s*)myMalloc(sizeof(sn_coap_options_list_s));
 
-    ptr->options_list_ptr->max_age_ptr = (uint8_t*)malloc(sizeof(uint8_t));
+    ptr->options_list_ptr->max_age = 1;
     ptr->options_list_ptr->proxy_uri_ptr = (uint8_t*)malloc(sizeof(uint8_t));
     ptr->options_list_ptr->etag_ptr = (uint8_t*)malloc(sizeof(uint8_t));
     ptr->options_list_ptr->uri_host_ptr = (uint8_t*)malloc(sizeof(uint8_t));
     ptr->options_list_ptr->location_path_ptr = (uint8_t*)malloc(sizeof(uint8_t));
-    ptr->options_list_ptr->uri_port_ptr = (uint8_t*)malloc(sizeof(uint8_t));
+    ptr->options_list_ptr->uri_port = 8;
     ptr->options_list_ptr->location_query_ptr = (uint8_t*)malloc(sizeof(uint8_t));
-    ptr->options_list_ptr->observe_ptr = (uint8_t*)malloc(sizeof(uint8_t));
-    ptr->options_list_ptr->accept_ptr = (uint8_t*)malloc(sizeof(uint8_t));
+    ptr->options_list_ptr->observe = 0;
     ptr->options_list_ptr->uri_query_ptr = (uint8_t*)malloc(sizeof(uint8_t));
-    ptr->options_list_ptr->block1_ptr = (uint8_t*)malloc(sizeof(uint8_t));
-    ptr->options_list_ptr->block2_ptr = (uint8_t*)malloc(sizeof(uint8_t));
 
     sn_coap_parser_release_allocated_coap_msg_mem( coap, ptr );
 

@@ -996,7 +996,7 @@ bool test_sn_nsdl_is_ep_registered()
 
 bool test_sn_nsdl_send_observation_notification()
 {
-    if( 0 != sn_nsdl_send_observation_notification(NULL, NULL, 0,NULL,0,NULL,0,0,0) ){
+    if( 0 != sn_nsdl_send_observation_notification(NULL, NULL, 0,NULL,0,0,0,0) ){
         return false;
     }
     sn_grs_stub.retNull = false;
@@ -1011,34 +1011,34 @@ bool test_sn_nsdl_send_observation_notification()
     sn_grs_stub.expectedGrs->coap->sn_coap_rx_callback = nsdl_rx_callback;
     sn_grs_stub.expectedGrs->coap->sn_coap_tx_callback = nsdl_tx_callback;
 
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,0) ){
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,0,0,0) ){
         return false;
     }
 
     retCounter = 0;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,0) ){
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,0,0,0) ){
         return false;
     }
 
     retCounter = 1;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,0) ){
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,0,0,0) ){
         return false;
     }
 
     retCounter = 2;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1) ){
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,0,0,1) ){
         return false;
     }
 
     retCounter = 2;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1) ){
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,0,0,1) ){
         return false;
     }
 
     retCounter = 2;
     sn_grs_stub.int8SuccessCounter = 0;
     sn_grs_stub.expectedInt8 = SN_NSDL_FAILURE;
-    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,NULL,0,0,1) ){
+    if( 0 != sn_nsdl_send_observation_notification(handle, NULL, 0,NULL,0,0,0,1) ){
         return false;
     }
     free(sn_grs_stub.expectedGrs->coap);
@@ -1048,7 +1048,7 @@ bool test_sn_nsdl_send_observation_notification()
 
 bool test_sn_nsdl_send_observation_notification_with_uri_path()
 {
-    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(NULL, NULL, 0,NULL,0,NULL,0,0,0, NULL,0) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(NULL, NULL, 0,NULL,0,0,0,0, NULL,0) ){
         return false;
     }
     sn_grs_stub.retNull = false;
@@ -1065,39 +1065,39 @@ bool test_sn_nsdl_send_observation_notification_with_uri_path()
     u_int8_t path[] = {"13/0/1"};
     uint8_t* uri_path_ptr = (uint8_t*)malloc(sizeof(path));
     uint8_t uri_path_len = (uint8_t)sizeof(path);
-    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,0,uri_path_ptr,uri_path_len) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,0,0,0,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
     retCounter = 0;
-    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,0,uri_path_ptr,uri_path_len) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,0,0,0,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
     retCounter = 1;
-    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,0,uri_path_ptr,uri_path_len) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,0,0,0,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
     retCounter = 2;
-    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,1,uri_path_ptr,uri_path_len) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,0,0,1,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
     retCounter = 2;
-    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,1,uri_path_ptr,uri_path_len) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,0,0,1,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
     retCounter = 2;
-    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,1,uri_path_ptr,uri_path_len) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,0,0,1,uri_path_ptr,uri_path_len) ){
         return false;
     }
 
     retCounter = 2;
     sn_grs_stub.int8SuccessCounter = 0;
     sn_grs_stub.expectedInt8 = SN_NSDL_FAILURE;
-    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,NULL,0,0,1,NULL,0) ){
+    if( 0 != sn_nsdl_send_observation_notification_with_uri_path(handle, NULL, 0,NULL,0,0,0,1,NULL,0) ){
         return false;
     }
     free(sn_grs_stub.expectedGrs->coap);
@@ -1667,9 +1667,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 9;
+    sn_coap_protocol_stub.expectedHeader->content_format = 9;
 
     if( -1 != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
         return false;
@@ -1682,9 +1680,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0x20;
     payload_ptr[1] = 0x00;
@@ -1700,9 +1696,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0x18;
     payload_ptr[1] = 0x00;
@@ -1719,9 +1713,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0x08;
     payload_ptr[1] = 0x01;
@@ -1739,9 +1731,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0x10;
     payload_ptr[1] = 0x00;
@@ -1762,9 +1752,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0xC0;
     payload_ptr[1] = 0x00;
@@ -1786,9 +1774,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0xC0;
     payload_ptr[1] = 0x02;
@@ -1810,9 +1796,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0xC0;
     payload_ptr[1] = 0x03;
@@ -1834,9 +1818,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0xC0;
     payload_ptr[1] = 0x04;
@@ -1858,9 +1840,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0xC0;
     payload_ptr[1] = 0x05;
@@ -1879,9 +1859,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 99;
+    sn_coap_protocol_stub.expectedHeader->content_format = 99;
 
     payload_ptr[0] = 0xC0;
     payload_ptr[1] = 0x01;
@@ -1899,9 +1877,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '2';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -1915,9 +1891,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '2';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -1946,9 +1920,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '2';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -1980,9 +1952,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2002,9 +1972,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2022,9 +1990,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2042,9 +2008,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2063,9 +2027,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2090,9 +2052,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2122,9 +2082,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2164,9 +2122,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2209,9 +2165,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2254,9 +2208,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2285,9 +2237,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2311,9 +2261,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2342,9 +2290,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2378,9 +2324,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2414,9 +2358,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2448,9 +2390,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2483,9 +2423,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2520,9 +2458,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2556,9 +2492,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2596,9 +2530,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 6;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2618,9 +2550,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 3;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;
@@ -2640,9 +2570,7 @@ bool test_sn_nsdl_process_coap()
     memset(sn_coap_protocol_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_protocol_stub.expectedHeader->coap_status = 3;
     sn_coap_protocol_stub.expectedHeader->msg_code = 0;
-    sn_coap_protocol_stub.expectedHeader->content_type_len = 1;
-    sn_coap_protocol_stub.expectedHeader->content_type_ptr = (uint8_t*)malloc(1);
-    *sn_coap_protocol_stub.expectedHeader->content_type_ptr = 97;
+    sn_coap_protocol_stub.expectedHeader->content_format = 97;
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr = (uint8_t*)malloc(1);
     sn_coap_protocol_stub.expectedHeader->uri_path_ptr[0] = '0';
     sn_coap_protocol_stub.expectedHeader->uri_path_len = 1;

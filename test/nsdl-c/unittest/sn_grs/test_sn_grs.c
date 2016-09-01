@@ -729,9 +729,7 @@ bool test_sn_grs_process_coap()
     hdr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
     hdr->payload_ptr = (uint8_t*)malloc(2);
     hdr->payload_len = 2;
-    hdr->content_type_ptr = (uint8_t*)malloc(1);
-    hdr->content_type_ptr[0] = 1;
-    hdr->content_type_len = 1;
+    hdr->content_format = COAP_CT_TEXT_PLAIN;
 
     if( SN_NSDL_SUCCESS != sn_grs_process_coap(handle, hdr, addr) ){
         return false;
@@ -783,9 +781,7 @@ bool test_sn_grs_process_coap()
     hdr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
     hdr->payload_ptr = (uint8_t*)malloc(2);
     hdr->payload_len = 2;
-    hdr->content_type_ptr = (uint8_t*)malloc(1);
-    hdr->content_type_ptr[0] = 1;
-    hdr->content_type_len = 1;
+    hdr->content_format = 1;
 
     if( SN_NSDL_SUCCESS != sn_grs_process_coap(handle, hdr, addr) ){
         return false;
@@ -887,9 +883,8 @@ bool test_sn_grs_process_coap()
 //    hdr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
 //    hdr->payload_ptr = (uint8_t*)malloc(2);
 //    hdr->payload_len = 2;
-//    hdr->content_type_ptr = (uint8_t*)malloc(1);
-//    hdr->content_type_ptr[0] = 1;
-//    hdr->content_type_len = 1;
+//    hdr->content_format = 1;
+//
 
 //    if( SN_NSDL_SUCCESS != sn_grs_process_coap(handle, hdr, addr) ){
 //        return false;
@@ -908,9 +903,7 @@ bool test_sn_grs_process_coap()
     hdr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
     hdr->payload_ptr = (uint8_t*)malloc(2);
     hdr->payload_len = 2;
-    hdr->content_type_ptr = (uint8_t*)malloc(1);
-    hdr->content_type_ptr[0] = 1;
-    hdr->content_type_len = 1;
+    hdr->content_format = 1;
 
     if( SN_NSDL_FAILURE != sn_grs_process_coap(handle, hdr, addr) ){
         return false;
@@ -927,9 +920,8 @@ bool test_sn_grs_process_coap()
     hdr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
     hdr->payload_ptr = (uint8_t*)malloc(2);
     hdr->payload_len = 2;
-    hdr->content_type_ptr = (uint8_t*)malloc(1);
-    hdr->content_type_ptr[0] = 1;
-    hdr->content_type_len = 1;
+    hdr->content_format = 1;
+
     hdr->token_ptr = (uint8_t*)malloc(1);
     hdr->token_len = 1;
 
@@ -964,9 +956,8 @@ bool test_sn_grs_process_coap()
     hdr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
     hdr->payload_ptr = (uint8_t*)malloc(2);
     hdr->payload_len = 2;
-    hdr->content_type_ptr = (uint8_t*)malloc(1);
-    hdr->content_type_ptr[0] = 1;
-    hdr->content_type_len = 1;
+    hdr->content_format = 1;
+
     hdr->token_ptr = (uint8_t*)malloc(1);
     hdr->token_len = 1;
 
@@ -986,9 +977,8 @@ bool test_sn_grs_process_coap()
     hdr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
     hdr->payload_ptr = (uint8_t*)malloc(2);
     hdr->payload_len = 2;
-    hdr->content_type_ptr = (uint8_t*)malloc(1);
-    hdr->content_type_ptr[0] = 1;
-    hdr->content_type_len = 1;
+    hdr->content_format = 1;
+
     hdr->token_ptr = (uint8_t*)malloc(1);
     hdr->token_len = 1;
 
@@ -1011,9 +1001,7 @@ bool test_sn_grs_process_coap()
     hdr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
     hdr->payload_ptr = (uint8_t*)malloc(2);
     hdr->payload_len = 2;
-    hdr->content_type_ptr = (uint8_t*)malloc(1);
-    hdr->content_type_ptr[0] = 1;
-    hdr->content_type_len = 1;
+    hdr->content_format = 1;
     hdr->token_ptr = (uint8_t*)malloc(1);
     hdr->token_len = 1;
 
@@ -1033,9 +1021,8 @@ bool test_sn_grs_process_coap()
     hdr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
     hdr->payload_ptr = (uint8_t*)malloc(2);
     hdr->payload_len = 2;
-    hdr->content_type_ptr = (uint8_t*)malloc(1);
-    hdr->content_type_ptr[0] = 1;
-    hdr->content_type_len = 1;
+    hdr->content_format = 1;
+
     hdr->token_ptr = (uint8_t*)malloc(1);
     hdr->token_len = 1;
 
@@ -1082,7 +1069,7 @@ bool test_sn_grs_send_coap_message()
     }
 
     retCounter = 1;
-    sn_coap_protocol_stub.expectedInt16 = -1;    
+    sn_coap_protocol_stub.expectedInt16 = -1;
     if( SN_NSDL_FAILURE != sn_grs_send_coap_message(handle, NULL, NULL) ){
         return false;
     }

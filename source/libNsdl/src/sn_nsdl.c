@@ -521,18 +521,17 @@ uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *t
                                                                token_len,
                                                                payload_ptr,
                                                                payload_len,
-                                                               observe_ptr,
-                                                               observe_len,
+                                                               observe,
                                                                message_type,
-                                                               content_type,
+                                                               content_format,
                                                                NULL,
                                                                0);
 }
 
 uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
         uint8_t *payload_ptr, uint16_t payload_len,
-        uint8_t *observe_ptr, uint8_t observe_len,
-        sn_coap_msg_type_e message_type, uint8_t content_type,
+        sn_coap_observe_e observe,
+        sn_coap_msg_type_e message_type, uint8_t content_format,
         uint8_t *uri_path_ptr, uint16_t uri_path_len)
 {
     sn_coap_hdr_s   *notification_message_ptr;
