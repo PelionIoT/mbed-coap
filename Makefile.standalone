@@ -62,7 +62,7 @@ FETCH_SUB_MODULES := $(LIBS:%=fetch-%)
 .PHONY: $(FETCH_SUB_MODULES)
 $(FETCH_SUB_MODULES): $(SUBMODULE_BASE_PATH)
 	@echo $@
-	make -C $(SUBMODULE_BASE_PATH)/$(@:fetch-%=%) -f Makefile.standalone fetch_source SUBMODULE_BASE_PATH=$(SUBMODULE_BASE_PATH) CC=$(CC) 
+	make -C $(SUBMODULE_BASE_PATH)/$(@:fetch-%=%) -f Makefile.standalone fetch_source SUBMODULE_BASE_PATH=$(SUBMODULE_BASE_PATH) CC=$(CC) CPU=$(CPU)
 
 
 # create the submodule dir if one does not exist
@@ -78,7 +78,7 @@ GIT_HASH = $(word 2, $(subst \#, , $1))
 # Rule for processing the mbed-cli's submodule reference files (.lib).
 # The lib files contain a <repository-git-url>#<commit-hash> as a string
 # which is extracted and used for "git clone" + "git checkout" commands
-% : %.lib
+$(SUBMODULE_BASE_PATH)/% : %.lib
 	cd $(SUBMODULE_BASE_PATH) && \
 	if [ -d $@ ]; then \
 		echo Just update the repository && \
