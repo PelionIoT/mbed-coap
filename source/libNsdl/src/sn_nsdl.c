@@ -2464,6 +2464,15 @@ extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_in
     return sn_grs_create_resource(handle->grs, res);
 }
 
+extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res)
+{
+    if (!handle) {
+        return SN_NSDL_FAILURE;
+    }
+
+    return sn_grs_put_resource(handle->grs, res);
+}
+
 extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
 {
     /* Check parameters */

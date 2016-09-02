@@ -344,6 +344,33 @@ extern int8_t sn_grs_create_resource(struct grs_s *handle, sn_nsdl_resource_info
     return SN_GRS_LIST_ADDING_FAILURE;
 }
 
+int8_t sn_grs_put_resource(struct grs_s *handle, sn_nsdl_resource_info_s *res)
+{
+    if (!res || !handle) {
+        return SN_NSDL_FAILURE;
+    }
+
+    /* Check path validity */
+    if (!res->pathlen || !res->path) {
+        return SN_GRS_INVALID_PATH;
+    }
+
+    /* Check if resource already exists */
+    if (sn_grs_search_resource(handle, res->pathlen, res->path, SN_GRS_SEARCH_METHOD) != (sn_nsdl_resource_info_s *)NULL) {
+        return SN_GRS_RESOURCE_ALREADY_EXISTS;
+    }
+
+    if (res->resource_parameters_ptr) {
+        res->resource_parameters_ptr->registered = SN_NDSL_RESOURCE_NOT_REGISTERED;
+    }
+
+    res->is_put = true;
+
+    ns_list_add_to_start(&handle->resource_root_list, res);
+    ++handle->resource_root_count;
+
+    return SN_NSDL_SUCCESS;
+}
 
 
 /**
@@ -841,12 +868,9 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_resource
 
         memset(resource_copy_ptr->resource_parameters_ptr, 0, sizeof(sn_nsdl_resource_parameters_s));
 
-
         resource_copy_ptr->resource_parameters_ptr->resource_type_len = resource_ptr->resource_parameters_ptr->resource_type_len;
 
-        resource_copy_ptr->resource_parameters_ptr->interface_description_len = resource_ptr->resource_parameters_ptr->interface_description_len;
-
-        resource_copy_ptr->resource_parameters_ptr->mime_content_type = resource_ptr->resource_parameters_ptr->mime_content_type;
+//        resource_copy_ptr->resource_parameters_ptr->mime_content_type = resource_ptr->resource_parameters_ptr->mime_content_type;
 
         resource_copy_ptr->resource_parameters_ptr->observable = resource_ptr->resource_parameters_ptr->observable;
 
@@ -858,6 +882,8 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_resource
             }
             memcpy(resource_copy_ptr->resource_parameters_ptr->resource_type_ptr, resource_ptr->resource_parameters_ptr->resource_type_ptr, resource_ptr->resource_parameters_ptr->resource_type_len);
         }
+
+        resource_copy_ptr->resource_parameters_ptr->interface_description_len = resource_ptr->resource_parameters_ptr->interface_description_len;
 
         if (resource_ptr->resource_parameters_ptr->interface_description_ptr) {
             resource_copy_ptr->resource_parameters_ptr->interface_description_ptr = handle->sn_grs_alloc(resource_ptr->resource_parameters_ptr->interface_description_len);
@@ -941,14 +967,16 @@ static int8_t sn_grs_resource_info_free(struct grs_s *handle, sn_nsdl_resource_i
 {
     if (resource_ptr) {
         if (resource_ptr->resource_parameters_ptr) {
-            if (resource_ptr->resource_parameters_ptr->interface_description_ptr) {
-                handle->sn_grs_free(resource_ptr->resource_parameters_ptr->interface_description_ptr);
-                resource_ptr->resource_parameters_ptr->interface_description_ptr = 0;
-            }
+            if (!resource_ptr->is_put) {
+                if (resource_ptr->resource_parameters_ptr->interface_description_ptr) {
+                    handle->sn_grs_free(resource_ptr->resource_parameters_ptr->interface_description_ptr);
+                    resource_ptr->resource_parameters_ptr->interface_description_ptr = 0;
+                }
 
-            if (resource_ptr->resource_parameters_ptr->resource_type_ptr) {
-                handle->sn_grs_free(resource_ptr->resource_parameters_ptr->resource_type_ptr);
-                resource_ptr->resource_parameters_ptr->resource_type_ptr = 0;
+                if (resource_ptr->resource_parameters_ptr->resource_type_ptr) {
+                    handle->sn_grs_free(resource_ptr->resource_parameters_ptr->resource_type_ptr);
+                    resource_ptr->resource_parameters_ptr->resource_type_ptr = 0;
+                }
             }
 
             /* Todo: aobs not supported ATM - needs fixing */
@@ -964,13 +992,15 @@ static int8_t sn_grs_resource_info_free(struct grs_s *handle, sn_nsdl_resource_i
             resource_ptr->resource_parameters_ptr = 0;
         }
 
-        if (resource_ptr->path) {
-            handle->sn_grs_free(resource_ptr->path);
-            resource_ptr->path = 0;
-        }
-        if (resource_ptr->resource) {
-            handle->sn_grs_free(resource_ptr->resource);
-            resource_ptr->resource = 0;
+        if (!resource_ptr->is_put) {
+            if (resource_ptr->path) {
+                handle->sn_grs_free(resource_ptr->path);
+                resource_ptr->path = 0;
+            }
+            if (resource_ptr->resource) {
+                handle->sn_grs_free(resource_ptr->resource);
+                resource_ptr->resource = 0;
+            }
         }
         handle->sn_grs_free(resource_ptr);
 

@@ -199,6 +199,11 @@ extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_in
     return sn_nsdl_stub.expectedInt8;
 }
 
+extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res)
+{
+    return sn_nsdl_stub.expectedInt8;
+}
+
 extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
 {
     return sn_nsdl_stub.expectedInt8;

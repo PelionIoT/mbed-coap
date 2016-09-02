@@ -171,41 +171,31 @@ typedef enum sn_coap_status_ {
  * \brief Structure for CoAP Options
  */
 typedef struct sn_coap_options_list_ {
-
-    uint32_t    max_age;            /**< Value in seconds (default is 60) */
+    uint8_t     etag_len;           /**< 1-8 bytes. Repeatable */
+    uint8_t     size1_len;         /**< 0-4 bytes. */
+    uint8_t     size2_len;         /**< 0-4 bytes. */
 
     uint16_t    proxy_uri_len;      /**< 1-1034 bytes. */
-    uint8_t    *proxy_uri_ptr;      /**< Must be set to NULL if not used */
-
-    uint8_t     etag_len;           /**< 1-8 bytes. Repeatable */
-    uint8_t    *etag_ptr;           /**< Must be set to NULL if not used */
-
     uint16_t    uri_host_len;       /**< 1-255 bytes. */
-    uint8_t    *uri_host_ptr;       /**< Must be set to NULL if not used */
-
     uint16_t    location_path_len;  /**< 0-255 bytes. Repeatable */
-    uint8_t    *location_path_ptr;  /**< Must be set to NULL if not used */
-
-    int32_t     uri_port;           /**< Value 0-65535. -1 if not used */
-
     uint16_t    location_query_len; /**< 0-255 bytes. Repeatable */
-    uint8_t    *location_query_ptr; /**< Must be set to NULL if not used */
-
-    int32_t     observe;            /**< Value 0-0xffffff. -1 if not used */
+    uint16_t    uri_query_len;      /**< 1-255 bytes. Repeatable */
 
     sn_coap_content_format_e accept; /**< Value 0-65535. COAP_CT_NONE if not used */
 
-    uint16_t    uri_query_len;      /**< 1-255 bytes. Repeatable */
-    uint8_t    *uri_query_ptr;      /**< Must be set to NULL if not used */
-
+    uint32_t    max_age;            /**< Value in seconds (default is 60) */
+    int32_t     uri_port;           /**< Value 0-65535. -1 if not used */
+    int32_t     observe;            /**< Value 0-0xffffff. -1 if not used */
     int32_t     block1;             /**< Value 0-0xffffff. -1 if not used. Not for user */
-
     int32_t     block2;             /**< Value 0-0xffffff. -1 if not used. Not for user */
 
-    uint8_t     size1_len;         /**< 0-4 bytes. */
+    uint8_t    *proxy_uri_ptr;      /**< Must be set to NULL if not used */
+    uint8_t    *etag_ptr;           /**< Must be set to NULL if not used */
+    uint8_t    *uri_host_ptr;       /**< Must be set to NULL if not used */
+    uint8_t    *location_path_ptr;  /**< Must be set to NULL if not used */
+    uint8_t    *location_query_ptr; /**< Must be set to NULL if not used */
+    uint8_t    *uri_query_ptr;      /**< Must be set to NULL if not used */
     uint8_t    *size1_ptr;         /**< Not for User */
-
-    uint8_t     size2_len;         /**< 0-4 bytes. */
     uint8_t    *size2_ptr;         /**< Not for User */
 } sn_coap_options_list_s;
 
@@ -218,39 +208,24 @@ typedef struct sn_coap_options_list_ {
  * \brief Main CoAP message struct
  */
 typedef struct sn_coap_hdr_ {
-    sn_coap_status_e        coap_status;        /**< Used for telling to User special cases when parsing message */
+    uint8_t                 token_len;          /**< 1-8 bytes. */
 
-    /* * * * * * * * * * * */
-    /* * * * Header  * * * */
-    /* * * * * * * * * * * */
+    sn_coap_status_e        coap_status;        /**< Used for telling to User special cases when parsing message */
+    sn_coap_msg_code_e      msg_code;           /**< Empty: 0; Requests: 1-31; Responses: 64-191 */
 
     sn_coap_msg_type_e      msg_type;           /**< Confirmable, Non-Confirmable, Acknowledgement or Reset */
-    sn_coap_msg_code_e      msg_code;           /**< Empty: 0; Requests: 1-31; Responses: 64-191 */
-    uint16_t                msg_id;             /**< Message ID. Parser sets parsed message ID, builder sets message ID of built coap message */
-
-    /* * * * * * * * * * * */
-    /* * * * Options * * * */
-    /* * * * * * * * * * * */
-
-    /* Here are most often used Options */
-
-    uint16_t                uri_path_len;       /**< 0-255 bytes. Repeatable. */
-    uint8_t                *uri_path_ptr;       /**< Must be set to NULL if not used. E.g: temp1/temp2 */
-
-    uint8_t                 token_len;          /**< 1-8 bytes. */
-    uint8_t                *token_ptr;          /**< Must be set to NULL if not used */
-
     sn_coap_content_format_e content_format;    /**< Set to COAP_CT_NONE if not used */
+
+    uint16_t                msg_id;             /**< Message ID. Parser sets parsed message ID, builder sets message ID of built coap message */
+    uint16_t                uri_path_len;       /**< 0-255 bytes. Repeatable. */
+    uint16_t                payload_len;        /**< Must be set to zero if not used */
+
+    uint8_t                *token_ptr;          /**< Must be set to NULL if not used */
+    uint8_t                *uri_path_ptr;       /**< Must be set to NULL if not used. E.g: temp1/temp2 */
+    uint8_t                *payload_ptr;        /**< Must be set to NULL if not used */
 
     /* Here are not so often used Options */
     sn_coap_options_list_s *options_list_ptr;   /**< Must be set to NULL if not used */
-
-    /* * * * * * * * * * * */
-    /* * * * Payload * * * */
-    /* * * * * * * * * * * */
-
-    uint16_t                payload_len;        /**< Must be set to zero if not used */
-    uint8_t                *payload_ptr;        /**< Must be set to NULL if not used */
 } sn_coap_hdr_s;
 
 /* * * * * * * * * * * * * * * * * * * * * * */

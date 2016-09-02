@@ -282,12 +282,19 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
     header.uri_path_ptr[285] = '1';
     header.uri_path_ptr[170] = '/';
 
+    header.content_format = sn_coap_content_format_e(0xFFFF22);
+    CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
+
     header.content_format = COAP_CT_TEXT_PLAIN;
     CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 304);
 
     sn_coap_options_list_s opt_list;
     memset(&opt_list, 0, sizeof(sn_coap_options_list_s));
     header.options_list_ptr = &opt_list;
+
+    header.options_list_ptr->accept = sn_coap_content_format_e(0xFFFF22);
+    CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
+
     header.options_list_ptr->accept = COAP_CT_TEXT_PLAIN;
     CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 17);
 
@@ -324,6 +331,9 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
     CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
 
     header.options_list_ptr->location_path_len = 27;
+    header.options_list_ptr->uri_port = 0xffff22;
+    CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
+
     header.options_list_ptr->uri_port = 6;
     CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 383);
 
@@ -339,15 +349,24 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
     header.options_list_ptr->uri_query_len = 0;
     CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
 
-    header.options_list_ptr->observe = 1;
-
     header.options_list_ptr->uri_query_len = 4;
     header.options_list_ptr->block2 = -1;
+    header.options_list_ptr->observe = 0xFFFFFF22;
+    CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
+
+    header.options_list_ptr->observe = 1;
     CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 417);
 
-    header.options_list_ptr->block2 = 267;
+    header.options_list_ptr->block2 = 0xFFFFFF22;
     header.options_list_ptr->block1 = -1;
+    CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 0);
+
+    header.options_list_ptr->block2 = 267;
     CHECK(sn_coap_builder_calc_needed_packet_data_size(&header) == 419);
+
+    header.options_list_ptr->block1 = 0xFFFFFF22;
+    header.payload_len = 1;
+    CHECK(0 == sn_coap_builder_calc_needed_packet_data_size(&header));
 
     header.options_list_ptr->block1 = 267;
     header.payload_len = 1;
@@ -422,7 +441,7 @@ TEST(libCoap_builder, sn_coap_builder_options_build_add_zero_length_option)
     sn_coap_header_check_stub.expectedInt8 = 0;
     coap_header.options_list_ptr->observe = 1;
     int16_t val = sn_coap_builder(buffer, &coap_header);
-    CHECK(val == 9);
+    CHECK(val == 15);
 
     free(coap_header.options_list_ptr->proxy_uri_ptr);
 }
@@ -436,11 +455,11 @@ TEST(libCoap_builder, sn_coap_builder_options_get_option_part_position)
     header.options_list_ptr = &opt_list;
     header.options_list_ptr->accept = COAP_CT_TEXT_PLAIN;
     uint16_t val = sn_coap_builder(buffer, &header);
-    CHECK(val == 24);
+    CHECK(val == 11);
 
     header.options_list_ptr->accept = COAP_CT_TEXT_PLAIN;
     val = sn_coap_builder(buffer, &header);
-    CHECK(val == 42);
+    CHECK(val == 11);
 }
 
 TEST(libCoap_builder, sn_coap_builder_payload_build)
@@ -454,7 +473,7 @@ TEST(libCoap_builder, sn_coap_builder_payload_build)
     header.options_list_ptr = &opt_list;
     header.options_list_ptr->accept = COAP_CT_TEXT_PLAIN;
     uint16_t val = sn_coap_builder(buffer, &header);
-    CHECK(val == 30);
+    CHECK(val == 17);
 
     free(header.payload_ptr);
 }

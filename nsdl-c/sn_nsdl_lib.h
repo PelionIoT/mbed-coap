@@ -72,34 +72,30 @@ typedef enum sn_nsdl_registration_mode_ {
 
 typedef struct omalw_certificate_list_ {
     uint8_t certificate_chain_len;
-    uint8_t *certificate_ptr[2];
-    uint16_t certificate_len[2];
-    uint8_t *own_private_key_ptr;
     uint16_t own_private_key_len;
+    uint16_t certificate_len[2];
+    uint8_t *certificate_ptr[2];
+    uint8_t *own_private_key_ptr;
 } omalw_certificate_list_t;
 
 /**
  * \brief Endpoint registration parameters
  */
 typedef struct sn_nsdl_ep_parameters_ {
-    uint8_t     *endpoint_name_ptr;                     /**< Endpoint name */
     uint8_t     endpoint_name_len;
-
-    uint8_t     *domain_name_ptr;                       /**< Domain to register. If null, NSP uses default domain */
     uint8_t     domain_name_len;
-
-    uint8_t     *type_ptr;                              /**< Endpoint type */
     uint8_t     type_len;
-
-    uint8_t     *lifetime_ptr;                          /**< Endpoint lifetime in seconds. eg. "1200" = 1200 seconds */
     uint8_t     lifetime_len;
+    uint8_t     location_len;
 
     sn_nsdl_registration_mode_t ds_register_mode;       /**< Defines registration mode */
     sn_nsdl_oma_binding_and_mode_t binding_and_mode;    /**< Defines endpoints binding and mode */
 
+    uint8_t     *endpoint_name_ptr;                     /**< Endpoint name */
+    uint8_t     *domain_name_ptr;                       /**< Domain to register. If null, NSP uses default domain */
+    uint8_t     *type_ptr;                              /**< Endpoint type */
+    uint8_t     *lifetime_ptr;                          /**< Endpoint lifetime in seconds. eg. "1200" = 1200 seconds */
     uint8_t     *location_ptr;                          /**< Endpoint location in server, optional parameter,default is NULL */
-    uint8_t     location_len;
-
 } sn_nsdl_ep_parameters_s;
 
 /**
@@ -154,7 +150,7 @@ typedef enum sn_nsdl_oma_device_error_ {
  * \brief Defines the resource mode
  */
 typedef enum sn_nsdl_resource_mode_ {
-    SN_GRS_STATIC,                      /**< Static resources have some value that doesn't change */
+    SN_GRS_STATIC = 0,                  /**< Static resources have some value that doesn't change */
     SN_GRS_DYNAMIC,                     /**< Dynamic resources are handled in application. Therefore one must give function callback pointer to them */
     SN_GRS_DIRECTORY                    /**< Directory resources are unused and unsupported */
 } sn_nsdl_resource_mode_e;
@@ -164,18 +160,17 @@ typedef enum sn_nsdl_resource_mode_ {
  */
 typedef struct sn_nsdl_resource_parameters_ {
     uint8_t     *resource_type_ptr;
-    uint16_t    resource_type_len;
-
     uint8_t     *interface_description_ptr;
+
+    uint16_t    resource_type_len;
     uint16_t    interface_description_len;
 
     uint16_t    coap_content_type;
+//    uint8_t     mime_content_type;
 
-    uint8_t     mime_content_type;
+    unsigned int     observable:2;
 
-    uint8_t     observable;
-
-    uint8_t     registered;
+    unsigned int     registered:2;
 
 } sn_nsdl_resource_parameters_s;
 
@@ -185,23 +180,27 @@ typedef struct sn_nsdl_resource_parameters_ {
 typedef struct sn_nsdl_resource_info_ {
     sn_nsdl_resource_parameters_s   *resource_parameters_ptr;
 
-    sn_nsdl_resource_mode_e         mode;                       /**< STATIC etc.. */
-
-    uint16_t                        pathlen;                    /**< Address */
-    uint8_t                         *path;
-
-    uint16_t                        resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
-    uint8_t                         *resource;                  /**< NULL if dynamic resource */
-
-    sn_grs_resource_acl_e           access;
-
     uint8_t (*sn_grs_dyn_res_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);
 
-    ns_list_link_t                  link;
+    uint8_t                         *path;
 
-    uint8_t                         publish_uri;
+    uint8_t                         *resource;                  /**< NULL if dynamic resource */
+
+    uint16_t                        pathlen;                    /**< Address */
+
+    uint16_t                        resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
+
+    unsigned int                    mode:2;                     /**< STATIC etc.. */
+
+    unsigned int                    access:4;
+
+    bool                            publish_uri:1;
+
+    bool                            is_put:1; //if true, pointers are assumed to be consts (never freed). Note: resource_parameters_ptr is always freed!
 
     uint8_t                         external_memory_block;
+
+    ns_list_link_t                  link;
 
 } sn_nsdl_resource_info_s;
 
@@ -228,9 +227,11 @@ typedef struct sn_nsdl_oma_server_info_ {
  */
 typedef struct sn_nsdl_bs_ep_info_ {
     void (*oma_bs_status_cb)(sn_nsdl_oma_server_info_t *);  /**< Callback for OMA bootstrap status */
-    sn_nsdl_oma_device_t *device_object;                    /**< OMA LWM2M mandatory device resources */
+
     void (*oma_bs_status_cb_handle)(sn_nsdl_oma_server_info_t *,
                                     struct nsdl_s *);  /**< Callback for OMA bootstrap status with nsdl handle */
+
+    sn_nsdl_oma_device_t *device_object;                    /**< OMA LWM2M mandatory device resources */
 } sn_nsdl_bs_ep_info_t;
 
 
@@ -455,6 +456,25 @@ extern int8_t sn_nsdl_exec(struct nsdl_s *handle, uint32_t time);
  * \return  -4  List adding failure
  */
 extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
+
+/**
+ * \fn  extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
+ *
+ * \brief Resource putting function.
+ *
+ * Used to put a static or dynamic CoAP resource without creating copy of it.
+ * NOTE: Remember that only resource will be owned, not data that it contains
+ *
+ * \param   *res    Pointer to a structure of type sn_nsdl_resource_info_t that contains the information
+ *     about the resource.
+ *
+ * \return  0   Success
+ * \return  -1  Failure
+ * \return  -2  Resource already exists
+ * \return  -3  Invalid path
+ * \return  -4  List adding failure
+ */
+extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
 
 /**
  * \fn extern int8_t sn_nsdl_update_resource(sn_nsdl_resource_info_s *res)

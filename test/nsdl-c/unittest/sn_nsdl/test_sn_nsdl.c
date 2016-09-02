@@ -1413,7 +1413,7 @@ bool test_sn_nsdl_process_coap()
         return false;
     }
     sn_grs_stub.retNull = false;
-    retCounter = 5;
+    retCounter = 4;
     sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
     memset(sn_grs_stub.expectedGrs,0, sizeof(struct grs_s));
     struct nsdl_s* handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
@@ -1430,6 +1430,7 @@ bool test_sn_nsdl_process_coap()
     sn_grs_stub.expectedGrs->coap->sn_coap_protocol_malloc = myMalloc;
     sn_grs_stub.expectedGrs->coap->sn_coap_rx_callback = nsdl_rx_callback;
     sn_grs_stub.expectedGrs->coap->sn_coap_tx_callback = nsdl_tx_callback;
+    sn_grs_stub.expectedGrs->coap->sn_coap_block_data_size = 1;
 
     sn_coap_protocol_stub.expectedHeader->coap_status = 2; // != 0 && != 6
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, NULL) ){
@@ -2071,7 +2072,7 @@ bool test_sn_nsdl_process_coap()
     sn_coap_protocol_stub.expectedHeader->payload_len = 11;
     sn_coap_protocol_stub.expectedHeader->payload_ptr = payload_ptr;
 
-    retCounter = 1;
+    retCounter = 0;
     if( SN_NSDL_SUCCESS != sn_nsdl_process_coap(handle, NULL, 0, addr) ){
         return false;
     }
@@ -2768,6 +2769,25 @@ bool test_sn_nsdl_create_resource()
     struct nsdl_s* handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
 
     if( 0 != sn_nsdl_create_resource(handle, NULL) ){
+        return false;
+    }
+
+    sn_nsdl_destroy(handle);
+    return true;
+}
+
+bool test_sn_nsdl_put_resource()
+{
+    if( SN_NSDL_FAILURE != sn_nsdl_put_resource(NULL, NULL) ){
+        return false;
+    }
+    sn_grs_stub.retNull = false;
+    retCounter = 4;
+    sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
+    memset(sn_grs_stub.expectedGrs,0, sizeof(struct grs_s));
+    struct nsdl_s* handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
+
+    if( 0 != sn_nsdl_put_resource(handle, NULL) ){
         return false;
     }
 

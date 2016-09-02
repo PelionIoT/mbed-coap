@@ -27,6 +27,14 @@ void myFree(void* ptr){
 
 bool test_sn_coap_parser()
 {
+    if( sn_coap_parser_alloc_message(NULL) ) {
+        return false;
+    }
+
+    if( sn_coap_parser_alloc_options(NULL, NULL) ) {
+        return false;
+    }
+
     retCounter = 0;
     bool ret = true;
     uint8_t* ptr = (uint8_t*)malloc(20);
@@ -368,7 +376,7 @@ bool test_sn_coap_parser_options_parsing_switches()
                                                                                                 sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
                                                                                             ptr[5] = 209; //13 | 1
                                                                                             ptr[6] = 1; //1 -> 14
-                                                                                            retCounter = 3;
+                                                                                            retCounter = 2;
                                                                                             hdr = sn_coap_parser(coap, 8, ptr, ver);
                                                                                             if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
                                                                                                 ret = false;
@@ -377,7 +385,7 @@ bool test_sn_coap_parser_options_parsing_switches()
                                                                                                     sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
                                                                                                 ptr[5] = 210; //13 | 2
                                                                                                 ptr[6] = 1; //1 -> 14
-                                                                                                retCounter = 4;
+                                                                                                retCounter = 3;
                                                                                                 hdr = sn_coap_parser(coap, 6, ptr, ver);
                                                                                                 if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
                                                                                                     ret = false;
@@ -452,7 +460,7 @@ bool test_sn_coap_parser_options_parsing_switches()
                                                                                                                                     sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
                                                                                                                                 ptr[5] = 209; //13 | 1
                                                                                                                                 ptr[6] = 10;
-                                                                                                                                retCounter = 3;
+                                                                                                                                retCounter = 2;
                                                                                                                                 hdr = sn_coap_parser(coap, 8, ptr, ver);
                                                                                                                                 if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
                                                                                                                                     ret = false;
@@ -461,7 +469,7 @@ bool test_sn_coap_parser_options_parsing_switches()
                                                                                                                                         sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
                                                                                                                                     ptr[5] = 210; //13 | 2
                                                                                                                                     ptr[6] = 10;
-                                                                                                                                    retCounter = 4;
+                                                                                                                                    retCounter = 3;
                                                                                                                                     hdr = sn_coap_parser(coap, 8, ptr, ver);
                                                                                                                                     if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
                                                                                                                                         ret = false;
@@ -479,7 +487,7 @@ bool test_sn_coap_parser_options_parsing_switches()
                                                                                                                                                 sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
                                                                                                                                             ptr[5] = 209; //13 | 1
                                                                                                                                             ptr[6] = 14;
-                                                                                                                                            retCounter = 3;
+                                                                                                                                            retCounter = 2;
                                                                                                                                             hdr = sn_coap_parser(coap, 8, ptr, ver);
                                                                                                                                             if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
                                                                                                                                                 ret = false;
@@ -488,7 +496,7 @@ bool test_sn_coap_parser_options_parsing_switches()
                                                                                                                                                     sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
                                                                                                                                                 ptr[5] = 210; //13 | 2
                                                                                                                                                 ptr[6] = 14;
-                                                                                                                                                retCounter = 4;
+                                                                                                                                                retCounter = 3;
                                                                                                                                                 hdr = sn_coap_parser(coap, 8, ptr, ver);
                                                                                                                                                 if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
                                                                                                                                                     ret = false;
@@ -1007,6 +1015,8 @@ bool test_sn_coap_parser_release_allocated_coap_msg_mem()
     ptr->options_list_ptr->location_query_ptr = (uint8_t*)malloc(sizeof(uint8_t));
     ptr->options_list_ptr->observe = 0;
     ptr->options_list_ptr->uri_query_ptr = (uint8_t*)malloc(sizeof(uint8_t));
+    ptr->options_list_ptr->size1_ptr = (uint8_t*)malloc(sizeof(uint8_t));
+    ptr->options_list_ptr->size2_ptr = (uint8_t*)malloc(sizeof(uint8_t));
 
     sn_coap_parser_release_allocated_coap_msg_mem( coap, ptr );
 

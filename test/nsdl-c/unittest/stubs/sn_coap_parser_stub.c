@@ -41,6 +41,7 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
     if (freed_coap_msg_ptr != NULL) {
         if (freed_coap_msg_ptr->uri_path_ptr != NULL) {
             free(freed_coap_msg_ptr->uri_path_ptr);
+            freed_coap_msg_ptr->uri_path_ptr = NULL;
         }
 
         if (freed_coap_msg_ptr->token_ptr != NULL) {
