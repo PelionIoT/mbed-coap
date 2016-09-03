@@ -1866,6 +1866,50 @@ int8_t set_NSP_address(struct nsdl_s *handle, uint8_t *NSP_address, uint16_t por
     return SN_NSDL_SUCCESS;
 }
 
+extern int8_t set_NSP_address_2(struct nsdl_s *handle, uint8_t *NSP_address, uint8_t address_length, uint16_t port, sn_nsdl_addr_type_e address_type)
+{
+    /* Check parameters and source pointers */
+    if (!handle || !handle->nsp_address_ptr || !handle->nsp_address_ptr->omalw_address_ptr || !NSP_address) {
+        return SN_NSDL_FAILURE;
+    }
+
+    handle->nsp_address_ptr->omalw_address_ptr->type = address_type;
+    handle->nsp_address_ptr->omalw_server_security = SEC_NOT_SET;
+
+    if (address_type == SN_NSDL_ADDRESS_TYPE_IPV4) {
+        if (handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
+            handle->sn_nsdl_free(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr);
+        }
+
+        handle->nsp_address_ptr->omalw_address_ptr->addr_len = address_length;
+
+        handle->nsp_address_ptr->omalw_address_ptr->addr_ptr = handle->sn_nsdl_alloc(handle->nsp_address_ptr->omalw_address_ptr->addr_len);
+        if (!handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
+            return SN_NSDL_FAILURE;
+        }
+
+        memcpy(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr, NSP_address, handle->nsp_address_ptr->omalw_address_ptr->addr_len);
+        handle->nsp_address_ptr->omalw_address_ptr->port = port;
+    }
+
+    else if (address_type == SN_NSDL_ADDRESS_TYPE_IPV6) {
+        if (handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
+            handle->sn_nsdl_free(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr);
+        }
+
+        handle->nsp_address_ptr->omalw_address_ptr->addr_len = address_length;
+
+        handle->nsp_address_ptr->omalw_address_ptr->addr_ptr = handle->sn_nsdl_alloc(handle->nsp_address_ptr->omalw_address_ptr->addr_len);
+        if (!handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
+            return SN_NSDL_FAILURE;
+        }
+
+        memcpy(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr, NSP_address, handle->nsp_address_ptr->omalw_address_ptr->addr_len);
+        handle->nsp_address_ptr->omalw_address_ptr->port = port;
+    }
+    return SN_NSDL_SUCCESS;
+}
+
 
 static uint8_t sn_nsdl_itoa_len(uint8_t value)
 {
