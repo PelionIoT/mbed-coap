@@ -1876,37 +1876,20 @@ extern int8_t set_NSP_address_2(struct nsdl_s *handle, uint8_t *NSP_address, uin
     handle->nsp_address_ptr->omalw_address_ptr->type = address_type;
     handle->nsp_address_ptr->omalw_server_security = SEC_NOT_SET;
 
-    if (address_type == SN_NSDL_ADDRESS_TYPE_IPV4) {
-        if (handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
-            handle->sn_nsdl_free(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr);
-        }
-
-        handle->nsp_address_ptr->omalw_address_ptr->addr_len = address_length;
-
-        handle->nsp_address_ptr->omalw_address_ptr->addr_ptr = handle->sn_nsdl_alloc(handle->nsp_address_ptr->omalw_address_ptr->addr_len);
-        if (!handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
-            return SN_NSDL_FAILURE;
-        }
-
-        memcpy(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr, NSP_address, handle->nsp_address_ptr->omalw_address_ptr->addr_len);
-        handle->nsp_address_ptr->omalw_address_ptr->port = port;
+    if (handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
+        handle->sn_nsdl_free(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr);
     }
 
-    else if (address_type == SN_NSDL_ADDRESS_TYPE_IPV6) {
-        if (handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
-            handle->sn_nsdl_free(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr);
-        }
+    handle->nsp_address_ptr->omalw_address_ptr->addr_len = address_length;
 
-        handle->nsp_address_ptr->omalw_address_ptr->addr_len = address_length;
-
-        handle->nsp_address_ptr->omalw_address_ptr->addr_ptr = handle->sn_nsdl_alloc(handle->nsp_address_ptr->omalw_address_ptr->addr_len);
-        if (!handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
-            return SN_NSDL_FAILURE;
-        }
-
-        memcpy(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr, NSP_address, handle->nsp_address_ptr->omalw_address_ptr->addr_len);
-        handle->nsp_address_ptr->omalw_address_ptr->port = port;
+    handle->nsp_address_ptr->omalw_address_ptr->addr_ptr = handle->sn_nsdl_alloc(handle->nsp_address_ptr->omalw_address_ptr->addr_len);
+    if (!handle->nsp_address_ptr->omalw_address_ptr->addr_ptr) {
+        return SN_NSDL_FAILURE;
     }
+
+    memcpy(handle->nsp_address_ptr->omalw_address_ptr->addr_ptr, NSP_address, handle->nsp_address_ptr->omalw_address_ptr->addr_len);
+    handle->nsp_address_ptr->omalw_address_ptr->port = port;
+
     return SN_NSDL_SUCCESS;
 }
 
