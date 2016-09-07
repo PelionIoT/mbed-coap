@@ -172,8 +172,8 @@ typedef enum sn_coap_status_ {
  */
 typedef struct sn_coap_options_list_ {
     uint8_t     etag_len;           /**< 1-8 bytes. Repeatable */
-    uint8_t     size1_len;         /**< 0-4 bytes. */
-    uint8_t     size2_len;         /**< 0-4 bytes. */
+    bool        use_size1:1;
+    bool        use_size2:1;
 
     uint16_t    proxy_uri_len;      /**< 1-1034 bytes. */
     uint16_t    uri_host_len;       /**< 1-255 bytes. */
@@ -184,6 +184,8 @@ typedef struct sn_coap_options_list_ {
     sn_coap_content_format_e accept; /**< Value 0-65535. COAP_CT_NONE if not used */
 
     uint32_t    max_age;            /**< Value in seconds (default is 60) */
+    uint32_t    size1;              /**< 0-4 bytes. */
+    uint32_t    size2;              /**< 0-4 bytes. */
     int32_t     uri_port;           /**< Value 0-65535. -1 if not used */
     int32_t     observe;            /**< Value 0-0xffffff. -1 if not used */
     int32_t     block1;             /**< Value 0-0xffffff. -1 if not used. Not for user */
@@ -195,10 +197,7 @@ typedef struct sn_coap_options_list_ {
     uint8_t    *location_path_ptr;  /**< Must be set to NULL if not used */
     uint8_t    *location_query_ptr; /**< Must be set to NULL if not used */
     uint8_t    *uri_query_ptr;      /**< Must be set to NULL if not used */
-    uint8_t    *size1_ptr;         /**< Not for User */
-    uint8_t    *size2_ptr;         /**< Not for User */
 } sn_coap_options_list_s;
-
 
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 /* !!! Main CoAP message struct !!! */

@@ -185,14 +185,6 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
                 handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->uri_query_ptr);
             }
 
-            if (freed_coap_msg_ptr->options_list_ptr->size1_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->size1_ptr);
-            }
-
-            if (freed_coap_msg_ptr->options_list_ptr->size2_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->size2_ptr);
-            }
-
             handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr);
         }
 
@@ -521,42 +513,22 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                 break;
 
             case COAP_OPTION_SIZE1:
-                if ((option_len > 4) || dst_coap_msg_ptr->options_list_ptr->size1_ptr) {
+                if ((option_len > 4) || dst_coap_msg_ptr->options_list_ptr->use_size1) {
                     return -1;
                 }
-                dst_coap_msg_ptr->options_list_ptr->size1_len = option_len;
+                dst_coap_msg_ptr->options_list_ptr->use_size1 = true;
                 (*packet_data_pptr)++;
-
-                if (option_len) {
-                    dst_coap_msg_ptr->options_list_ptr->size1_ptr = handle->sn_coap_protocol_malloc(option_len);
-
-                    if (dst_coap_msg_ptr->options_list_ptr->size1_ptr == NULL) {
-                        return -1;
-                    }
-
-                    memcpy(dst_coap_msg_ptr->options_list_ptr->size1_ptr, *packet_data_pptr, option_len);
-                    (*packet_data_pptr) += option_len;
-                }
+                dst_coap_msg_ptr->options_list_ptr->size1 = sn_coap_parser_options_parse_uint(packet_data_pptr, option_len);
                 break;
 
-        case COAP_OPTION_SIZE2:
-            if ((option_len > 4) || dst_coap_msg_ptr->options_list_ptr->size2_ptr) {
-                return -1;
-            }
-            dst_coap_msg_ptr->options_list_ptr->size2_len = option_len;
-            (*packet_data_pptr)++;
-
-            if (option_len) {
-                dst_coap_msg_ptr->options_list_ptr->size2_ptr = handle->sn_coap_protocol_malloc(option_len);
-
-                if (dst_coap_msg_ptr->options_list_ptr->size2_ptr == NULL) {
+            case COAP_OPTION_SIZE2:
+                if ((option_len > 4) || dst_coap_msg_ptr->options_list_ptr->use_size2) {
                     return -1;
                 }
-
-                memcpy(dst_coap_msg_ptr->options_list_ptr->size2_ptr, *packet_data_pptr, option_len);
-                (*packet_data_pptr) += option_len;
-            }
-            break;
+                dst_coap_msg_ptr->options_list_ptr->use_size2 = true;
+                (*packet_data_pptr)++;
+                dst_coap_msg_ptr->options_list_ptr->size2 = sn_coap_parser_options_parse_uint(packet_data_pptr, option_len);
+                break;
 
             default:
                 return -1;

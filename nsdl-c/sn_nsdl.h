@@ -71,10 +71,10 @@ typedef enum sn_nsdl_addr_type_ {
  * \brief Address structure of Packet data
  */
 typedef struct sn_nsdl_addr_ {
-    uint16_t                port;
-    sn_nsdl_addr_type_e     type;
     uint8_t                 addr_len;
-    uint8_t                *addr_ptr;
+    sn_nsdl_addr_type_e     type;
+    uint16_t                port;
+    uint8_t                 *addr_ptr;
 } sn_nsdl_addr_s;
 
 /**

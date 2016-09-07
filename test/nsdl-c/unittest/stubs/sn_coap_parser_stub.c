@@ -73,9 +73,6 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
                 free(freed_coap_msg_ptr->options_list_ptr->uri_query_ptr);
             }
 
-            if (freed_coap_msg_ptr->options_list_ptr->size1_ptr != NULL) {
-                free(freed_coap_msg_ptr->options_list_ptr->size1_ptr);
-            }
             free(freed_coap_msg_ptr->options_list_ptr);
         }
 

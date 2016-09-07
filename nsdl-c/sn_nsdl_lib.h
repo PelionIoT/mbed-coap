@@ -71,11 +71,11 @@ typedef enum sn_nsdl_registration_mode_ {
 
 
 typedef struct omalw_certificate_list_ {
-    uint8_t certificate_chain_len;
+    uint8_t  certificate_chain_len;
     uint16_t own_private_key_len;
     uint16_t certificate_len[2];
-    uint8_t *certificate_ptr[2];
-    uint8_t *own_private_key_ptr;
+    uint8_t  *certificate_ptr[2];
+    uint8_t  *own_private_key_ptr;
 } omalw_certificate_list_t;
 
 /**
@@ -102,8 +102,8 @@ typedef struct sn_nsdl_ep_parameters_ {
  * \brief For internal use
  */
 typedef struct sn_nsdl_sent_messages_ {
-    uint16_t    msg_id_number;
     uint8_t     message_type;
+    uint16_t    msg_id_number;
     ns_list_link_t  link;
 } sn_nsdl_sent_messages_s;
 
@@ -159,8 +159,8 @@ typedef enum sn_nsdl_resource_mode_ {
  * \brief Resource registration parameters
  */
 typedef struct sn_nsdl_resource_parameters_ {
-    uint8_t     *resource_type_ptr;
-    uint8_t     *interface_description_ptr;
+    unsigned int     observable:2;
+    unsigned int     registered:2;
 
     uint16_t    resource_type_len;
     uint16_t    interface_description_len;
@@ -168,9 +168,8 @@ typedef struct sn_nsdl_resource_parameters_ {
     uint16_t    coap_content_type;
 //    uint8_t     mime_content_type;
 
-    unsigned int     observable:2;
-
-    unsigned int     registered:2;
+    uint8_t     *resource_type_ptr;
+    uint8_t     *interface_description_ptr;
 
 } sn_nsdl_resource_parameters_s;
 
@@ -178,17 +177,6 @@ typedef struct sn_nsdl_resource_parameters_ {
  * \brief Defines parameters for the resource.
  */
 typedef struct sn_nsdl_resource_info_ {
-    sn_nsdl_resource_parameters_s   *resource_parameters_ptr;
-
-    uint8_t (*sn_grs_dyn_res_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);
-
-    uint8_t                         *path;
-
-    uint8_t                         *resource;                  /**< NULL if dynamic resource */
-
-    uint16_t                        pathlen;                    /**< Address */
-
-    uint16_t                        resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
 
     unsigned int                    mode:2;                     /**< STATIC etc.. */
 
@@ -200,8 +188,19 @@ typedef struct sn_nsdl_resource_info_ {
 
     uint8_t                         external_memory_block;
 
-    ns_list_link_t                  link;
+    uint16_t                        pathlen;                    /**< Address */
 
+    uint16_t                        resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
+
+    sn_nsdl_resource_parameters_s   *resource_parameters_ptr;
+
+    uint8_t (*sn_grs_dyn_res_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);
+
+    uint8_t                         *path;
+
+    uint8_t                         *resource;                  /**< NULL if dynamic resource */
+
+    ns_list_link_t                  link;
 } sn_nsdl_resource_info_s;
 
 /**
