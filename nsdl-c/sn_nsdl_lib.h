@@ -647,13 +647,29 @@ extern int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_om
 extern sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code);
 
 /**
+ * \brief Allocates and initializes options list structure
+ *
+ * \param *handle Pointer to library handle
+ * \param *coap_msg_ptr is pointer to CoAP message that will contain the options
+ *
+ * If the message already has a pointer to an option structure, that pointer
+ * is returned, rather than a new structure being allocated.
+ *
+ * \return Return value is pointer to the CoAP options structure.\n
+ *         In following failure cases NULL is returned:\n
+ *          -Failure in given pointer (= NULL)\n
+ *          -Failure in memory allocation (malloc() returns NULL)
+ */
+extern sn_coap_options_list_s *sn_nsdl_alloc_options_list(struct nsdl_s *handle, sn_coap_hdr_s *coap_msg_ptr);
+
+/**
  * \fn void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr)
  *
  * \brief Releases memory of given CoAP message
  *
  *        Note!!! Does not release Payload part
  *
- * \param *handle Pointer to CoAP library handle
+ * \param *handle Pointer to library handle
  *
  * \param *freed_coap_msg_ptr is pointer to released CoAP message
  */

@@ -419,6 +419,7 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
 
     if (src_coap_msg_ptr->options_list_ptr != NULL) {
         /* If option numbers greater than 12 is not used, then jumping is not needed */
+        //TODO: Check if this is really needed! Does it enhance perf? If not -> remove
         if (!src_coap_msg_ptr->options_list_ptr->uri_query_ptr       &&
                 src_coap_msg_ptr->options_list_ptr->accept == COAP_CT_NONE &&
                 !src_coap_msg_ptr->options_list_ptr->location_query_ptr &&
@@ -659,8 +660,10 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
                  &src_coap_msg_ptr->uri_path_len, COAP_OPTION_URI_PATH, &previous_option_number);
 
     /* * * * Build Content-Type option * * * */
-    sn_coap_builder_options_build_add_uint_option(dst_packet_data_pptr, src_coap_msg_ptr->content_format,
-                 COAP_OPTION_CONTENT_FORMAT, &previous_option_number);
+    if (src_coap_msg_ptr->content_format != COAP_CT_NONE) {
+        sn_coap_builder_options_build_add_uint_option(dst_packet_data_pptr, src_coap_msg_ptr->content_format,
+                     COAP_OPTION_CONTENT_FORMAT, &previous_option_number);
+    }
 
     if (src_coap_msg_ptr->options_list_ptr != NULL) {
         /* * * * Build Max-Age option  * * * */
@@ -698,8 +701,10 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
         }
 
         /* * * * Build Size2 option * * * */
-        sn_coap_builder_options_build_add_uint_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->size2,
-                     COAP_OPTION_SIZE2, &previous_option_number);
+        if (src_coap_msg_ptr->options_list_ptr->use_size2) {
+            sn_coap_builder_options_build_add_uint_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->size2,
+                         COAP_OPTION_SIZE2, &previous_option_number);
+        }
 
         /* * * * Build Proxy-Uri option * * * */
         sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->proxy_uri_len,
@@ -707,8 +712,10 @@ static int8_t sn_coap_builder_options_build(uint8_t **dst_packet_data_pptr, sn_c
 
 
         /* * * * Build Size1 option * * * */
-        sn_coap_builder_options_build_add_uint_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->size1,
-                     COAP_OPTION_SIZE1, &previous_option_number);
+        if (src_coap_msg_ptr->options_list_ptr->use_size1) {
+            sn_coap_builder_options_build_add_uint_option(dst_packet_data_pptr, src_coap_msg_ptr->options_list_ptr->size1,
+                         COAP_OPTION_SIZE1, &previous_option_number);
+        }
     }
 
     /* Success */

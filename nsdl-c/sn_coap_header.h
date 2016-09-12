@@ -359,7 +359,7 @@ extern sn_coap_hdr_s *sn_coap_parser_init_message(sn_coap_hdr_s *coap_msg_ptr);
 extern sn_coap_hdr_s *sn_coap_parser_alloc_message(struct coap_s *handle);
 
 /**
- * \brief Allocate an empty options structure
+ * \brief Allocates and initializes options list structure
  *
  * \param *handle Pointer to CoAP library handle
  * \param *coap_msg_ptr is pointer to CoAP message that will contain the options

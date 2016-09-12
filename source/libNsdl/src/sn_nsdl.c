@@ -2510,6 +2510,14 @@ extern sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_
     return sn_coap_build_response(handle->grs->coap, coap_packet_ptr, msg_code);
 }
 
+extern sn_coap_options_list_s *sn_nsdl_alloc_options_list(struct nsdl_s *handle, sn_coap_hdr_s *coap_msg_ptr)
+{
+    if (handle == NULL || coap_msg_ptr == NULL) {
+        return NULL;
+    }
+    return sn_coap_parser_alloc_options(handle->grs->coap, coap_msg_ptr);
+}
+
 extern void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr)
 {
     if (handle == NULL) {
