@@ -149,7 +149,6 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
 
 uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_payload_size)
 {
-    (void)blockwise_payload_size;
     tr_debug("sn_coap_builder_calc_needed_packet_data_size_2");
     uint16_t returned_byte_count = 0;
 
@@ -391,7 +390,15 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
 //            }
 //        }
 //#else
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+        if ((src_coap_msg_ptr->payload_len > blockwise_payload_size) && (blockwise_payload_size > 0)) {
+            returned_byte_count += blockwise_payload_size;
+        } else {
+            returned_byte_count += src_coap_msg_ptr->payload_len;
+        }
+#else
         returned_byte_count += src_coap_msg_ptr->payload_len;
+#endif
         if (src_coap_msg_ptr->payload_len) {
             returned_byte_count ++;    /* For payload marker */
         }
