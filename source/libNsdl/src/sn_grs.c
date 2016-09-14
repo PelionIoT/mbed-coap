@@ -656,6 +656,13 @@ extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *ad
         return SN_NSDL_FAILURE;
     }
 
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+    ret_val = prepare_blockwise_message(handle->grs->coap, coap_hdr_ptr);
+    if( 0 != ret_val ) {
+        return SN_NSDL_FAILURE;
+    }
+#endif
+
     /* Calculate message length */
     message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_hdr_ptr, handle->grs->coap->sn_coap_block_data_size);
     tr_debug("sn_grs_send_coap_message - msg len after calc: [%d]", message_len);

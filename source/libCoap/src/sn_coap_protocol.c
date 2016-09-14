@@ -349,6 +349,45 @@ int8_t sn_coap_protocol_delete_retransmission(struct coap_s *handle, uint16_t ms
     return -2;
 }
 
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+int8_t prepare_blockwise_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr)
+{
+    if ((src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
+        /* * * * Add Blockwise option to send CoAP message * * */
+
+        /* Allocate memory for less used options */
+        if (sn_coap_parser_alloc_options(handle, src_coap_msg_ptr) == NULL) {
+            return -2;
+        }
+
+        /* Check if Request message */
+        if (src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED) {
+            tr_debug("prepare_blockwise_message - block1 request");
+            /* Add Blockwise option, use Block1 because Request payload */
+            src_coap_msg_ptr->options_list_ptr->block1 = 0x08;      /* First block  (BLOCK NUMBER, 4 MSB bits) + More to come (MORE, 1 bit) */
+            src_coap_msg_ptr->options_list_ptr->block1 |= sn_coap_convert_block_size(handle->sn_coap_block_data_size);
+
+            /* Add size1 parameter */
+            tr_debug("prepare_blockwise_message block1 request - payload len %d", src_coap_msg_ptr->payload_len);
+
+            src_coap_msg_ptr->options_list_ptr->use_size1 = true;
+            src_coap_msg_ptr->options_list_ptr->use_size2 = false;
+            src_coap_msg_ptr->options_list_ptr->size1 = src_coap_msg_ptr->payload_len;
+        } else { /* Response message */
+            tr_debug("prepare_blockwise_message - block2 response");
+            /* Add Blockwise option, use Block2 because Response payload */
+            src_coap_msg_ptr->options_list_ptr->block2 = 0x08;      /* First block  (BLOCK NUMBER, 4 MSB bits) + More to come (MORE, 1 bit) */
+            src_coap_msg_ptr->options_list_ptr->block2 |= sn_coap_convert_block_size(handle->sn_coap_block_data_size);
+
+            src_coap_msg_ptr->options_list_ptr->use_size1 = false;
+            src_coap_msg_ptr->options_list_ptr->use_size2 = true;
+            src_coap_msg_ptr->options_list_ptr->size2 = src_coap_msg_ptr->payload_len;
+        }
+    }
+    return 0;
+}
+#endif
+
 int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr,
                                uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param)
 {
@@ -383,37 +422,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
     /* If blockwising needed */
     if ((src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
-        /* * * * Add Blockwise option to send CoAP message * * */
-
-        /* Allocate memory for less used options */
-        if (sn_coap_parser_alloc_options(handle, src_coap_msg_ptr) == NULL) {
-            return -2;
-        }
-
-        /* Check if Request message */
-        if (src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED) {
-            tr_debug("sn_coap_protocol_build - block1 request");
-            /* Add Blockwise option, use Block1 because Request payload */
-            src_coap_msg_ptr->options_list_ptr->block1 = 0x08;      /* First block  (BLOCK NUMBER, 4 MSB bits) + More to come (MORE, 1 bit) */
-            src_coap_msg_ptr->options_list_ptr->block1 |= sn_coap_convert_block_size(handle->sn_coap_block_data_size);
-
-            /* Add size1 parameter */
-            tr_debug("sn_coap_protocol_build block1 request - payload len %d", src_coap_msg_ptr->payload_len);
-
-            src_coap_msg_ptr->options_list_ptr->use_size1 = true;
-            src_coap_msg_ptr->options_list_ptr->use_size2 = false;
-            src_coap_msg_ptr->options_list_ptr->size1 = src_coap_msg_ptr->payload_len;
-        } else { /* Response message */
-            tr_debug("sn_coap_protocol_build - block2 response");
-            /* Add Blockwise option, use Block2 because Response payload */
-            src_coap_msg_ptr->options_list_ptr->block2 = 0x08;      /* First block  (BLOCK NUMBER, 4 MSB bits) + More to come (MORE, 1 bit) */
-            src_coap_msg_ptr->options_list_ptr->block2 |= sn_coap_convert_block_size(handle->sn_coap_block_data_size);
-
-            src_coap_msg_ptr->options_list_ptr->use_size1 = false;
-            src_coap_msg_ptr->options_list_ptr->use_size2 = true;
-            src_coap_msg_ptr->options_list_ptr->size2 = src_coap_msg_ptr->payload_len;
-        }
-
         /* Store original Payload length */
         original_payload_len = src_coap_msg_ptr->payload_len;
         /* Change Payload length of send message because Payload is blockwised */

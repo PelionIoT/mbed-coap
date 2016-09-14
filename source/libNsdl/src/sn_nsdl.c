@@ -1054,6 +1054,13 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
     int32_t     coap_message_len    = 0;
     uint16_t    coap_header_len     = 0;
 
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+    int8_t ret_val = prepare_blockwise_message(handle->grs->coap, coap_header_ptr);
+    if( 0 != ret_val ) {
+        return 0;
+    }
+#endif
+
     coap_message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_header_ptr, handle->grs->coap->sn_coap_block_data_size);
     tr_debug("sn_nsdl_internal_coap_send - msg len after calc: [%d]", coap_message_len);
     if (coap_message_len == 0) {

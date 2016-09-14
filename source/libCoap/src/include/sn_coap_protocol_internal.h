@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+struct sn_coap_hdr_;
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
@@ -113,16 +114,10 @@ extern "C" {
 #define COAP_OPTION_URI_PORT_NONE                   (-1) /**< Internal value to represent no Uri-Port option */
 #define COAP_OPTION_BLOCK_NONE                      (-1) /**< Internal value to represent no Block1/2 option */
 
-/* * * * * * * * * * * * * * */
-/* * * * ENUMERATIONS  * * * */
-/* * * * * * * * * * * * * * */
 
-/* * * * * * * * * * * * * */
-/* * * * STRUCTURES  * * * */
-/* * * * * * * * * * * * * */
-
-
-
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+int8_t prepare_blockwise_message(struct coap_s *handle, struct sn_coap_hdr_ *coap_hdr_ptr);
+#endif
 
 /* Structure which is stored to Linked list for message sending purposes */
 typedef struct coap_send_msg_ {
