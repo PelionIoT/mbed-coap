@@ -165,12 +165,6 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
     /* If else than Reset message because Reset message must be empty */
     if (src_coap_msg_ptr->msg_type != COAP_MSG_TYPE_RESET) {
         uint16_t repeatable_option_size = 0;
-//#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-//        bool is_blockwise_needed = false;
-//        if ((src_coap_msg_ptr->payload_len > blockwise_payload_size) && (blockwise_payload_size > 0)) {
-//            is_blockwise_needed = true;
-//        }
-//#endif
         /* TOKEN - Length is 1-8 bytes */
         if (src_coap_msg_ptr->token_ptr != NULL) {
             if (src_coap_msg_ptr->token_len > 8 || src_coap_msg_ptr->token_len < 1) { /* Check that option is not longer than defined */
@@ -317,26 +311,10 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
                 }
                 returned_byte_count += sn_coap_builder_options_build_add_uint_option(NULL, src_coap_msg_ptr->options_list_ptr->block1, COAP_OPTION_BLOCK1, &tempInt);
             }
-//#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-//            else if (is_blockwise_needed && src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED) {
-//                returned_byte_count += 2;
-//                }
-//#endif
             /* SIZE1 - Length of this option is 0-4 bytes */
             if (src_coap_msg_ptr->options_list_ptr->use_size1) {
                 returned_byte_count += sn_coap_builder_options_build_add_uint_option(NULL, src_coap_msg_ptr->options_list_ptr->size1, COAP_OPTION_SIZE1, &tempInt);
             }
-//#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-//            else if (is_blockwise_needed && src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED){
-//                returned_byte_count++;
-//                if(src_coap_msg_ptr->payload_len < 0xFF) {
-//                    returned_byte_count++;
-//                } else {
-//                    returned_byte_count += 2;
-//                }
-//            }
-//#endif
-
             /* BLOCK 2 - An integer option, up to 3 bytes */
             if (src_coap_msg_ptr->options_list_ptr->block2 != COAP_OPTION_BLOCK_NONE) {
                 if ((uint32_t) src_coap_msg_ptr->options_list_ptr->block2 > 0xffffff) {
@@ -344,52 +322,11 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
                 }
                 returned_byte_count += sn_coap_builder_options_build_add_uint_option(NULL, src_coap_msg_ptr->options_list_ptr->block2, COAP_OPTION_BLOCK2, &tempInt);
             }
-//#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-//            else if (is_blockwise_needed && src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_RESPONSE_CREATED) {
-//                returned_byte_count += 2;
-//            }
-//#endif
-
             /* SIZE2 - Length of this option is 0-4 bytes */
             if (src_coap_msg_ptr->options_list_ptr->use_size2) {
                 returned_byte_count += sn_coap_builder_options_build_add_uint_option(NULL, src_coap_msg_ptr->options_list_ptr->size2, COAP_OPTION_SIZE2, &tempInt);
             }
-//#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-//            else if (is_blockwise_needed && src_coap_msg_ptr->msg_code >= COAP_MSG_CODE_RESPONSE_CREATED){
-//                returned_byte_count++;
-//                if(src_coap_msg_ptr->payload_len < 0xFF) {
-//                    returned_byte_count++;
-//                } else {
-//                    returned_byte_count += 2;
-//                }
-//            }
-//#endif
         }
-//#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-//        /* * * * * PAYLOAD * * * * */
-//        if (is_blockwise_needed) {
-//            /* Two bytes for Block option */
-//            if (src_coap_msg_ptr->msg_code < COAP_MSG_CODE_RESPONSE_CREATED) {
-//                returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 1);
-
-//            } else { /* Response message */
-//                returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 2);
-//            }
-
-//            /* Add maximum payload at one Blockwise message */
-//            returned_byte_count += blockwise_payload_size;
-//            returned_byte_count ++;                 /* For payload marker */
-//        } else {
-//            returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr, 0);
-//            /* Add wanted payload */
-
-//            returned_byte_count += src_coap_msg_ptr->payload_len;
-
-//            if (src_coap_msg_ptr->payload_len) {
-//                returned_byte_count ++;    /* For payload marker */
-//            }
-//        }
-//#else
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
         if ((src_coap_msg_ptr->payload_len > blockwise_payload_size) && (blockwise_payload_size > 0)) {
             returned_byte_count += blockwise_payload_size;
@@ -403,7 +340,6 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_
             returned_byte_count ++;    /* For payload marker */
         }
         returned_byte_count += sn_coap_builder_options_calculate_jump_need(src_coap_msg_ptr/*, 0*/);
-//#endif
     }
     return returned_byte_count;
 }
@@ -433,7 +369,6 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
                 src_coap_msg_ptr->options_list_ptr->block2 == COAP_OPTION_BLOCK_NONE &&
                 src_coap_msg_ptr->options_list_ptr->block1 == COAP_OPTION_BLOCK_NONE &&
                 !src_coap_msg_ptr->options_list_ptr->proxy_uri_ptr      &&
-//                !block_option                                           &&
                 src_coap_msg_ptr->options_list_ptr->max_age == COAP_OPTION_MAX_AGE_DEFAULT &&
                 !src_coap_msg_ptr->options_list_ptr->use_size1          &&
                 !src_coap_msg_ptr->options_list_ptr->use_size2) {
@@ -492,15 +427,13 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
             previous_option_number = (COAP_OPTION_LOCATION_QUERY);
         }
         if (src_coap_msg_ptr->options_list_ptr->block2 != COAP_OPTION_BLOCK_NONE) {
-            if ((COAP_OPTION_BLOCK2 - previous_option_number) > 12 ){ //||
-//                    (block_option == 2 && (COAP_OPTION_BLOCK2 - previous_option_number) > 12)) {
+            if ((COAP_OPTION_BLOCK2 - previous_option_number) > 12 ){
                 needed_space += 1;
             }
             previous_option_number = (COAP_OPTION_BLOCK2);
         }
         if (src_coap_msg_ptr->options_list_ptr->block1 != COAP_OPTION_BLOCK_NONE) {
-            if ((COAP_OPTION_BLOCK1 - previous_option_number) > 12 ){ //||
-//                    (block_option == 1 && (COAP_OPTION_BLOCK1 - previous_option_number) > 12)) {
+            if ((COAP_OPTION_BLOCK1 - previous_option_number) > 12 ){
                 needed_space += 1;
             }
             previous_option_number = (COAP_OPTION_BLOCK1);
@@ -520,8 +453,7 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
             }
             previous_option_number = (COAP_OPTION_PROXY_URI);
         }
-        if (src_coap_msg_ptr->options_list_ptr->use_size1 ) { //||
-//                (block_option == 1 && (COAP_OPTION_SIZE1 - previous_option_number) > 12)) {
+        if (src_coap_msg_ptr->options_list_ptr->use_size1 ) {
             if ((COAP_OPTION_SIZE1 - previous_option_number) > 12) {
                 needed_space += 1;
             }
@@ -537,22 +469,6 @@ static uint8_t sn_coap_builder_options_calculate_jump_need(sn_coap_hdr_s *src_co
         if (src_coap_msg_ptr->content_format != COAP_CT_NONE) {
             previous_option_number = (COAP_OPTION_CONTENT_FORMAT);
         }
-
-//#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-//        if (block_option == 2) {
-//            if ((COAP_OPTION_BLOCK2 - previous_option_number) > 12) {
-//                needed_space += 1;
-//            }
-//            previous_option_number = (COAP_OPTION_BLOCK2);
-//        }
-//        if (block_option == 1) {
-//            if ((COAP_OPTION_BLOCK1 - previous_option_number) > 12) {
-//                needed_space += 1;
-//            }
-//            previous_option_number = (COAP_OPTION_BLOCK1);
-//        }
-
-//#endif
     }
     return needed_space;
 }

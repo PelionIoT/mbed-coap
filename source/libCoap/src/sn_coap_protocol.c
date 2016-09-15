@@ -1791,12 +1791,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 handle->sn_coap_protocol_free(previous_blockwise_msg_ptr);
                 previous_blockwise_msg_ptr = 0;
 
-//                if (src_coap_blockwise_ack_msg_ptr->payload_ptr) {
-
-//                    src_coap_blockwise_ack_msg_ptr->payload_ptr = 0;
-//                    src_coap_blockwise_ack_msg_ptr->payload_len = 0;
-//                }
-
                 /* * * Then build CoAP Acknowledgement message * * */
 
                 if (sn_coap_parser_alloc_options(handle, src_coap_blockwise_ack_msg_ptr) == NULL) {
