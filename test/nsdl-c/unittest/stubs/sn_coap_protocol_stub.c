@@ -83,6 +83,10 @@ void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
 {
 }
 
+int8_t prepare_blockwise_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr)
+{
+    return sn_coap_protocol_stub.expectedInt8;
+}
 
 int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr,
                                uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param)

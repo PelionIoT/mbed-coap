@@ -513,26 +513,25 @@ int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle)
 
 uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
         uint8_t *payload_ptr, uint16_t payload_len,
-        uint8_t *observe_ptr, uint8_t observe_len,
-        sn_coap_msg_type_e message_type, uint8_t content_type)
+        sn_coap_observe_e observe,
+        sn_coap_msg_type_e message_type, sn_coap_content_format_e content_format)
 {
     return sn_nsdl_send_observation_notification_with_uri_path(handle,
                                                                token_ptr,
                                                                token_len,
                                                                payload_ptr,
                                                                payload_len,
-                                                               observe_ptr,
-                                                               observe_len,
+                                                               observe,
                                                                message_type,
-                                                               content_type,
+                                                               content_format,
                                                                NULL,
                                                                0);
 }
 
 uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
         uint8_t *payload_ptr, uint16_t payload_len,
-        uint8_t *observe_ptr, uint8_t observe_len,
-        sn_coap_msg_type_e message_type, uint8_t content_type,
+        sn_coap_observe_e observe,
+        sn_coap_msg_type_e message_type, uint8_t content_format,
         uint8_t *uri_path_ptr, uint16_t uri_path_len)
 {
     sn_coap_hdr_s   *notification_message_ptr;
@@ -571,14 +570,10 @@ uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *hand
     notification_message_ptr->uri_path_ptr = uri_path_ptr;
 
     /* Fill observe */
-    notification_message_ptr->options_list_ptr->observe_len = observe_len;
-    notification_message_ptr->options_list_ptr->observe_ptr = observe_ptr;
+    notification_message_ptr->options_list_ptr->observe = observe;
 
-    /* Fill content type */
-    if (content_type) {
-        notification_message_ptr->content_type_len = 1;
-        notification_message_ptr->content_type_ptr = &content_type;
-    }
+    /* Fill content format */
+    notification_message_ptr->content_format = content_format;
 
     /* Send message */
     if (sn_nsdl_send_coap_message(handle, handle->nsp_address_ptr->omalw_address_ptr, notification_message_ptr) == SN_NSDL_FAILURE) {
@@ -590,9 +585,7 @@ uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *hand
     /* Free memory */
     notification_message_ptr->uri_path_ptr = NULL;
     notification_message_ptr->payload_ptr = NULL;
-    notification_message_ptr->options_list_ptr->observe_ptr = NULL;
     notification_message_ptr->token_ptr = NULL;
-    notification_message_ptr->content_type_ptr = NULL;
 
     sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, notification_message_ptr);
 
@@ -956,59 +949,54 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
         /* process. If ok, call cb function and return. Otherwise send error */
         /* and return failure.                                               */
 
-        if (coap_packet_ptr->content_type_len == 1) { //todo check message type
-            if (*coap_packet_ptr->content_type_ptr == 99) {
-                /* TLV parsing failed. Send response to get non-tlv messages */
-                if (sn_nsdl_process_oma_tlv(handle, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len) == SN_NSDL_FAILURE) {
-                    coap_response_ptr = sn_coap_build_response(handle->grs->coap, coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_ACCEPTABLE);
-                    if (coap_response_ptr) {
-                        sn_nsdl_send_coap_message(handle, src_ptr, coap_response_ptr);
-                        sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_response_ptr);
-                    } else {
-                        sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
-                        return SN_NSDL_FAILURE;
-                    }
+        if (coap_packet_ptr->content_format == 99) { //todo check message type
+            /* TLV parsing failed. Send response to get non-tlv messages */
+            if (sn_nsdl_process_oma_tlv(handle, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len) == SN_NSDL_FAILURE) {
+                coap_response_ptr = sn_coap_build_response(handle->grs->coap, coap_packet_ptr, COAP_MSG_CODE_RESPONSE_NOT_ACCEPTABLE);
+                if (coap_response_ptr) {
+                    sn_nsdl_send_coap_message(handle, src_ptr, coap_response_ptr);
+                    sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_response_ptr);
+                } else {
+                    sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
+                    return SN_NSDL_FAILURE;
                 }
-                /* Success TLV parsing */
-                else {
-                    coap_response_ptr = sn_coap_build_response(handle->grs->coap, coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CREATED);
-                    if (coap_response_ptr) {
-                        sn_nsdl_send_coap_message(handle, src_ptr, coap_response_ptr);
-                        sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_response_ptr);
-
-                    } else {
-                        sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
-                        return SN_NSDL_FAILURE;
-                    }
-                    sn_nsdl_check_oma_bs_status(handle);
-                }
-
-                sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
-                return SN_NSDL_SUCCESS;
             }
+            /* Success TLV parsing */
+            else {
+                coap_response_ptr = sn_coap_build_response(handle->grs->coap, coap_packet_ptr, COAP_MSG_CODE_RESPONSE_CREATED);
+                if (coap_response_ptr) {
+                    sn_nsdl_send_coap_message(handle, src_ptr, coap_response_ptr);
+                    sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_response_ptr);
 
-            /* Non - TLV message */
-            else if (*coap_packet_ptr->content_type_ptr == 97) {
-                sn_grs_process_coap(handle, coap_packet_ptr, src_ptr);
-
-                /* Todo: move this copying to sn_nsdl_check_oma_bs_status(), also from TLV parser */
-                /* Security mode */
-                if (*(coap_packet_ptr->uri_path_ptr + (coap_packet_ptr->uri_path_len - 1)) == '2') {
-                    handle->nsp_address_ptr->omalw_server_security = (omalw_server_security_t)sn_nsdl_atoi(coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
+                } else {
                     sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
+                    return SN_NSDL_FAILURE;
                 }
-
-                /* NSP address */
-                else if (*(coap_packet_ptr->uri_path_ptr + (coap_packet_ptr->uri_path_len - 1)) == '0') {
-                    sn_nsdl_resolve_lwm2m_address(handle, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
-                    sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
-                }
-
                 sn_nsdl_check_oma_bs_status(handle);
-            } else {
-                sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
-                return SN_NSDL_FAILURE;
             }
+
+            sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
+            return SN_NSDL_SUCCESS;
+        }
+
+        /* Non - TLV message */
+        else if (coap_packet_ptr->content_format == 97) {
+            sn_grs_process_coap(handle, coap_packet_ptr, src_ptr);
+
+            /* Todo: move this copying to sn_nsdl_check_oma_bs_status(), also from TLV parser */
+            /* Security mode */
+            if (*(coap_packet_ptr->uri_path_ptr + (coap_packet_ptr->uri_path_len - 1)) == '2') {
+                handle->nsp_address_ptr->omalw_server_security = (omalw_server_security_t)sn_nsdl_atoi(coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
+                sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
+            }
+
+            /* NSP address */
+            else if (*(coap_packet_ptr->uri_path_ptr + (coap_packet_ptr->uri_path_len - 1)) == '0') {
+                sn_nsdl_resolve_lwm2m_address(handle, coap_packet_ptr->payload_ptr, coap_packet_ptr->payload_len);
+                sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
+            }
+
+            sn_nsdl_check_oma_bs_status(handle);
         } else {
             sn_coap_parser_release_allocated_coap_msg_mem(handle->grs->coap, coap_packet_ptr);
             return SN_NSDL_FAILURE;
@@ -1065,6 +1053,13 @@ static uint16_t sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s 
     uint8_t     *coap_message_ptr   = NULL;
     int32_t     coap_message_len    = 0;
     uint16_t    coap_header_len     = 0;
+
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+    int8_t ret_val = prepare_blockwise_message(handle->grs->coap, coap_header_ptr);
+    if( 0 != ret_val ) {
+        return 0;
+    }
+#endif
 
     coap_message_len = sn_coap_builder_calc_needed_packet_data_size_2(coap_header_ptr, handle->grs->coap->sn_coap_block_data_size);
     tr_debug("sn_nsdl_internal_coap_send - msg len after calc: [%d]", coap_message_len);
@@ -2476,6 +2471,15 @@ extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_in
     return sn_grs_create_resource(handle->grs, res);
 }
 
+extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res)
+{
+    if (!handle) {
+        return SN_NSDL_FAILURE;
+    }
+
+    return sn_grs_put_resource(handle->grs, res);
+}
+
 extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
 {
     /* Check parameters */
@@ -2511,6 +2515,14 @@ extern sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_
     }
 
     return sn_coap_build_response(handle->grs->coap, coap_packet_ptr, msg_code);
+}
+
+extern sn_coap_options_list_s *sn_nsdl_alloc_options_list(struct nsdl_s *handle, sn_coap_hdr_s *coap_msg_ptr)
+{
+    if (handle == NULL || coap_msg_ptr == NULL) {
+        return NULL;
+    }
+    return sn_coap_parser_alloc_options(handle->grs->coap, coap_msg_ptr);
 }
 
 extern void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coap_hdr_s *freed_coap_msg_ptr)
