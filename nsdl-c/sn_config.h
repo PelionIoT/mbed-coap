@@ -30,8 +30,9 @@
  * \brief For Message duplication detection
  * Init value for the maximum count of messages to be stored for duplication detection
  * Setting of this value to 0 will disable duplication check, also reduce use of ROM memory
+ * Default is set to 1.
  */
-#undef SN_COAP_DUPLICATION_MAX_MSGS_COUNT   /* 0 */
+#undef SN_COAP_DUPLICATION_MAX_MSGS_COUNT   /* 1 */
 
 /**
  * \def SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
@@ -39,7 +40,6 @@
  * \brief For Message blockwising
  * Init value for the maximum payload size to be sent and received at one blockwise message
  * Setting of this value to 0 will disable this feature, and also reduce use of ROM memory
- * Note: Current Coap implementation supports Blockwise transfers specification version draft-ietf-core-block-03
  * Note: This define is common for both received and sent Blockwise messages
  */
 #undef SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE   /* 0 */ // < Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024
@@ -75,7 +75,7 @@
  * \def SN_COAP_MAX_INCOMING_MESSAGE_SIZE
  *
  * \brief Sets the maximum size (in bytes) that
- * mbed Client will alloe to be handle while
+ * mbed Client will allow to be handled while
  * receiving big payload in blockwise mode.
  * Application can set this value based on their
  * available storage capability.
