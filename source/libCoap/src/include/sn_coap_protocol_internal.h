@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+struct sn_coap_hdr_;
 
 /* * * * * * * * * * * */
 /* * * * DEFINES * * * */
@@ -40,8 +41,27 @@ extern "C" {
 #define ENABLE_RESENDINGS                               1   /**< Enable / Disable resending from library in building */
 
 #define SN_COAP_RESENDING_MAX_COUNT                     3   /**< Default number of re-sendings  */
+
+#ifdef YOTTA_CFG_COAP_RESENDING_QUEUE_SIZE_MSGS
+#define SN_COAP_RESENDING_QUEUE_SIZE_MSGS YOTTA_CFG_COAP_RESENDING_QUEUE_SIZE_MSGS
+#elif defined MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_MSGS
+#define SN_COAP_RESENDING_QUEUE_SIZE_MSGS MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_MSGS
+#endif
+
+#ifndef SN_COAP_RESENDING_QUEUE_SIZE_MSGS
 #define SN_COAP_RESENDING_QUEUE_SIZE_MSGS               2   /**< Default re-sending queue size - defines how many messages can be stored. Setting this to 0 disables feature */
+#endif
+
+#ifdef YOTTA_CFG_COAP_RESENDING_QUEUE_SIZE_BYTES
+#define SN_COAP_RESENDING_QUEUE_SIZE_BYTES YOTTA_CFG_COAP_RESENDING_QUEUE_SIZE_BYTES
+#elif defined MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_BYTES
+#define SN_COAP_RESENDING_QUEUE_SIZE_BYTES MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_BYTES
+#endif
+
+#ifndef SN_COAP_RESENDING_QUEUE_SIZE_BYTES
 #define SN_COAP_RESENDING_QUEUE_SIZE_BYTES              0   /**< Default re-sending queue size - defines size of the re-sending buffer. Setting this to 0 disables feature */
+#endif
+
 #define DEFAULT_RESPONSE_TIMEOUT                        10  /**< Default re-sending timeout as seconds */
 
 /* These parameters sets maximum values application can set with API */
@@ -108,17 +128,15 @@ extern "C" {
 #define SN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE UINT16_MAX
 #endif
 
-
-/* * * * * * * * * * * * * * */
-/* * * * ENUMERATIONS  * * * */
-/* * * * * * * * * * * * * * */
-
-/* * * * * * * * * * * * * */
-/* * * * STRUCTURES  * * * */
-/* * * * * * * * * * * * * */
+/* * For Option handling * */
+#define COAP_OPTION_MAX_AGE_DEFAULT                 60 /**< Default value of Max-Age if option not present */
+#define COAP_OPTION_URI_PORT_NONE                   (-1) /**< Internal value to represent no Uri-Port option */
+#define COAP_OPTION_BLOCK_NONE                      (-1) /**< Internal value to represent no Block1/2 option */
 
 
-
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+int8_t prepare_blockwise_message(struct coap_s *handle, struct sn_coap_hdr_ *coap_hdr_ptr);
+#endif
 
 /* Structure which is stored to Linked list for message sending purposes */
 typedef struct coap_send_msg_ {
