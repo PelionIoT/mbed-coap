@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "CppUTest/TestHarness.h"
 #include <string.h>
 #include <math.h>
@@ -27,8 +28,6 @@
 #include "sn_coap_parser_stub.h"
 #include "sn_coap_header_check_stub.h"
 
-//For testing all the compilation flags
-#define SN_COAP_DUPLICATION_MAX_MSGS_COUNT 1
 
 int retCounter = 0;
 static coap_s *coap_handle = NULL;

@@ -12,6 +12,6 @@ TEST_SRC_FILES = \
         ../stubs/sn_coap_header_check_stub.c \
         ../stubs/ns_list_stub.c \
 
-include ../MakefileWorker.mk
-
 CPPUTESTFLAGS += -DSN_COAP_DUPLICATION_MAX_MSGS_COUNT=4 -DYOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE=16 -DENABLE_RESENDINGS=1 -DSN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE=65535
+
+include ../MakefileWorker.mk
