@@ -564,6 +564,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     retCounter = 3;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
     CHECK( COAP_STATUS_PARSER_DUPLICATED_MSG == ret->coap_status );
 
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
