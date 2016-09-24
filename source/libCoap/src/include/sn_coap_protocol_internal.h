@@ -26,6 +26,7 @@
 
 #include "ns_list.h"
 #include "sn_coap_header_internal.h"
+#include "sn_config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,7 +101,6 @@ struct sn_coap_hdr_;
 
 /* Init value for the maximum payload size to be sent and received at one blockwise message                         */
 /* Setting of this value to 0 will disable this feature, and also reduce use of ROM memory                          */
-/* Note: Current Coap implementation supports Blockwise transfers specification version draft-ietf-core-block-03    */
 /* Note: This define is common for both received and sent Blockwise messages                                        */
 
 #ifdef YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
