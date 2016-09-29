@@ -450,7 +450,6 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     retCounter = 1;
     struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
-
     sn_nsdl_addr_s* addr = (sn_nsdl_addr_s*)malloc(sizeof(sn_nsdl_addr_s));
     memset(addr, 0, sizeof(sn_nsdl_addr_s));
 
@@ -582,7 +581,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     memset(list, 0, sizeof(sn_coap_options_list_s));
     sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
     sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 1;
-    sn_coap_parser_stub.expectedHeader->msg_id = 4;
+    sn_coap_parser_stub.expectedHeader->msg_id = 5;
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
     sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
     payload = (uint8_t*)malloc(17);

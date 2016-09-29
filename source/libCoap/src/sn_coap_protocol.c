@@ -610,29 +610,33 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     /* * * * Manage received CoAP message duplicate detection  * * * */
 
     /* If no message duplication detected */
-    if (sn_coap_protocol_linked_list_duplication_info_search(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id) == -1) {
-        /* * * No Message duplication: Store received message for detecting later duplication * * */
+    if (returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE ||
+            returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE) {
 
-        /* Get count of stored duplication messages */
-        uint16_t stored_duplication_msgs_count = handle->count_duplication_msgs;
+        if (sn_coap_protocol_linked_list_duplication_info_search(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id) == -1) {
+            /* * * No Message duplication: Store received message for detecting later duplication * * */
 
-        /* Check if there is no room to store message for duplication detection purposes */
-        if (stored_duplication_msgs_count >= handle->sn_coap_duplication_buffer_size) {
-            /* Get oldest stored duplication message */
-            coap_duplication_info_s *stored_duplication_info_ptr = ns_list_get_first(&handle->linked_list_duplication_msgs);
+            /* Get count of stored duplication messages */
+            uint16_t stored_duplication_msgs_count = handle->count_duplication_msgs;
 
-            /* Remove oldest stored duplication message for getting room for new duplication message */
-            sn_coap_protocol_linked_list_duplication_info_remove(handle, stored_duplication_info_ptr->addr_ptr, stored_duplication_info_ptr->port, stored_duplication_info_ptr->msg_id);
+            /* Check if there is no room to store message for duplication detection purposes */
+            if (stored_duplication_msgs_count >= handle->sn_coap_duplication_buffer_size) {
+                /* Get oldest stored duplication message */
+                coap_duplication_info_s *stored_duplication_info_ptr = ns_list_get_first(&handle->linked_list_duplication_msgs);
+
+                /* Remove oldest stored duplication message for getting room for new duplication message */
+                sn_coap_protocol_linked_list_duplication_info_remove(handle, stored_duplication_info_ptr->addr_ptr, stored_duplication_info_ptr->port, stored_duplication_info_ptr->msg_id);
+            }
+
+            /* Store Duplication info to Linked list */
+            sn_coap_protocol_linked_list_duplication_info_store(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id);
+        } else { /* * * Message duplication detected * * */
+            /* Set returned status to User */
+            returned_dst_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_DUPLICATED_MSG;
+            // todo: send ACK to confirmable messages
+            /* Because duplicate message, return with coap_status set */
+            return returned_dst_coap_msg_ptr;
         }
-
-        /* Store Duplication info to Linked list */
-        sn_coap_protocol_linked_list_duplication_info_store(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id);
-    } else { /* * * Message duplication detected * * */
-        /* Set returned status to User */
-        returned_dst_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_DUPLICATED_MSG;
-
-        /* Because duplicate message, return with coap_status set */
-        return returned_dst_coap_msg_ptr;
     }
 #endif
 
