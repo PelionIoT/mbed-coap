@@ -21,7 +21,6 @@
 extern "C" {
 #endif
 
-
 #define SN_GRS_RESOURCE_ALREADY_EXISTS  -2
 #define SN_GRS_INVALID_PATH             -3
 #define SN_GRS_LIST_ADDING_FAILURE      -4
