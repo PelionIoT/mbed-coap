@@ -34,6 +34,8 @@ extern "C" {
 #define SN_NSDL_ENDPOINT_NOT_REGISTERED  0
 #define SN_NSDL_ENDPOINT_IS_REGISTERED   1
 
+#define MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
+
 /* Handle structure */
 struct nsdl_s;
 
@@ -156,52 +158,36 @@ typedef enum sn_nsdl_resource_mode_ {
 } sn_nsdl_resource_mode_e;
 
 /**
- * \brief Resource registration parameters
+ * \brief Defines dynamic parameters for the resource.
  */
-typedef struct sn_nsdl_resource_parameters_ {
-    unsigned int     observable:2;
-    unsigned int     registered:2;
-
-    uint16_t    resource_type_len;
-    uint16_t    interface_description_len;
-
-    uint16_t    coap_content_type;
-//    uint8_t     mime_content_type;
-
-    uint8_t     *resource_type_ptr;
-    uint8_t     *interface_description_ptr;
-
-} sn_nsdl_resource_parameters_s;
+typedef struct sn_nsdl_dynamic_resource_parameters_ {
+    uint8_t          registered:2;
+    uint8_t          (*sn_grs_dyn_res_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);
+    uint8_t          external_memory_block;
+    uint8_t          access:4;
+    uint16_t         coap_content_type; // uint8_t?
+} sn_nsdl_dynamic_resource_parameters_s;
 
 /**
- * \brief Defines parameters for the resource.
+ * \brief Defines static parameters for the resource.
  */
-typedef struct sn_nsdl_resource_info_ {
+typedef struct sn_nsdl_static_resource_parameters_ {
 
-    unsigned int                    mode:2;                     /**< STATIC etc.. */
-
-    unsigned int                    access:4;
-
-    bool                            publish_uri:1;
-
-    bool                            is_put:1; //if true, pointers are assumed to be consts (never freed). Note: resource_parameters_ptr is always freed!
-
-    uint8_t                         external_memory_block;
-
-    uint16_t                        pathlen;                    /**< Address */
-
-    uint16_t                        resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
-
-    sn_nsdl_resource_parameters_s   *resource_parameters_ptr;
-
-    uint8_t (*sn_grs_dyn_res_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);
-
-    uint8_t                         *path;
-
-    uint8_t                         *resource;                  /**< NULL if dynamic resource */
-
-    ns_list_link_t                  link;
-} sn_nsdl_resource_info_s;
+    bool                                    publish_uri:1;
+    uint8_t                                 mode:2;                     /**< STATIC etc.. */
+    uint8_t                                 observable:2;
+    int16_t                                 pathlen;                    /**< Address */
+    uint16_t                                resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
+    // Should this be other way around dynamic resource owns the static resource
+    sn_nsdl_dynamic_resource_parameters_s   *dynamic_resource_parameters;
+    uint8_t                                 *path;// convert to char*?
+    uint8_t                                 *resource;                  /**< NULL if dynamic resource */
+    uint16_t                                resource_type_len;
+    uint16_t                                interface_description_len;
+    uint8_t                                 *resource_type_ptr; // convert to char*?
+    uint8_t                                 *interface_description_ptr;// convert to char*?
+    ns_list_link_t                          link;
+} sn_nsdl_static_resource_parameters_s;
 
 /**
  * \brief Defines OMA device object parameters.
@@ -454,10 +440,9 @@ extern int8_t sn_nsdl_exec(struct nsdl_s *handle, uint32_t time);
  * \return  -3  Invalid path
  * \return  -4  List adding failure
  */
-extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
 
 /**
- * \fn  extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
+ * \fn  extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, const sn_nsdl_static_resource_parameters_s *res);
  *
  * \brief Resource putting function.
  *
@@ -473,7 +458,7 @@ extern int8_t sn_nsdl_create_resource(struct nsdl_s *handle, sn_nsdl_resource_in
  * \return  -3  Invalid path
  * \return  -4  List adding failure
  */
-extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
+extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, const sn_nsdl_static_resource_parameters_s *res);
 
 /**
  * \fn extern int8_t sn_nsdl_update_resource(sn_nsdl_resource_info_s *res)
@@ -491,7 +476,6 @@ extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_resource_info_
  * \return  0   Success
  * \return  -1  Failure
  */
-extern int8_t sn_nsdl_update_resource(struct nsdl_s *handle, sn_nsdl_resource_info_s *res);
 
 /**
  * \fn extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint8_t pathlen, uint8_t *path)
@@ -510,7 +494,7 @@ extern int8_t sn_nsdl_update_resource(struct nsdl_s *handle, sn_nsdl_resource_in
 extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path);
 
 /**
- * \fn extern sn_nsdl_resource_info_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
+ * \fn extern sn_nsdl_static_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
  *
  * \brief Resource get function.
  *
@@ -520,10 +504,10 @@ extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, u
  * \param   pathlen Contains the length of the path that is to be returned (excluding possible trailing '\0').
  * \param   *path   A pointer to an array containing the path.
  *
- * \return  !NULL   Success, pointer to a sn_nsdl_resource_info_s that contains the resource information\n
+ * \return  !NULL   Success, pointer to a sn_nsdl_static_resource_parameters_s that contains the resource information\n
  * \return  NULL    Failure
  */
-extern sn_nsdl_resource_info_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path);
+extern sn_nsdl_static_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path);
 
 /**
  * \fn extern sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
