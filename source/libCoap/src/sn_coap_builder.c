@@ -751,10 +751,8 @@ static uint8_t sn_coap_builder_options_build_add_uint_option(uint8_t **dst_packe
     uint8_t payload[4];
     uint8_t len = 0;
     /* Construct the variable-length payload representing the value */
-    bool started = false;
     for (uint8_t i = 0; i < 4; i++) {
-        if (started || option_value & 0xff000000) {
-            started = true;
+        if (len > 0 || (option_value & 0xff000000)) {
             payload[len++] = option_value >> 24;
         }
         option_value <<= 8;
