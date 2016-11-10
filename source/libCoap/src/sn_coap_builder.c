@@ -149,6 +149,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size(sn_coap_hdr_s *src_coap_ms
 
 uint16_t sn_coap_builder_calc_needed_packet_data_size_2(sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_payload_size)
 {
+    (void)blockwise_payload_size;
     tr_debug("sn_coap_builder_calc_needed_packet_data_size_2");
     uint16_t returned_byte_count = 0;
 
