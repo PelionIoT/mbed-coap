@@ -70,14 +70,6 @@ typedef enum sn_nsdl_registration_mode_ {
 } sn_nsdl_registration_mode_t;
 
 
-typedef struct omalw_certificate_list_ {
-    uint8_t  certificate_chain_len;
-    uint16_t own_private_key_len;
-    uint16_t certificate_len[2];
-    uint8_t  *certificate_ptr[2];
-    uint8_t  *own_private_key_ptr;
-} omalw_certificate_list_t;
-
 /**
  * \brief Endpoint registration parameters
  */
@@ -203,14 +195,6 @@ typedef struct sn_nsdl_resource_info_ {
     ns_list_link_t                  link;
 } sn_nsdl_resource_info_s;
 
-/**
- * \brief Defines OMA device object parameters.
- */
-typedef struct sn_nsdl_oma_device_ {
-    sn_nsdl_oma_device_error_t error_code;                                                                          /**< Error code. Mandatory. Can be more than one */
-    uint8_t (*sn_oma_device_boot_callback)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *, sn_nsdl_capab_e);    /**< Device boot callback function. If defined, this is called when reset request is received */
-
-} sn_nsdl_oma_device_t;
 
 /**
  * \brief Defines OMAlw server information
@@ -229,11 +213,7 @@ typedef struct sn_nsdl_bs_ep_info_ {
 
     void (*oma_bs_status_cb_handle)(sn_nsdl_oma_server_info_t *,
                                     struct nsdl_s *);  /**< Callback for OMA bootstrap status with nsdl handle */
-
-    sn_nsdl_oma_device_t *device_object;                    /**< OMA LWM2M mandatory device resources */
 } sn_nsdl_bs_ep_info_t;
-
-
 
 
 /**
@@ -603,33 +583,6 @@ extern int8_t sn_nsdl_destroy(struct nsdl_s *handle);
  * \return bootstrap message ID, 0 if failed
  */
 extern uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
-
-/**
- * \fn extern omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle);
- *
- * \brief Get pointer to received device server certificates
- *
- * \param   *handle Pointer to nsdl-library handle
- */
-extern omalw_certificate_list_t *sn_nsdl_get_certificates(struct nsdl_s *handle);
-
-/**
- * \fn extern int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list_t* certificate_ptr, uint8_t certificate_chain);
- *
- * \brief Updates certificate pointers to resource server.
- *
- * \param   *handle Pointer to nsdl-library handle
- */
-extern int8_t sn_nsdl_update_certificates(struct nsdl_s *handle, omalw_certificate_list_t *certificate_ptr, uint8_t certificate_chain);
-
-/**
- * \fn extern int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr);
- *
- * \brief Creates new device object resource
- *
- * \param   *handle Pointer to nsdl-library handle
- */
-extern int8_t sn_nsdl_create_oma_device_object(struct nsdl_s *handle, sn_nsdl_oma_device_t *device_object_ptr);
 
 /**
  * \fn sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
