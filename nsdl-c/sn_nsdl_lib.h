@@ -125,19 +125,6 @@ typedef enum sn_grs_resource_acl_ {
     SN_GRS_DELETE_ALLOWED   = 0x08
 } sn_grs_resource_acl_e;
 
-
-typedef enum sn_nsdl_oma_device_error_ {
-    NO_ERROR = 0,
-    LOW_BATTERY_POWER = 1,
-    EXTERNAL_POWER_SUPPLY_OFF = 2,
-    GPS_MODULE_FAILURE = 3,
-    LOW_RECEIVED_SIGNAL_STRENGTH = 4,
-    OUT_OF_MEMORY = 5,
-    SMS_FAILURE = 6,
-    IP_CONN_FAILURE = 7,
-    PERIPHERAL_MALFUNCTION = 8
-} sn_nsdl_oma_device_error_t;
-
 /**
  * \brief Defines the resource mode
  */
