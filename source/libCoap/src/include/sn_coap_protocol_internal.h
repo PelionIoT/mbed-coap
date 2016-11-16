@@ -80,7 +80,7 @@ struct sn_coap_hdr_;
 
 // Keep the old flag to maintain backward compatibility
 #ifndef SN_COAP_DUPLICATION_MAX_MSGS_COUNT
-#define SN_COAP_DUPLICATION_MAX_MSGS_COUNT              1
+#define SN_COAP_DUPLICATION_MAX_MSGS_COUNT              0
 #endif
 
 #ifdef YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
