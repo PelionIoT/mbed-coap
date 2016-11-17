@@ -143,11 +143,11 @@ typedef struct sn_nsdl_static_resource_parameters_ {
     uint16_t    resource_type_len;
     uint16_t    interface_description_len;
     uint16_t    coap_content_type;          // This can be removed?
-    uint8_t     access:4;
     uint8_t     *resource_type_ptr;         // convert to char*?
     uint8_t     *interface_description_ptr; // convert to char*?
     uint8_t     *path;                      // convert to char*?
     uint8_t     *resource;                  /**< NULL if dynamic resource */
+    uint8_t     access:4;
     bool        observable:1;
     bool        external_memory_block:1;
     uint8_t     mode:2;                     /**< STATIC etc.. */
@@ -164,9 +164,9 @@ typedef struct sn_nsdl_resource_parameters_ {
 #ifdef MEMORY_OPTIMIZED_API
     const sn_nsdl_static_resource_parameters_s  *static_resource_parameters;
 #else
-    sn_nsdl_static_resource_parameters_s  *static_resource_parameters;
+    sn_nsdl_static_resource_parameters_s        *static_resource_parameters;
 #endif
-    ns_list_link_t                          link;
+    ns_list_link_t                              link;
     uint8_t                                     registered:2;
     bool                                        publish_uri:1;
 } sn_nsdl_dynamic_resource_parameters_s;

@@ -405,16 +405,25 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
         }
 
         memset(resource_copy_ptr->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
-        resource_copy_ptr->static_resource_parameters->observable = resource_ptr->static_resource_parameters->observable;
-        resource_copy_ptr->static_resource_parameters->mode = resource_ptr->static_resource_parameters->mode;
-        resource_copy_ptr->static_resource_parameters->external_memory_block = resource_ptr->static_resource_parameters->external_memory_block;
-        resource_copy_ptr->static_resource_parameters->access = resource_ptr->static_resource_parameters->access;
-        resource_copy_ptr->static_resource_parameters->coap_content_type = resource_ptr->static_resource_parameters->coap_content_type;
+        resource_copy_ptr->static_resource_parameters->observable =
+                esource_ptr->static_resource_parameters->observable;
+        resource_copy_ptr->static_resource_parameters->mode =
+                resource_ptr->static_resource_parameters->mode;
+        resource_copy_ptr->static_resource_parameters->external_memory_block =
+                resource_ptr->static_resource_parameters->external_memory_block;
+        resource_copy_ptr->static_resource_parameters->access =
+                resource_ptr->static_resource_parameters->access;
+        resource_copy_ptr->static_resource_parameters->coap_content_type =
+                resource_ptr->static_resource_parameters->coap_content_type;
 
-        resource_copy_ptr->static_resource_parameters->pathlen = resource_ptr->static_resource_parameters->pathlen;
-        resource_copy_ptr->static_resource_parameters->resourcelen = resource_ptr->static_resource_parameters->resourcelen;
-        resource_copy_ptr->static_resource_parameters->resource_type_len = resource_ptr->static_resource_parameters->resource_type_len;
-        resource_copy_ptr->static_resource_parameters->interface_description_len = resource_ptr->static_resource_parameters->interface_description_len;
+        resource_copy_ptr->static_resource_parameters->pathlen =
+                resource_ptr->static_resource_parameters->pathlen;
+        resource_copy_ptr->static_resource_parameters->resourcelen =
+                resource_ptr->static_resource_parameters->resourcelen;
+        resource_copy_ptr->static_resource_parameters->resource_type_len =
+                resource_ptr->static_resource_parameters->resource_type_len;
+        resource_copy_ptr->static_resource_parameters->interface_description_len =
+                resource_ptr->static_resource_parameters->interface_description_len;
 
         if (resource_ptr->static_resource_parameters->resource_type_ptr) {
             resource_copy_ptr->static_resource_parameters->resource_type_ptr =
@@ -463,7 +472,8 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
 
         /* Allocate memory for the resource, and copy it to copy */
         if (resource_ptr->static_resource_parameters->resource) {
-            resource_copy_ptr->static_resource_parameters->resource = handle->sn_grs_alloc(resource_ptr->static_resource_parameters->resourcelen);
+            resource_copy_ptr->static_resource_parameters->resource =
+                    handle->sn_grs_alloc(resource_ptr->static_resource_parameters->resourcelen);
             if (!resource_copy_ptr->static_resource_parameters->resource) {
                 sn_grs_resource_info_free(handle, resource_copy_ptr);
                 return SN_NSDL_FAILURE;
