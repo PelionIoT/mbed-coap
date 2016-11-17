@@ -406,7 +406,7 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
 
         memset(resource_copy_ptr->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
         resource_copy_ptr->static_resource_parameters->observable =
-                esource_ptr->static_resource_parameters->observable;
+                resource_ptr->static_resource_parameters->observable;
         resource_copy_ptr->static_resource_parameters->mode =
                 resource_ptr->static_resource_parameters->mode;
         resource_copy_ptr->static_resource_parameters->external_memory_block =
