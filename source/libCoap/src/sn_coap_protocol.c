@@ -40,7 +40,9 @@
 #include "sn_coap_protocol.h"
 #include "sn_coap_header_internal.h"
 #include "sn_coap_protocol_internal.h"
+#include "randLIB.h"
 #include "mbed-trace/mbed_trace.h"
+
 #define TRACE_GROUP "coap"
 /* * * * * * * * * * * * * * * * * * * * */
 /* * * * LOCAL FUNCTION PROTOTYPES * * * */
@@ -198,12 +200,12 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
 #endif /* ENABLE_RESENDINGS */
 
     /* Randomize global message ID */
-#if defined __linux__ || defined TARGET_LIKE_MBED
-    srand(rand()^time(NULL));
-    message_id = rand() % 400 + 100;
-#else
-    message_id = 100;
-#endif
+    randLIB_seed_random();
+    message_id = randLIB_get_16bit();
+    if (message_id == 0) {
+        message_id = 1;
+    }
+    tr_debug("Coap random msg ID: %d", message_id);
 
     return handle;
 }

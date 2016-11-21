@@ -12,6 +12,7 @@ TEST_SRC_FILES = \
         ../stubs/sn_coap_parser_stub.c \
         ../stubs/sn_coap_header_check_stub.c \
         ../stubs/ns_list_stub.c \
+        ../stubs/randLIB_stub.cpp \
 
 include ../MakefileWorker.mk
 
