@@ -965,22 +965,22 @@ static int8_t sn_grs_resource_info_free(struct grs_s *handle, sn_nsdl_dynamic_re
                 handle->sn_grs_free(resource_ptr->static_resource_parameters->resource_type_ptr);
                 resource_ptr->static_resource_parameters->resource_type_ptr = 0;
             }
+
+            if (resource_ptr->static_resource_parameters->path) {
+                handle->sn_grs_free(resource_ptr->static_resource_parameters->path);
+                resource_ptr->static_resource_parameters->path = 0;
+            }
+
+            if (resource_ptr->static_resource_parameters->resource) {
+                handle->sn_grs_free(resource_ptr->static_resource_parameters->resource);
+                resource_ptr->static_resource_parameters->resource = 0;
+            }
+
         handle->sn_grs_free(resource_ptr->static_resource_parameters);
         resource_ptr->static_resource_parameters = 0;
         }
 
-
-        if (resource_ptr->static_resource_parameters->path) {
-            handle->sn_grs_free(resource_ptr->static_resource_parameters->path);
-            resource_ptr->static_resource_parameters->path = 0;
-        }
-        if (resource_ptr->static_resource_parameters->resource) {
-            handle->sn_grs_free(resource_ptr->static_resource_parameters->resource);
-            resource_ptr->static_resource_parameters->resource = 0;
-        }
-
         handle->sn_grs_free(resource_ptr);
-
         return SN_NSDL_SUCCESS;
 #endif
     }
