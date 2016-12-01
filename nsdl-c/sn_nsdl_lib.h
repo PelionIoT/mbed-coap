@@ -25,7 +25,7 @@
 #ifndef SN_NSDL_LIB_H_
 #define SN_NSDL_LIB_H_
 
-#include "ns_list.h"
+#include "mbed-client-libservice/ns_list.h"
 
 #ifdef __cplusplus
 extern "C" {
