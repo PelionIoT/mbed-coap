@@ -138,12 +138,12 @@ typedef enum sn_nsdl_resource_mode_ {
  * \brief Defines static parameters for the resource.
  */
 typedef struct sn_nsdl_static_resource_parameters_ {
-    int16_t     pathlen;                    /**< Address */ // Check type
-    uint16_t    resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
     char        *resource_type_ptr;         //
     char        *interface_description_ptr; //
     uint8_t     *path;                      // convert to char*?
     uint8_t     *resource;                  /**< NULL if dynamic resource */
+    int16_t     pathlen;                    /**< Address */ // Check type
+    uint16_t    resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
     uint8_t     access:4;                   /**< Allowed operation mode, GET, PUT, etc */
     bool        external_memory_block:1;    /**< 0 means block messages are handled inside this library,
                                                  otherwise block messages are passed to application */
