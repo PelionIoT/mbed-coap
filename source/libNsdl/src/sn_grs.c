@@ -420,8 +420,6 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
                 resource_ptr->static_resource_parameters->pathlen;
         resource_copy_ptr->static_resource_parameters->resourcelen =
                 resource_ptr->static_resource_parameters->resourcelen;
-        resource_copy_ptr->static_resource_parameters->interface_description_len =
-                resource_ptr->static_resource_parameters->interface_description_len;
 
         if (resource_ptr->static_resource_parameters->resource_type_ptr) {
             // alloc space for terminating zero too
@@ -438,15 +436,17 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
         }
 
         if (resource_ptr->static_resource_parameters->interface_description_ptr) {
+            // todo: a sn_grs_strdup() or similar helper to avoid this copy-paste pattern.
+            const size_t interface_description_len = strlen(resource_ptr->static_resource_parameters->interface_description_ptr) + 1;
             resource_copy_ptr->static_resource_parameters->interface_description_ptr =
-                    handle->sn_grs_alloc(resource_ptr->static_resource_parameters->interface_description_len);
+                    handle->sn_grs_alloc(interface_description_len);
             if (!resource_copy_ptr->static_resource_parameters->interface_description_ptr) {
                 sn_grs_resource_info_free(handle, resource_copy_ptr);
                 return SN_NSDL_FAILURE;
             }
             memcpy(resource_copy_ptr->static_resource_parameters->interface_description_ptr,
                    resource_ptr->static_resource_parameters->interface_description_ptr,
-                   resource_ptr->static_resource_parameters->interface_description_len);
+                   interface_description_len);
         }
 
         /* Remove '/' - chars from the beginning and from the end */

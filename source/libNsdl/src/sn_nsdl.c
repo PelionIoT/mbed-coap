@@ -954,15 +954,20 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
                 *temp_ptr++ = '"';
             }
 
-            if (resource_temp_ptr->static_resource_parameters->interface_description_len) {
+            size_t interface_description_len = 0;
+            if (resource_temp_ptr->static_resource_parameters->interface_description_ptr) {
+                interface_description_len = strlen(resource_temp_ptr->static_resource_parameters->interface_description_ptr);
+            }
+
+            if (interface_description_len) {
                 *temp_ptr++ = ';';
                 memcpy(temp_ptr, if_description_parameter, IF_PARAMETER_LEN);
                 temp_ptr += IF_PARAMETER_LEN;
                 *temp_ptr++ = '"';
                 memcpy(temp_ptr,
                        resource_temp_ptr->static_resource_parameters->interface_description_ptr,
-                       resource_temp_ptr->static_resource_parameters->interface_description_len);
-                temp_ptr += resource_temp_ptr->static_resource_parameters->interface_description_len;
+                       interface_description_len);
+                temp_ptr += interface_description_len;
                 *temp_ptr++ = '"';
             }
 
@@ -1061,12 +1066,16 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
             }
 
             /* Interface description parameter */
-            if (resource_temp_ptr->static_resource_parameters->interface_description_len) {
+            size_t interface_description_len = 0;
+            if (resource_temp_ptr->static_resource_parameters->interface_description_ptr) {
+                interface_description_len = strlen(resource_temp_ptr->static_resource_parameters->interface_description_ptr);
+            }
+            if (interface_description_len) {
                 /* ;if="iftype" */
                 if (sn_nsdl_check_uint_overflow(return_value,
                                                 6,
-                                                resource_temp_ptr->static_resource_parameters->interface_description_len)) {
-                    return_value += (6 + resource_temp_ptr->static_resource_parameters->interface_description_len);
+                                                interface_description_len)) {
+                    return_value += (6 + interface_description_len);
                 } else {
                     *error = SN_NSDL_FAILURE;
                     break;
