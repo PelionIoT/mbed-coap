@@ -395,7 +395,9 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
     memset(resource_copy_ptr, 0, sizeof(sn_nsdl_dynamic_resource_parameters_s));
     resource_copy_ptr->sn_grs_dyn_res_callback = resource_ptr->sn_grs_dyn_res_callback;
     resource_copy_ptr->publish_uri = resource_ptr->publish_uri;
-
+    resource_copy_ptr->free_on_delete = resource_ptr->free_on_delete;
+    resource_copy_ptr->coap_content_type = resource_ptr->coap_content_type;
+    resource_copy_ptr->observable = resource_ptr->observable;
     /* If resource parameters exists, copy them */
     if (resource_ptr->static_resource_parameters) {
         resource_copy_ptr->static_resource_parameters = handle->sn_grs_alloc(sizeof(sn_nsdl_static_resource_parameters_s));
@@ -405,16 +407,14 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
         }
 
         memset(resource_copy_ptr->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
-        resource_copy_ptr->static_resource_parameters->observable =
-                resource_ptr->static_resource_parameters->observable;
         resource_copy_ptr->static_resource_parameters->mode =
                 resource_ptr->static_resource_parameters->mode;
         resource_copy_ptr->static_resource_parameters->external_memory_block =
                 resource_ptr->static_resource_parameters->external_memory_block;
         resource_copy_ptr->static_resource_parameters->access =
                 resource_ptr->static_resource_parameters->access;
-        resource_copy_ptr->static_resource_parameters->coap_content_type =
-                resource_ptr->static_resource_parameters->coap_content_type;
+        resource_copy_ptr->static_resource_parameters->free_on_delete =
+                resource_ptr->static_resource_parameters->free_on_delete;
 
         resource_copy_ptr->static_resource_parameters->pathlen =
                 resource_ptr->static_resource_parameters->pathlen;
@@ -448,7 +448,6 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
                    resource_ptr->static_resource_parameters->interface_description_ptr,
                    resource_ptr->static_resource_parameters->interface_description_len);
         }
-
 
         /* Remove '/' - chars from the beginning and from the end */
 
@@ -597,21 +596,11 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
                             status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
                         }
                         break;
-                    case COAP_MSG_CODE_REQUEST_POST:
-                        if (resource_temp_ptr->static_resource_parameters->access & SN_GRS_POST_ALLOWED) {
-                            status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-                        }
-                        break;
-                    case COAP_MSG_CODE_REQUEST_PUT:
-                        if (resource_temp_ptr->static_resource_parameters->access & SN_GRS_PUT_ALLOWED) {
-                            status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-                        }
-                        break;
 
+                    case COAP_MSG_CODE_REQUEST_POST:
+                    case COAP_MSG_CODE_REQUEST_PUT:
                     case COAP_MSG_CODE_REQUEST_DELETE:
-                        if (resource_temp_ptr->static_resource_parameters->access & SN_GRS_DELETE_ALLOWED) {
-                            status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
-                        }
+                        status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
                         break;
 
                     default:
@@ -695,9 +684,9 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
             /* Add content type if other than default */
             if (resource_temp_ptr->static_resource_parameters) {
                 /* XXXX Why "if != 0"? 0 means text/plain, and is not the default for CoAP - this prevents setting text/plain? */
-                if (resource_temp_ptr->static_resource_parameters->coap_content_type != 0) {
+                if (resource_temp_ptr->coap_content_type != 0) {
                     response_message_hdr_ptr->content_format =
-                            (sn_coap_content_format_e) resource_temp_ptr->static_resource_parameters->coap_content_type;
+                            (sn_coap_content_format_e) resource_temp_ptr->coap_content_type;
                 }
             }
 
@@ -952,10 +941,13 @@ static int8_t sn_grs_resource_info_free(struct grs_s *handle, sn_nsdl_dynamic_re
 {
     if (resource_ptr) {
 #ifdef MEMORY_OPTIMIZED_API
-        handle->sn_grs_free(resource_ptr);
+        if (resource_ptr->free_on_delete) {
+            handle->sn_grs_free(resource_ptr);
+        }
         return SN_NSDL_FAILURE;
 #else
-        if (resource_ptr->static_resource_parameters) {
+        if (resource_ptr->static_resource_parameters &&
+                resource_ptr->static_resource_parameters->free_on_delete) {
             if (resource_ptr->static_resource_parameters->interface_description_ptr) {
                 handle->sn_grs_free(resource_ptr->static_resource_parameters->interface_description_ptr);
                 resource_ptr->static_resource_parameters->interface_description_ptr = 0;
@@ -976,11 +968,12 @@ static int8_t sn_grs_resource_info_free(struct grs_s *handle, sn_nsdl_dynamic_re
                 resource_ptr->static_resource_parameters->resource = 0;
             }
 
-        handle->sn_grs_free(resource_ptr->static_resource_parameters);
-        resource_ptr->static_resource_parameters = 0;
+            handle->sn_grs_free(resource_ptr->static_resource_parameters);
+            resource_ptr->static_resource_parameters = 0;
         }
-
-        handle->sn_grs_free(resource_ptr);
+        if (resource_ptr->free_on_delete) {
+            handle->sn_grs_free(resource_ptr);
+        }
         return SN_NSDL_SUCCESS;
 #endif
     }

@@ -142,15 +142,15 @@ typedef struct sn_nsdl_static_resource_parameters_ {
     uint16_t    resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
     uint16_t    resource_type_len;
     uint16_t    interface_description_len;
-    uint16_t    coap_content_type;          // This can be removed?
     uint8_t     *resource_type_ptr;         // convert to char*?
     uint8_t     *interface_description_ptr; // convert to char*?
     uint8_t     *path;                      // convert to char*?
     uint8_t     *resource;                  /**< NULL if dynamic resource */
-    uint8_t     access:4;
-    bool        observable:1;
-    bool        external_memory_block:1;
+    uint8_t     access:4;                   /**< Allowed operation mode, GET, PUT, etc */
+    bool        external_memory_block:1;    /**< 0 means block messages are handled inside this library,
+                                                 otherwise block messages are passed to application */
     uint8_t     mode:2;                     /**< STATIC etc.. */
+    bool        free_on_delete:1;           /**< 1 if struct is dynamic allocted --> to be freed */
 } sn_nsdl_static_resource_parameters_s;
 
 /**
@@ -167,8 +167,11 @@ typedef struct sn_nsdl_resource_parameters_ {
     sn_nsdl_static_resource_parameters_s        *static_resource_parameters;
 #endif
     ns_list_link_t                              link;
-    uint8_t                                     registered:2;
-    bool                                        publish_uri:1;
+    uint16_t                                    coap_content_type;  /**< CoAP content type */
+    uint8_t                                     registered:2;       /**< Is resource registered or not */
+    bool                                        publish_uri:1;      /**< 1 if resource to be published to server */
+    bool                                        free_on_delete:1;   /**< 1 if struct is dynamic allocted --> to be freed */
+    bool                                        observable:1;       /**< Is resource observable or not */
 } sn_nsdl_dynamic_resource_parameters_s;
 
 /**
