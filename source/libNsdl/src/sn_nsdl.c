@@ -223,6 +223,8 @@ struct nsdl_s *sn_nsdl_init(uint8_t (*sn_nsdl_tx_cb)(struct nsdl_s *, sn_nsdl_ca
     handle->sn_nsdl_endpoint_registered = SN_NSDL_ENDPOINT_NOT_REGISTERED;
     // By default bootstrap msgs are handled in nsdl
     handle->handle_bootstrap_msg = true;
+    handle->context = NULL;
+
     return handle;
 }
 
@@ -2584,4 +2586,21 @@ bool sn_nsdl_check_uint_overflow(uint16_t resource_size, uint16_t param_a, uint1
             return true;
         }
     }
+}
+
+extern int8_t sn_nsdl_set_context(struct nsdl_s * const handle, void * const context)
+{
+    if (handle == NULL) {
+        return SN_NSDL_FAILURE;
+    }
+    handle->context = context;
+    return SN_NSDL_SUCCESS;
+}
+
+extern void *sn_nsdl_get_context(const struct nsdl_s * const handle)
+{
+    if (handle == NULL) {
+        return NULL;
+    }
+    return handle->context;
 }

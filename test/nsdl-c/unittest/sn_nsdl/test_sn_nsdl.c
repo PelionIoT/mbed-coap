@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 ARM. All rights reserved.
+* Copyright (c) 2015 ARM. All rights reserved.
  */
 #include "test_sn_nsdl.h"
 #include <string.h>
@@ -2969,6 +2969,54 @@ bool test_sn_nsdl_set_duplicate_buffer_size()
     if (sn_nsdl_set_duplicate_buffer_size(handle,999) != 0){
         return false;
     }
+    sn_nsdl_destroy(handle);
+    return true;
+}
+
+bool test_sn_nsdl_set_context()
+{
+    struct nsdl_s* handle = NULL;
+    if (sn_nsdl_set_context(handle,NULL) == 0){
+        printf("\n\neka\n\n");
+        return false;
+    }
+    retCounter = 4;
+    sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
+    memset(sn_grs_stub.expectedGrs,0, sizeof(struct grs_s));
+    handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
+
+    if (sn_nsdl_set_context(handle,NULL) != 0){
+        printf("\n\ntoka\n\n");
+        return false;
+    }
+
+    int somecontext = 1;
+    if (sn_nsdl_set_context(handle,&somecontext) != 0){
+        printf("\n\nkolmas\n\n");
+        return false;
+    }
+    sn_nsdl_destroy(handle);
+    return true;
+}
+
+bool test_sn_nsdl_get_context()
+{
+    struct nsdl_s* handle = NULL;
+    if (sn_nsdl_get_context(handle) != NULL){
+        return false;
+    }
+
+    retCounter = 4;
+    sn_grs_stub.expectedGrs = (struct grs_s *)malloc(sizeof(struct grs_s));
+    memset(sn_grs_stub.expectedGrs,0, sizeof(struct grs_s));
+    handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
+
+    int somecontext = 1;
+    sn_nsdl_set_context(handle,&somecontext);
+    if (sn_nsdl_get_context(handle) != &somecontext){
+        return false;
+    }
+
     sn_nsdl_destroy(handle);
     return true;
 }
