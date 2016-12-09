@@ -321,7 +321,7 @@ extern int8_t sn_grs_update_resource(struct grs_s *handle, sn_nsdl_dynamic_resou
     }
 
     /* Update access rights and callback address */
-    resource_temp->static_resource_parameters->access = res->static_resource_parameters->access;
+    resource_temp->access = res->access;
     resource_temp->sn_grs_dyn_res_callback = res->sn_grs_dyn_res_callback;
 
     /* TODO: resource_parameters_ptr not copied */
@@ -398,6 +398,7 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
     resource_copy_ptr->free_on_delete = resource_ptr->free_on_delete;
     resource_copy_ptr->coap_content_type = resource_ptr->coap_content_type;
     resource_copy_ptr->observable = resource_ptr->observable;
+    resource_copy_ptr->access = resource_ptr->access;
     /* If resource parameters exists, copy them */
     if (resource_ptr->static_resource_parameters) {
         resource_copy_ptr->static_resource_parameters = handle->sn_grs_alloc(sizeof(sn_nsdl_static_resource_parameters_s));
@@ -411,8 +412,6 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
                 resource_ptr->static_resource_parameters->mode;
         resource_copy_ptr->static_resource_parameters->external_memory_block =
                 resource_ptr->static_resource_parameters->external_memory_block;
-        resource_copy_ptr->static_resource_parameters->access =
-                resource_ptr->static_resource_parameters->access;
         resource_copy_ptr->static_resource_parameters->free_on_delete =
                 resource_ptr->static_resource_parameters->free_on_delete;
 
@@ -566,11 +565,10 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
             /* If dynamic resource, go to callback */
             if (resource_temp_ptr->static_resource_parameters->mode == SN_GRS_DYNAMIC) {
                 /* Check accesses */
-                if (((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET) && !(resource_temp_ptr->static_resource_parameters->access & SN_GRS_GET_ALLOWED))          ||
-                        ((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST) && !(resource_temp_ptr->static_resource_parameters->access & SN_GRS_POST_ALLOWED))   ||
-                        ((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT) && !(resource_temp_ptr->static_resource_parameters->access & SN_GRS_PUT_ALLOWED))     ||
-                        ((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_DELETE) && !(resource_temp_ptr->static_resource_parameters->access & SN_GRS_DELETE_ALLOWED))) {
-
+                if (((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET) && !(resource_temp_ptr->access & SN_GRS_GET_ALLOWED))          ||
+                        ((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_POST) && !(resource_temp_ptr->access & SN_GRS_POST_ALLOWED))   ||
+                        ((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_PUT) && !(resource_temp_ptr->access & SN_GRS_PUT_ALLOWED))     ||
+                        ((coap_packet_ptr->msg_code == COAP_MSG_CODE_REQUEST_DELETE) && !(resource_temp_ptr->access & SN_GRS_DELETE_ALLOWED))) {
                     status = COAP_MSG_CODE_RESPONSE_METHOD_NOT_ALLOWED;
                 } else {
                     /* Do not call null pointer.. */
@@ -589,7 +587,7 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
                 /* Static resource handling */
                 switch (coap_packet_ptr->msg_code) {
                     case COAP_MSG_CODE_REQUEST_GET:
-                        if (resource_temp_ptr->static_resource_parameters->access & SN_GRS_GET_ALLOWED) {
+                        if (resource_temp_ptr->access & SN_GRS_GET_ALLOWED) {
                             status = COAP_MSG_CODE_RESPONSE_CONTENT;
                             static_get_request = true;
                         } else {
