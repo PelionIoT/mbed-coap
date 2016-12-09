@@ -962,20 +962,20 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
                 *temp_ptr++ = '"';
             }
 
-            if (resource_temp_ptr->static_resource_parameters->coap_content_type != 0) {
+            if (resource_temp_ptr->coap_content_type != 0) {
                 *temp_ptr++ = ';';
                 memcpy(temp_ptr, coap_con_type_parameter, COAP_CON_PARAMETER_LEN);
                 temp_ptr += COAP_CON_PARAMETER_LEN;
                 *temp_ptr++ = '"';
                 temp_ptr = sn_nsdl_itoa(temp_ptr,
-                                        resource_temp_ptr->static_resource_parameters->coap_content_type);
+                                        resource_temp_ptr->coap_content_type);
                 *temp_ptr++ = '"';
             }
 
             /* ;obs */
              // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
 #ifndef COAP_DISABLE_OBS_FEATURE
-            if (resource_temp_ptr->static_resource_parameters->observable) {
+            if (resource_temp_ptr->observable) {
                 *temp_ptr++ = ';';
                 memcpy(temp_ptr, obs_parameter, OBS_PARAMETER_LEN);
                 temp_ptr += OBS_PARAMETER_LEN;
@@ -1064,9 +1064,9 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
                 }
             }
 
-            if (resource_temp_ptr->static_resource_parameters->coap_content_type != 0) {
+            if (resource_temp_ptr->coap_content_type != 0) {
                 /* ;if="content" */
-                uint8_t len = sn_nsdl_itoa_len(resource_temp_ptr->static_resource_parameters->coap_content_type);
+                uint8_t len = sn_nsdl_itoa_len(resource_temp_ptr->coap_content_type);
                 if (sn_nsdl_check_uint_overflow(return_value, 6, len)) {
                     return_value += (6 + len);
                 } else {
@@ -1076,7 +1076,7 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
             }
 #ifndef COAP_DISABLE_OBS_FEATURE
             // This needs to be re-visited and may be need an API for maganging obs value for different server implementation
-            if (resource_temp_ptr->static_resource_parameters->observable) {
+            if (resource_temp_ptr->observable) {
                 if (sn_nsdl_check_uint_overflow(return_value, 4, 0)) {
                     return_value += 4;
                 } else {
