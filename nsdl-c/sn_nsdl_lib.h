@@ -144,7 +144,6 @@ typedef struct sn_nsdl_static_resource_parameters_ {
     uint8_t     *resource;                  /**< NULL if dynamic resource */
     int16_t     pathlen;                    /**< Address */ // Check type
     uint16_t    resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
-    uint8_t     access:4;                   /**< Allowed operation mode, GET, PUT, etc */
     bool        external_memory_block:1;    /**< 0 means block messages are handled inside this library,
                                                  otherwise block messages are passed to application */
     uint8_t     mode:2;                     /**< STATIC etc.. */
@@ -166,6 +165,9 @@ typedef struct sn_nsdl_resource_parameters_ {
 #endif
     ns_list_link_t                              link;
     uint16_t                                    coap_content_type;  /**< CoAP content type */
+    uint8_t                                     access:4;           /**< Allowed operation mode, GET, PUT, etc,
+                                                                         TODO! This should be in static struct but current
+                                                                         mbed-client implementation requires this to be changed at runtime */
     uint8_t                                     registered:2;       /**< Is resource registered or not */
     bool                                        publish_uri:1;      /**< 1 if resource to be published to server */
     bool                                        free_on_delete:1;   /**< 1 if struct is dynamic allocted --> to be freed */
