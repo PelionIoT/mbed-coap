@@ -312,39 +312,6 @@ extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uin
         sn_coap_content_format_e content_format);
 
 /**
- * \fn extern uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
- *                                                  uint8_t *payload_ptr, uint16_t payload_len,
- *                                                  sn_coap_observe_e observe,
- *                                                  sn_coap_msg_type_e message_type, uint8_t content_type,
- *                                                  uint8_t *uri_path_ptr,
- *                                                  uint16_t uri_path_len)
- *
- *
- * \brief Sends observation message to mbed Device Server with uri path
- *
- * \param   *handle         Pointer to nsdl-library handle
- * \param   *token_ptr      Pointer to token to be used
- * \param   token_len       Token length
- * \param   *payload_ptr    Pointer to payload to be sent
- * \param   payload_len     Payload length
- * \param   observe         Observe option value to be sent
- * \param   message_type    Observation message type (confirmable or non-confirmable)
- * \param   content_type    Observation message payload contetnt type
- * \param   uri_path_ptr    Pointer to uri path to be sent
- * \param   uri_path_len    Uri path len
- *
- * \return  !0  Success, observation messages message ID
- * \return  0   Failure
- */
-extern uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
-        uint8_t *payload_ptr, uint16_t payload_len,
-        sn_coap_observe_e observe,
-        sn_coap_msg_type_e message_type,
-        uint8_t content_type,
-        uint8_t *uri_path_ptr,
-        uint16_t uri_path_len);
-
-/**
  * \fn extern uint32_t sn_nsdl_get_version(void)
  *
  * \brief Version query function.
