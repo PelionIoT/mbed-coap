@@ -507,27 +507,8 @@ int8_t sn_nsdl_is_ep_registered(struct nsdl_s *handle)
 }
 
 uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
-        uint8_t *payload_ptr, uint16_t payload_len,
-        sn_coap_observe_e observe,
-        sn_coap_msg_type_e message_type, sn_coap_content_format_e content_format)
-{
-    return sn_nsdl_send_observation_notification_with_uri_path(handle,
-                                                               token_ptr,
-                                                               token_len,
-                                                               payload_ptr,
-                                                               payload_len,
-                                                               observe,
-                                                               message_type,
-                                                               content_format,
-                                                               NULL,
-                                                               0);
-}
-
-uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
-        uint8_t *payload_ptr, uint16_t payload_len,
-        sn_coap_observe_e observe,
-        sn_coap_msg_type_e message_type, uint8_t content_format,
-        uint8_t *uri_path_ptr, uint16_t uri_path_len)
+   uint8_t *payload_ptr, uint16_t payload_len, sn_coap_observe_e observe, sn_coap_msg_type_e message_type,
+   sn_coap_content_format_e content_format)
 {
     sn_coap_hdr_s   *notification_message_ptr;
     uint16_t        return_msg_id = 0;
@@ -560,10 +541,6 @@ uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *hand
     notification_message_ptr->payload_len = payload_len;
     notification_message_ptr->payload_ptr = payload_ptr;
 
-    /* Fill uri path */
-    notification_message_ptr->uri_path_len = uri_path_len;
-    notification_message_ptr->uri_path_ptr = uri_path_ptr;
-
     /* Fill observe */
     notification_message_ptr->options_list_ptr->observe = observe;
 
@@ -578,7 +555,6 @@ uint16_t sn_nsdl_send_observation_notification_with_uri_path(struct nsdl_s *hand
     }
 
     /* Free memory */
-    notification_message_ptr->uri_path_ptr = NULL;
     notification_message_ptr->payload_ptr = NULL;
     notification_message_ptr->token_ptr = NULL;
 
@@ -730,9 +706,12 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
     /* * * * * * * * * * * * * * * * * * * * * * * * * * */
     /* If message is response message, call RX callback  */
     /* * * * * * * * * * * * * * * * * * * * * * * * * * */
-    if ((coap_packet_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE) || (coap_packet_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT)) {
+
+    if ((coap_packet_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE) ||
+            (coap_packet_ptr->msg_type >= COAP_MSG_TYPE_ACKNOWLEDGEMENT)) {
         int8_t retval = sn_nsdl_local_rx_function(handle, coap_packet_ptr, src_ptr);
-        if (coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED && coap_packet_ptr->payload_ptr) {
+        if (coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED &&
+                coap_packet_ptr->payload_ptr) {
             handle->sn_nsdl_free(coap_packet_ptr->payload_ptr);
             coap_packet_ptr->payload_ptr = 0;
         }
@@ -1026,7 +1005,6 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
                 resource_temp_ptr = sn_grs_get_next_resource(handle->grs, resource_temp_ptr);
                 continue;
             }
-
             /* If not first resource, then '.' will be added */
             if (return_value) {
                 if (sn_nsdl_check_uint_overflow(return_value, 1, 0)) {
