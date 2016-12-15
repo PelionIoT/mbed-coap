@@ -280,13 +280,13 @@ extern int8_t sn_grs_delete_resource(struct grs_s *handle, uint16_t pathlen, uin
 extern int8_t sn_grs_update_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parameters_s *res)
 {
     /* Local variables */
-    assert(res->static_resource_parameters != NULL);
-
     sn_nsdl_dynamic_resource_parameters_s     *resource_temp  = NULL;
 
     if( !res || !handle ){
         return SN_NSDL_FAILURE;
     }
+
+    assert(res->static_resource_parameters != NULL);
 
     /* Search resource */
     resource_temp = sn_grs_search_resource(handle,
@@ -331,11 +331,11 @@ extern int8_t sn_grs_update_resource(struct grs_s *handle, sn_nsdl_dynamic_resou
 
 extern int8_t sn_grs_create_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parameters_s *res)
 {
-    assert(res->static_resource_parameters != NULL);
-
     if (!res || !handle) {
         return SN_NSDL_FAILURE;
     }
+
+    assert(res->static_resource_parameters != NULL);
 
     /* Check path validity */
     if (!res->static_resource_parameters->pathlen || !res->static_resource_parameters->path) {
