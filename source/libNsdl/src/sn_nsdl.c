@@ -892,8 +892,6 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
 
     resource_temp_ptr = sn_grs_get_first_resource(handle->grs);
 
-    assert(resource_temp_ptr->static_resource_parameters != NULL);
-
     /* Loop trough all resources */
     while (resource_temp_ptr) {
         /* if resource needs to be registered */
