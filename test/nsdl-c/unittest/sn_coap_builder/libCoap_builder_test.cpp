@@ -159,7 +159,7 @@ TEST(libCoap_builder, build_message_options_uri_path)
 {
     coap_header.uri_path_ptr = temp;
     coap_header.uri_path_len = 2;
-    CHECK(sn_coap_builder(buffer, &coap_header) == 11);
+    CHECK(sn_coap_builder(buffer, &coap_header) == 14);
 }
 
 TEST(libCoap_builder, build_message_options_content_type)
@@ -334,7 +334,7 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
 
     // init now the buffer up to 4 bytes, as it will be accessed
     memset(header.options_list_ptr->etag_ptr, 0, 4);
-    
+
     header.options_list_ptr->proxy_uri_len = 281;
     header.options_list_ptr->block1 = COAP_OPTION_BLOCK_NONE;
     header.options_list_ptr->block2 = COAP_OPTION_BLOCK_NONE;
