@@ -84,8 +84,6 @@ TEST(libCoap_protocol, sn_coap_protocol_destroy)
     memset(msg_ptr, 0, sizeof(coap_send_msg_s));
     msg_ptr->send_msg_ptr = (sn_nsdl_transmit_s*)malloc(sizeof(sn_nsdl_transmit_s));
     memset(msg_ptr->send_msg_ptr, 0 , sizeof(sn_nsdl_transmit_s));
-    msg_ptr->send_msg_ptr->uri_path_ptr = (uint8_t*)malloc(2);
-    msg_ptr->send_msg_ptr->uri_path_len = 2;
 
     ns_list_add_to_end(&handle->linked_list_resent_msgs, msg_ptr);
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
