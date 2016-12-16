@@ -989,10 +989,8 @@ void sn_grs_mark_resources_as_registered(struct nsdl_s *handle)
     temp_resource = sn_grs_get_first_resource(handle->grs);
 
     while (temp_resource) {
-        if (temp_resource->static_resource_parameters) {
-            if (temp_resource->registered == SN_NDSL_RESOURCE_REGISTERING) {
-                temp_resource->registered = SN_NDSL_RESOURCE_REGISTERED;
-            }
+        if (temp_resource->registered == SN_NDSL_RESOURCE_REGISTERING) {
+            temp_resource->registered = SN_NDSL_RESOURCE_REGISTERED;
         }
         temp_resource = sn_grs_get_next_resource(handle->grs, temp_resource);
     }
