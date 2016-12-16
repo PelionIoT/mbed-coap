@@ -21,7 +21,6 @@
  */
 
 #include <string.h>
-#include <assert.h>
 
 #include "ns_types.h"
 #include "sn_nsdl.h"
