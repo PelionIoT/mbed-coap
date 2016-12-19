@@ -23,7 +23,6 @@
  */
 #include <string.h>
 #include <stdlib.h>
-#include <assert.h>
 #include "ns_list.h"
 #include "ns_types.h"
 #include "sn_nsdl.h"
@@ -286,8 +285,6 @@ extern int8_t sn_grs_update_resource(struct grs_s *handle, sn_nsdl_dynamic_resou
         return SN_NSDL_FAILURE;
     }
 
-    assert(res->static_resource_parameters != NULL);
-
     /* Search resource */
     resource_temp = sn_grs_search_resource(handle,
                                            res->static_resource_parameters->pathlen,
@@ -335,8 +332,6 @@ extern int8_t sn_grs_create_resource(struct grs_s *handle, sn_nsdl_dynamic_resou
         return SN_NSDL_FAILURE;
     }
 
-    assert(res->static_resource_parameters != NULL);
-
     /* Check path validity */
     if (!res->static_resource_parameters->pathlen || !res->static_resource_parameters->path) {
         return SN_GRS_INVALID_PATH;
@@ -375,7 +370,6 @@ extern int8_t sn_grs_create_resource(struct grs_s *handle, sn_nsdl_dynamic_resou
 static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_resource_parameters_s *resource_ptr)
 {
     /* Local variables */
-    assert(resource_ptr->static_resource_parameters != NULL);
 
     uint8_t *path_start_ptr = NULL;
     uint16_t path_len = 0;
@@ -495,8 +489,6 @@ int8_t sn_grs_put_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parame
     if (!res || !handle) {
         return SN_NSDL_FAILURE;
     }
-
-    assert(res->static_resource_parameters != NULL);
 
     /* Check path validity */
     if (!res->static_resource_parameters->pathlen || !res->static_resource_parameters->path) {
