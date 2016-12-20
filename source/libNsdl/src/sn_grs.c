@@ -531,9 +531,15 @@ int8_t sn_grs_put_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parame
 */
 extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coap_packet_ptr, sn_nsdl_addr_s *src_addr_ptr)
 {
+    tr_debug("sn_grs_process_coap");
     if( !coap_packet_ptr || !nsdl_handle){
         return SN_NSDL_FAILURE;
     }
+
+    tr_debug("sn_grs_process_coap - coap params:");
+    tr_debug("msg code: (%d), msg type: (%d), msg id: (%d), path: (%.*s)",
+             coap_packet_ptr->msg_code, coap_packet_ptr->msg_type, coap_packet_ptr->msg_id,
+             coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr);
 
     sn_nsdl_dynamic_resource_parameters_s *resource_temp_ptr  = NULL;
     sn_coap_msg_code_e      status              = COAP_MSG_CODE_EMPTY;
@@ -550,10 +556,13 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
         /* Get resource */
         resource_temp_ptr = sn_grs_search_resource(handle, coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr, SN_GRS_SEARCH_METHOD);
 
+
         /* * * * * * * * * * * */
         /* If resource exists  */
         /* * * * * * * * * * * */
         if (resource_temp_ptr) {
+            tr_debug("sn_grs_process_coap - found (%.*s)", resource_temp_ptr->static_resource_parameters->pathlen,
+                     resource_temp_ptr->static_resource_parameters->path);
             /* If dynamic resource, go to callback */
             if (resource_temp_ptr->static_resource_parameters->mode == SN_GRS_DYNAMIC) {
                 /* Check accesses */
