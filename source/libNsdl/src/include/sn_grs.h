@@ -16,6 +16,11 @@
 #ifndef GRS_H_
 #define GRS_H_
 
+#ifdef MBED_CLIENT_C_NEW_API
+
+#include "sn_grs2.h"
+
+#else
 
 #ifdef __cplusplus
 extern "C" {
@@ -128,7 +133,7 @@ extern void                             sn_grs_mark_resources_as_registered(stru
 }
 #endif
 
-
+#endif /* MBED_CLIENT_C_NEW_API */
 
 
 #endif /* GRS_H_ */

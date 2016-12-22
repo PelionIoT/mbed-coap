@@ -25,6 +25,12 @@
 #ifndef SN_NSDL_LIB_H_
 #define SN_NSDL_LIB_H_
 
+#ifdef MBED_CLIENT_C_NEW_API
+
+#include "nsdl-c/sn_nsdl_lib2.h"
+
+#else
+
 #include "ns_list.h"
 
 #ifdef __cplusplus
@@ -726,5 +732,8 @@ extern int8_t sn_nsdl_set_duplicate_buffer_size(struct nsdl_s *handle, uint8_t m
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* MBED_CLIENT_C_NEW_API */
+
 
 #endif /* SN_NSDL_LIB_H_ */

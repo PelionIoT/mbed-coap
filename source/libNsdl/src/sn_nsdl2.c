@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 /**
- * \file sn_nsdl.c
+ * \file sn_nsdl2.c
  *
  * \brief Nano service device library
  *
  */
+#ifdef MBED_CLIENT_C_NEW_API
 
 #include <string.h>
 
@@ -1754,3 +1755,6 @@ extern void *sn_nsdl_get_context(const struct nsdl_s * const handle)
     }
     return handle->context;
 }
+
+#endif
+

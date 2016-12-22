@@ -21,6 +21,7 @@
  * \brief General resource server.
  *
  */
+#ifdef MBED_CLIENT_C_NEW_API
 #include <string.h>
 #include <stdlib.h>
 #include "ns_list.h"
@@ -1019,3 +1020,4 @@ void sn_grs_mark_resources_as_registered(struct nsdl_s *handle)
         temp_resource = sn_grs_get_next_resource(handle->grs, temp_resource);
     }
 }
+#endif

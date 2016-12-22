@@ -20,6 +20,8 @@
  *
  */
 
+#ifndef MBED_CLIENT_C_NEW_API
+
 #include <string.h>
 
 #include "ns_types.h"
@@ -2585,3 +2587,6 @@ bool sn_nsdl_check_uint_overflow(uint16_t resource_size, uint16_t param_a, uint1
         }
     }
 }
+
+#endif
+
