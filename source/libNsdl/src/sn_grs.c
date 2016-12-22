@@ -510,6 +510,29 @@ int8_t sn_grs_put_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parame
     return SN_NSDL_SUCCESS;
 }
 
+int8_t sn_grs_pop_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parameters_s *res)
+{
+    if (!res || !handle) {
+        return SN_NSDL_FAILURE;
+    }
+
+    /* Check path validity */
+    if (!res->static_resource_parameters->pathlen || !res->static_resource_parameters->path) {
+        return SN_GRS_INVALID_PATH;
+    }
+
+    /* Check if resource exists on list. */
+    if (sn_grs_search_resource(handle,
+                               res->static_resource_parameters->pathlen,
+                               res->static_resource_parameters->path, SN_GRS_SEARCH_METHOD) == (sn_nsdl_dynamic_resource_parameters_s *)NULL) {
+        return SN_NSDL_FAILURE;
+    }
+
+    ns_list_remove(&handle->resource_root_list, res);
+    --handle->resource_root_count;
+
+    return SN_NSDL_SUCCESS;
+}
 
 /**
  * \fn  extern int8_t sn_grs_process_coap(uint8_t *packet, uint16_t *packet_len, sn_nsdl_addr_s *src)

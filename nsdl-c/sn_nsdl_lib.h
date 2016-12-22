@@ -400,14 +400,15 @@ extern int8_t sn_nsdl_update_resource(struct nsdl_s *handle, sn_nsdl_dynamic_res
 #endif
 
 /**
- * \fn  extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, const sn_nsdl_resource_parameters_s *res);
+ * \fn  extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, const sn_nsdl_dynamic_resource_parameters_s *res);
  *
  * \brief Resource putting function.
  *
  * Used to put a static or dynamic CoAP resource without creating copy of it.
  * NOTE: Remember that only resource will be owned, not data that it contains
+ * NOTE: The resource may be removed from list by sn_nsdl_pop_resource().
  *
- * \param   *res    Pointer to a structure of type sn_nsdl_resource_info_t that contains the information
+ * \param   *res    Pointer to a structure of type sn_nsdl_dynamic_resource_parameters_s that contains the information
  *     about the resource.
  *
  * \return  0   Success
@@ -417,6 +418,23 @@ extern int8_t sn_nsdl_update_resource(struct nsdl_s *handle, sn_nsdl_dynamic_res
  * \return  -4  List adding failure
  */
 extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resource_parameters_s *res);
+
+/**
+ * \fn  extern int8_t sn_nsdl_pop_resource(struct nsdl_s *handle, const sn_nsdl_dynamic_resource_parameters_s *res);
+ *
+ * \brief Resource popping function.
+ *
+ * Used to remove a static or dynamic CoAP resource from lists without deleting it.
+ * NOTE: This function is a counterpart of sn_nsdl_put_resource().
+ *
+ * \param   *res    Pointer to a structure of type sn_nsdl_dynamic_resource_parameters_s that contains the information
+ *     about the resource.
+ *
+ * \return  0   Success
+ * \return  -1  Failure
+ * \return  -3  Invalid path
+ */
+extern int8_t sn_nsdl_pop_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resource_parameters_s *res);
 
 /**
  * \fn extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint8_t pathlen, uint8_t *path)

@@ -132,6 +132,7 @@ extern int8_t                                   sn_grs_send_coap_message(struct 
                                                                          sn_nsdl_addr_s *address_ptr,
                                                                          sn_coap_hdr_s *coap_hdr_ptr);
 extern int8_t                                   sn_grs_put_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parameters_s *res);
+extern int8_t                                   sn_grs_pop_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parameters_s *res);
 extern int8_t                                   sn_grs_delete_resource(struct grs_s *handle, uint16_t pathlen, uint8_t *path);
 extern void                                     sn_grs_mark_resources_as_registered(struct nsdl_s *handle);
 #ifndef MEMORY_OPTIMIZED_API

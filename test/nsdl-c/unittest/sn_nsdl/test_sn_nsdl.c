@@ -2623,6 +2623,24 @@ bool test_sn_nsdl_put_resource()
         return false;
     }
 
+    /* Add real data and pop it back too. */
+    sn_nsdl_static_resource_parameters_s static_res = {
+        .path = "hello",
+        .pathlen = 5
+    };
+    
+    sn_nsdl_dynamic_resource_parameters_s dyn_res = {
+        .static_resource_parameters = &static_res
+    };
+
+    if( 0 != sn_nsdl_put_resource(handle, &dyn_res) ){
+        return false;
+    }
+
+    if( 0 != sn_nsdl_pop_resource(handle, &dyn_res) ){
+        return false;
+    }
+
     sn_nsdl_destroy(handle);
     return true;
 }

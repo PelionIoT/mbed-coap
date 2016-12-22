@@ -1624,6 +1624,15 @@ extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resour
     return sn_grs_put_resource(handle->grs, res);
 }
 
+extern int8_t sn_nsdl_pop_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resource_parameters_s *res)
+{
+    if (!handle) {
+        return SN_NSDL_FAILURE;
+    }
+
+    return sn_grs_pop_resource(handle->grs, res);
+}
+
 extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
 {
     /* Check parameters */
