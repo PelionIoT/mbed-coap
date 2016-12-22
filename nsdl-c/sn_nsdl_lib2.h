@@ -22,8 +22,10 @@
 *
 */
 
-#ifndef SN_NSDL_LIB_H_
-#define SN_NSDL_LIB_H_
+#ifndef SN_NSDL_LIB_2_H_
+#define SN_NSDL_LIB_2_H_
+
+#ifdef MBED_CLIENT_C_NEW_API
 
 #include "mbed-client-libservice/ns_list.h"
 
@@ -660,5 +662,5 @@ extern void *sn_nsdl_get_context(const struct nsdl_s * const handle);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* SN_NSDL_LIB_H_ */
+#endif /* MBED_CLIENT_C_NEW_API */
+#endif /* SN_NSDL_LIB_2_H_ */

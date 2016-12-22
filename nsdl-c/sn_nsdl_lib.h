@@ -25,6 +25,12 @@
 #ifndef SN_NSDL_LIB_H_
 #define SN_NSDL_LIB_H_
 
+#ifdef MBED_CLIENT_C_NEW_API
+
+#include "nsdl-c/sn_nsdl_lib2.h"
+
+#else
+
 #include "ns_list.h"
 
 #ifdef __cplusplus
@@ -755,5 +761,8 @@ extern void *sn_nsdl_get_context(const struct nsdl_s * const handle);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* MBED_CLIENT_C_NEW_API */
+
 
 #endif /* SN_NSDL_LIB_H_ */

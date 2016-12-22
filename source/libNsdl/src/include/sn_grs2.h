@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef GRS_H_
-#define GRS_H_
+#ifndef GRS_2_H_
+#define GRS_2_H_
 
+#ifdef MBED_CLIENT_C_NEW_API
 
 #ifdef __cplusplus
 extern "C" {
@@ -144,7 +145,6 @@ extern int8_t                                   sn_grs_update_resource(struct gr
 }
 #endif
 
-
-
+#endif /* MBED_CLIENT_C_NEW_API */
 
 #endif /* GRS_H_ */
