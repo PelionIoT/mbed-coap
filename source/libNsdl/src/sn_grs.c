@@ -442,7 +442,7 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
         path_start_ptr = sn_grs_convert_uri(&path_len, resource_ptr->static_resource_parameters->path);
 
         /* Allocate memory for the path */
-        resource_copy_ptr->static_resource_parameters->path = handle->sn_grs_alloc(path_len+1);
+        resource_copy_ptr->static_resource_parameters->path = handle->sn_grs_alloc(path_len);
         if (!resource_copy_ptr->static_resource_parameters->path) {
             sn_grs_resource_info_free(handle, resource_copy_ptr);
             return SN_NSDL_FAILURE;
@@ -451,7 +451,7 @@ static int8_t sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_
         /* Copy path string to the copy */
         memcpy(resource_copy_ptr->static_resource_parameters->path,
                path_start_ptr,
-               path_len+1);
+               path_len);
 
         /* Allocate memory for the resource, and copy it to copy */
         if (resource_ptr->static_resource_parameters->resource) {
@@ -553,6 +553,8 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
              coap_packet_ptr->msg_code, coap_packet_ptr->msg_type, coap_packet_ptr->msg_id,
              coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr);
 
+
+
     sn_nsdl_dynamic_resource_parameters_s *resource_temp_ptr  = NULL;
     sn_coap_msg_code_e      status              = COAP_MSG_CODE_EMPTY;
     sn_coap_hdr_s           *response_message_hdr_ptr = NULL;
@@ -566,8 +568,18 @@ extern int8_t sn_grs_process_coap(struct nsdl_s *nsdl_handle, sn_coap_hdr_s *coa
         }
 
         /* Get resource */
-        resource_temp_ptr = sn_grs_search_resource(handle, coap_packet_ptr->uri_path_ptr, SN_GRS_SEARCH_METHOD);
+        char* path = nsdl_handle->grs->sn_grs_alloc(coap_packet_ptr->uri_path_len + 1);
+        if (!path) {
+            return SN_NSDL_FAILURE;
+        }
 
+        memcpy(path,
+               coap_packet_ptr->uri_path_ptr,
+               coap_packet_ptr->uri_path_len);
+        path[coap_packet_ptr->uri_path_len] = '\0';
+
+        resource_temp_ptr = sn_grs_search_resource(handle, path, SN_GRS_SEARCH_METHOD);
+        nsdl_handle->grs->sn_grs_free(path);
 
         /* * * * * * * * * * * */
         /* If resource exists  */
@@ -896,7 +908,7 @@ sn_nsdl_dynamic_resource_parameters_s *sn_grs_search_resource(struct grs_s *hand
     else if (search_method == SN_GRS_DELETE_METHOD) {
         /* Scan all nodes on list */
         ns_list_foreach(sn_nsdl_dynamic_resource_parameters_s, resource_search_temp, &handle->resource_root_list) {
-            uint8_t *temp_path = resource_search_temp->static_resource_parameters->path;
+            char *temp_path = resource_search_temp->static_resource_parameters->path;
             if (strlen(resource_search_temp->static_resource_parameters->path) > pathlen &&
                     (*(temp_path + (uint8_t)pathlen) == '/') &&
                     0 == memcmp(resource_search_temp->static_resource_parameters->path,
@@ -927,7 +939,7 @@ sn_nsdl_dynamic_resource_parameters_s *sn_grs_search_resource(struct grs_s *hand
 static char *sn_grs_convert_uri(uint16_t *uri_len, char *uri_ptr)
 {
     /* Local variables */
-    uint8_t *uri_start_ptr = uri_ptr;
+    char *uri_start_ptr = uri_ptr;
 
     /* If '/' in the beginning, update uri start pointer and uri len */
     if (*uri_ptr == '/') {
