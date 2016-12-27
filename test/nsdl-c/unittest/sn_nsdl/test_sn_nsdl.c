@@ -279,10 +279,9 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->observable = 1;
 
 
-    sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->static_resource_parameters->path = malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = 1;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -350,10 +349,9 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->observable = 1;
     sn_grs_stub.expectedInfo->coap_content_type = 0;
 
-    sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->static_resource_parameters->path = malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = 1;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -394,10 +392,9 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->observable = 1;
     sn_grs_stub.expectedInfo->coap_content_type = 0;
 
-    sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->static_resource_parameters->path = malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = 1;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -441,10 +438,9 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->static_resource_parameters->interface_description_ptr[1] = '\0';
     sn_grs_stub.expectedInfo->observable = 1;
 
-    sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(2);
+    sn_grs_stub.expectedInfo->static_resource_parameters->path = malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = 1;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -488,7 +484,6 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = 1;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -527,10 +522,8 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->static_resource_parameters->interface_description_ptr[1] = '\0';
     sn_grs_stub.expectedInfo->observable = 1;
 
-    sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(2);
-    sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
-    sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = UINT16_MAX;
+    sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(UINT16_MAX);
+    sn_grs_stub.expectedInfo->static_resource_parameters->path[UINT16_MAX-1] = '\0' ;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -570,10 +563,9 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->observable = 1;
     sn_grs_stub.expectedInfo->coap_content_type = UINT8_MAX;
 
-    sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(UINT16_MAX-20);
-    sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
-    sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = UINT16_MAX-20;
+    sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(UINT16_MAX-26);
+    memset(sn_grs_stub.expectedInfo->static_resource_parameters->path,'a', UINT16_MAX-26);
+    sn_grs_stub.expectedInfo->static_resource_parameters->path[UINT16_MAX-26-1] = '\0' ;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -613,10 +605,9 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->observable = 1;
     sn_grs_stub.expectedInfo->coap_content_type = 1;
 
-    sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(UINT16_MAX-27);
-    sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
-    sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = UINT16_MAX-27;
+    sn_grs_stub.expectedInfo->static_resource_parameters->path = malloc(UINT16_MAX-27);
+    memset(sn_grs_stub.expectedInfo->static_resource_parameters->path, 'a', UINT16_MAX-27);
+    sn_grs_stub.expectedInfo->static_resource_parameters->path[UINT16_MAX-27-1] = '\0' ;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -657,9 +648,8 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->coap_content_type = 1;
 
     sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(UINT16_MAX-28);
-    sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
-    sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = UINT16_MAX-28;
+    memset(sn_grs_stub.expectedInfo->static_resource_parameters->path, 'a', UINT16_MAX-28);
+    sn_grs_stub.expectedInfo->static_resource_parameters->path[UINT16_MAX-28-1];
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -700,7 +690,6 @@ bool test_sn_nsdl_register_endpoint()
     sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = 1;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -882,7 +871,7 @@ bool test_sn_nsdl_update_registration()
     sn_grs_stub.expectedInfo->static_resource_parameters->path = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->path[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->path[1] = '\0';
-    sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = 1;
+    //sn_grs_stub.expectedInfo->static_resource_parameters->pathlen = 1;
     sn_grs_stub.expectedInfo->static_resource_parameters->resource = (uint8_t*)malloc(2);
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[0] = 'a';
     sn_grs_stub.expectedInfo->static_resource_parameters->resource[1] = '\0';
@@ -2446,7 +2435,7 @@ bool test_sn_nsdl_exec()
 
 bool test_sn_nsdl_get_resource()
 {
-    if( NULL != sn_nsdl_get_resource(NULL, 0, NULL) ){
+    if( NULL != sn_nsdl_get_resource(NULL, NULL) ){
         return false;
     }
     sn_grs_stub.retNull = false;
@@ -2456,7 +2445,7 @@ bool test_sn_nsdl_get_resource()
 
     struct nsdl_s* handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
 
-    sn_nsdl_get_resource(handle, 0, NULL);
+    sn_nsdl_get_resource(handle, NULL);
 
     sn_nsdl_destroy(handle);
     return true;
@@ -2517,7 +2506,7 @@ bool test_set_NSP_address()
 
 bool test_sn_nsdl_list_resource()
 {
-    if( NULL != sn_nsdl_list_resource(NULL, 0, NULL) ){
+    if( NULL != sn_nsdl_list_resource(NULL, NULL) ){
         return false;
     }
     sn_grs_stub.retNull = false;
@@ -2526,7 +2515,7 @@ bool test_sn_nsdl_list_resource()
     memset(sn_grs_stub.expectedGrs,0, sizeof(struct grs_s));
     struct nsdl_s* handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
 
-    if( NULL != sn_nsdl_list_resource(handle, 0, NULL) ){
+    if( NULL != sn_nsdl_list_resource(handle, NULL) ){
         return false;
     }
 
@@ -2625,10 +2614,9 @@ bool test_sn_nsdl_put_resource()
 
     /* Add real data and pop it back too. */
     sn_nsdl_static_resource_parameters_s static_res = {
-        .path = "hello",
-        .pathlen = 5
+        .path = "hello"
     };
-    
+
     sn_nsdl_dynamic_resource_parameters_s dyn_res = {
         .static_resource_parameters = &static_res
     };
@@ -2647,7 +2635,7 @@ bool test_sn_nsdl_put_resource()
 
 bool test_sn_nsdl_delete_resource()
 {
-    if( SN_NSDL_FAILURE != sn_nsdl_delete_resource(NULL, 0, NULL) ){
+    if( SN_NSDL_FAILURE != sn_nsdl_delete_resource(NULL, NULL) ){
         return false;
     }
     sn_grs_stub.retNull = false;
@@ -2656,7 +2644,7 @@ bool test_sn_nsdl_delete_resource()
     memset(sn_grs_stub.expectedGrs,0, sizeof(struct grs_s));
     struct nsdl_s* handle = sn_nsdl_init(&nsdl_tx_callback, &nsdl_rx_callback, &myMalloc, &myFree);
 
-    if( 0 != sn_nsdl_delete_resource(handle, 0, NULL) ){
+    if( 0 != sn_nsdl_delete_resource(handle, NULL) ){
         return false;
     }
 

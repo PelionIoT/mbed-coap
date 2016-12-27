@@ -103,8 +103,7 @@ typedef struct sn_nsdl_sent_messages_ {
  * \brief Includes resource path
  */
 typedef struct sn_grs_resource_ {
-    uint8_t pathlen;
-    uint8_t *path;
+    char *path;
 } sn_grs_resource_s;
 
 /**
@@ -138,11 +137,10 @@ typedef enum sn_nsdl_resource_mode_ {
  * \brief Defines static parameters for the resource.
  */
 typedef struct sn_nsdl_static_resource_parameters_ {
-    char        *resource_type_ptr;         //
-    char        *interface_description_ptr; //
-    uint8_t     *path;                      // convert to char*?
+    char        *resource_type_ptr;         /**< Type of the resource */
+    char        *interface_description_ptr; /**< Interface description */
+    char        *path;                      /**< Resource path */
     uint8_t     *resource;                  /**< NULL if dynamic resource */
-    int16_t     pathlen;                    /**< Address */ // Check type
     uint16_t    resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
     bool        external_memory_block:1;    /**< 0 means block messages are handled inside this library,
                                                  otherwise block messages are passed to application */
@@ -437,51 +435,47 @@ extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resour
 extern int8_t sn_nsdl_pop_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resource_parameters_s *res);
 
 /**
- * \fn extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint8_t pathlen, uint8_t *path)
+ * \fn extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, char *path)
  *
  * \brief Resource delete function.
  *
  * Used to delete a resource. If resource has a subresources, these all must also be removed.
  *
  * \param   *handle     Pointer to nsdl-library handle
- * \param   pathlen     Contains the length of the path that is to be deleted (excluding possible trailing "\0").
  * \param   *path_ptr   A pointer to an array containing the path.
  *
  * \return  0   Success
  * \return  -1  Failure (No such resource)
  */
-extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path);
+extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, char *path);
 
 /**
- * \fn extern sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
+ * \fn extern sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, char *path)
  *
  * \brief Resource get function.
  *
  * Used to get a resource.
  *
  * \param   *handle     Pointer to nsdl-library handle
- * \param   pathlen Contains the length of the path that is to be returned (excluding possible trailing '\0').
- * \param   *path   A pointer to an array containing the path.
+  * \param   *path   A pointer to an array containing the path.
  *
  * \return  !NULL   Success, pointer to a sn_nsdl_dynamic_resource_parameters_s that contains the resource information\n
  * \return  NULL    Failure
  */
-extern sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path);
+extern sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, char *path);
 
 /**
- * \fn extern sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
+ * \fn extern sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, char *path)
  *
  * \brief Resource list function.
  *
  * \param   *handle Pointer to nsdl-library handle
- * \param   pathlen Contains the length of the target path (excluding possible trailing '\0').
- *     The length value is not examined if the path itself is a NULL pointer.
  * \param   *path   A pointer to an array containing the path or a NULL pointer.
  *
  * \return  !NULL   A pointer to a sn_grs_resource_list_s structure containing the resource listing.
  * \return  NULL    Failure with an unspecified error
  */
-sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path);
+sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, char *path);
 
 /**
  * \fn extern void sn_nsdl_free_resource_list(struct nsdl_s *handle, sn_grs_resource_list_s *list)
