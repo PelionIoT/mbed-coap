@@ -746,7 +746,7 @@ int8_t sn_nsdl_exec(struct nsdl_s *handle, uint32_t time)
     return sn_coap_protocol_exec(handle->grs->coap, time);
 }
 
-sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, char *path_ptr)
+sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, const char *path_ptr)
 {
     /* Check parameters */
     if (handle == NULL) {
@@ -1570,7 +1570,7 @@ static int8_t set_endpoint_info(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *
 }
 
 /* Wrapper */
-sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, char *path)
+sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, const char *path)
 {
     /* Check parameters */
     if (handle == NULL) {
@@ -1640,7 +1640,7 @@ extern int8_t sn_nsdl_pop_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resour
     return sn_grs_pop_resource(handle->grs, res);
 }
 
-extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, char *path)
+extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, const char *path)
 {
     /* Check parameters */
     if (handle == NULL) {

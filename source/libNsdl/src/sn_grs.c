@@ -40,7 +40,7 @@
 
 /* Local static function prototypes */
 static int8_t                       sn_grs_resource_info_free(struct grs_s *handle, sn_nsdl_dynamic_resource_parameters_s *resource_ptr);
-static char *sn_grs_convert_uri(uint16_t *uri_len, char *uri_ptr);
+static char *sn_grs_convert_uri(uint16_t *uri_len, const char *uri_ptr);
 #ifndef MEMORY_OPTIMIZED_API
 static int8_t                       sn_grs_add_resource_to_list(struct grs_s *handle, sn_nsdl_dynamic_resource_parameters_s *resource_ptr);
 #endif
@@ -144,7 +144,7 @@ extern struct grs_s *sn_grs_init(uint8_t (*sn_grs_tx_callback_ptr)(struct nsdl_s
     return handle_ptr;
 }
 
-extern sn_grs_resource_list_s *sn_grs_list_resource(struct grs_s *handle, char *path)
+extern sn_grs_resource_list_s *sn_grs_list_resource(struct grs_s *handle, const char *path)
 {
     sn_grs_resource_list_s *grs_resource_list_ptr = NULL;
 
@@ -245,7 +245,7 @@ extern sn_nsdl_dynamic_resource_parameters_s *sn_grs_get_next_resource(struct gr
     return ns_list_get_next(&handle->resource_root_list, sn_grs_current_resource);
 }
 
-extern int8_t sn_grs_delete_resource(struct grs_s *handle, char *path)
+extern int8_t sn_grs_delete_resource(struct grs_s *handle, const char *path)
 {
     /* Local variables */
     sn_nsdl_dynamic_resource_parameters_s     *resource_temp  = NULL;
@@ -331,7 +331,7 @@ extern int8_t sn_grs_create_resource(struct grs_s *handle, sn_nsdl_dynamic_resou
     }
 
     /* Check path validity */
-    if (!res->static_resource_parameters->path) {
+    if (!res->static_resource_parameters->path || res->static_resource_parameters->path[0] == '\0') {
         return SN_GRS_INVALID_PATH;
     }
 
@@ -482,7 +482,7 @@ int8_t sn_grs_put_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parame
     }
 
     /* Check path validity */
-    if (!res->static_resource_parameters->path) {
+    if (!res->static_resource_parameters->path || res->static_resource_parameters->path[0] == '\0') {
         return SN_GRS_INVALID_PATH;
     }
 
@@ -507,7 +507,7 @@ int8_t sn_grs_pop_resource(struct grs_s *handle, sn_nsdl_dynamic_resource_parame
     }
 
     /* Check path validity */
-    if (!res->static_resource_parameters->path) {
+    if (!res->static_resource_parameters->path || res->static_resource_parameters->path[0] == '\0') {
         return SN_GRS_INVALID_PATH;
     }
 
@@ -854,7 +854,7 @@ static int8_t sn_grs_core_request(struct nsdl_s *handle, sn_nsdl_addr_s *src_add
 }
 
 /**
- * \fn  static sn_grs_resource_info_s *sn_grs_search_resource(uint16_t pathlen, uint8_t *path, uint8_t search_method)
+ * \fn  static sn_grs_resource_info_s *sn_grs_search_resource(struct grs_s *handle, const char *path, uint8_t search_method)
  *
  * \brief Searches given resource from linked list
  *
@@ -870,7 +870,7 @@ static int8_t sn_grs_core_request(struct nsdl_s *handle, sn_nsdl_addr_s *src_add
  *
 */
 
-sn_nsdl_dynamic_resource_parameters_s *sn_grs_search_resource(struct grs_s *handle, char *path, uint8_t search_method)
+sn_nsdl_dynamic_resource_parameters_s *sn_grs_search_resource(struct grs_s *handle, const char *path, uint8_t search_method)
 {
     /* Local variables */
     char                     *path_temp_ptr          = NULL;
@@ -936,14 +936,14 @@ sn_nsdl_dynamic_resource_parameters_s *sn_grs_search_resource(struct grs_s *hand
  *
 */
 
-static char *sn_grs_convert_uri(uint16_t *uri_len, char *uri_ptr)
+static char *sn_grs_convert_uri(uint16_t *uri_len, const char *uri_ptr)
 {
     /* Local variables */
-    char *uri_start_ptr = uri_ptr;
+    char *uri_start_ptr = (char *) uri_ptr;
 
     /* If '/' in the beginning, update uri start pointer and uri len */
     if (*uri_ptr == '/') {
-        uri_start_ptr = uri_ptr + 1;
+        uri_start_ptr = (char *) uri_ptr + 1;
         *uri_len = *uri_len - 1;
     }
 

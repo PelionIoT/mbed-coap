@@ -447,7 +447,7 @@ extern int8_t sn_nsdl_pop_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resour
  * \return  0   Success
  * \return  -1  Failure (No such resource)
  */
-extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, char *path);
+extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, const char *path);
 
 /**
  * \fn extern sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, char *path)
@@ -462,7 +462,7 @@ extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, char *path);
  * \return  !NULL   Success, pointer to a sn_nsdl_dynamic_resource_parameters_s that contains the resource information\n
  * \return  NULL    Failure
  */
-extern sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, char *path);
+extern sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, const char *path);
 
 /**
  * \fn extern sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, char *path)
@@ -475,7 +475,7 @@ extern sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s
  * \return  !NULL   A pointer to a sn_grs_resource_list_s structure containing the resource listing.
  * \return  NULL    Failure with an unspecified error
  */
-sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, char *path);
+sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, const char *path);
 
 /**
  * \fn extern void sn_nsdl_free_resource_list(struct nsdl_s *handle, sn_grs_resource_list_s *list)
