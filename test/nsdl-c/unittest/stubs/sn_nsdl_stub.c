@@ -135,7 +135,7 @@ int8_t sn_nsdl_exec(struct nsdl_s *handle, uint32_t time)
     return sn_nsdl_stub.expectedInt8;
 }
 
-sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path_ptr)
+sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, char *path_ptr)
 {
     return NULL;
 }
@@ -160,7 +160,7 @@ int8_t sn_nsdl_process_oma_tlv(struct nsdl_s *handle, uint8_t *data_ptr, uint16_
 }
 
 /* Wrapper */
-sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
+sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, char *path)
 {
     return NULL;
 }
@@ -189,7 +189,7 @@ extern int8_t sn_nsdl_put_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resour
     return sn_nsdl_stub.expectedInt8;
 }
 
-extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
+extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, char *path)
 {
     return sn_nsdl_stub.expectedInt8;
 }

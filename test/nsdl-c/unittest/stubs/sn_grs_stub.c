@@ -60,7 +60,7 @@ extern struct grs_s *sn_grs_init(uint8_t (*sn_grs_tx_callback_ptr)(struct nsdl_s
 
 
 
-extern sn_grs_resource_list_s *sn_grs_list_resource(struct grs_s *handle, uint16_t pathlen, uint8_t *path)
+extern sn_grs_resource_list_s *sn_grs_list_resource(struct grs_s *handle, char *path)
 {
     if( sn_grs_stub.retNull ){
         return NULL;
@@ -114,7 +114,7 @@ extern sn_nsdl_dynamic_resource_parameters_s *sn_grs_get_next_resource(struct gr
 }
 
 
-extern int8_t sn_grs_delete_resource(struct grs_s *handle, uint16_t pathlen, uint8_t *path)
+extern int8_t sn_grs_delete_resource(struct grs_s *handle, char *path)
 {
     return sn_grs_stub.expectedInt8;
 }
@@ -163,7 +163,7 @@ extern int8_t sn_grs_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *ad
     return sn_grs_stub.expectedInt8;
 }
 
-sn_nsdl_dynamic_resource_parameters_s *sn_grs_search_resource(struct grs_s *handle, uint16_t pathlen, uint8_t *path, uint8_t search_method)
+sn_nsdl_dynamic_resource_parameters_s *sn_grs_search_resource(struct grs_s *handle, char *path, uint8_t search_method)
 {
     if(sn_grs_stub.useMockedPath){
         memcpy(path, &sn_grs_stub.mockedPath, sn_grs_stub.mockedPathLen);

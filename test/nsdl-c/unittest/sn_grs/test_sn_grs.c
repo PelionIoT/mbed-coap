@@ -124,7 +124,7 @@ bool test_sn_grs_init()
 
 bool test_sn_grs_list_resource()
 {
-    if( NULL != sn_grs_list_resource(NULL, 0, NULL) ){
+    if( NULL != sn_grs_list_resource(NULL, NULL) ){
         return false;
     }
 
@@ -132,13 +132,15 @@ bool test_sn_grs_list_resource()
     struct grs_s* handle = sn_grs_init(&myTxCallback, &myRxCallback, &myMalloc, &myFree);
 
     uint8_t* path = (uint8_t*)malloc(5);
-    if( NULL != sn_grs_list_resource(handle, 5, path) ){
+    memset(path, 'a', 5);
+    path[4] = '\0';
+    if( NULL != sn_grs_list_resource(handle, path) ){
         return false;
     }
 
     handle->resource_root_count = 1;
     retCounter = 1;
-    if( NULL != sn_grs_list_resource(handle, 5, path) ){
+    if( NULL != sn_grs_list_resource(handle, path) ){
         return false;
     }
 
@@ -148,7 +150,8 @@ bool test_sn_grs_list_resource()
     res->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res->static_resource_parameters->path = (uint8_t*)malloc(5);
-    res->static_resource_parameters->pathlen = 5;
+    memset(res->static_resource_parameters->path, 'a', 5);
+    res->static_resource_parameters->path[4] = '\0';
     res->free_on_delete = true;
     res->static_resource_parameters->free_on_delete = true;
 
@@ -159,18 +162,18 @@ bool test_sn_grs_list_resource()
     res2->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res2->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res2->static_resource_parameters->path = (uint8_t*)malloc(4);
-    res2->static_resource_parameters->pathlen = 4;
+    memset(res2->static_resource_parameters->path, 'a', 4);
     res2->free_on_delete = true;
     res2->static_resource_parameters->free_on_delete = true;
     ns_list_add_to_start(&handle->resource_root_list, res2);
     ++handle->resource_root_count;
     retCounter = 2;
-    if( NULL != sn_grs_list_resource(handle, 5, path) ){
+    if( NULL != sn_grs_list_resource(handle, path) ){
         return false;
     }
 
     retCounter = 4;
-    sn_grs_resource_list_s *list_ptr = sn_grs_list_resource(handle, 5, path);
+    sn_grs_resource_list_s *list_ptr = sn_grs_list_resource(handle, path);
     if( NULL == list_ptr ){
         return false;
     }
@@ -194,7 +197,9 @@ bool test_sn_grs_free_resource_list()
     grs_resource_list_ptr->res_count = 1;
     grs_resource_list_ptr->res = (sn_grs_resource_s*)malloc(sizeof(sn_grs_resource_s));
     grs_resource_list_ptr->res[0].path = (uint8_t*)malloc(2);
-    grs_resource_list_ptr->res[0].pathlen = 2;
+    grs_resource_list_ptr->res[0].path[0] = 'a';
+    grs_resource_list_ptr->res[0].path[1] = '\0';
+    //grs_resource_list_ptr->res[0].pathlen = 2;
 
     sn_grs_free_resource_list(handle, grs_resource_list_ptr);
 
@@ -263,7 +268,7 @@ bool test_sn_grs_get_next_resource()
 
 bool test_sn_grs_delete_resource()
 {
-    if( SN_NSDL_FAILURE != sn_grs_delete_resource(NULL, 0, NULL) ){
+    if( SN_NSDL_FAILURE != sn_grs_delete_resource(NULL, NULL) ){
         return false;
     }
 
@@ -277,7 +282,6 @@ bool test_sn_grs_delete_resource()
     res->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res->static_resource_parameters->path = (uint8_t*)malloc(2);
-    res->static_resource_parameters->pathlen = 1;
     res->static_resource_parameters->path[0] = 'a';
     res->static_resource_parameters->path[1] = '\0';
     res->free_on_delete = true;
@@ -290,7 +294,6 @@ bool test_sn_grs_delete_resource()
     res2->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res2->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res2->static_resource_parameters->path = (uint8_t*)malloc(4);
-    res2->static_resource_parameters->pathlen = 3;
     res2->static_resource_parameters->path[0] = 'a';
     res2->static_resource_parameters->path[1] = '/';
     res2->static_resource_parameters->path[2] = '1';
@@ -301,7 +304,7 @@ bool test_sn_grs_delete_resource()
     ++handle->resource_root_count;
 
     uint8_t path[2] = {'a', '\0'};
-    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, 1, &path) ){
+    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, &path) ){
         return false;
     }
 
@@ -314,7 +317,6 @@ bool test_sn_grs_delete_resource()
     res3->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res3->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res3->static_resource_parameters->path = (uint8_t*)malloc(2);
-    res3->static_resource_parameters->pathlen = 1;
     res3->static_resource_parameters->path[0] = 'a';
     res3->static_resource_parameters->path[1] = '\0';
     res3->free_on_delete = true;
@@ -328,7 +330,6 @@ bool test_sn_grs_delete_resource()
     res4->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res4->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res4->static_resource_parameters->path = (uint8_t*)malloc(4);
-    res4->static_resource_parameters->pathlen = 3;
     res4->static_resource_parameters->path[0] = 'a';
     res4->static_resource_parameters->path[1] = '/';
     res4->static_resource_parameters->path[2] = '1';
@@ -344,7 +345,6 @@ bool test_sn_grs_delete_resource()
     res5->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res5->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res5->static_resource_parameters->path = (uint8_t*)malloc(6);
-    res5->static_resource_parameters->pathlen = 5;
     res5->static_resource_parameters->path[0] = 'a';
     res5->static_resource_parameters->path[1] = '/';
     res5->static_resource_parameters->path[2] = '1';
@@ -362,7 +362,6 @@ bool test_sn_grs_delete_resource()
     res6->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res6->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res6->static_resource_parameters->path = (uint8_t*)malloc(5);
-    res6->static_resource_parameters->pathlen = 4;
     res6->static_resource_parameters->path[0] = 'a';
     res6->static_resource_parameters->path[1] = '/';
     res6->static_resource_parameters->path[2] = '1';
@@ -380,7 +379,6 @@ bool test_sn_grs_delete_resource()
     res7->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res7->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res7->static_resource_parameters->path = (uint8_t*)malloc(7);
-    res7->static_resource_parameters->pathlen = 6;
     res7->static_resource_parameters->path[0] = 'a';
     res7->static_resource_parameters->path[1] = '/';
     res7->static_resource_parameters->path[2] = '1';
@@ -394,7 +392,7 @@ bool test_sn_grs_delete_resource()
     ++handle->resource_root_count;
 
     uint8_t path2[4] = {'a', '/', '1', '\0'};
-    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, 3, &path2) ){
+    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, &path2) ){
         return false;
     }
 
@@ -404,7 +402,7 @@ bool test_sn_grs_delete_resource()
     }
 
     uint8_t path3[5] = {'a', '/', '1', '0', '\0'};
-    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, 4, &path3) ){
+    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, &path3) ){
         return false;
     }
 
@@ -412,7 +410,7 @@ bool test_sn_grs_delete_resource()
         return false;
     }
 
-    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, 1, &path) ){
+    if( SN_NSDL_SUCCESS != sn_grs_delete_resource(handle, &path) ){
         return false;
     }
 
@@ -440,7 +438,6 @@ bool test_sn_grs_update_resource()
     res->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res->static_resource_parameters->path = (uint8_t*)malloc(2);
-    res->static_resource_parameters->pathlen = 1;
     res->static_resource_parameters->path[0] = 'a';
     res->static_resource_parameters->path[1] = '\0';
     res->static_resource_parameters->resource = (uint8_t*)malloc(2);
@@ -454,7 +451,6 @@ bool test_sn_grs_update_resource()
     res2->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res2->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res2->static_resource_parameters->path = (uint8_t*)malloc(2);
-    res2->static_resource_parameters->pathlen = 1;
     res2->static_resource_parameters->path[0] = 'b';
     res2->static_resource_parameters->path[1] = '\0';
     res2->free_on_delete = true;
@@ -467,7 +463,6 @@ bool test_sn_grs_update_resource()
     res3->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res3->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res3->static_resource_parameters->path = (uint8_t*)malloc(2);
-    res3->static_resource_parameters->pathlen = 1;
     res3->static_resource_parameters->path[0] = 't';
     res3->static_resource_parameters->path[1] = '\0';
     res3->free_on_delete = true;
@@ -511,14 +506,14 @@ bool test_sn_grs_create_resource()
     memset(res, 0, sizeof(sn_nsdl_dynamic_resource_parameters_s));
     res->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
-    res->static_resource_parameters->pathlen = 1;
+    //res->static_resource_parameters->pathlen = 1;
     res->free_on_delete = true;
     res->static_resource_parameters->free_on_delete = true;
     if( SN_GRS_INVALID_PATH != sn_grs_create_resource(handle, res) ){
         return false;
     }
 
-    res->static_resource_parameters->path = (uint8_t*)malloc(2);
+    res->static_resource_parameters->path = malloc(2);
     res->static_resource_parameters->path[0] = 'a';
     res->static_resource_parameters->path[1] = '\0';
     res->static_resource_parameters->resource = (uint8_t*)malloc(2);
@@ -590,7 +585,7 @@ bool test_sn_grs_put_resource()
     memset(res, 0, sizeof(sn_nsdl_dynamic_resource_parameters_s));
     res->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
-    res->static_resource_parameters->pathlen = 1;
+    //res->static_resource_parameters->pathlen = 1;
     res->free_on_delete = true;
     res->static_resource_parameters->free_on_delete = true;
     if( SN_GRS_INVALID_PATH != sn_grs_put_resource(handle, res) ){
@@ -598,7 +593,6 @@ bool test_sn_grs_put_resource()
     }
 
     res->static_resource_parameters->path = (uint8_t*)malloc(2);
-    res->static_resource_parameters->pathlen = 1;
     res->static_resource_parameters->path[0] = 'a';
     res->static_resource_parameters->path[1] = '\0';
     res->static_resource_parameters->resource = (uint8_t*)malloc(2);
@@ -733,7 +727,6 @@ bool test_sn_grs_process_coap()
     res->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res->static_resource_parameters->path = (uint8_t*)malloc(2);
-    res->static_resource_parameters->pathlen = 1;
     res->static_resource_parameters->path[0] = 'a';
     res->static_resource_parameters->path[1] = '\0';
     res->static_resource_parameters->mode = SN_GRS_DYNAMIC;
@@ -1046,7 +1039,6 @@ bool test_sn_grs_process_coap()
     res->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res->static_resource_parameters->path = (uint8_t*)malloc(2);
-    res->static_resource_parameters->pathlen = 1;
     res->static_resource_parameters->path[0] = 'a';
     res->static_resource_parameters->path[1] = '\0';
     res->static_resource_parameters->mode = SN_GRS_STATIC;
@@ -1209,7 +1201,7 @@ bool test_sn_grs_send_coap_message()
 
 bool test_sn_grs_search_resource()
 {
-    if( NULL != sn_grs_search_resource(NULL, 0, NULL, 0) ){
+    if( NULL != sn_grs_search_resource(NULL, NULL, 0) ){
         return false;
     }
     struct grs_s* handle = (struct grs_s*)malloc(sizeof(struct grs_s));
@@ -1223,7 +1215,8 @@ bool test_sn_grs_search_resource()
     path[2] = 'b';
     path[3] = 'c';
     path[4] = '/';
-    if( NULL != sn_grs_search_resource(handle, 5, path, SN_GRS_SEARCH_METHOD) ){
+    path[5] = '\0';
+    if( NULL != sn_grs_search_resource(handle, path, SN_GRS_SEARCH_METHOD) ){
         return false;
     }
 
@@ -1236,20 +1229,20 @@ bool test_sn_grs_search_resource()
     res->static_resource_parameters->path[0] = 'a';
     res->static_resource_parameters->path[1] = 'b';
     res->static_resource_parameters->path[2] = 'c';
-    res->static_resource_parameters->pathlen = 3;
+    res->static_resource_parameters->path[3] = '\0';
     res->free_on_delete = true;
     res->static_resource_parameters->free_on_delete = true;
     ns_list_add_to_start(&handle->resource_root_list, res);
     ++handle->resource_root_count;
 
-    if( NULL == sn_grs_search_resource(handle, 5, path, SN_GRS_SEARCH_METHOD) ){
+    if( NULL == sn_grs_search_resource(handle, path, SN_GRS_SEARCH_METHOD) ){
         return false;
     }
 
-    res->static_resource_parameters->path[3] = '/';
-    res->static_resource_parameters->pathlen = 4;
+    res->static_resource_parameters->path[2] = '/';
+    res->static_resource_parameters->path[3] = '\0';
 
-    if( NULL == sn_grs_search_resource(handle, 5, path, SN_GRS_DELETE_METHOD) ){
+    if( NULL != sn_grs_search_resource(handle, path, SN_GRS_DELETE_METHOD) ){
         return false;
     }
 
@@ -1274,7 +1267,6 @@ bool test_sn_grs_mark_resources_as_registered()
     res->static_resource_parameters = (sn_nsdl_static_resource_parameters_s*)malloc(sizeof(sn_nsdl_static_resource_parameters_s));
     memset(res->static_resource_parameters, 0, sizeof(sn_nsdl_static_resource_parameters_s));
     res->static_resource_parameters->path = (uint8_t*)malloc(2);
-    res->static_resource_parameters->pathlen = 1;
     res->static_resource_parameters->path[0] = 'a';
     res->static_resource_parameters->path[1] = '\0';
     res->static_resource_parameters->mode = SN_GRS_DYNAMIC;

@@ -667,7 +667,7 @@ int8_t sn_nsdl_process_coap(struct nsdl_s *handle, uint8_t *packet_ptr, uint16_t
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
     // Pass block to application if external_memory_block is set
     if(coap_packet_ptr->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING) {
-        resource = sn_nsdl_get_resource(handle, coap_packet_ptr->uri_path_len, coap_packet_ptr->uri_path_ptr);
+        resource = sn_nsdl_get_resource(handle, coap_packet_ptr->uri_path_ptr);
         if(resource && resource->static_resource_parameters->external_memory_block) {
             sn_coap_protocol_block_remove(handle->grs->coap,
                                           src_ptr,
@@ -746,14 +746,14 @@ int8_t sn_nsdl_exec(struct nsdl_s *handle, uint32_t time)
     return sn_coap_protocol_exec(handle->grs->coap, time);
 }
 
-sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path_ptr)
+sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_resource(struct nsdl_s *handle, const char *path_ptr)
 {
     /* Check parameters */
     if (handle == NULL) {
         return NULL;
     }
 
-    return sn_grs_search_resource(handle->grs, pathlen, path_ptr, SN_GRS_SEARCH_METHOD);
+    return sn_grs_search_resource(handle->grs, path_ptr, SN_GRS_SEARCH_METHOD);
 }
 
 
@@ -909,10 +909,14 @@ int8_t sn_nsdl_build_registration_body(struct nsdl_s *handle, sn_coap_hdr_s *mes
 
             *temp_ptr++ = '<';
             *temp_ptr++ = '/';
+            size_t path_len = 0;
+            if (resource_temp_ptr->static_resource_parameters->path) {
+                path_len = strlen(resource_temp_ptr->static_resource_parameters->path);
+            }
             memcpy(temp_ptr,
                    resource_temp_ptr->static_resource_parameters->path,
-                   resource_temp_ptr->static_resource_parameters->pathlen);
-            temp_ptr += resource_temp_ptr->static_resource_parameters->pathlen;
+                   path_len);
+            temp_ptr += path_len;
             *temp_ptr++ = '>';
 
             /* Resource attributes */
@@ -1013,10 +1017,13 @@ static uint16_t sn_nsdl_calculate_registration_body_size(struct nsdl_s *handle, 
             }
 
             /* Count length for the resource path </path> */
-            if (sn_nsdl_check_uint_overflow(return_value,
-                                            3,
-                                            resource_temp_ptr->static_resource_parameters->pathlen)) {
-                return_value += (3 + resource_temp_ptr->static_resource_parameters->pathlen);
+            size_t path_len = 0;
+            if (resource_temp_ptr->static_resource_parameters->path) {
+                path_len = strlen(resource_temp_ptr->static_resource_parameters->path);
+            }
+
+            if (sn_nsdl_check_uint_overflow(return_value, 3, path_len)) {
+                return_value += (3 + path_len);
             } else {
                 *error = SN_NSDL_FAILURE;
                 break;
@@ -1563,14 +1570,14 @@ static int8_t set_endpoint_info(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *
 }
 
 /* Wrapper */
-sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
+sn_grs_resource_list_s *sn_nsdl_list_resource(struct nsdl_s *handle, const char *path)
 {
     /* Check parameters */
     if (handle == NULL) {
         return NULL;
     }
 
-    return sn_grs_list_resource(handle->grs, pathlen, path);
+    return sn_grs_list_resource(handle->grs, path);
 }
 
 void sn_nsdl_free_resource_list(struct nsdl_s *handle, sn_grs_resource_list_s *list)
@@ -1633,14 +1640,14 @@ extern int8_t sn_nsdl_pop_resource(struct nsdl_s *handle, sn_nsdl_dynamic_resour
     return sn_grs_pop_resource(handle->grs, res);
 }
 
-extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, uint16_t pathlen, uint8_t *path)
+extern int8_t sn_nsdl_delete_resource(struct nsdl_s *handle, const char *path)
 {
     /* Check parameters */
     if (handle == NULL) {
         return SN_NSDL_FAILURE;
     }
 
-    return sn_grs_delete_resource(handle->grs, pathlen, path);
+    return sn_grs_delete_resource(handle->grs, path);
 }
 extern const sn_nsdl_dynamic_resource_parameters_s *sn_nsdl_get_first_resource(struct nsdl_s *handle)
 {
