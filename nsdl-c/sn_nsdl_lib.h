@@ -34,7 +34,6 @@ extern "C" {
 #define SN_NSDL_ENDPOINT_NOT_REGISTERED  0
 #define SN_NSDL_ENDPOINT_IS_REGISTERED   1
 
-
 /* Handle structure */
 struct nsdl_s;
 
@@ -43,20 +42,20 @@ struct nsdl_s;
  */
 typedef enum omalw_server_security_ {
     SEC_NOT_SET = -1,
-    PSK = 0,
-    RPK = 1,
+    PSK         = 0,
+    RPK         = 1,
     CERTIFICATE = 2,
-    NO_SEC = 3
+    NO_SEC      = 3
 } omalw_server_security_t;
 
 /**
  * \brief Endpoint binding and mode
  */
 typedef enum sn_nsdl_oma_binding_and_mode_ {
-    BINDING_MODE_NOT_SET = 0,
-    BINDING_MODE_U = 0x01,
-    BINDING_MODE_Q = 0x02,
-    BINDING_MODE_S = 0x04
+    BINDING_MODE_NOT_SET    = 0,
+    BINDING_MODE_U          = 0x01,
+    BINDING_MODE_Q          = 0x02,
+    BINDING_MODE_S          = 0x04
 } sn_nsdl_oma_binding_and_mode_t;
 
 /**
@@ -74,29 +73,27 @@ typedef enum sn_nsdl_registration_mode_ {
  * \brief Endpoint registration parameters
  */
 typedef struct sn_nsdl_ep_parameters_ {
-    uint8_t     endpoint_name_len;
-    uint8_t     domain_name_len;
-    uint8_t     type_len;
-    uint8_t     lifetime_len;
-    uint8_t     location_len;
-
+    uint8_t endpoint_name_len;
+    uint8_t domain_name_len;
+    uint8_t type_len;
+    uint8_t lifetime_len;
+    uint8_t location_len;
     sn_nsdl_registration_mode_t ds_register_mode;       /**< Defines registration mode */
     sn_nsdl_oma_binding_and_mode_t binding_and_mode;    /**< Defines endpoints binding and mode */
-
-    uint8_t     *endpoint_name_ptr;                     /**< Endpoint name */
-    uint8_t     *domain_name_ptr;                       /**< Domain to register. If null, NSP uses default domain */
-    uint8_t     *type_ptr;                              /**< Endpoint type */
-    uint8_t     *lifetime_ptr;                          /**< Endpoint lifetime in seconds. eg. "1200" = 1200 seconds */
-    uint8_t     *location_ptr;                          /**< Endpoint location in server, optional parameter,default is NULL */
+    uint8_t *endpoint_name_ptr;                         /**< Endpoint name */
+    uint8_t *domain_name_ptr;                           /**< Domain to register. If null, NSP uses default domain */
+    uint8_t *type_ptr;                                  /**< Endpoint type */
+    uint8_t *lifetime_ptr;                              /**< Endpoint lifetime in seconds. eg. "1200" = 1200 seconds */
+    uint8_t *location_ptr;                              /**< Endpoint location in server, optional parameter,default is NULL */
 } sn_nsdl_ep_parameters_s;
 
 /**
  * \brief For internal use
  */
 typedef struct sn_nsdl_sent_messages_ {
-    uint8_t     message_type;
-    uint16_t    msg_id_number;
-    ns_list_link_t  link;
+    uint8_t message_type;
+    uint16_t msg_id_number;
+    ns_list_link_t link;
 } sn_nsdl_sent_messages_s;
 
 /**
@@ -118,9 +115,9 @@ typedef struct sn_grs_resource_list_ {
  * \brief Resource access rights
  */
 typedef enum sn_grs_resource_acl_ {
-    SN_GRS_GET_ALLOWED  = 0x01 ,
-    SN_GRS_PUT_ALLOWED  = 0x02,
-    SN_GRS_POST_ALLOWED = 0x04,
+    SN_GRS_GET_ALLOWED      = 0x01 ,
+    SN_GRS_PUT_ALLOWED      = 0x02,
+    SN_GRS_POST_ALLOWED     = 0x04,
     SN_GRS_DELETE_ALLOWED   = 0x08
 } sn_grs_resource_acl_e;
 
@@ -137,39 +134,39 @@ typedef enum sn_nsdl_resource_mode_ {
  * \brief Defines static parameters for the resource.
  */
 typedef struct sn_nsdl_static_resource_parameters_ {
-    char        *resource_type_ptr;         /**< Type of the resource */
-    char        *interface_description_ptr; /**< Interface description */
-    char        *path;                      /**< Resource path */
-    uint8_t     *resource;                  /**< NULL if dynamic resource */
-    uint16_t    resourcelen;                /**< 0 if dynamic resource, resource information in static resource */
-    bool        external_memory_block:1;    /**< 0 means block messages are handled inside this library,
-                                                 otherwise block messages are passed to application */
-    unsigned    mode:2;                     /**< STATIC etc.. */
-    bool        free_on_delete:1;           /**< 1 if struct is dynamic allocted --> to be freed */
+    char *resource_type_ptr;         /**< Type of the resource */
+    char *interface_description_ptr; /**< Interface description */
+    char *path;                      /**< Resource path */
+    uint8_t *resource;               /**< NULL if dynamic resource */
+    uint16_t resourcelen;            /**< 0 if dynamic resource, resource information in static resource */
+    bool external_memory_block:1;    /**< 0 means block messages are handled inside this library,
+                                          otherwise block messages are passed to application */
+    unsigned    mode:2;              /**< STATIC etc.. */
+    bool        free_on_delete:1;    /**< 1 if struct is dynamic allocted --> to be freed */
 } sn_nsdl_static_resource_parameters_s;
 
 /**
  * \brief Defines dynamic parameters for the resource.
  */
 typedef struct sn_nsdl_resource_parameters_ {
-    uint8_t                                     (*sn_grs_dyn_res_callback)(struct nsdl_s *,
-                                                                       sn_coap_hdr_s *,
-                                                                       sn_nsdl_addr_s *,
-                                                                       sn_nsdl_capab_e);
+    uint8_t (*sn_grs_dyn_res_callback)(struct nsdl_s *,
+            sn_coap_hdr_s *,
+            sn_nsdl_addr_s *,
+            sn_nsdl_capab_e);
 #ifdef MEMORY_OPTIMIZED_API
-    const sn_nsdl_static_resource_parameters_s  *static_resource_parameters;
+    const sn_nsdl_static_resource_parameters_s *static_resource_parameters;
 #else
-    sn_nsdl_static_resource_parameters_s        *static_resource_parameters;
+    sn_nsdl_static_resource_parameters_s *static_resource_parameters;
 #endif
-    ns_list_link_t                              link;
-    uint16_t                                    coap_content_type;  /**< CoAP content type */
-    unsigned                                    access:4;           /**< Allowed operation mode, GET, PUT, etc,
-                                                                         TODO! This should be in static struct but current
-                                                                         mbed-client implementation requires this to be changed at runtime */
-    unsigned                                    registered:2;       /**< Is resource registered or not */
-    bool                                        publish_uri:1;      /**< 1 if resource to be published to server */
-    bool                                        free_on_delete:1;   /**< 1 if struct is dynamic allocted --> to be freed */
-    bool                                        observable:1;       /**< Is resource observable or not */
+    ns_list_link_t link;
+    uint16_t coap_content_type; /**< CoAP content type */
+    unsigned access:4;          /**< Allowed operation mode, GET, PUT, etc,
+                                     TODO! This should be in static struct but current
+                                     mbed-client implementation requires this to be changed at runtime */
+    unsigned registered:2;      /**< Is resource registered or not */
+    bool publish_uri:1;         /**< 1 if resource to be published to server */
+    bool free_on_delete:1;      /**< 1 if struct is dynamic allocted --> to be freed */
+    bool observable:1;          /**< Is resource observable or not */
 } sn_nsdl_dynamic_resource_parameters_s;
 
 /**
@@ -178,7 +175,6 @@ typedef struct sn_nsdl_resource_parameters_ {
 typedef struct sn_nsdl_oma_server_info_ {
     sn_nsdl_addr_s *omalw_address_ptr;
     omalw_server_security_t omalw_server_security;
-
 } sn_nsdl_oma_server_info_t;
 
 /**
@@ -186,9 +182,8 @@ typedef struct sn_nsdl_oma_server_info_ {
  */
 typedef struct sn_nsdl_bs_ep_info_ {
     void (*oma_bs_status_cb)(sn_nsdl_oma_server_info_t *);  /**< Callback for OMA bootstrap status */
-
     void (*oma_bs_status_cb_handle)(sn_nsdl_oma_server_info_t *,
-                                    struct nsdl_s *);       /**< Callback for OMA bootstrap status with nsdl handle */
+            struct nsdl_s *);                               /**< Callback for OMA bootstrap status with nsdl handle */
 } sn_nsdl_bs_ep_info_t;
 
 /**
@@ -207,9 +202,10 @@ typedef struct sn_nsdl_bs_ep_info_ {
  *
  * \return  pointer to created handle structure. NULL if failed
  */
-struct nsdl_s *sn_nsdl_init(uint8_t (*sn_nsdl_tx_cb)(struct nsdl_s *, sn_nsdl_capab_e , uint8_t *, uint16_t, sn_nsdl_addr_s *),
-                            uint8_t (*sn_nsdl_rx_cb)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *),
-                            void *(*sn_nsdl_alloc)(uint16_t), void (*sn_nsdl_free)(void *));
+struct nsdl_s *sn_nsdl_init(uint8_t (*sn_nsdl_tx_cb)(struct nsdl_s *,sn_nsdl_capab_e, uint8_t *, uint16_t, sn_nsdl_addr_s *),
+        uint8_t (*sn_nsdl_rx_cb)(struct nsdl_s *, sn_coap_hdr_s *, sn_nsdl_addr_s *),
+        void *(*sn_nsdl_alloc)(uint16_t),
+        void (*sn_nsdl_free)(void *));
 
 /**
  * \fn extern uint16_t sn_nsdl_register_endpoint(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *endpoint_info_ptr);
@@ -303,8 +299,11 @@ extern void sn_nsdl_nsp_lost(struct nsdl_s *handle);
  * \return  !0  Success, observation messages message ID
  * \return  0   Failure
  */
-extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle, uint8_t *token_ptr, uint8_t token_len,
-        uint8_t *payload_ptr, uint16_t payload_len,
+extern uint16_t sn_nsdl_send_observation_notification(struct nsdl_s *handle,
+        uint8_t *token_ptr,
+        uint8_t token_len,
+        uint8_t *payload_ptr,
+        uint16_t payload_len,
         sn_coap_observe_e observe,
         sn_coap_msg_type_e message_type,
         sn_coap_content_format_e content_format);
@@ -509,7 +508,11 @@ extern int8_t sn_nsdl_send_coap_message(struct nsdl_s *handle, sn_nsdl_addr_s *a
  * \return  0   Success
  * \return  -1  Failed to indicate that internal address pointer is not allocated (call nsdl_init() first).
  */
-extern int8_t set_NSP_address(struct nsdl_s *handle, uint8_t *NSP_address, uint8_t address_length, uint16_t port, sn_nsdl_addr_type_e address_type);
+extern int8_t set_NSP_address(struct nsdl_s *handle,
+        uint8_t *NSP_address,
+        uint8_t address_length,
+        uint16_t port,
+        sn_nsdl_addr_type_e address_type);
 
 /**
  * \fn extern int8_t sn_nsdl_destroy(struct nsdl_s *handle);
@@ -528,7 +531,10 @@ extern int8_t sn_nsdl_destroy(struct nsdl_s *handle);
  *
  * \return bootstrap message ID, 0 if failed
  */
-extern uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_address_ptr, sn_nsdl_ep_parameters_s *endpoint_info_ptr, sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
+extern uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle,
+        sn_nsdl_addr_s *bootstrap_address_ptr,
+        sn_nsdl_ep_parameters_s *endpoint_info_ptr,
+        sn_nsdl_bs_ep_info_t *bootstrap_endpoint_info_ptr);
 
 /**
  * \fn sn_coap_hdr_s *sn_nsdl_build_response(struct nsdl_s *handle, sn_coap_hdr_s *coap_packet_ptr, uint8_t msg_code)
@@ -584,7 +590,9 @@ extern void sn_nsdl_release_allocated_coap_msg_mem(struct nsdl_s *handle, sn_coa
  * \param uint8_t resending_intervall message resending intervall in seconds
  * \return  0 = success, -1 = failure
  */
-extern int8_t sn_nsdl_set_retransmission_parameters(struct nsdl_s *handle, uint8_t resending_count, uint8_t resending_interval);
+extern int8_t sn_nsdl_set_retransmission_parameters(struct nsdl_s *handle,
+        uint8_t resending_count,
+        uint8_t resending_interval);
 
 /**
  * \fn int8_t sn_nsdl_set_retransmission_buffer(struct nsdl_s *handle, uint8_t buffer_size_messages, uint16_t buffer_size_bytes)

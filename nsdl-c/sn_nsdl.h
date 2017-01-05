@@ -37,7 +37,6 @@ extern "C" {
 /* * * * ENUMERATIONS  * * * */
 /* * * * * * * * * * * * * * */
 
-
 /**
  * \brief Used protocol
  */
@@ -57,11 +56,9 @@ typedef enum sn_nsdl_addr_type_ {
     SN_NSDL_ADDRESS_TYPE_NONE       = 0xFF
 } sn_nsdl_addr_type_e;
 
-
 #define SN_NDSL_RESOURCE_NOT_REGISTERED 0
 #define SN_NDSL_RESOURCE_REGISTERING    1
 #define SN_NDSL_RESOURCE_REGISTERED     2
-
 
 /* * * * * * * * * * * * * */
 /* * * * STRUCTURES  * * * */
@@ -71,10 +68,10 @@ typedef enum sn_nsdl_addr_type_ {
  * \brief Address structure of Packet data
  */
 typedef struct sn_nsdl_addr_ {
-    uint8_t                 addr_len;
-    sn_nsdl_addr_type_e     type;
-    uint16_t                port;
-    uint8_t                 *addr_ptr;
+    uint8_t addr_len;
+    sn_nsdl_addr_type_e type;
+    uint16_t port;
+    uint8_t *addr_ptr;
 } sn_nsdl_addr_s;
 
 /**
@@ -84,7 +81,6 @@ typedef struct registration_info_ {
     uint8_t endpoint_len;
     uint8_t endpoint_type_len;
     uint16_t links_len;
-
     uint8_t *endpoint_ptr;          /**< Endpoint name */
     uint8_t *endpoint_type_ptr;     /**< Endpoint type */
     uint8_t *links_ptr;             /**< Resource registration string */
