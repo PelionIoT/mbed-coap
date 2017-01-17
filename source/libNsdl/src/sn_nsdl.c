@@ -129,9 +129,7 @@ int8_t sn_nsdl_destroy(struct nsdl_s *handle)
             handle->ep_information_ptr->type_ptr = 0;
         }
 
-        if (handle->ep_information_ptr->lifetime_ptr)
-
-        {
+        if (handle->ep_information_ptr->lifetime_ptr) {
             handle->sn_nsdl_free(handle->ep_information_ptr->lifetime_ptr);
             handle->ep_information_ptr->lifetime_ptr = 0;
         }
@@ -1562,9 +1560,6 @@ static int8_t set_endpoint_info(struct nsdl_s *handle, sn_nsdl_ep_parameters_s *
 
     handle->ep_information_ptr->binding_and_mode = endpoint_info_ptr->binding_and_mode;
     handle->ep_information_ptr->ds_register_mode = endpoint_info_ptr->ds_register_mode;
-
-    handle->ep_information_ptr->location_ptr = 0;
-    handle->ep_information_ptr->location_len = 0;
 
     return 0;
 }
