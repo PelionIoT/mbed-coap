@@ -23,6 +23,7 @@ include_directories(${LINUX_PORT_LIBS_PATH}/mbed-client-c/nsdl-c/)
 include_directories(${LINUX_PORT_LIBS_PATH}/mbed-trace/)
 include_directories(${LINUX_PORT_LIBS_PATH}/nanostack-libservice/)
 include_directories(${LINUX_PORT_LIBS_PATH}/nanostack-libservice/mbed-client-libservice/)
+include_directories(${LINUX_PORT_LIBS_PATH}/mbed-client-randlib/mbed-client-randlib/)
 
 
 
