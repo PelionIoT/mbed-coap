@@ -47,6 +47,7 @@
 #define COAP_CON_PARAMETER_LEN          3
 #define BS_EP_PARAMETER_LEN             3
 #define BS_QUEUE_MODE_PARAMATER_LEN     2
+#define BS_ACCOUNT_ID_PARAMETER_LEN     4
 
 #define SN_NSDL_EP_REGISTER_MESSAGE     1
 #define SN_NSDL_EP_UPDATE_MESSAGE       2
@@ -86,6 +87,7 @@ static uint8_t bs_uri[]                         = {'b', 's'};
 static uint8_t bs_ep_name[]                     = {'e', 'p', '='};
 static uint8_t et_parameter[]                   = {'e', 't', '='};      /* Endpoint type */
 static uint8_t bs_queue_mode[]                  = {'b', '='};
+static uint8_t bs_account_id[]                  = {'a', 'i', 'd', '='};
 
 /* Function prototypes */
 static uint16_t         sn_nsdl_internal_coap_send(struct nsdl_s *handle, sn_coap_hdr_s *coap_header_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t message_description);
@@ -597,16 +599,27 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
     bootstrap_coap_header.uri_path_ptr = bs_uri;
     bootstrap_coap_header.uri_path_len = sizeof(bs_uri);
 
-    uri_query_tmp_ptr = handle->sn_nsdl_alloc(endpoint_info_ptr->endpoint_name_len + BS_EP_PARAMETER_LEN);
+    size_t ep_len = endpoint_info_ptr->endpoint_name_len + BS_EP_PARAMETER_LEN;
+    size_t domain_len = endpoint_info_ptr->domain_name_len + BS_ACCOUNT_ID_PARAMETER_LEN + 1;
+    uri_query_tmp_ptr = handle->sn_nsdl_alloc(ep_len + domain_len);
     if (!uri_query_tmp_ptr) {
         handle->sn_nsdl_free(bootstrap_coap_header.options_list_ptr);
         return 0;
     }
 
     memcpy(uri_query_tmp_ptr, bs_ep_name, BS_EP_PARAMETER_LEN);
-    memcpy((uri_query_tmp_ptr + BS_EP_PARAMETER_LEN), endpoint_info_ptr->endpoint_name_ptr, endpoint_info_ptr->endpoint_name_len);
+    memcpy((uri_query_tmp_ptr + BS_EP_PARAMETER_LEN),
+           endpoint_info_ptr->endpoint_name_ptr,
+           endpoint_info_ptr->endpoint_name_len);
+    if (domain_len > BS_ACCOUNT_ID_PARAMETER_LEN + 1) {
+        memcpy(uri_query_tmp_ptr + ep_len, "&", 1);
+        memcpy(uri_query_tmp_ptr + ep_len + 1, bs_account_id, BS_ACCOUNT_ID_PARAMETER_LEN);
+        memcpy((uri_query_tmp_ptr + ep_len + 1 + BS_ACCOUNT_ID_PARAMETER_LEN),
+               endpoint_info_ptr->domain_name_ptr,
+               endpoint_info_ptr->domain_name_len);
+    }
 
-    bootstrap_coap_header.options_list_ptr->uri_query_len = endpoint_info_ptr->endpoint_name_len + BS_EP_PARAMETER_LEN;
+    bootstrap_coap_header.options_list_ptr->uri_query_len = ep_len + domain_len;
     bootstrap_coap_header.options_list_ptr->uri_query_ptr = uri_query_tmp_ptr;
 
     /* Save bootstrap server address */
@@ -633,7 +646,6 @@ uint16_t sn_nsdl_oma_bootstrap(struct nsdl_s *handle, sn_nsdl_addr_s *bootstrap_
 #endif //MBED_CLIENT_DISABLE_BOOTSTRAP_FEATURE
 
 }
-
 char *sn_nsdl_get_version(void)
 {
 #if defined(YOTTA_MBED_CLIENT_C_VERSION_STRING)

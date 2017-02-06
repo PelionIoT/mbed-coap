@@ -1144,6 +1144,12 @@ bool test_sn_nsdl_oma_bootstrap()
     memset(addr, 0, sizeof(sn_nsdl_addr_s));
     sn_nsdl_ep_parameters_s *param = (sn_nsdl_ep_parameters_s*)malloc(sizeof(sn_nsdl_ep_parameters_s));
     memset(param, 0, sizeof(sn_nsdl_ep_parameters_s));
+    param->endpoint_name_ptr = (uint8_t*)malloc(5);
+    param->domain_name_ptr = (uint8_t*)malloc(5);
+    param->domain_name_len = 5;
+    param->endpoint_name_len = 5;
+    memset(param->endpoint_name_ptr, 'a', 5);
+    memset(param->domain_name_ptr, 'b', 5);
     sn_nsdl_bs_ep_info_t *info = (sn_nsdl_bs_ep_info_t*)malloc(sizeof(sn_nsdl_bs_ep_info_t));
     memset(info, 0, sizeof(sn_nsdl_bs_ep_info_t));
 
@@ -1209,6 +1215,8 @@ bool test_sn_nsdl_oma_bootstrap()
     }
 
     free(info);
+    free(param->endpoint_name_ptr);
+    free(param->domain_name_ptr);
     free(param);
     free(addr);
     free(sn_grs_stub.expectedGrs->coap);
@@ -2628,7 +2636,7 @@ bool test_sn_nsdl_put_resource()
         .path = "hello",
         .pathlen = 5
     };
-    
+
     sn_nsdl_dynamic_resource_parameters_s dyn_res = {
         .static_resource_parameters = &static_res
     };
