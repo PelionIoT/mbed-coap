@@ -16,7 +16,6 @@
 #include "CppUTest/TestHarness.h"
 #include <string.h>
 #include <stdint.h>
-#include "sn_nsdl.h"
 #include "sn_coap_header.h"
 #include "sn_coap_protocol_internal.h"
 

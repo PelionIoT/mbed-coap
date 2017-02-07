@@ -17,9 +17,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
-#include "sn_nsdl.h"
 #include "sn_coap_protocol.h"
-#include "sn_nsdl_lib.h"
 #include "sn_coap_header_internal.h"
 #include "sn_coap_protocol_internal.h"
 
