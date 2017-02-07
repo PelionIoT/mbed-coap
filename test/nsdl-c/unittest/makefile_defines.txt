@@ -14,8 +14,9 @@ INCLUDE_DIRS =\
   ../../../../yotta_modules/nanostack-libservice/mbed-client-libservice\
   ../../../../yotta_modules/mbed-trace\
   ../../../../yotta_modules/nanostack-randlib/mbed-client-randlib\
+  ../../../../yotta_modules/libcoap/libcoap\
+  ../../../../yotta_modules/libcoap/source/include\
   ../../../../../libService/libService\
-  ../../../../source/libCoap/src/include\
   ../../../../source/libNsdl/src/include\
   /usr/include\
   $(CPPUTEST_HOME)/include\

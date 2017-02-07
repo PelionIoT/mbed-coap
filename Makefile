@@ -1,5 +1,5 @@
 #
-# Makefile for combined NSDL+COAP library
+# Makefile for combined NSDL library
 #
 
 # Define compiler toolchain with CC or PLATFORM variables
@@ -19,18 +19,15 @@ LIB = libnsdl.a
 SRCS := \
 	source/libNsdl/src/sn_grs.c \
 	source/libNsdl/src/sn_nsdl.c \
-	source/libCoap/src/sn_coap_protocol.c \
-	source/libCoap/src/sn_coap_parser.c \
-	source/libCoap/src/sn_coap_header_check.c \
-	source/libCoap/src/sn_coap_builder.c \
 
 override CFLAGS += -DVERSION='"$(VERSION)"'
 
 override CFLAGS += -Isource/libNsdl/src/include/
-override CFLAGS += -Isource/libCoap/src/include/
 SERVLIB_DIR := ../libService
 override CFLAGS += -I$(SERVLIB_DIR)/libService
 override CFLAGS += -Insdl-c/
+override CFLAGS += -I../libcoap/libcoap/
+override CFLAGS += -I../libcoap/source/include/
 
 include ../libService/toolchain_rules.mk
 

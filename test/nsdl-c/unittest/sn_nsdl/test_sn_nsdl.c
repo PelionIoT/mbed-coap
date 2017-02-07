@@ -5,7 +5,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include "sn_coap_header.h"
+//#include "sn_coap_header.h"
 #include "sn_nsdl.h"
 #include "sn_nsdl_lib.h"
 #include "sn_grs.h"
