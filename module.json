@@ -1,15 +1,13 @@
 {
-  "name": "mbed-client-c",
-  "version": "4.0.0",
-  "description": "Nanostack NSDL and COAP library",
+  "name": "libcoap",
+  "version": "1.0.0",
+  "description": "COAP library",
   "keywords": [
     "coap",
     "nanostack"
   ],
   "license": "Apache-2.0",
   "extraIncludes": [
-    "nsdl-c",
-    "source/libNsdl/src/include",
     "source/libCoap/src/include"
   ],
   "dependencies": {
@@ -17,5 +15,11 @@
     "mbed-trace": ">=0.2.0,<2.0.0",
     "nanostack-randlib": "^1.2.0"
   },
-  "targetDependencies": {}
+  "targetDependencies": {},
+  "author": "Yogesh Pande <yogesh.pande@arm.com>",
+  "repository": {
+    "url": "https://github.com/ARMmbed/libcoap.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/ARMmbed/libcoap"
 }

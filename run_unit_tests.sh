@@ -14,7 +14,7 @@
 # limitations under the License.
 
 echo
-echo "Build mbed Client C unit tests"
+echo "Build libcoap C unit tests"
 echo
 
 yt target x86-linux-native

@@ -1,5 +1,5 @@
 #
-# Makefile for combined NSDL+COAP library
+# Makefile for combined COAP library
 #
 
 # Define compiler toolchain with CC or PLATFORM variables
@@ -15,22 +15,19 @@
 # OR (IAR-ARM)
 # make CC=iccarm
 
-LIB = libnsdl.a
+LIB = libcoap.a
 SRCS := \
-	source/libNsdl/src/sn_grs.c \
-	source/libNsdl/src/sn_nsdl.c \
-	source/libCoap/src/sn_coap_protocol.c \
-	source/libCoap/src/sn_coap_parser.c \
-	source/libCoap/src/sn_coap_header_check.c \
-	source/libCoap/src/sn_coap_builder.c \
+	source/sn_coap_protocol.c \
+	source/sn_coap_parser.c \
+	source/sn_coap_header_check.c \
+	source/sn_coap_builder.c \
 
 override CFLAGS += -DVERSION='"$(VERSION)"'
 
-override CFLAGS += -Isource/libNsdl/src/include/
-override CFLAGS += -Isource/libCoap/src/include/
+override CFLAGS += -Isource/include/
 SERVLIB_DIR := ../libService
 override CFLAGS += -I$(SERVLIB_DIR)/libService
-override CFLAGS += -Insdl-c/
+override CFLAGS += -Ilibcoap/
 
 include ../libService/toolchain_rules.mk
 
@@ -42,4 +39,4 @@ release:
 
 .PHONY: deploy_to
 deploy_to: all
-	tar --transform 's,^,nsdl-c/,' --append -f $(TO) *.a nsdl-c
+	tar --transform 's,^,libcoap/,' --append -f $(TO) *.a libcoap
