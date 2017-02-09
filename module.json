@@ -8,7 +8,7 @@
   ],
   "license": "Apache-2.0",
   "extraIncludes": [
-    "source/libCoap/src/include"
+    "source/include"
   ],
   "dependencies": {
     "nanostack-libservice": "^3.0.0",
