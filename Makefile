@@ -27,7 +27,8 @@ override CFLAGS += -DVERSION='"$(VERSION)"'
 override CFLAGS += -Isource/include/
 SERVLIB_DIR := ../libService
 override CFLAGS += -I$(SERVLIB_DIR)/libService
-override CFLAGS += -Ilibcoap/
+override CFLAGS += -I.
+#override CFLAGS += -Ilibcoap/
 
 include ../libService/toolchain_rules.mk
 
