@@ -36,7 +36,7 @@
 #endif
 
 #include "ns_types.h"
-#include "libcoap/sn_coap_protocol.h"
+#include "mbed-coap/sn_coap_protocol.h"
 #include "sn_coap_header_internal.h"
 #include "sn_coap_protocol_internal.h"
 #include "randLIB.h"

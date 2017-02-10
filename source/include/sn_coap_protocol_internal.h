@@ -26,7 +26,7 @@
 
 #include "ns_list.h"
 #include "sn_coap_header_internal.h"
-#include "libcoap/sn_config.h"
+#include "mbed-coap/sn_config.h"
 
 #ifdef __cplusplus
 extern "C" {

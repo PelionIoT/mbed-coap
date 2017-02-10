@@ -10,7 +10,7 @@ INCLUDE_DIRS =\
   ../stubs\
   ../../../..\
   ../../../../source\
-  ../../../../libcoap\
+  ../../../../mbed-coap\
   ../../../../yotta_modules/nanostack-libservice/mbed-client-libservice\
   ../../../../yotta_modules/mbed-trace\
   ../../../../yotta_modules/nanostack-randlib/mbed-client-randlib\

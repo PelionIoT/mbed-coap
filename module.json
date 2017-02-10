@@ -1,5 +1,5 @@
 {
-  "name": "libcoap",
+  "name": "mbed-coap",
   "version": "4.0.0",
   "description": "COAP library",
   "keywords": [
@@ -18,8 +18,8 @@
   "targetDependencies": {},
   "author": "Yogesh Pande <yogesh.pande@arm.com>",
   "repository": {
-    "url": "https://github.com/ARMmbed/libcoap.git",
+    "url": "https://github.com/ARMmbed/mbed-coap.git",
     "type": "git"
   },
-  "homepage": "https://github.com/ARMmbed/libcoap"
+  "homepage": "https://github.com/ARMmbed/mbed-coap"
 }

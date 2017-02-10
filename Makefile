@@ -1,5 +1,5 @@
 #
-# Makefile for combined COAP library
+# Makefile for COAP library
 #
 
 # Define compiler toolchain with CC or PLATFORM variables
@@ -15,7 +15,7 @@
 # OR (IAR-ARM)
 # make CC=iccarm
 
-LIB = libcoap.a
+LIB = libmbedcoap.a
 SRCS := \
 	source/sn_coap_protocol.c \
 	source/sn_coap_parser.c \
@@ -28,7 +28,6 @@ override CFLAGS += -Isource/include/
 SERVLIB_DIR := ../libService
 override CFLAGS += -I$(SERVLIB_DIR)/libService
 override CFLAGS += -I.
-#override CFLAGS += -Ilibcoap/
 
 include ../libService/toolchain_rules.mk
 
