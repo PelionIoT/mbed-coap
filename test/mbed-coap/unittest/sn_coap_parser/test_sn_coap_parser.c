@@ -882,6 +882,16 @@ bool test_sn_coap_parser_options_parse_multiple_options()
     if (hdr)
         sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
 
+    /* This input used to result in an infinite loop. */
+    uint8_t data[] = {0x40, 0x01, 0x00, 0x00, 0xb5, 0x31, 0x30, 0x32, 0x34, 0x35,
+                      0x01, 0x30, 0x03, 0x31, 0x30, 0x31, 0x00, 0x00, 0x00, 0x00,
+                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    retCounter = 100;
+    hdr = sn_coap_parser(coap, sizeof(data), data, ver);
+
+    if (hdr)
+        sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
+
 end2:
     free(ver);
     free(coap);

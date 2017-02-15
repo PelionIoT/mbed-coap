@@ -655,7 +655,7 @@ static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_
     uint16_t i                      = 1;
 
     /* Loop all Uri-Query options */
-    while (i < packet_left_len) {
+    while (i <= packet_left_len) {
         if (option == COAP_OPTION_LOCATION_PATH && option_number_len > 255) {
             return -1;
         }
