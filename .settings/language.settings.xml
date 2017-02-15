@@ -11,7 +11,7 @@
 						<entry kind="includePath" name="/${ProjName}/libNsdl/src/include">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
-						<entry kind="includePath" name="/${ProjName}/libCoap/src/include">
+                        <entry kind="includePath" name="/${ProjName}/mbed-coap/src/include">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
 						<entry kind="includePath" name="/libService/include">
@@ -100,7 +100,7 @@
 						<entry kind="includePath" name="/${ProjName}/libNsdl/src/include">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
-						<entry kind="includePath" name="/${ProjName}/libCoap/src/include">
+                        <entry kind="includePath" name="/${ProjName}/mbed-coap/src/include">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
 						<entry kind="includePath" name="/libService/include">
