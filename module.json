@@ -7,9 +7,6 @@
     "nanostack"
   ],
   "license": "Apache-2.0",
-  "extraIncludes": [
-    "source/include"
-  ],
   "dependencies": {
     "nanostack-libservice": "^3.0.0",
     "mbed-trace": ">=0.2.0,<2.0.0",
@@ -21,5 +18,9 @@
     "url": "https://github.com/ARMmbed/mbed-coap.git",
     "type": "git"
   },
-  "homepage": "https://github.com/ARMmbed/mbed-coap"
+  "homepage": "https://github.com/ARMmbed/mbed-coap",
+  "extraIncludes": [
+    "mbed-coap",
+    "source/include"
+  ]
 }
