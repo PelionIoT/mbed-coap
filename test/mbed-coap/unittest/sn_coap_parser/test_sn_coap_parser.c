@@ -892,6 +892,23 @@ bool test_sn_coap_parser_options_parse_multiple_options()
     if (hdr)
         sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
 
+    /* Thin input caused problems with parser len calculations */
+    uint8_t data2[] = {0x40, 0x03, 0x00, 0xa5, 0xb2, 0x31, 0x33, 0x01, 0x30, 0x02,
+                      0x33, 0x37, 0x4d, 0x10, 0x75, 0x6e, 0x61, 0x6c, 0x6c, 0x6f,
+                      0x77, 0x65, 0x64, 0x3d, 0x74, 0x68, 0x69, 0x73, 0x5f, 0x69,
+                      0x73, 0x5f, 0x6e, 0x6f, 0x74, 0x5f, 0x61, 0x6c, 0x6c, 0x6f,
+                      0x77, 0x65, 0x64};
+    retCounter = 100;
+    hdr = sn_coap_parser(coap, sizeof(data2), data2, ver);
+
+    if( !hdr || (hdr && hdr->coap_status == COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
+        ret = false;
+        goto end2;
+    }
+
+    if (hdr)
+        sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
+
 end2:
     free(ver);
     free(coap);

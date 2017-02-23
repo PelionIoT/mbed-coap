@@ -35,7 +35,6 @@
 #include "mbed-coap/sn_coap_protocol.h"
 #include "sn_coap_header_internal.h"
 #include "sn_coap_protocol_internal.h"
-
 /* * * * * * * * * * * * * * * * * * * * */
 /* * * * LOCAL FUNCTION PROTOTYPES * * * */
 /* * * * * * * * * * * * * * * * * * * * */
@@ -380,7 +379,7 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                 /* This is managed independently because User gives this option in one character table */
 
                 ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr,
-                             message_left,
+                             packet_len - ((*packet_data_pptr) - packet_data_start_ptr) + 1,
                              &dst_coap_msg_ptr->options_list_ptr->etag_ptr,
                              (uint16_t *)&dst_coap_msg_ptr->options_list_ptr->etag_len,
                              COAP_OPTION_ETAG, option_len);
@@ -413,7 +412,7 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                     return -1;
                 }
                 /* This is managed independently because User gives this option in one character table */
-                ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr, message_left,
+                ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr, packet_len - ((*packet_data_pptr) - packet_data_start_ptr) + 1,
                              &dst_coap_msg_ptr->options_list_ptr->location_path_ptr, &dst_coap_msg_ptr->options_list_ptr->location_path_len,
                              COAP_OPTION_LOCATION_PATH, option_len);
                 if (ret_status >= 0) {
@@ -435,7 +434,7 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                 break;
 
             case COAP_OPTION_LOCATION_QUERY:
-                ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr, message_left,
+                ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr, packet_len - ((*packet_data_pptr) - packet_data_start_ptr) + 1,
                              &dst_coap_msg_ptr->options_list_ptr->location_query_ptr, &dst_coap_msg_ptr->options_list_ptr->location_query_len,
                              COAP_OPTION_LOCATION_QUERY, option_len);
                 if (ret_status >= 0) {
@@ -447,7 +446,7 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                 break;
 
             case COAP_OPTION_URI_PATH:
-                ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr, message_left,
+                ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr, packet_len - ((*packet_data_pptr) - packet_data_start_ptr) + 1,
                              &dst_coap_msg_ptr->uri_path_ptr, &dst_coap_msg_ptr->uri_path_len,
                              COAP_OPTION_URI_PATH, option_len);
                 if (ret_status >= 0) {
@@ -470,7 +469,7 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                 break;
 
             case COAP_OPTION_URI_QUERY:
-                ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr, message_left,
+                ret_status = sn_coap_parser_options_parse_multiple_options(handle, packet_data_pptr, packet_len - ((*packet_data_pptr) - packet_data_start_ptr) + 1,
                              &dst_coap_msg_ptr->options_list_ptr->uri_query_ptr, &dst_coap_msg_ptr->options_list_ptr->uri_query_len,
                              COAP_OPTION_URI_QUERY, option_len);
                 if (ret_status >= 0) {
@@ -655,7 +654,7 @@ static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_
     uint16_t i                      = 1;
 
     /* Loop all Uri-Query options */
-    while (i <= packet_left_len) {
+    while (i < packet_left_len) {
         if (option == COAP_OPTION_LOCATION_PATH && option_number_len > 255) {
             return -1;
         }
@@ -746,3 +745,4 @@ static int8_t sn_coap_parser_payload_parse(uint16_t packet_data_len, uint8_t *pa
     }
     return 0;
 }
+
