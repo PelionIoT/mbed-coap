@@ -690,7 +690,7 @@ static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_
 
         if (option_number_len == 13) {
 
-            if(i + 1 >= packet_left_len){
+            if(i + 1 >= packet_left_len) {
                 return -1;
             }
 
@@ -698,7 +698,7 @@ static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_
             option_number_len = *(packet_data_ptr + i) + 13;
         } else if (option_number_len == 14) {
 
-            if(i + 2 >= packet_left_len){
+            if(i + 2 >= packet_left_len) {
                 return -1;
             }
 
