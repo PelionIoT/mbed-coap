@@ -67,7 +67,7 @@ static int8_t                sn_coap_convert_block_size(uint16_t block_size);
 static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coap_hdr_s *source_header_ptr);
 #endif
 #if ENABLE_RESENDINGS
-static void                  sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param);
+static uint8_t               sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param);
 static sn_nsdl_transmit_s   *sn_coap_protocol_linked_list_send_msg_search(struct coap_s *handle,sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static coap_send_msg_s      *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len);
@@ -300,26 +300,9 @@ void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
         return;
     }
     ns_list_foreach_safe(coap_send_msg_s, tmp, &handle->linked_list_resent_msgs) {
-        if (tmp->send_msg_ptr) {
-            if (tmp->send_msg_ptr->dst_addr_ptr) {
-                if (tmp->send_msg_ptr->dst_addr_ptr->addr_ptr) {
-                    handle->sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr->addr_ptr);
-                    tmp->send_msg_ptr->dst_addr_ptr->addr_ptr = 0;
-                }
-                handle->sn_coap_protocol_free(tmp->send_msg_ptr->dst_addr_ptr);
-                tmp->send_msg_ptr->dst_addr_ptr = 0;
-            }
-            if (tmp->send_msg_ptr->packet_ptr) {
-                handle->sn_coap_protocol_free(tmp->send_msg_ptr->packet_ptr);
-                tmp->send_msg_ptr->packet_ptr = 0;
-            }
-            handle->sn_coap_protocol_free(tmp->send_msg_ptr);
-            tmp->send_msg_ptr = 0;
-        }
         ns_list_remove(&handle->linked_list_resent_msgs, tmp);
+        sn_coap_protocol_release_allocated_send_msg_mem(handle, tmp);
         --handle->count_resent_msgs;
-        handle->sn_coap_protocol_free(tmp);
-        tmp = 0;
     }
 #endif
 }
@@ -441,9 +424,11 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
     /* Check if built Message type was confirmable, only these messages are resent */
     if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE) {
         /* Store message to Linked list for resending purposes */
-        sn_coap_protocol_linked_list_send_msg_store(handle, dst_addr_ptr, byte_count_built, dst_packet_data_ptr,
+        if (sn_coap_protocol_linked_list_send_msg_store(handle, dst_addr_ptr, byte_count_built, dst_packet_data_ptr,
                 handle->system_time + (uint32_t)(handle->sn_coap_resending_intervall * RESPONSE_RANDOM_FACTOR),
-                param);
+                param) == 0) {
+            return -4;
+        }
     }
 
 #endif /* ENABLE_RESENDINGS */
@@ -786,7 +771,7 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
 #if ENABLE_RESENDINGS  /* If Message resending is not used at all, this part of code will not be compiled */
 
 /**************************************************************************//**
- * \fn static void sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time)
+ * \fn static uint8_t sn_coap_protocol_linked_list_send_msg_store(sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time)
  *
  * \brief Stores message to Linked list for sending purposes.
 
@@ -797,9 +782,13 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
  * \param *send_packet_data_ptr is Packet data to be stored
  *
  * \param sending_time is stored sending time
+ *
+ * \return 0 Allocation or buffer limit reached
+ *
+ * \return 1 Msg stored properly
  *****************************************************************************/
 
-static void sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len,
+static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len,
         uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param)
 {
 
@@ -807,19 +796,19 @@ static void sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, s
 
     /* If both queue parameters are "0" or resending count is "0", then re-sending is disabled */
     if (((handle->sn_coap_resending_queue_msgs == 0) && (handle->sn_coap_resending_queue_bytes == 0)) || (handle->sn_coap_resending_count == 0)) {
-        return;
+        return 1;
     }
 
     if (handle->sn_coap_resending_queue_msgs > 0) {
         if (handle->count_resent_msgs >= handle->sn_coap_resending_queue_msgs) {
-            return;
+            return 0;
         }
     }
 
     /* Count resending queue size, if buffer size is defined */
     if (handle->sn_coap_resending_queue_bytes > 0) {
         if ((sn_coap_count_linked_list_size(&handle->linked_list_resent_msgs) + send_packet_data_len) > handle->sn_coap_resending_queue_bytes) {
-            return;
+            return 0;
         }
     }
 
@@ -827,7 +816,7 @@ static void sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, s
     stored_msg_ptr = sn_coap_protocol_allocate_mem_for_msg(handle, dst_addr_ptr, send_packet_data_len);
 
     if (stored_msg_ptr == 0) {
-        return;
+        return 0;
     }
 
     /* Filling of coap_send_msg_s with initialization values */
@@ -851,6 +840,7 @@ static void sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, s
     /* Storing Resending message to Linked list */
     ns_list_add_to_end(&handle->linked_list_resent_msgs, stored_msg_ptr);
     ++handle->count_resent_msgs;
+    return 1;
 }
 
 /**************************************************************************//**
@@ -1344,6 +1334,7 @@ static void sn_coap_protocol_linked_list_blockwise_remove_old_data(struct coap_s
  *
  * \param *dst_addr_ptr is pointer to destination address where message will be sent
  * \param packet_data_len is length of allocated Packet data
+ * \param uri_path_len is length of messages path url
  *
  * \return pointer to allocated struct
  *****************************************************************************/
@@ -1354,44 +1345,34 @@ coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn
     coap_send_msg_s *msg_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_send_msg_s));
 
     if (msg_ptr == NULL) {
-        return 0;
+        return NULL;
     }
 
+    //Locall structure for 1 malloc for send msg
+    struct
+    {
+        sn_nsdl_transmit_s transmit;
+        sn_nsdl_addr_s addr;
+        uint8_t trail_data[];
+    } *m;
+    int trail_size = dst_addr_ptr->addr_len + packet_data_len;
+
+    m = handle->sn_coap_protocol_malloc(sizeof *m + trail_size);
+    if (!m) {
+        handle->sn_coap_protocol_free(msg_ptr);
+        return NULL;
+    }
+    //Init data
+    memset(m, 0, sizeof(*m) + trail_size);
     memset(msg_ptr, 0, sizeof(coap_send_msg_s));
 
-    msg_ptr->send_msg_ptr = handle->sn_coap_protocol_malloc(sizeof(sn_nsdl_transmit_s));
+    msg_ptr->send_msg_ptr = &m->transmit;
+    msg_ptr->send_msg_ptr->dst_addr_ptr = &m->addr;
 
-    if (msg_ptr->send_msg_ptr == NULL) {
-        sn_coap_protocol_release_allocated_send_msg_mem(handle, msg_ptr);
-        return 0;
+    msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr = m->trail_data;
+    if (packet_data_len) {
+        msg_ptr->send_msg_ptr->packet_ptr = m->trail_data + dst_addr_ptr->addr_len;
     }
-
-    memset(msg_ptr->send_msg_ptr, 0 , sizeof(sn_nsdl_transmit_s));
-
-    msg_ptr->send_msg_ptr->dst_addr_ptr = handle->sn_coap_protocol_malloc(sizeof(sn_nsdl_addr_s));
-
-    if (msg_ptr->send_msg_ptr->dst_addr_ptr == NULL) {
-        sn_coap_protocol_release_allocated_send_msg_mem(handle, msg_ptr);
-        return 0;
-    }
-
-    memset(msg_ptr->send_msg_ptr->dst_addr_ptr, 0, sizeof(sn_nsdl_addr_s));
-
-    msg_ptr->send_msg_ptr->packet_ptr = handle->sn_coap_protocol_malloc(packet_data_len);
-
-    if (msg_ptr->send_msg_ptr->packet_ptr == NULL) {
-        sn_coap_protocol_release_allocated_send_msg_mem(handle, msg_ptr);
-        return 0;
-    }
-
-    msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr = handle->sn_coap_protocol_malloc(dst_addr_ptr->addr_len);
-
-    if (msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr == NULL) {
-        sn_coap_protocol_release_allocated_send_msg_mem(handle, msg_ptr);
-        return 0;
-    }
-
-    memset(msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr, 0, dst_addr_ptr->addr_len);
 
     return msg_ptr;
 }
@@ -1408,28 +1389,10 @@ coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn
 static void sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handle, coap_send_msg_s *freed_send_msg_ptr)
 {
     if (freed_send_msg_ptr != NULL) {
-        if (freed_send_msg_ptr->send_msg_ptr != NULL) {
-            if (freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr != NULL) {
-                if (freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr != NULL) {
-                    handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr);
-                    freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr = 0;
-                }
-
-                handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr);
-                freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr = 0;
-            }
-
-            if (freed_send_msg_ptr->send_msg_ptr->packet_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->packet_ptr);
-                freed_send_msg_ptr->send_msg_ptr->packet_ptr = 0;
-            }
-
-            handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr);
-            freed_send_msg_ptr->send_msg_ptr = 0;
-        }
-
+        handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr);
+        freed_send_msg_ptr->send_msg_ptr = NULL;
         handle->sn_coap_protocol_free(freed_send_msg_ptr);
-        freed_send_msg_ptr = 0;
+        freed_send_msg_ptr = NULL;
     }
 }
 
