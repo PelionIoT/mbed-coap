@@ -189,6 +189,8 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
 {
     retCounter = 1;
     struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+
+    sn_coap_protocol_set_retransmission_buffer(handle, 6, 0);
     sn_nsdl_addr_s addr;
     memset(&addr, 0, sizeof(sn_nsdl_addr_s));
     sn_coap_hdr_s hdr;
@@ -208,6 +210,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     memset(addr.addr_ptr, '1', 5);
 
     sn_coap_builder_stub.expectedInt16 = 0;
+    retCounter = 2;
 
     CHECK( 0 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
@@ -275,7 +278,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     sn_coap_builder_stub.expectedInt16 = -1;
     CHECK( -1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
-    retCounter = 1;
+    retCounter = 2;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
@@ -302,6 +305,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     memset(hdr.payload_ptr, '1', SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20);
     hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
 
+    sn_coap_protocol_clear_retransmission_buffer(handle);
     retCounter = 2;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
@@ -320,7 +324,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     memset(hdr.payload_ptr, '1', UINT16_MAX);
     hdr.payload_len = UINT16_MAX;
 
-    retCounter = 5;
+    retCounter = 4;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
@@ -329,7 +333,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     memset(hdr.payload_ptr, '1', UINT16_MAX - 1);
     hdr.payload_len = UINT16_MAX - 1;
 
-    retCounter = 5;
+    retCounter = 4;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
@@ -340,7 +344,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     free(hdr.options_list_ptr);
     hdr.options_list_ptr = NULL;
     //Test sn_coap_protocol_copy_header here -->
-    retCounter = 6;
+    retCounter = 3;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
     CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
@@ -396,7 +400,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr2->payload_len = buff_len;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL));
 
-    retCounter = 19;
+    retCounter = 11;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr2->payload_len = buff_len;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL));
@@ -408,7 +412,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     //<-- Test sn_coap_protocol_copy_header here
 
     hdr.msg_code = COAP_MSG_CODE_REQUEST_GET;
-    retCounter = 5;
+    retCounter = 4;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
@@ -418,12 +422,12 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     retCounter = 1;
     handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
 
-    retCounter = 6;
+    retCounter = 3;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
     CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
-    retCounter = 7;
+    retCounter = 4;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
@@ -447,6 +451,8 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     retCounter = 1;
     struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+
+
     sn_nsdl_addr_s* addr = (sn_nsdl_addr_s*)malloc(sizeof(sn_nsdl_addr_s));
     memset(addr, 0, sizeof(sn_nsdl_addr_s));
 
@@ -861,6 +867,8 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_protocol_destroy(handle);
     retCounter = 1;
     handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+
+    sn_coap_protocol_set_retransmission_buffer(handle, 5, 0);
 
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
