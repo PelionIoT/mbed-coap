@@ -58,7 +58,7 @@ extern "C" {
  * \brief This structure is returned by sn_coap_exec() for sending
  */
 typedef struct sn_nsdl_transmit_ {
-    sn_nsdl_addr_s         *dst_addr_ptr;
+    sn_nsdl_addr_s          dst_addr_ptr;
 
     sn_nsdl_capab_e         protocol;
 
