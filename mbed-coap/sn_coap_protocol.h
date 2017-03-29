@@ -38,7 +38,8 @@ extern "C" {
  *
  * \param *used_malloc_func_ptr is function pointer for used memory allocation function.
  *
- * \param *used_free_func_ptr is function pointer for used memory free function.
+ * \param *used_free_func_ptr is function pointer for used memory free function. Note: the implementation
+ *          must handle NULL parameter and ignore it just as typical libc's free() does.
  *
  * \param *used_tx_callback_ptr function callback pointer to tx function for sending coap messages
  *
