@@ -110,7 +110,7 @@ struct sn_coap_hdr_;
 #endif
 
 #ifndef SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-#define SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE          0  /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
+#define SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE          1024  /**< Must be 2^x and x is at least 4. Suitable values: 0, 16, 32, 64, 128, 256, 512 and 1024 */
 #endif
 
 
