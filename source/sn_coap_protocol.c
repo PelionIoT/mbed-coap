@@ -748,7 +748,11 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
                         }
                     }
                     /* Remove message from Linked list */
-                    sn_coap_protocol_linked_list_send_msg_remove(handle, stored_msg_ptr->send_msg_ptr->dst_addr_ptr, temp_msg_id);
+                    ns_list_remove(&handle->linked_list_resent_msgs, stored_msg_ptr);
+                    --handle->count_resent_msgs;
+
+                    /* Free memory of stored message */
+                    sn_coap_protocol_release_allocated_send_msg_mem(handle, stored_msg_ptr);
                 } else {
                     /* Send message  */
                     stored_msg_ptr->coap->sn_coap_tx_callback(stored_msg_ptr->send_msg_ptr->packet_ptr,
