@@ -733,6 +733,10 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
                     uint16_t temp_msg_id = (stored_msg_ptr->send_msg_ptr->packet_ptr[2] << 8);
                     temp_msg_id += (uint16_t)stored_msg_ptr->send_msg_ptr->packet_ptr[3];
 
+                    /* Remove message from Linked list */
+                    ns_list_remove(&handle->linked_list_resent_msgs, stored_msg_ptr);
+                    --handle->count_resent_msgs;
+
                     /* If RX callback have been defined.. */
                     if (stored_msg_ptr->coap->sn_coap_rx_callback != 0) {
                         sn_coap_hdr_s *tmp_coap_hdr_ptr;
@@ -747,9 +751,6 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
                             sn_coap_parser_release_allocated_coap_msg_mem(stored_msg_ptr->coap, tmp_coap_hdr_ptr);
                         }
                     }
-                    /* Remove message from Linked list */
-                    ns_list_remove(&handle->linked_list_resent_msgs, stored_msg_ptr);
-                    --handle->count_resent_msgs;
 
                     /* Free memory of stored message */
                     sn_coap_protocol_release_allocated_send_msg_mem(handle, stored_msg_ptr);
