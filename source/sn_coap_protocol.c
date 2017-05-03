@@ -474,7 +474,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         memcpy(stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr, src_coap_msg_ptr->payload_ptr, stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
 
         stored_blockwise_msg_ptr->coap = handle;
-
         ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
     }
 
@@ -499,7 +498,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         }
 
         stored_blockwise_msg_ptr->coap = handle;
-
         ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
     }
 
@@ -641,11 +639,21 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
                 break;
             }
         }
-
+        /* Remove from the list if not an notification message.
+         * Initial notification message is needed for sending rest of the blocks (GET request).
+        */
+        bool remove_from_the_list = false;
         if (stored_blockwise_msg_temp_ptr) {
-            tr_debug("sn_coap_protocol_parse - remove block message %d", stored_blockwise_msg_temp_ptr->coap_msg_ptr->msg_id);
+            if (stored_blockwise_msg_temp_ptr->coap_msg_ptr &&
+                stored_blockwise_msg_temp_ptr->coap_msg_ptr->options_list_ptr &&
+                stored_blockwise_msg_temp_ptr->coap_msg_ptr->options_list_ptr->observe != COAP_OBSERVE_NONE) {
+                remove_from_the_list = false;
+            } else {
+                remove_from_the_list = true;
+            }
+        }
+        if (remove_from_the_list) {
             ns_list_remove(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_temp_ptr);
-
             if (stored_blockwise_msg_temp_ptr->coap_msg_ptr) {
                 if(stored_blockwise_msg_temp_ptr->coap_msg_ptr->payload_ptr){
                     handle->sn_coap_protocol_free(stored_blockwise_msg_temp_ptr->coap_msg_ptr->payload_ptr);
@@ -1806,7 +1814,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
                 stored_blockwise_msg_ptr->coap_msg_ptr = src_coap_blockwise_ack_msg_ptr;
                 stored_blockwise_msg_ptr->coap = handle;
-
                 ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
 
                 /* * * Then release memory of CoAP Acknowledgement message * * */
@@ -1924,6 +1931,22 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     return NULL;
                 }
 
+                /* Update token to match one which is in GET request.
+                 * This is needed only in case of notification message.
+                */
+                if (src_coap_blockwise_ack_msg_ptr->options_list_ptr &&
+                    src_coap_blockwise_ack_msg_ptr->options_list_ptr->observe != COAP_OBSERVE_NONE) {
+                    if (received_coap_msg_ptr->token_len && src_coap_blockwise_ack_msg_ptr->token_ptr) {
+                        handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr->token_ptr);
+                        src_coap_blockwise_ack_msg_ptr->token_ptr = NULL;
+                        src_coap_blockwise_ack_msg_ptr->token_ptr = handle->sn_coap_protocol_malloc(received_coap_msg_ptr->token_len);
+                        if (src_coap_blockwise_ack_msg_ptr->token_ptr) {
+                            memset(src_coap_blockwise_ack_msg_ptr->token_ptr, 0, received_coap_msg_ptr->token_len);
+                            memcpy(src_coap_blockwise_ack_msg_ptr->token_ptr, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
+                            src_coap_blockwise_ack_msg_ptr->token_len = received_coap_msg_ptr->token_len;
+                        }
+                    }
+                }
                 sn_coap_builder_2(dst_ack_packet_data_ptr, src_coap_blockwise_ack_msg_ptr, handle->sn_coap_block_data_size);
                 tr_debug("sn_coap_handle_blockwise_message - block2 received, send message: [%d]", src_coap_blockwise_ack_msg_ptr->msg_id);
                 handle->sn_coap_tx_callback(dst_ack_packet_data_ptr, dst_packed_data_needed_mem, src_addr_ptr, param);
