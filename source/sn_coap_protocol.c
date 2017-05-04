@@ -1938,10 +1938,8 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     src_coap_blockwise_ack_msg_ptr->options_list_ptr->observe != COAP_OBSERVE_NONE) {
                     if (received_coap_msg_ptr->token_len && src_coap_blockwise_ack_msg_ptr->token_ptr) {
                         handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr->token_ptr);
-                        src_coap_blockwise_ack_msg_ptr->token_ptr = NULL;
                         src_coap_blockwise_ack_msg_ptr->token_ptr = handle->sn_coap_protocol_malloc(received_coap_msg_ptr->token_len);
                         if (src_coap_blockwise_ack_msg_ptr->token_ptr) {
-                            memset(src_coap_blockwise_ack_msg_ptr->token_ptr, 0, received_coap_msg_ptr->token_len);
                             memcpy(src_coap_blockwise_ack_msg_ptr->token_ptr, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
                             src_coap_blockwise_ack_msg_ptr->token_len = received_coap_msg_ptr->token_len;
                         }
