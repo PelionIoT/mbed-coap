@@ -1348,6 +1348,9 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     payload = (uint8_t*)malloc(17);
     sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
     sn_coap_parser_stub.expectedHeader->payload_len = 17;
+    sn_coap_parser_stub.expectedHeader->token_len = 4;
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(4);
+    memset(sn_coap_parser_stub.expectedHeader->token_ptr, '1', 4);
 
     memset(&tmp_addr, 0, sizeof(sn_nsdl_addr_s));
     memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
@@ -1366,11 +1369,16 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     tmp_hdr.msg_id = 20;
     tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
     tmp_hdr.payload_len = buff_len;
+    tmp_hdr.token_len = 4;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(4);
+    memset(tmp_hdr.token_ptr, '1', 4);
     sn_coap_protocol_build(handle, &tmp_addr, dst_packet_data_ptr, &tmp_hdr, NULL);
 
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     tmp_hdr.payload_ptr = NULL;
+    free(tmp_hdr.token_ptr);
+    tmp_hdr.token_ptr = NULL;
     free(tmp_addr.addr_ptr);
     free(dst_packet_data_ptr);
 
@@ -2052,6 +2060,9 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
     tmp_hdr.payload_len = buff_len;
     tmp_hdr.uri_path_ptr = (uint8_t*)malloc(7);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->observe = 1;
     snprintf((char *)tmp_hdr.uri_path_ptr, 7, "13/0/1");
     tmp_hdr.uri_path_len = 7;
     sn_coap_protocol_build(handle, &tmp_addr, dst_packet_data_ptr, &tmp_hdr, NULL);
