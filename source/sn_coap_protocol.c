@@ -1915,6 +1915,21 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     src_coap_blockwise_ack_msg_ptr->payload_ptr = stored_blockwise_msg_temp_ptr->coap_msg_ptr->payload_ptr + (block_size * block_number);
                 }
 
+                /* Update token to match one which is in GET request.
+                 * This is needed only in case of notification message.
+                */
+                if (src_coap_blockwise_ack_msg_ptr->options_list_ptr &&
+                    src_coap_blockwise_ack_msg_ptr->options_list_ptr->observe != COAP_OBSERVE_NONE) {
+                    if (received_coap_msg_ptr->token_len && src_coap_blockwise_ack_msg_ptr->token_ptr) {
+                        handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr->token_ptr);
+                        src_coap_blockwise_ack_msg_ptr->token_ptr = handle->sn_coap_protocol_malloc(received_coap_msg_ptr->token_len);
+                        if (src_coap_blockwise_ack_msg_ptr->token_ptr) {
+                            memcpy(src_coap_blockwise_ack_msg_ptr->token_ptr, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
+                            src_coap_blockwise_ack_msg_ptr->token_len = received_coap_msg_ptr->token_len;
+                        }
+                    }
+                }
+
                 /* Build and send block message */
                 dst_packed_data_needed_mem = sn_coap_builder_calc_needed_packet_data_size_2(src_coap_blockwise_ack_msg_ptr, handle->sn_coap_block_data_size);
 
@@ -1931,20 +1946,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     return NULL;
                 }
 
-                /* Update token to match one which is in GET request.
-                 * This is needed only in case of notification message.
-                */
-                if (src_coap_blockwise_ack_msg_ptr->options_list_ptr &&
-                    src_coap_blockwise_ack_msg_ptr->options_list_ptr->observe != COAP_OBSERVE_NONE) {
-                    if (received_coap_msg_ptr->token_len && src_coap_blockwise_ack_msg_ptr->token_ptr) {
-                        handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr->token_ptr);
-                        src_coap_blockwise_ack_msg_ptr->token_ptr = handle->sn_coap_protocol_malloc(received_coap_msg_ptr->token_len);
-                        if (src_coap_blockwise_ack_msg_ptr->token_ptr) {
-                            memcpy(src_coap_blockwise_ack_msg_ptr->token_ptr, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
-                            src_coap_blockwise_ack_msg_ptr->token_len = received_coap_msg_ptr->token_len;
-                        }
-                    }
-                }
                 sn_coap_builder_2(dst_ack_packet_data_ptr, src_coap_blockwise_ack_msg_ptr, handle->sn_coap_block_data_size);
                 tr_debug("sn_coap_handle_blockwise_message - block2 received, send message: [%d]", src_coap_blockwise_ack_msg_ptr->msg_id);
                 handle->sn_coap_tx_callback(dst_ack_packet_data_ptr, dst_packed_data_needed_mem, src_addr_ptr, param);
