@@ -156,16 +156,13 @@ typedef NS_LIST_HEAD(coap_send_msg_s, link) coap_send_msg_list_t;
 /* Structure which is stored to Linked list for message duplication detection purposes */
 typedef struct coap_duplication_info_ {
     uint32_t            timestamp; /* Tells when duplication information is stored to Linked list */
-
-    uint8_t             addr_len;
-    uint8_t            *addr_ptr;
-    uint16_t            port;
-
     uint16_t            msg_id;
-
+    uint16_t            packet_len;
+    uint8_t             *packet_ptr;
     struct coap_s       *coap;  /* CoAP library handle */
-
-    ns_list_link_t     link;
+    sn_nsdl_addr_s      *address;
+    void                *param;
+    ns_list_link_t      link;
 } coap_duplication_info_s;
 
 typedef NS_LIST_HEAD(coap_duplication_info_s, link) coap_duplication_info_list_t;
