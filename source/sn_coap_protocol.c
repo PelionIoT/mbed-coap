@@ -1022,6 +1022,8 @@ static void sn_coap_protocol_linked_list_duplication_info_store(struct coap_s *h
     /* Allocate memory for stored Duplication info's address */
     stored_duplication_info_ptr->address = handle->sn_coap_protocol_malloc(sizeof(sn_nsdl_addr_s));
     if (stored_duplication_info_ptr->address == NULL) {
+        handle->sn_coap_protocol_free(stored_duplication_info_ptr);
+        stored_duplication_info_ptr = 0;
         return;
     }
     memset(stored_duplication_info_ptr->address, 0, sizeof(sn_nsdl_addr_s));
