@@ -205,7 +205,8 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
         message_id = 1;
     }
     tr_debug("Coap random msg ID: %d", message_id);
-
+    tr_debug("Coap BLOCKWISE_MAX_TIME_DATA_STORED: %d", SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED);
+    
     return handle;
 }
 
