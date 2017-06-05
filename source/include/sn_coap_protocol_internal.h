@@ -71,7 +71,7 @@ struct sn_coap_hdr_;
 #define SN_COAP_MAX_ALLOWED_RESENDING_BUFF_SIZE_BYTES   512 /**< Maximum allowed size of re-sending buffer */
 #define SN_COAP_MAX_ALLOWED_RESPONSE_TIMEOUT            40  /**< Maximum allowed re-sending timeout */
 
-#define RESPONSE_RANDOM_FACTOR                          1   /**< Resending random factor, value is specified in IETF CoAP specification */
+#define RESPONSE_RANDOM_FACTOR                          1.5   /**< Resending random factor, value is specified in IETF CoAP specification */
 
 /* * For Message duplication detecting * */
 
