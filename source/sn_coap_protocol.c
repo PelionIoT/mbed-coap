@@ -216,7 +216,7 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
     }
     tr_debug("Coap random msg ID: %d", message_id);
     tr_debug("Coap BLOCKWISE_MAX_TIME_DATA_STORED: %d", SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED);
-    
+
     return handle;
 }
 
@@ -445,7 +445,8 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 #endif /* ENABLE_RESENDINGS */
 
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
-    if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT) {
+    if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT &&
+            handle->sn_coap_duplication_buffer_size != 0) {
         coap_duplication_info_s* info = sn_coap_protocol_linked_list_duplication_info_search(handle,
                                                                                              dst_addr_ptr,
                                                                                              src_coap_msg_ptr->msg_id);
@@ -619,9 +620,9 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     /* * * * Manage received CoAP message duplicate detection  * * * */
 
     /* If no message duplication detected */
-    if (returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE ||
-            returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE) {
-
+    if ((returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE ||
+            returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE) &&
+            handle->sn_coap_duplication_buffer_size != 0) {
         if (sn_coap_protocol_linked_list_duplication_info_search(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id) == NULL) {
             /* * * No Message duplication: Store received message for detecting later duplication * * */
 
@@ -751,7 +752,6 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
 
     /* * * * Store current System time * * * */
     handle->system_time = current_time;
-
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
     /* * * * Remove old blocwise data * * * */
     sn_coap_protocol_linked_list_blockwise_remove_old_data(handle);
