@@ -979,8 +979,8 @@ static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, 
 uint32_t sn_coap_calculate_new_resend_time(const uint32_t current_time, const uint8_t interval, const uint8_t counter)
 {
     uint32_t resend_time = interval << counter;
-    uint16_t random_factor = randLIB_get_random_in_range(1, (resend_time * RESPONSE_RANDOM_FACTOR * 100) / 100);
-    return current_time + resend_time + random_factor;
+    uint16_t random_factor = randLIB_get_random_in_range(100, RESPONSE_RANDOM_FACTOR * 100);
+    return current_time + ((resend_time * random_factor) / 100);
 }
 
 #endif /* ENABLE_RESENDINGS */
