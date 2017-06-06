@@ -73,6 +73,7 @@ static void                  sn_coap_protocol_linked_list_send_msg_remove(struct
 static coap_send_msg_s      *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len);
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handle, coap_send_msg_s *freed_send_msg_ptr);
 static uint16_t              sn_coap_count_linked_list_size(const coap_send_msg_list_t *linked_list_ptr);
+static uint32_t              sn_coap_calculate_new_resend_time(const uint32_t current_time, const uint8_t interval, const uint8_t counter);
 #endif
 
 /* * * * * * * * * * * * * * * * * */
@@ -435,8 +436,9 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
     /* Check if built Message type was confirmable, only these messages are resent */
     if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE) {
         /* Store message to Linked list for resending purposes */
+        uint32_t resend_time = sn_coap_calculate_new_resend_time(handle->system_time, handle->sn_coap_resending_intervall, 0);
         if (sn_coap_protocol_linked_list_send_msg_store(handle, dst_addr_ptr, byte_count_built, dst_packet_data_ptr,
-                handle->system_time + (uint32_t)(handle->sn_coap_resending_intervall * RESPONSE_RANDOM_FACTOR),
+                resend_time,
                 param) == 0) {
             return -4;
         }
@@ -808,8 +810,9 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
                             stored_msg_ptr->send_msg_ptr->packet_len, stored_msg_ptr->send_msg_ptr->dst_addr_ptr, stored_msg_ptr->param);
 
                     /* * * Count new Resending time  * * */
-                    stored_msg_ptr->resending_time = current_time + (((uint32_t)(handle->sn_coap_resending_intervall * RESPONSE_RANDOM_FACTOR)) <<
-                                                     stored_msg_ptr->resending_counter);
+                    stored_msg_ptr->resending_time = sn_coap_calculate_new_resend_time(current_time,
+                                                                                       handle->sn_coap_resending_intervall,
+                                                                                       stored_msg_ptr->resending_counter);
                 }
 
             }
@@ -972,8 +975,15 @@ static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, 
         }
     }
 }
-#endif /* ENABLE_RESENDINGS */
 
+uint32_t sn_coap_calculate_new_resend_time(const uint32_t current_time, const uint8_t interval, const uint8_t counter)
+{
+    uint32_t resend_time = interval << counter;
+    uint16_t random_factor = randLIB_get_random_in_range(100, RESPONSE_RANDOM_FACTOR * 100);
+    return current_time + ((resend_time * random_factor) / 100);
+}
+
+#endif /* ENABLE_RESENDINGS */
 
 static void sn_coap_protocol_send_rst(struct coap_s *handle, uint16_t msg_id, sn_nsdl_addr_s *addr_ptr, void *param)
 {
@@ -1880,10 +1890,11 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                                             dst_packed_data_needed_mem, src_addr_ptr, param);
 
 #if ENABLE_RESENDINGS
+                uint32_t resend_time = sn_coap_calculate_new_resend_time(handle->system_time, handle->sn_coap_resending_intervall, 0);
                 sn_coap_protocol_linked_list_send_msg_store(handle, src_addr_ptr,
                         dst_packed_data_needed_mem,
                         dst_ack_packet_data_ptr,
-                        handle->system_time + (uint32_t)(handle->sn_coap_resending_intervall * RESPONSE_RANDOM_FACTOR), param);
+                        resend_time, param);
 #endif
                 handle->sn_coap_protocol_free(dst_ack_packet_data_ptr);
                 dst_ack_packet_data_ptr = 0;
