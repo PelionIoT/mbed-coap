@@ -762,7 +762,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader->payload_len = 17;
     sn_coap_builder_stub.expectedUint16 = 1;
 
-    retCounter = 9;
+    retCounter = 10;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL != ret );
     CHECK(COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING == ret->coap_status);
@@ -810,7 +810,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
     sn_coap_parser_stub.expectedHeader->payload_len = 65535;
 
-    retCounter = 10;
+    retCounter = 11;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL != ret );
 
@@ -2281,14 +2281,14 @@ TEST(libCoap_protocol, sn_coap_protocol_block_remove)
     sn_coap_builder_stub.expectedUint16 = 1;
 
     // Success
-    retCounter = 9;
+    retCounter = 10;
     sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
     sn_coap_protocol_block_remove(handle,addr,packet_data_len,packet_data_ptr);
     CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
 
     // Ports does not match
-    retCounter = 18;
+    retCounter = 19;
     sn_coap_parser_stub.expectedHeader->msg_id = 14;
     addr->port = 5600;
     sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
@@ -2298,7 +2298,7 @@ TEST(libCoap_protocol, sn_coap_protocol_block_remove)
     CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
 
     // Addresses does not match
-    retCounter = 18;
+    retCounter = 19;
     sn_coap_parser_stub.expectedHeader->msg_id = 15;
     sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 2);
