@@ -654,9 +654,11 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
                                                                                                      returned_dst_coap_msg_ptr->msg_id);
             /* Send ACK response */
             if (response) {
-                response->coap->sn_coap_tx_callback(response->packet_ptr,
-                        response->packet_len, response->address, response->param);
-
+                /* Check that response has been created */
+                if (response->packet_ptr) {
+                    response->coap->sn_coap_tx_callback(response->packet_ptr,
+                            response->packet_len, response->address, response->param);
+                }
             }
 
             return returned_dst_coap_msg_ptr;
