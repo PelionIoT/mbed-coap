@@ -5,10 +5,7 @@ SRC_FILES = \
         ../../../../source/sn_coap_header_check.c
 
 TEST_SRC_FILES = \
-	main.cpp \
+        main.cpp \
         libCoap_header_test.cpp \
 
 include ../MakefileWorker.mk
-
-CPPUTESTFLAGS += -DFEA_TRACE_SUPPORT
-
