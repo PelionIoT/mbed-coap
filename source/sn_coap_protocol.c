@@ -770,7 +770,9 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
 
 #if ENABLE_RESENDINGS
     /* Check if there is ongoing active message sendings */
-    ns_list_foreach_safe(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
+    /* foreach_safe isn't sufficient because callback routine could cancel messages. */
+rescan:
+    ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
         // First check that msg belongs to handle
         if( stored_msg_ptr->coap == handle ){
             /* Check if it is time to send this message */
@@ -816,7 +818,9 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
                                                                                        handle->sn_coap_resending_intervall,
                                                                                        stored_msg_ptr->resending_counter);
                 }
-
+                /* Callback routine could have wiped the list (eg as a response to sending failed) */
+                /* Be super cautious and rescan from the start */
+                goto rescan;
             }
         }
     }
