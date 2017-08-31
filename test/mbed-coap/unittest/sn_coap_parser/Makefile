@@ -7,11 +7,8 @@ SRC_FILES = \
         ../../../../source/sn_coap_parser.c
 
 TEST_SRC_FILES = \
-	main.cpp \
+        main.cpp \
         sn_coap_parsertest.cpp \
         test_sn_coap_parser.c \
 
 include ../MakefileWorker.mk
-
-CPPUTESTFLAGS += -DFEA_TRACE_SUPPORT
-
