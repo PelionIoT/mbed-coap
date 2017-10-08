@@ -1,2 +1,4 @@
 test/*
 unittest/*
+yotta_modules/*
+yotta_targets/*
