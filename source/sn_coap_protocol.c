@@ -97,21 +97,15 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
     ns_list_foreach_safe(coap_duplication_info_s, tmp, &handle->linked_list_duplication_msgs) {
         if (tmp->coap == handle) {
             if (tmp->address) {
-                if (tmp->address->addr_ptr) {
-                    handle->sn_coap_protocol_free(tmp->address->addr_ptr);
-                    tmp->address->addr_ptr = 0;
-                }
+
+                handle->sn_coap_protocol_free(tmp->address->addr_ptr);
                 handle->sn_coap_protocol_free(tmp->address);
-                tmp->address = 0;
             }
-            if (tmp->packet_ptr) {
-                handle->sn_coap_protocol_free(tmp->packet_ptr);
-                tmp->packet_ptr = 0;
-            }
+            handle->sn_coap_protocol_free(tmp->packet_ptr);
+
             ns_list_remove(&handle->linked_list_duplication_msgs, tmp);
             handle->count_duplication_msgs--;
             handle->sn_coap_protocol_free(tmp);
-            tmp = 0;
         }
     }
 
@@ -138,7 +132,6 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
 #endif
 
     handle->sn_coap_protocol_free(handle);
-    handle = 0;
     return 0;
 }
 
@@ -541,7 +534,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         stored_blockwise_msg_ptr->coap_msg_ptr = sn_coap_protocol_copy_header(handle, src_coap_msg_ptr);
         if( stored_blockwise_msg_ptr->coap_msg_ptr == NULL ){
             handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
-            stored_blockwise_msg_ptr = 0;
             tr_error("sn_coap_protocol_build - block header copy failed!");
             return -2;
         }
@@ -553,7 +545,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
             //block payload save failed, only first block can be build. Perhaps we should return error.
             sn_coap_parser_release_allocated_coap_msg_mem(handle, stored_blockwise_msg_ptr->coap_msg_ptr);
             handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
-            stored_blockwise_msg_ptr = 0;
             tr_error("sn_coap_protocol_build - block payload allocation failed!");
             return byte_count_built;
         }
@@ -581,7 +572,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         stored_blockwise_msg_ptr->coap_msg_ptr = sn_coap_protocol_copy_header(handle, src_coap_msg_ptr);
         if( stored_blockwise_msg_ptr->coap_msg_ptr == NULL ){
             handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
-            stored_blockwise_msg_ptr = 0;
             tr_error("sn_coap_protocol_build - blockwise (GET) copy header failed!");
             return -2;
         }
@@ -774,7 +764,6 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
             }
 
             handle->sn_coap_protocol_free(stored_blockwise_msg_temp_ptr);
-            stored_blockwise_msg_temp_ptr = 0;
         }
     }
 
@@ -1117,7 +1106,6 @@ static void sn_coap_protocol_linked_list_duplication_info_store(struct coap_s *h
     if (stored_duplication_info_ptr->address == NULL) {
         tr_error("sn_coap_protocol_linked_list_duplication_info_store - failed to allocate address!");
         handle->sn_coap_protocol_free(stored_duplication_info_ptr);
-        stored_duplication_info_ptr = 0;
         return;
     }
     memset(stored_duplication_info_ptr->address, 0, sizeof(sn_nsdl_addr_s));
@@ -1127,9 +1115,7 @@ static void sn_coap_protocol_linked_list_duplication_info_store(struct coap_s *h
     if (stored_duplication_info_ptr->address->addr_ptr == NULL) {
         tr_error("sn_coap_protocol_linked_list_duplication_info_store - failed to allocate address pointer!");
         handle->sn_coap_protocol_free(stored_duplication_info_ptr->address);
-        stored_duplication_info_ptr->address = 0;
         handle->sn_coap_protocol_free(stored_duplication_info_ptr);
-        stored_duplication_info_ptr = 0;
         return;
     }
 
@@ -1199,13 +1185,9 @@ static void sn_coap_protocol_linked_list_duplication_info_remove_old_ones(struct
 
             /* Free memory of stored Duplication info */
             handle->sn_coap_protocol_free(removed_duplication_info_ptr->address->addr_ptr);
-            removed_duplication_info_ptr->address->addr_ptr = 0;
             handle->sn_coap_protocol_free(removed_duplication_info_ptr->address);
-            removed_duplication_info_ptr->address = 0;
             handle->sn_coap_protocol_free(removed_duplication_info_ptr->packet_ptr);
-            removed_duplication_info_ptr->packet_ptr = 0;
             handle->sn_coap_protocol_free(removed_duplication_info_ptr);
-            removed_duplication_info_ptr = 0;
         }
     }
 }
@@ -1232,13 +1214,9 @@ void sn_coap_protocol_linked_list_duplication_info_remove(struct coap_s *handle,
 
                     /* Free memory of stored Duplication info */
                     handle->sn_coap_protocol_free(removed_duplication_info_ptr->address->addr_ptr);
-                    removed_duplication_info_ptr->address->addr_ptr = 0;
                     handle->sn_coap_protocol_free(removed_duplication_info_ptr->address);
-                    removed_duplication_info_ptr->address = 0;
                     handle->sn_coap_protocol_free(removed_duplication_info_ptr->packet_ptr);
-                    removed_duplication_info_ptr->packet_ptr = 0;
                     handle->sn_coap_protocol_free(removed_duplication_info_ptr);
-                    removed_duplication_info_ptr = 0;
                     return;
                 }
             }
@@ -1336,7 +1314,6 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
     if (stored_blockwise_payload_ptr->payload_ptr == NULL) {
         tr_error("sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate payload!");
         handle->sn_coap_protocol_free(stored_blockwise_payload_ptr);
-        stored_blockwise_payload_ptr = 0;
         return;
     }
 
@@ -1346,10 +1323,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
     if (stored_blockwise_payload_ptr->addr_ptr == NULL) {
         tr_error("sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate address pointer!");
         handle->sn_coap_protocol_free(stored_blockwise_payload_ptr->payload_ptr);
-        stored_blockwise_payload_ptr->payload_ptr = 0;
         handle->sn_coap_protocol_free(stored_blockwise_payload_ptr);
-        stored_blockwise_payload_ptr = 0;
-
         return;
     }
 
@@ -1492,23 +1466,14 @@ static void sn_coap_protocol_linked_list_blockwise_payload_remove(struct coap_s 
 {
     ns_list_remove(&handle->linked_list_blockwise_received_payloads, removed_payload_ptr);
     /* Free memory of stored payload */
-    if (removed_payload_ptr->addr_ptr != NULL) {
-        handle->sn_coap_protocol_free(removed_payload_ptr->addr_ptr);
-        removed_payload_ptr->addr_ptr = 0;
-    }
-
-    if (removed_payload_ptr->payload_ptr != NULL) {
-        handle->sn_coap_protocol_free(removed_payload_ptr->payload_ptr);
-        removed_payload_ptr->payload_ptr = 0;
-    }
-
+    handle->sn_coap_protocol_free(removed_payload_ptr->addr_ptr);
+    handle->sn_coap_protocol_free(removed_payload_ptr->payload_ptr);
     if (removed_payload_ptr->token_ptr != NULL) {
         handle->sn_coap_protocol_free(removed_payload_ptr->token_ptr);
         removed_payload_ptr->token_ptr = 0;
     }
 
     handle->sn_coap_protocol_free(removed_payload_ptr);
-    removed_payload_ptr = 0;
 }
 
 /**************************************************************************//**
@@ -1574,7 +1539,6 @@ rescan:
                     handle->sn_coap_rx_callback(removed_blocwise_msg_ptr->coap_msg_ptr, NULL, removed_blocwise_msg_ptr->param);
                     callback_called = true;
                 }
-
                 handle->sn_coap_protocol_free(removed_blocwise_msg_ptr->coap_msg_ptr->payload_ptr);
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, removed_blocwise_msg_ptr->coap_msg_ptr);
             }
@@ -1677,26 +1641,18 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handl
     if (freed_send_msg_ptr != NULL) {
         if (freed_send_msg_ptr->send_msg_ptr != NULL) {
             if (freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr != NULL) {
-                if (freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr != NULL) {
-                    handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr);
-                    freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr = 0;
-                }
+
+                handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr->addr_ptr);
 
                 handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr);
-                freed_send_msg_ptr->send_msg_ptr->dst_addr_ptr = 0;
             }
 
-            if (freed_send_msg_ptr->send_msg_ptr->packet_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->packet_ptr);
-                freed_send_msg_ptr->send_msg_ptr->packet_ptr = 0;
-            }
+            handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr->packet_ptr);
 
             handle->sn_coap_protocol_free(freed_send_msg_ptr->send_msg_ptr);
-            freed_send_msg_ptr->send_msg_ptr = 0;
         }
 
         handle->sn_coap_protocol_free(freed_send_msg_ptr);
-        freed_send_msg_ptr = NULL;
     }
 }
 
@@ -1879,11 +1835,8 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     if (!dst_ack_packet_data_ptr) {
                         tr_error("sn_coap_handle_blockwise_message - (send block1) failed to allocate ack message!");
                         handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr->options_list_ptr);
-                        src_coap_blockwise_ack_msg_ptr->options_list_ptr = 0;
                         handle->sn_coap_protocol_free(original_payload_ptr);
-                        original_payload_ptr = 0;
                         handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr);
-                        src_coap_blockwise_ack_msg_ptr = 0;
                         stored_blockwise_msg_temp_ptr->coap_msg_ptr = NULL;
                         sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
                         return NULL;
@@ -1967,7 +1920,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 if (sn_coap_parser_alloc_options(handle, src_coap_blockwise_ack_msg_ptr) == NULL) {
                    tr_error("sn_coap_handle_blockwise_message - (recv block1) failed to allocate options!");
                     handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr);
-                    src_coap_blockwise_ack_msg_ptr = 0;
                     sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
                     return NULL;
                 }
@@ -2028,9 +1980,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     tr_error("sn_coap_handle_blockwise_message - (recv block1) message allocation failed!");
                     sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
                     handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr->options_list_ptr);
-                    src_coap_blockwise_ack_msg_ptr->options_list_ptr = 0;
                     handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr);
-                    src_coap_blockwise_ack_msg_ptr = 0;
                     return NULL;
                 }
 
@@ -2223,7 +2173,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     if (!stored_blockwise_msg_ptr) {
                         tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate blockwise message!");
                         handle->sn_coap_protocol_free(dst_ack_packet_data_ptr);
-                        dst_ack_packet_data_ptr = 0;
                         sn_coap_parser_release_allocated_coap_msg_mem(handle, src_coap_blockwise_ack_msg_ptr);
                         sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
                         return 0;
@@ -2360,10 +2309,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 dst_ack_packet_data_ptr = handle->sn_coap_protocol_malloc(dst_packed_data_needed_mem);
                 if (!dst_ack_packet_data_ptr) {
                     tr_error("sn_coap_handle_blockwise_message - (recv block2) failed to allocate packet!");
-                    if(original_payload_ptr){
-                        handle->sn_coap_protocol_free(original_payload_ptr);
-                        original_payload_ptr = NULL;
-                    }
+                    handle->sn_coap_protocol_free(original_payload_ptr);
                     sn_coap_parser_release_allocated_coap_msg_mem(handle, src_coap_blockwise_ack_msg_ptr);
                     stored_blockwise_msg_temp_ptr->coap_msg_ptr = NULL;
                     return NULL;
