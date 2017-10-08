@@ -48,7 +48,7 @@ typedef struct coap_send_msg_ {
     uint8_t             resending_counter;  /* Tells how many times message is still tried to resend */
     uint32_t            resending_time;     /* Tells next resending time */
 
-    sn_nsdl_transmit_s *send_msg_ptr;
+    sn_nsdl_transmit_s  send_msg_ptr;
 
     struct coap_s       *coap;              /* CoAP library handle */
     void                *param;             /* Extra parameter that will be passed to TX/RX callback functions */
