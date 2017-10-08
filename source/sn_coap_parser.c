@@ -156,38 +156,22 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
     }
 
     if (freed_coap_msg_ptr != NULL) {
-        if (freed_coap_msg_ptr->uri_path_ptr != NULL) {
-            handle->sn_coap_protocol_free(freed_coap_msg_ptr->uri_path_ptr);
-        }
-
-        if (freed_coap_msg_ptr->token_ptr != NULL) {
-            handle->sn_coap_protocol_free(freed_coap_msg_ptr->token_ptr);
-        }
+        handle->sn_coap_protocol_free(freed_coap_msg_ptr->uri_path_ptr);
+        handle->sn_coap_protocol_free(freed_coap_msg_ptr->token_ptr);
 
         if (freed_coap_msg_ptr->options_list_ptr != NULL) {
-            if (freed_coap_msg_ptr->options_list_ptr->proxy_uri_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->proxy_uri_ptr);
-            }
 
-            if (freed_coap_msg_ptr->options_list_ptr->etag_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->etag_ptr);
-            }
+            handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->proxy_uri_ptr);
 
-            if (freed_coap_msg_ptr->options_list_ptr->uri_host_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->uri_host_ptr);
-            }
+            handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->etag_ptr);
 
-            if (freed_coap_msg_ptr->options_list_ptr->location_path_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->location_path_ptr);
-            }
+            handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->uri_host_ptr);
 
-            if (freed_coap_msg_ptr->options_list_ptr->location_query_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->location_query_ptr);
-            }
+            handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->location_path_ptr);
 
-            if (freed_coap_msg_ptr->options_list_ptr->uri_query_ptr != NULL) {
-                handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->uri_query_ptr);
-            }
+            handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->location_query_ptr);
+
+            handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr->uri_query_ptr);
 
             handle->sn_coap_protocol_free(freed_coap_msg_ptr->options_list_ptr);
         }
