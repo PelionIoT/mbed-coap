@@ -268,7 +268,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     memset(addr.addr_ptr, '1', 5);
 
     sn_coap_builder_stub.expectedInt16 = 0;
-    retCounter = 2;
+    retCounter = 6;
 
     CHECK( 0 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
@@ -362,25 +362,25 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     sn_coap_builder_stub.expectedInt16 = -1;
     CHECK( -1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
-    retCounter = 2;
+    retCounter = 6;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     hdr.msg_code = COAP_MSG_CODE_EMPTY;
 
-    retCounter = 2;
+    retCounter = 7;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
-    retCounter = 4;
+    retCounter = 8;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
-    retCounter = 4;
+    retCounter = 9;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
-    retCounter = 5;
+    retCounter = 10;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
@@ -390,7 +390,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
 
     sn_coap_protocol_clear_retransmission_buffer(handle);
-    retCounter = 2;
+    retCounter = 7;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
     free(hdr.payload_ptr);
@@ -399,7 +399,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     memset(hdr.payload_ptr, '1', SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20);
     hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
 
-    retCounter = 4;
+    retCounter = 8;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
@@ -408,7 +408,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     memset(hdr.payload_ptr, '1', UINT16_MAX);
     hdr.payload_len = UINT16_MAX;
 
-    retCounter = 4;
+    retCounter = 9;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
@@ -417,7 +417,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     memset(hdr.payload_ptr, '1', UINT16_MAX - 1);
     hdr.payload_len = UINT16_MAX - 1;
 
-    retCounter = 4;
+    retCounter = 10;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
@@ -429,7 +429,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr.options_list_ptr = NULL;
 
     //Test sn_coap_protocol_copy_header here -->
-    retCounter = 3;
+    retCounter = 6;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
     CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
@@ -497,7 +497,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     //<-- Test sn_coap_protocol_copy_header here
 
     hdr.msg_code = COAP_MSG_CODE_REQUEST_GET;
-    retCounter = 4;
+    retCounter = 7;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
@@ -507,12 +507,12 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     retCounter = 1;
     handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
 
-    retCounter = 3;
+    retCounter = 6;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
     CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
-    retCounter = 4;
+    retCounter = 8;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
