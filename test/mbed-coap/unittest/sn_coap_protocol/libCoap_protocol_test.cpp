@@ -369,7 +369,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr.options_list_ptr = NULL;
 
     //Test sn_coap_protocol_copy_header here -->
-    retCounter = 5;
+    retCounter = 4;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
     CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
@@ -447,7 +447,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     retCounter = 1;
     handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
 
-    retCounter = 5;
+    retCounter = 4;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
     CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
