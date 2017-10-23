@@ -87,4 +87,9 @@
 #include MBED_CLIENT_USER_CONFIG_FILE
 #endif
 
+#define SN_COAP_PAYLOAD_LEN_TYPE uint16_t
+#ifdef SN_COAP_BIG_PAYLOAD
+#define SN_COAP_PAYLOAD_LEN_TYPE uint32_t
+#endif
+
 #endif // SN_CONFIG_H

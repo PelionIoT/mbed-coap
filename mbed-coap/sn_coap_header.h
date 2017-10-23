@@ -23,6 +23,8 @@
 #ifndef SN_COAP_HEADER_H_
 #define SN_COAP_HEADER_H_
 
+#include "sn_config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -209,19 +211,19 @@ typedef struct sn_coap_options_list_ {
 typedef struct sn_coap_hdr_ {
     uint8_t                 token_len;          /**< 1-8 bytes. */
 
-    sn_coap_status_e        coap_status;        /**< Used for telling to User special cases when parsing message */
-    sn_coap_msg_code_e      msg_code;           /**< Empty: 0; Requests: 1-31; Responses: 64-191 */
+    sn_coap_status_e            coap_status;        /**< Used for telling to User special cases when parsing message */
+    sn_coap_msg_code_e          msg_code;           /**< Empty: 0; Requests: 1-31; Responses: 64-191 */
 
-    sn_coap_msg_type_e      msg_type;           /**< Confirmable, Non-Confirmable, Acknowledgement or Reset */
-    sn_coap_content_format_e content_format;    /**< Set to COAP_CT_NONE if not used */
+    sn_coap_msg_type_e          msg_type;           /**< Confirmable, Non-Confirmable, Acknowledgement or Reset */
+    sn_coap_content_format_e    content_format;    /**< Set to COAP_CT_NONE if not used */
 
-    uint16_t                msg_id;             /**< Message ID. Parser sets parsed message ID, builder sets message ID of built coap message */
-    uint16_t                uri_path_len;       /**< 0-255 bytes. Repeatable. */
-    uint16_t                payload_len;        /**< Must be set to zero if not used */
+    uint16_t                    msg_id;             /**< Message ID. Parser sets parsed message ID, builder sets message ID of built coap message */
+    uint16_t                    uri_path_len;       /**< 0-255 bytes. Repeatable. */
+    SN_COAP_PAYLOAD_LEN_TYPE    payload_len;        /**< Must be set to zero if not used */
 
-    uint8_t                *token_ptr;          /**< Must be set to NULL if not used */
-    uint8_t                *uri_path_ptr;       /**< Must be set to NULL if not used. E.g: temp1/temp2 */
-    uint8_t                *payload_ptr;        /**< Must be set to NULL if not used */
+    uint8_t                     *token_ptr;          /**< Must be set to NULL if not used */
+    uint8_t                     *uri_path_ptr;       /**< Must be set to NULL if not used. E.g: temp1/temp2 */
+    uint8_t                     *payload_ptr;        /**< Must be set to NULL if not used */
 
     /* Here are not so often used Options */
     sn_coap_options_list_s *options_list_ptr;   /**< Must be set to NULL if not used */

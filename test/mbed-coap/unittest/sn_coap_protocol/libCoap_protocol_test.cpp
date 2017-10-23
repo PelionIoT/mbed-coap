@@ -856,6 +856,8 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 //    free(sn_coap_parser_stub.expectedHeader);
 
     /* Size is more than we can handle */
+#ifndef SN_COAP_BIG_PAYLOAD
+    // uint16_t payloadlen
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
@@ -880,7 +882,33 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     free(payload);
     free(list);
     free(sn_coap_parser_stub.expectedHeader);
+#else
+    // uint32_t payloadlen
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 100;
 
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x08;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->use_size1 = true;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1 = 0xFFFFFF01;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_PUT;
+    payload = (uint8_t*)malloc(65535); // Let's not allocate 4 gigabytes though
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 0x1ffffffff;
+
+    retCounter = 11;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
+
+    free(payload);
+    free(list);
+    free(sn_coap_parser_stub.expectedHeader);
+#endif /* SN_COAP_BIG_PAYLOAD */
     // received_coap_msg_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE -->
 
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
@@ -2382,4 +2410,3 @@ TEST(libCoap_protocol, sn_coap_protocol_block_remove)
     free(packet_data_ptr);
     sn_coap_protocol_destroy(handle);
 }
-
