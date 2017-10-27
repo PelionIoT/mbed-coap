@@ -23,11 +23,17 @@
 #ifndef SN_COAP_HEADER_H_
 #define SN_COAP_HEADER_H_
 
-#include "sn_config.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* TODO: Move to separate config file? */
+#ifndef SN_COAP_BIG_PAYLOAD
+#define SN_COAP_PAYLOAD_LEN_TYPE uint16_t
+#else
+#define SN_COAP_PAYLOAD_LEN_TYPE uint32_t
+#endif
+
 
 /* Handle structure */
 struct coap_s;
