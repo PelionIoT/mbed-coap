@@ -49,7 +49,7 @@ extern "C" {
  *          Null if failed
  */
 
-extern struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void *),
+extern struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint32_t), void (*used_free_func_ptr)(void *),
         uint8_t (*used_tx_callback_ptr)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *),
         int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *));
 

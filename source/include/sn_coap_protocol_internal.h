@@ -201,7 +201,7 @@ typedef struct coap_blockwise_payload_ {
 typedef NS_LIST_HEAD(coap_blockwise_payload_s, link) coap_blockwise_payload_list_t;
 
 struct coap_s {
-    void *(*sn_coap_protocol_malloc)(uint16_t);
+    void *(*sn_coap_protocol_malloc)(uint32_t);
     void (*sn_coap_protocol_free)(void *);
 
     uint8_t (*sn_coap_tx_callback)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *);

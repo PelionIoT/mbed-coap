@@ -29,7 +29,7 @@ uint8_t temp[10];
 
 uint8_t retCounter = 0;
 
-static void *own_alloc(uint16_t size)
+static void *own_alloc(uint32_t size)
 {
     if( retCounter > 0 ){
         retCounter--;

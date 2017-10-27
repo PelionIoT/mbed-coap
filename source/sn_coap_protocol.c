@@ -155,7 +155,7 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
     return 0;
 }
 
-struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), void (*used_free_func_ptr)(void *),
+struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint32_t), void (*used_free_func_ptr)(void *),
                                      uint8_t (*used_tx_callback_ptr)(uint8_t *, uint16_t, sn_nsdl_addr_s *, void *),
                                      int8_t (*used_rx_callback_ptr)(sn_coap_hdr_s *, sn_nsdl_addr_s *, void *param))
 {
@@ -382,7 +382,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 {
     int16_t  byte_count_built     = 0;
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
-    uint16_t original_payload_len = 0;
+    uint32_t original_payload_len = 0;
 #endif
     /* * * * Check given pointers  * * * */
     if ((dst_addr_ptr == NULL) || (dst_packet_data_ptr == NULL) || (src_coap_msg_ptr == NULL) || handle == NULL) {
@@ -1590,7 +1590,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
     uint8_t *dst_ack_packet_data_ptr = NULL;
     uint8_t block_temp = 0;
 
-    uint16_t original_payload_len = 0;
+    uint32_t original_payload_len = 0;
     uint8_t *original_payload_ptr = NULL;
 
     /* Block1 Option in a request (e.g., PUT or POST) */
@@ -1611,7 +1611,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 if (stored_blockwise_msg_temp_ptr) {
                     /* Build response message */
 
-                    uint16_t block_size;
+                    uint32_t block_size;
                     uint32_t block_number;
 
                     /* Get block option parameters from received message */
