@@ -65,7 +65,7 @@ static void                  sn_coap_protocol_linked_list_blockwise_payload_remo
 static uint32_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint8_t *token_ptr, uint8_t token_len);
 static void                  sn_coap_protocol_handle_blockwise_timout(struct coap_s *handle);
 static sn_coap_hdr_s        *sn_coap_handle_blockwise_message(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr, void *param);
-static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coap_hdr_s *source_header_ptr);
+static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr);
 #endif
 
 #if ENABLE_RESENDINGS
@@ -540,7 +540,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         }
 
         stored_blockwise_msg_ptr->coap_msg_ptr->payload_len = original_payload_len;
-        stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = handle->sn_coap_protocol_malloc(stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
+        stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = sn_coap_protocol_malloc_copy(handle, src_coap_msg_ptr->payload_ptr, stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
 
         if (!stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr) {
             //block payload save failed, only first block can be build. Perhaps we should return error.
@@ -549,7 +549,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
             tr_error("sn_coap_protocol_build - block payload allocation failed!");
             return byte_count_built;
         }
-        memcpy(stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr, src_coap_msg_ptr->payload_ptr, stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
 
         stored_blockwise_msg_ptr->coap = handle;
         stored_blockwise_msg_ptr->param = param;
@@ -1312,7 +1311,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
 
 
     /* Allocate memory for stored Payload's data */
-    stored_blockwise_payload_ptr->payload_ptr = handle->sn_coap_protocol_malloc(stored_payload_len);
+    stored_blockwise_payload_ptr->payload_ptr = sn_coap_protocol_malloc_copy(handle, stored_payload_ptr, stored_payload_len);
 
     if (stored_blockwise_payload_ptr->payload_ptr == NULL) {
         tr_error("sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate payload!");
@@ -1321,7 +1320,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
     }
 
     /* Allocate memory for stored Payload's address */
-    stored_blockwise_payload_ptr->addr_ptr = handle->sn_coap_protocol_malloc(addr_ptr->addr_len);
+    stored_blockwise_payload_ptr->addr_ptr = sn_coap_protocol_malloc_copy(handle, addr_ptr->addr_ptr, addr_ptr->addr_len);
 
     if (stored_blockwise_payload_ptr->addr_ptr == NULL) {
         tr_error("sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate address pointer!");
@@ -1353,9 +1352,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
 
     stored_blockwise_payload_ptr->timestamp = handle->system_time;
 
-    memcpy(stored_blockwise_payload_ptr->addr_ptr, addr_ptr->addr_ptr, addr_ptr->addr_len);
     stored_blockwise_payload_ptr->port = addr_ptr->port;
-    memcpy(stored_blockwise_payload_ptr->payload_ptr, stored_payload_ptr, stored_payload_len);
     stored_blockwise_payload_ptr->payload_len = stored_payload_len;
 
     stored_blockwise_payload_ptr->coap = handle;
@@ -1595,14 +1592,11 @@ coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn
 
     msg_ptr->send_msg_ptr.packet_ptr = handle->sn_coap_protocol_malloc(packet_data_len);
 
-    if (msg_ptr->send_msg_ptr.packet_ptr == NULL) {
-        sn_coap_protocol_release_allocated_send_msg_mem(handle, msg_ptr);
-        return 0;
-    }
-
     msg_ptr->send_msg_ptr.dst_addr_ptr.addr_ptr = handle->sn_coap_protocol_malloc(dst_addr_ptr->addr_len);
 
-    if (msg_ptr->send_msg_ptr.dst_addr_ptr.addr_ptr == NULL) {
+    if ((msg_ptr->send_msg_ptr.dst_addr_ptr.addr_ptr == NULL) ||
+        (msg_ptr->send_msg_ptr.packet_ptr == NULL)) {
+
         sn_coap_protocol_release_allocated_send_msg_mem(handle, msg_ptr);
         return 0;
     }
@@ -1942,9 +1936,8 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 src_coap_blockwise_ack_msg_ptr->msg_id = received_coap_msg_ptr->msg_id;
 
                 // Copy token to response
-                src_coap_blockwise_ack_msg_ptr->token_ptr = handle->sn_coap_protocol_malloc(received_coap_msg_ptr->token_len);
+                src_coap_blockwise_ack_msg_ptr->token_ptr = sn_coap_protocol_malloc_copy(handle, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
                 if (src_coap_blockwise_ack_msg_ptr->token_ptr) {
-                    memcpy(src_coap_blockwise_ack_msg_ptr->token_ptr, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
                     src_coap_blockwise_ack_msg_ptr->token_len = received_coap_msg_ptr->token_len;
                 }
 
@@ -2270,9 +2263,8 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     src_coap_blockwise_ack_msg_ptr->options_list_ptr->observe != COAP_OBSERVE_NONE) {
                     if (received_coap_msg_ptr->token_len && src_coap_blockwise_ack_msg_ptr->token_ptr) {
                         handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr->token_ptr);
-                        src_coap_blockwise_ack_msg_ptr->token_ptr = handle->sn_coap_protocol_malloc(received_coap_msg_ptr->token_len);
+                        src_coap_blockwise_ack_msg_ptr->token_ptr = sn_coap_protocol_malloc_copy(handle, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
                         if (src_coap_blockwise_ack_msg_ptr->token_ptr) {
-                            memcpy(src_coap_blockwise_ack_msg_ptr->token_ptr, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
                             src_coap_blockwise_ack_msg_ptr->token_len = received_coap_msg_ptr->token_len;
                         }
                     }
@@ -2338,7 +2330,7 @@ int8_t sn_coap_convert_block_size(uint16_t block_size)
     return 0;
 }
 
-static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coap_hdr_s *source_header_ptr)
+static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr)
 {
     sn_coap_hdr_s *destination_header_ptr;
 
@@ -2355,24 +2347,22 @@ static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coa
 
     if (source_header_ptr->uri_path_ptr) {
         destination_header_ptr->uri_path_len = source_header_ptr->uri_path_len;
-        destination_header_ptr->uri_path_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->uri_path_len);
+        destination_header_ptr->uri_path_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->uri_path_ptr, source_header_ptr->uri_path_len);
         if (!destination_header_ptr->uri_path_ptr) {
             tr_error("sn_coap_protocol_copy_header - failed to allocate uri path!");
             sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
             return 0;
         }
-        memcpy(destination_header_ptr->uri_path_ptr, source_header_ptr->uri_path_ptr, source_header_ptr->uri_path_len);
     }
 
     if (source_header_ptr->token_ptr) {
         destination_header_ptr->token_len = source_header_ptr->token_len;
-        destination_header_ptr->token_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->token_len);
+        destination_header_ptr->token_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->token_ptr, source_header_ptr->token_len);
         if (!destination_header_ptr->token_ptr) {
             sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
             tr_error("sn_coap_protocol_copy_header - failed to allocate token!");
             return 0;
         }
-        memcpy(destination_header_ptr->token_ptr, source_header_ptr->token_ptr, source_header_ptr->token_len);
     }
 
     destination_header_ptr->content_format = source_header_ptr->content_format;
@@ -2389,59 +2379,54 @@ static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coa
 
         if (source_header_ptr->options_list_ptr->proxy_uri_ptr) {
             destination_header_ptr->options_list_ptr->proxy_uri_len = source_header_ptr->options_list_ptr->proxy_uri_len;
-            destination_header_ptr->options_list_ptr->proxy_uri_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->options_list_ptr->proxy_uri_len);
+            destination_header_ptr->options_list_ptr->proxy_uri_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->proxy_uri_ptr, source_header_ptr->options_list_ptr->proxy_uri_len);
             if (!destination_header_ptr->options_list_ptr->proxy_uri_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate proxy uri!");
                 return 0;
             }
-            memcpy(destination_header_ptr->options_list_ptr->proxy_uri_ptr, source_header_ptr->options_list_ptr->proxy_uri_ptr, source_header_ptr->options_list_ptr->proxy_uri_len);
         }
 
         if (source_header_ptr->options_list_ptr->etag_ptr) {
             destination_header_ptr->options_list_ptr->etag_len = source_header_ptr->options_list_ptr->etag_len;
-            destination_header_ptr->options_list_ptr->etag_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->options_list_ptr->etag_len);
+            destination_header_ptr->options_list_ptr->etag_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->etag_ptr, source_header_ptr->options_list_ptr->etag_len);
             if (!destination_header_ptr->options_list_ptr->etag_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate etag!");
                 return 0;
             }
-            memcpy(destination_header_ptr->options_list_ptr->etag_ptr, source_header_ptr->options_list_ptr->etag_ptr, source_header_ptr->options_list_ptr->etag_len);
         }
 
         if (source_header_ptr->options_list_ptr->uri_host_ptr) {
             destination_header_ptr->options_list_ptr->uri_host_len = source_header_ptr->options_list_ptr->uri_host_len;
-            destination_header_ptr->options_list_ptr->uri_host_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->options_list_ptr->uri_host_len);
+            destination_header_ptr->options_list_ptr->uri_host_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->uri_host_ptr, source_header_ptr->options_list_ptr->uri_host_len);
             if (!destination_header_ptr->options_list_ptr->uri_host_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate uri host!");
                 return 0;
             }
-            memcpy(destination_header_ptr->options_list_ptr->uri_host_ptr, source_header_ptr->options_list_ptr->uri_host_ptr, source_header_ptr->options_list_ptr->uri_host_len);
         }
 
         if (source_header_ptr->options_list_ptr->location_path_ptr) {
             destination_header_ptr->options_list_ptr->location_path_len = source_header_ptr->options_list_ptr->location_path_len;
-            destination_header_ptr->options_list_ptr->location_path_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->options_list_ptr->location_path_len);
+            destination_header_ptr->options_list_ptr->location_path_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->location_path_ptr, source_header_ptr->options_list_ptr->location_path_len);
             if (!destination_header_ptr->options_list_ptr->location_path_ptr) {
                 tr_error("sn_coap_protocol_copy_header - failed to allocate location path!");
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 return 0;
             }
-            memcpy(destination_header_ptr->options_list_ptr->location_path_ptr, source_header_ptr->options_list_ptr->location_path_ptr, source_header_ptr->options_list_ptr->location_path_len);
         }
 
         destination_header_ptr->options_list_ptr->uri_port = source_header_ptr->options_list_ptr->uri_port;
 
         if (source_header_ptr->options_list_ptr->location_query_ptr) {
             destination_header_ptr->options_list_ptr->location_query_len = source_header_ptr->options_list_ptr->location_query_len;
-            destination_header_ptr->options_list_ptr->location_query_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->options_list_ptr->location_query_len);
+            destination_header_ptr->options_list_ptr->location_query_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->location_query_ptr, source_header_ptr->options_list_ptr->location_query_len);
             if (!destination_header_ptr->options_list_ptr->location_query_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate location query!");
                 return 0;
             }
-            memcpy(destination_header_ptr->options_list_ptr->location_query_ptr, source_header_ptr->options_list_ptr->location_query_ptr, source_header_ptr->options_list_ptr->location_query_len);
         }
 
         destination_header_ptr->options_list_ptr->observe = source_header_ptr->options_list_ptr->observe;
@@ -2449,13 +2434,12 @@ static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coa
 
         if (source_header_ptr->options_list_ptr->uri_query_ptr) {
             destination_header_ptr->options_list_ptr->uri_query_len = source_header_ptr->options_list_ptr->uri_query_len;
-            destination_header_ptr->options_list_ptr->uri_query_ptr = handle->sn_coap_protocol_malloc(source_header_ptr->options_list_ptr->uri_query_len);
+            destination_header_ptr->options_list_ptr->uri_query_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->uri_query_ptr, source_header_ptr->options_list_ptr->uri_query_len);
             if (!destination_header_ptr->options_list_ptr->uri_query_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate uri query!");
                 return 0;
             }
-            memcpy(destination_header_ptr->options_list_ptr->uri_query_ptr, source_header_ptr->options_list_ptr->uri_query_ptr, source_header_ptr->options_list_ptr->uri_query_len);
         }
 
         destination_header_ptr->options_list_ptr->block1 = source_header_ptr->options_list_ptr->block1;
@@ -2494,3 +2478,28 @@ static bool sn_coap_protocol_update_duplicate_package_data(const struct coap_s *
     return true;
 }
 #endif
+
+void *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, uint16_t length)
+{
+    void *dest = handle->sn_coap_protocol_malloc(length);
+
+    if ((dest) && (source)) {
+        memcpy(dest, source, length);
+    }
+    return dest;
+}
+
+/*
+ * This should logically be part and accessed via of the coap_s just as malloc() & free()
+ * are, but that would require the client to fill one up, as a wrapper filled from this
+ * class would need access to the handle itself.
+ */
+void *sn_coap_protocol_calloc(struct coap_s *handle, uint16_t length)
+{
+    void *result = handle->sn_coap_protocol_malloc(length);
+
+    if (result) {
+        memset(result, 0, length);
+    }
+    return result;
+}
