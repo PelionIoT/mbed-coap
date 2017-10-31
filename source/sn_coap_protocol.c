@@ -2087,75 +2087,78 @@ static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, const 
             return 0;
         }
 
-        destination_header_ptr->options_list_ptr->max_age = source_header_ptr->options_list_ptr->max_age;
+        const sn_coap_options_list_s *source_options_list_ptr = source_header_ptr->options_list_ptr;
+        sn_coap_options_list_s *destination_options_list_ptr = destination_header_ptr->options_list_ptr;
 
-        if (source_header_ptr->options_list_ptr->proxy_uri_ptr) {
-            destination_header_ptr->options_list_ptr->proxy_uri_len = source_header_ptr->options_list_ptr->proxy_uri_len;
-            destination_header_ptr->options_list_ptr->proxy_uri_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->proxy_uri_ptr, source_header_ptr->options_list_ptr->proxy_uri_len);
-            if (!destination_header_ptr->options_list_ptr->proxy_uri_ptr) {
+        destination_options_list_ptr->max_age = source_options_list_ptr->max_age;
+
+        if (source_options_list_ptr->proxy_uri_ptr) {
+            destination_options_list_ptr->proxy_uri_len = source_options_list_ptr->proxy_uri_len;
+            destination_options_list_ptr->proxy_uri_ptr = sn_coap_protocol_malloc_copy(handle, source_options_list_ptr->proxy_uri_ptr, source_options_list_ptr->proxy_uri_len);
+            if (!destination_options_list_ptr->proxy_uri_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate proxy uri!");
                 return 0;
             }
         }
 
-        if (source_header_ptr->options_list_ptr->etag_ptr) {
-            destination_header_ptr->options_list_ptr->etag_len = source_header_ptr->options_list_ptr->etag_len;
-            destination_header_ptr->options_list_ptr->etag_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->etag_ptr, source_header_ptr->options_list_ptr->etag_len);
-            if (!destination_header_ptr->options_list_ptr->etag_ptr) {
+        if (source_options_list_ptr->etag_ptr) {
+            destination_options_list_ptr->etag_len = source_options_list_ptr->etag_len;
+            destination_options_list_ptr->etag_ptr = sn_coap_protocol_malloc_copy(handle, source_options_list_ptr->etag_ptr, source_options_list_ptr->etag_len);
+            if (!destination_options_list_ptr->etag_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate etag!");
                 return 0;
             }
         }
 
-        if (source_header_ptr->options_list_ptr->uri_host_ptr) {
-            destination_header_ptr->options_list_ptr->uri_host_len = source_header_ptr->options_list_ptr->uri_host_len;
-            destination_header_ptr->options_list_ptr->uri_host_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->uri_host_ptr, source_header_ptr->options_list_ptr->uri_host_len);
-            if (!destination_header_ptr->options_list_ptr->uri_host_ptr) {
+        if (source_options_list_ptr->uri_host_ptr) {
+            destination_options_list_ptr->uri_host_len = source_options_list_ptr->uri_host_len;
+            destination_options_list_ptr->uri_host_ptr = sn_coap_protocol_malloc_copy(handle, source_options_list_ptr->uri_host_ptr, source_options_list_ptr->uri_host_len);
+            if (!destination_options_list_ptr->uri_host_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate uri host!");
                 return 0;
             }
         }
 
-        if (source_header_ptr->options_list_ptr->location_path_ptr) {
-            destination_header_ptr->options_list_ptr->location_path_len = source_header_ptr->options_list_ptr->location_path_len;
-            destination_header_ptr->options_list_ptr->location_path_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->location_path_ptr, source_header_ptr->options_list_ptr->location_path_len);
-            if (!destination_header_ptr->options_list_ptr->location_path_ptr) {
+        if (source_options_list_ptr->location_path_ptr) {
+            destination_options_list_ptr->location_path_len = source_options_list_ptr->location_path_len;
+            destination_options_list_ptr->location_path_ptr = sn_coap_protocol_malloc_copy(handle, source_options_list_ptr->location_path_ptr, source_options_list_ptr->location_path_len);
+            if (!destination_options_list_ptr->location_path_ptr) {
                 tr_error("sn_coap_protocol_copy_header - failed to allocate location path!");
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 return 0;
             }
         }
 
-        destination_header_ptr->options_list_ptr->uri_port = source_header_ptr->options_list_ptr->uri_port;
+        destination_options_list_ptr->uri_port = source_options_list_ptr->uri_port;
 
-        if (source_header_ptr->options_list_ptr->location_query_ptr) {
-            destination_header_ptr->options_list_ptr->location_query_len = source_header_ptr->options_list_ptr->location_query_len;
-            destination_header_ptr->options_list_ptr->location_query_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->location_query_ptr, source_header_ptr->options_list_ptr->location_query_len);
-            if (!destination_header_ptr->options_list_ptr->location_query_ptr) {
+        if (source_options_list_ptr->location_query_ptr) {
+            destination_options_list_ptr->location_query_len = source_options_list_ptr->location_query_len;
+            destination_options_list_ptr->location_query_ptr = sn_coap_protocol_malloc_copy(handle, source_options_list_ptr->location_query_ptr, source_options_list_ptr->location_query_len);
+            if (!destination_options_list_ptr->location_query_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate location query!");
                 return 0;
             }
         }
 
-        destination_header_ptr->options_list_ptr->observe = source_header_ptr->options_list_ptr->observe;
-        destination_header_ptr->options_list_ptr->accept = source_header_ptr->options_list_ptr->accept;
+        destination_options_list_ptr->observe = source_options_list_ptr->observe;
+        destination_options_list_ptr->accept = source_options_list_ptr->accept;
 
-        if (source_header_ptr->options_list_ptr->uri_query_ptr) {
-            destination_header_ptr->options_list_ptr->uri_query_len = source_header_ptr->options_list_ptr->uri_query_len;
-            destination_header_ptr->options_list_ptr->uri_query_ptr = sn_coap_protocol_malloc_copy(handle, source_header_ptr->options_list_ptr->uri_query_ptr, source_header_ptr->options_list_ptr->uri_query_len);
-            if (!destination_header_ptr->options_list_ptr->uri_query_ptr) {
+        if (source_options_list_ptr->uri_query_ptr) {
+            destination_options_list_ptr->uri_query_len = source_options_list_ptr->uri_query_len;
+            destination_options_list_ptr->uri_query_ptr = sn_coap_protocol_malloc_copy(handle, source_options_list_ptr->uri_query_ptr, source_options_list_ptr->uri_query_len);
+            if (!destination_options_list_ptr->uri_query_ptr) {
                 sn_coap_parser_release_allocated_coap_msg_mem(handle, destination_header_ptr);
                 tr_error("sn_coap_protocol_copy_header - failed to allocate uri query!");
                 return 0;
             }
         }
 
-        destination_header_ptr->options_list_ptr->block1 = source_header_ptr->options_list_ptr->block1;
-        destination_header_ptr->options_list_ptr->block2 = source_header_ptr->options_list_ptr->block2;
+        destination_options_list_ptr->block1 = source_options_list_ptr->block1;
+        destination_options_list_ptr->block2 = source_options_list_ptr->block2;
     }
 
     return destination_header_ptr;
