@@ -231,6 +231,12 @@ struct coap_s {
     uint8_t sn_coap_duplication_buffer_size;
 };
 
+/* Utility function which performs a call to sn_coap_protocol_malloc() and memset's the result to zero. */
+void *sn_coap_protocol_calloc(struct coap_s *handle, uint16_t length);
+
+/* Utility function which performs a call to sn_coap_protocol_malloc() and memcopy's the source to result buffer. */
+void *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, uint16_t length);
+
 #ifdef __cplusplus
 }
 #endif

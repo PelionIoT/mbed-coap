@@ -82,13 +82,12 @@ sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap
 
     if (coap_packet_ptr->token_ptr) {
         coap_res_ptr->token_len = coap_packet_ptr->token_len;
-        coap_res_ptr->token_ptr = handle->sn_coap_protocol_malloc(coap_res_ptr->token_len);
+        coap_res_ptr->token_ptr = sn_coap_protocol_malloc_copy(handle, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
         if (!coap_res_ptr->token_ptr) {
             tr_error("sn_coap_build_response - failed to allocate token!");
             handle->sn_coap_protocol_free(coap_res_ptr);
             return NULL;
         }
-        memcpy(coap_res_ptr->token_ptr, coap_packet_ptr->token_ptr, coap_res_ptr->token_len);
     }
     return coap_res_ptr;
 }
