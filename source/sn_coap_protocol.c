@@ -521,13 +521,12 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
         coap_blockwise_msg_s *stored_blockwise_msg_ptr;
 
-        stored_blockwise_msg_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_blockwise_msg_s));
+        stored_blockwise_msg_ptr = sn_coap_protocol_calloc(handle, sizeof(coap_blockwise_msg_s));
         if (!stored_blockwise_msg_ptr) {
             //block paylaod save failed, only first block can be build. Perhaps we should return error.
             tr_error("sn_coap_protocol_build - blockwise message allocation failed!");
             return byte_count_built;
         }
-        memset(stored_blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
 
         /* Fill struct */
         stored_blockwise_msg_ptr->timestamp = handle->system_time;
@@ -559,12 +558,11 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         /* Add message to linked list - response can be in blocks and we need header to build response.. */
         coap_blockwise_msg_s *stored_blockwise_msg_ptr;
 
-        stored_blockwise_msg_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_blockwise_msg_s));
+        stored_blockwise_msg_ptr = sn_coap_protocol_calloc(handle, sizeof(coap_blockwise_msg_s));
         if (!stored_blockwise_msg_ptr) {
             tr_error("sn_coap_protocol_build - blockwise (GET) allocation failed!");
             return byte_count_built;
         }
-        memset(stored_blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
 
         /* Fill struct */
         stored_blockwise_msg_ptr->timestamp = handle->system_time;
@@ -1093,22 +1091,20 @@ static void sn_coap_protocol_linked_list_duplication_info_store(struct coap_s *h
     /* * * * Allocating memory for stored Duplication info * * * */
 
     /* Allocate memory for stored Duplication info's structure */
-    stored_duplication_info_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_duplication_info_s));
+    stored_duplication_info_ptr = sn_coap_protocol_calloc(handle, sizeof(coap_duplication_info_s));
 
     if (stored_duplication_info_ptr == NULL) {
         tr_error("sn_coap_protocol_linked_list_duplication_info_store - failed to allocate duplication info!");
         return;
     }
-    memset(stored_duplication_info_ptr, 0, sizeof(coap_duplication_info_s));
 
     /* Allocate memory for stored Duplication info's address */
-    stored_duplication_info_ptr->address = handle->sn_coap_protocol_malloc(sizeof(sn_nsdl_addr_s));
+    stored_duplication_info_ptr->address = sn_coap_protocol_calloc(handle, sizeof(sn_nsdl_addr_s));
     if (stored_duplication_info_ptr->address == NULL) {
         tr_error("sn_coap_protocol_linked_list_duplication_info_store - failed to allocate address!");
         handle->sn_coap_protocol_free(stored_duplication_info_ptr);
         return;
     }
-    memset(stored_duplication_info_ptr->address, 0, sizeof(sn_nsdl_addr_s));
 
     stored_duplication_info_ptr->address->addr_ptr = handle->sn_coap_protocol_malloc(addr_ptr->addr_len);
 
@@ -1582,17 +1578,15 @@ rescan:
 coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len)
 {
 
-    coap_send_msg_s *msg_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_send_msg_s));
+    coap_send_msg_s *msg_ptr = sn_coap_protocol_calloc(handle, sizeof(coap_send_msg_s));
 
     if (msg_ptr == NULL) {
         return 0;
     }
 
-    memset(msg_ptr, 0, sizeof(coap_send_msg_s));
-
     msg_ptr->send_msg_ptr.packet_ptr = handle->sn_coap_protocol_malloc(packet_data_len);
 
-    msg_ptr->send_msg_ptr.dst_addr_ptr.addr_ptr = handle->sn_coap_protocol_malloc(dst_addr_ptr->addr_len);
+    msg_ptr->send_msg_ptr.dst_addr_ptr.addr_ptr = sn_coap_protocol_calloc(handle, dst_addr_ptr->addr_len);
 
     if ((msg_ptr->send_msg_ptr.dst_addr_ptr.addr_ptr == NULL) ||
         (msg_ptr->send_msg_ptr.packet_ptr == NULL)) {
@@ -1600,8 +1594,6 @@ coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn
         sn_coap_protocol_release_allocated_send_msg_mem(handle, msg_ptr);
         return 0;
     }
-
-    memset(msg_ptr->send_msg_ptr.dst_addr_ptr.addr_ptr, 0, dst_addr_ptr->addr_len);
 
     return msg_ptr;
 }
@@ -2114,7 +2106,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     dst_packed_data_needed_mem = sn_coap_builder_calc_needed_packet_data_size_2(src_coap_blockwise_ack_msg_ptr ,handle->sn_coap_block_data_size);
 
                     /* Then allocate memory for Packet data */
-                    dst_ack_packet_data_ptr = handle->sn_coap_protocol_malloc(dst_packed_data_needed_mem);
+                    dst_ack_packet_data_ptr = sn_coap_protocol_calloc(handle, dst_packed_data_needed_mem);
 
                     if (dst_ack_packet_data_ptr == NULL) {
                         tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate packet!");
@@ -2122,7 +2114,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                         sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
                         return NULL;
                     }
-                    memset(dst_ack_packet_data_ptr, 0, dst_packed_data_needed_mem);
 
                     /* * * Then build Acknowledgement message to Packed data * * */
                     if ((sn_coap_builder_2(dst_ack_packet_data_ptr, src_coap_blockwise_ack_msg_ptr, handle->sn_coap_block_data_size)) < 0) {
@@ -2137,7 +2128,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     /* * * Save to linked list * * */
                     coap_blockwise_msg_s *stored_blockwise_msg_ptr;
 
-                    stored_blockwise_msg_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_blockwise_msg_s));
+                    stored_blockwise_msg_ptr = sn_coap_protocol_calloc(handle, sizeof(coap_blockwise_msg_s));
                     if (!stored_blockwise_msg_ptr) {
                         tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate blockwise message!");
                         handle->sn_coap_protocol_free(dst_ack_packet_data_ptr);
@@ -2145,7 +2136,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                         sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
                         return 0;
                     }
-                    memset(stored_blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
 
                     stored_blockwise_msg_ptr->timestamp = handle->system_time;
 
