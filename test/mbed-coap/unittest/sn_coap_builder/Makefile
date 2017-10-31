@@ -9,6 +9,7 @@ TEST_SRC_FILES = \
         libCoap_builder_test.cpp \
         ../stubs/sn_coap_header_check_stub.c \
         ../stubs/sn_coap_parser_stub.c \
+        ../stubs/sn_coap_protocol_stub.c \
 
 include ../MakefileWorker.mk
 

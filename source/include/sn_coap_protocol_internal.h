@@ -139,6 +139,12 @@ struct coap_s {
     uint8_t sn_coap_internal_block2_resp_handling; /* If this is set then coap itself sends a next GET request automatically */
 };
 
+/* Utility function which performs a call to sn_coap_protocol_malloc() and memset's the result to zero. */
+void *sn_coap_protocol_calloc(struct coap_s *handle, uint16_t length);
+
+/* Utility function which performs a call to sn_coap_protocol_malloc() and memcopy's the source to result buffer. */
+void *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, uint16_t length);
+
 #ifdef __cplusplus
 }
 #endif

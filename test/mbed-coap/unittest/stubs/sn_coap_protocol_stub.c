@@ -112,4 +112,28 @@ void sn_coap_protocol_block_remove(struct coap_s *handle, sn_nsdl_addr_s *source
 {
 }
 
+void *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, uint16_t length)
+{
+    void *dest = handle->sn_coap_protocol_malloc(length);
+
+    if ((dest) && (source)) {
+        memcpy(dest, source, length);
+    }
+    return dest;
+}
+
+/*
+ * This should logically be part and accessed via of the coap_s just as malloc() & free()
+ * are, but that would require the client to fill one up, as a wrapper filled from this
+ * class would need access to the handle itself.
+ */
+void *sn_coap_protocol_calloc(struct coap_s *handle, uint16_t length)
+{
+    void *result = handle->sn_coap_protocol_malloc(length);
+
+    if (result) {
+        memset(result, 0, length);
+    }
+    return result;
+}
 
