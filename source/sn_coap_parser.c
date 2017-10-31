@@ -253,14 +253,13 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
             return -1;
         }
 
-        dst_coap_msg_ptr->token_ptr = handle->sn_coap_protocol_malloc(dst_coap_msg_ptr->token_len);
+        dst_coap_msg_ptr->token_ptr = sn_coap_protocol_malloc_copy(handle, *packet_data_pptr, dst_coap_msg_ptr->token_len);
 
         if (dst_coap_msg_ptr->token_ptr == NULL) {
             tr_error("sn_coap_parser_options_parse - failed to allocate token!");
             return -1;
         }
 
-        memcpy(dst_coap_msg_ptr->token_ptr, *packet_data_pptr, dst_coap_msg_ptr->token_len);
         (*packet_data_pptr) += dst_coap_msg_ptr->token_len;
     }
 
@@ -363,14 +362,13 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                 dst_coap_msg_ptr->options_list_ptr->proxy_uri_len = option_len;
                 (*packet_data_pptr)++;
 
-                dst_coap_msg_ptr->options_list_ptr->proxy_uri_ptr = handle->sn_coap_protocol_malloc(option_len);
+                dst_coap_msg_ptr->options_list_ptr->proxy_uri_ptr = sn_coap_protocol_malloc_copy(handle, *packet_data_pptr, option_len);
 
                 if (dst_coap_msg_ptr->options_list_ptr->proxy_uri_ptr == NULL) {
                     tr_error("sn_coap_parser_options_parse - COAP_OPTION_PROXY_URI allocation failed!");
                     return -1;
                 }
 
-                memcpy(dst_coap_msg_ptr->options_list_ptr->proxy_uri_ptr, *packet_data_pptr, option_len);
                 (*packet_data_pptr) += option_len;
 
                 break;
@@ -399,13 +397,12 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                 dst_coap_msg_ptr->options_list_ptr->uri_host_len = option_len;
                 (*packet_data_pptr)++;
 
-                dst_coap_msg_ptr->options_list_ptr->uri_host_ptr = handle->sn_coap_protocol_malloc(option_len);
+                dst_coap_msg_ptr->options_list_ptr->uri_host_ptr = sn_coap_protocol_malloc_copy(handle, *packet_data_pptr, option_len);
 
                 if (dst_coap_msg_ptr->options_list_ptr->uri_host_ptr == NULL) {
                     tr_error("sn_coap_parser_options_parse - COAP_OPTION_URI_HOST allocation failed!");
                     return -1;
                 }
-                memcpy(dst_coap_msg_ptr->options_list_ptr->uri_host_ptr, *packet_data_pptr, option_len);
                 (*packet_data_pptr) += option_len;
 
                 break;
@@ -607,9 +604,9 @@ static int8_t sn_coap_parser_options_parse_multiple_options(struct coap_s *handl
             /* Uri-Query is modified to following format: temp1'\0'temp2'\0'temp3 i.e.  */
             /* Uri-Path is modified to following format: temp1\temp2\temp3 i.e.  */
             if (option == COAP_OPTION_URI_QUERY || option == COAP_OPTION_LOCATION_QUERY || option == COAP_OPTION_ETAG || option == COAP_OPTION_ACCEPT) {
-                memset(temp_parsed_uri_query_ptr, '&', 1);
+                *temp_parsed_uri_query_ptr = '&';
             } else if (option == COAP_OPTION_URI_PATH || option == COAP_OPTION_LOCATION_PATH) {
-                memset(temp_parsed_uri_query_ptr, '/', 1);
+                *temp_parsed_uri_query_ptr = '/';
             }
 
             temp_parsed_uri_query_ptr++;
