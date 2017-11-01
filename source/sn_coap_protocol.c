@@ -754,16 +754,8 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
             }
         }
         if (remove_from_the_list) {
-            ns_list_remove(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_temp_ptr);
-            if (stored_blockwise_msg_temp_ptr->coap_msg_ptr) {
-                if(stored_blockwise_msg_temp_ptr->coap_msg_ptr->payload_ptr){
-                    handle->sn_coap_protocol_free(stored_blockwise_msg_temp_ptr->coap_msg_ptr->payload_ptr);
-                    stored_blockwise_msg_temp_ptr->coap_msg_ptr->payload_ptr = 0;
-                }
-                sn_coap_parser_release_allocated_coap_msg_mem(stored_blockwise_msg_temp_ptr->coap, stored_blockwise_msg_temp_ptr->coap_msg_ptr);
-            }
 
-            handle->sn_coap_protocol_free(stored_blockwise_msg_temp_ptr);
+            sn_coap_protocol_linked_list_blockwise_msg_remove(handle, stored_blockwise_msg_temp_ptr);
         }
     }
 
