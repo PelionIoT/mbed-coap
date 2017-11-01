@@ -57,8 +57,8 @@ static void                  sn_coap_protocol_linked_list_duplication_info_remov
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 static void                  sn_coap_protocol_linked_list_blockwise_msg_remove(struct coap_s *handle, coap_blockwise_msg_s *removed_msg_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *handle, sn_nsdl_addr_s *addr_ptr, uint16_t stored_payload_len, uint8_t *stored_payload_ptr, uint32_t block_number);
-static uint8_t              *sn_coap_protocol_linked_list_blockwise_payload_search(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length);
-static bool                  sn_coap_protocol_linked_list_blockwise_payload_compare_block_number(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint32_t block_number);
+static uint8_t              *sn_coap_protocol_linked_list_blockwise_payload_search(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length);
+static bool                  sn_coap_protocol_linked_list_blockwise_payload_compare_block_number(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint32_t block_number);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_remove(struct coap_s *handle, coap_blockwise_payload_s *removed_payload_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(struct coap_s *handle);
 static uint32_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr);
@@ -69,15 +69,14 @@ static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle,
 #endif
 #if ENABLE_RESENDINGS
 static uint8_t               sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param);
-static sn_nsdl_transmit_s   *sn_coap_protocol_linked_list_send_msg_search(struct coap_s *handle,sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
-static void                  sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
+static sn_nsdl_transmit_s   *sn_coap_protocol_linked_list_send_msg_search(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
+static void                  sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static coap_send_msg_s      *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len);
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handle, coap_send_msg_s *freed_send_msg_ptr);
 static uint16_t              sn_coap_count_linked_list_size(const coap_send_msg_list_t *linked_list_ptr);
 static uint32_t              sn_coap_calculate_new_resend_time(const uint32_t current_time, const uint8_t interval, const uint8_t counter);
 #endif
-static void                 *sn_coap_protocol_calloc(struct coap_s *handle, uint16_t length);
-static void                 *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, uint16_t length);
+static bool                  compare_address_and_port(const sn_nsdl_addr_s* left, const sn_nsdl_addr_s* right);
 
 
 /* * * * * * * * * * * * * * * * * */
@@ -905,7 +904,7 @@ static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle
  *****************************************************************************/
 
 static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(struct coap_s *handle,
-        sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
+        const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
 {
     /* Loop all stored resending messages Linked list */
     ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
@@ -915,13 +914,10 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(struct c
 
         /* If message's Message ID is same than is searched */
         if (temp_msg_id == msg_id) {
-            /* If message's Source address is same than is searched */
-            if (0 == memcmp(src_addr_ptr->addr_ptr, stored_msg_ptr->send_msg_ptr.dst_addr_ptr.addr_ptr, src_addr_ptr->addr_len)) {
-                /* If message's Source address port is same than is searched */
-                if (stored_msg_ptr->send_msg_ptr.dst_addr_ptr.port == src_addr_ptr->port) {
-                    /* * * Message found, return pointer to that stored resending message * * * */
-                    return &stored_msg_ptr->send_msg_ptr;
-                }
+            /* If message's Source address and port is same than is searched */
+            if (compare_address_and_port(src_addr_ptr, &stored_msg_ptr->send_msg_ptr.dst_addr_ptr)) {
+                /* * * Message found, return pointer to that stored resending message * * * */
+                return &stored_msg_ptr->send_msg_ptr;
             }
         }
     }
@@ -938,7 +934,7 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(struct c
  * \param msg_id is searching key for removed message
  *****************************************************************************/
 
-static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
+static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
 {
     /* Loop all stored resending messages in Linked list */
     ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
@@ -948,21 +944,18 @@ static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, 
 
         /* If message's Message ID is same than is searched */
         if (temp_msg_id == msg_id) {
-            /* If message's Source address is same than is searched */
-            if (0 == memcmp(src_addr_ptr->addr_ptr, stored_msg_ptr->send_msg_ptr.dst_addr_ptr.addr_ptr, src_addr_ptr->addr_len)) {
-                /* If message's Source address port is same than is searched */
-                if (stored_msg_ptr->send_msg_ptr.dst_addr_ptr.port == src_addr_ptr->port) {
-                    /* * * Message found * * */
+            /* If message's Source address and port is same than is searched */
+            if (compare_address_and_port(src_addr_ptr, &stored_msg_ptr->send_msg_ptr.dst_addr_ptr)) {
+                /* * * Message found * * */
 
-                    /* Remove message from Linked list */
-                    ns_list_remove(&handle->linked_list_resent_msgs, stored_msg_ptr);
-                    --handle->count_resent_msgs;
+                /* Remove message from Linked list */
+                ns_list_remove(&handle->linked_list_resent_msgs, stored_msg_ptr);
+                --handle->count_resent_msgs;
 
-                    /* Free memory of stored message */
-                    sn_coap_protocol_release_allocated_send_msg_mem(handle, stored_msg_ptr);
+                /* Free memory of stored message */
+                sn_coap_protocol_release_allocated_send_msg_mem(handle, stored_msg_ptr);
 
-                    return;
-                }
+                return;
             }
         }
     }
@@ -1259,7 +1252,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
  *         list or NULL if payload not found
  *****************************************************************************/
 
-static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length)
+static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length)
 {
     /* Loop all stored blockwise payloads in Linked list */
     ns_list_foreach(coap_blockwise_payload_s, stored_payload_info_ptr, &handle->linked_list_blockwise_received_payloads) {
@@ -1279,7 +1272,7 @@ static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(struct coa
 }
 
 static bool sn_coap_protocol_linked_list_blockwise_payload_compare_block_number(struct coap_s *handle,
-                                                                                   sn_nsdl_addr_s *src_addr_ptr,
+                                                                                   const sn_nsdl_addr_s *src_addr_ptr,
                                                                                    uint32_t block_number)
 {
     /* Loop all stored blockwise payloads in Linked list */
@@ -2188,4 +2181,17 @@ void *sn_coap_protocol_calloc(struct coap_s *handle, uint16_t length)
         memset(result, 0, length);
     }
     return result;
+}
+
+static bool compare_address_and_port(const sn_nsdl_addr_s* left, const sn_nsdl_addr_s* right)
+{
+    bool match = false;
+
+    if (left->port == right->port) {
+        if (0 == memcmp(left->addr_ptr, right->addr_ptr, left->addr_len)) {
+            match = true;
+        }
+    }
+
+    return match;
 }
