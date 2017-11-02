@@ -267,6 +267,42 @@ typedef struct registration_info_ {
     uint8_t *links_ptr;             /**< Resource registration string */
 } registration_info_t;
 
+/**
+ * \fn blockwise_payload_get_cb
+ * \brief Callback function type for retrieving a payload block for streaming request.
+ *
+ * \param block_number, Index of the block to retrieve
+ * \param block_size,   Size of the block to retrieve
+ * \param payload_size, Output parameter, pointer to a uint16_t, should be set to the length
+ *                      of the retrieved payload.
+ * \param payload_ptr,  Output parameter, pointer to a uint16_t*, should be set to point to
+ *                      the allocated payload buffer.
+ * \param user_context, A pointer to the user_context field.
+ *
+ * \return Return 0 if no more blocks to be sent, non-zero return value indicates more blocks
+ *         to come.
+ */
+typedef uint8_t (*blockwise_payload_get_cb)(uint32_t block_number, uint16_t block_size, /*out*/ uint16_t *payload_len, /*out*/ uint8_t **payload_ptr, const void* user_context);
+
+/**
+ * \fn blockwise_payload_get_cb
+ * \brief Callback function type for freeing a payload block of streaming request.
+ *
+ * \param block_number, Index of the block to free
+ * \param payload,      Pointer to the payload buffer to free
+ * \param user_context, A pointer to the user_context field.
+ */
+typedef void (*blockwise_payload_free_cb)(uint32_t block_number, uint8_t *payload, void* user_context);
+
+/**
+ * \struct sn_coap_blockwise_context_s
+ * \brief A struct for defining context for a streaming blockwise request.
+ */
+typedef struct sn_coap_blockwise_context_ {
+    blockwise_payload_get_cb  blockwise_payload_get;
+    blockwise_payload_free_cb blockwise_payload_free;
+    void                      *user_context;
+} sn_coap_blockwise_context_s;
 
 /**
  * \brief Address type of given address

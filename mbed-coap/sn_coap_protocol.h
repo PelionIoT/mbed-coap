@@ -224,6 +224,55 @@ extern void sn_coap_protocol_remove_sent_blockwise_message(struct coap_s *handle
  */
 extern int8_t sn_coap_protocol_delete_retransmission(struct coap_s *handle, uint16_t msg_id);
 
+
+/**
+ * \fn int16_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
+ *                                                       sn_coap_hdr_s *src_coap_msg_ptr,
+ *                                                       sn_coap_blockwise_context_s *blockwise_context)
+ *
+ * \param *handle Pointer to CoAP library handle
+ * \param *src_coap_msg_ptr Pointer to a sn_coap_hdr_s struct containing the coap message
+ * \param *blockwise_context Pointer to sn_coap_blockwise_context_s struct containing the blockwise streaming
+ *                           context
+ * \return returns 0 on success, -1 for invalid parameter, -2 if payload could not be
+ *         retrieved or buffer allocation failed
+ *
+ * \brief If blockwising is enabled this function can be used to initiate a blockwise streaming request.
+ */
+extern int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
+                                                        sn_coap_hdr_s *src_coap_msg_ptr,
+                                                        sn_coap_blockwise_context_s *blockwise_context);
+
+/**
+ * \fn extern sn_coap_blockwise_context_s *sn_coap_protocol_create_blockwise_stream_context(struct coap_s *handle,
+ *                                                                                          blockwise_payload_get_cb blockwise_payload_get,
+ *                                                                                          blockwise_payload_free_cb blockwise_payload_free,
+ *                                                                                          void *user_context);
+ *
+ * \param *handle Pointer to CoAP library handle
+ * \param blockwise_payload_get Pointer to a function that is called when a block is being built to retrieve payload.
+ * \param blockwise_payload_free Pointer to a function that is called when a block payload is no longer needed and can be freed.
+ * \param *user_context Pointer to a user context, this will be passed as a parameter to the payload get and free functions.
+ * \return returns a pointer to a sn_coap_blockwise_context_s structure, NULL if allocation failed.
+ *
+ * \brief Creates a sn_coap_blockwise_context_s structure for streaming blockwise transfer.
+ */
+extern sn_coap_blockwise_context_s *sn_coap_protocol_create_blockwise_stream_context(struct coap_s *handle,
+                                                                                     blockwise_payload_get_cb blockwise_payload_get,
+                                                                                     blockwise_payload_free_cb blockwise_payload_free,
+                                                                                     void *user_context);
+
+/**
+ * \fn sn_coap_protocol_free_blockwise_stream_context(struct coap_s *handle,
+ *                                                    sn_coap_blockwise_context_s *blockwise_context);
+ *
+ * \param *handle Pointer to CoAP library handle
+ * \param *blockwise_context Pointer to the blockwise context structure to free.
+ *
+ * \brief Frees the given sn_coap_blockwise_context_s structure.
+ */
+extern void sn_coap_protocol_free_blockwise_stream_context(struct coap_s *handle, sn_coap_blockwise_context_s *blockwise_context);
+
 /**
  * \fn void sn_coap_protocol_delete_retransmission_by_token(struct coap_s *handle)
  *

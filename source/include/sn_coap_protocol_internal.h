@@ -187,7 +187,9 @@ typedef struct coap_blockwise_msg_ {
     void                *param;
     uint16_t            msg_id;
 
-    ns_list_link_t      link;
+    sn_coap_blockwise_context_s *context;
+
+    ns_list_link_t     link;
 } coap_blockwise_msg_s;
 
 typedef NS_LIST_HEAD(coap_blockwise_msg_s, link) coap_blockwise_msg_list_t;
