@@ -64,6 +64,7 @@ static void                  sn_coap_protocol_linked_list_blockwise_payload_remo
 static uint32_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_remove_old_data(struct coap_s *handle);
 static sn_coap_hdr_s        *sn_coap_handle_blockwise_message(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr, void *param);
+static bool                  sn_coap_handle_last_blockwise(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr);
 static int8_t                sn_coap_convert_block_size(uint16_t block_size);
 static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr);
 #endif
@@ -1710,32 +1711,11 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 /* * * This is the last block when whole Blockwise payload from received * * */
                 /* * * blockwise messages is gathered and returned to User               * * */
 
-                /* Store last Blockwise payload to Linked list */
-                uint16_t payload_len            = 0;
-                uint8_t *payload_ptr            = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len);
-                uint32_t whole_payload_len      = sn_coap_protocol_linked_list_blockwise_payloads_get_len(handle, src_addr_ptr);
-                uint8_t *temp_whole_payload_ptr = NULL;
-
-                temp_whole_payload_ptr = handle->sn_coap_protocol_malloc(whole_payload_len);
-                if (temp_whole_payload_ptr == NULL || whole_payload_len > UINT16_MAX) {
+                if (!sn_coap_handle_last_blockwise(handle, src_addr_ptr, received_coap_msg_ptr)) {
                     tr_error("sn_coap_handle_blockwise_message - (recv block1) failed to allocate all blocks!");
                     sn_coap_parser_release_allocated_coap_msg_mem(handle, received_coap_msg_ptr);
-                    handle->sn_coap_protocol_free(temp_whole_payload_ptr);
-                    return 0;
+                    return NULL;
                 }
-
-                // In block message case, payload_ptr freeing must be done in application level
-                received_coap_msg_ptr->payload_ptr = temp_whole_payload_ptr;
-                received_coap_msg_ptr->payload_len = whole_payload_len;
-
-                /* Copy stored Blockwise payloads to returned whole Blockwise payload pointer */
-                while (payload_ptr != NULL) {
-                    memcpy(temp_whole_payload_ptr, payload_ptr, payload_len);
-                    temp_whole_payload_ptr += payload_len;
-                    sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(handle);
-                    payload_ptr = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len);
-                }
-                received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
             }
         }
     }
@@ -1870,31 +1850,10 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 /* * * This is the last block when whole Blockwise payload from received * * */
                 /* * * blockwise messages is gathered and returned to User               * * */
 
-                /* Store last Blockwise payload to Linked list */
-                uint16_t payload_len            = 0;
-                uint8_t *payload_ptr            = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len);
-                uint16_t whole_payload_len      = sn_coap_protocol_linked_list_blockwise_payloads_get_len(handle, src_addr_ptr);
-                uint8_t *temp_whole_payload_ptr = NULL;
-
-                temp_whole_payload_ptr = handle->sn_coap_protocol_malloc(whole_payload_len);
-                if (!temp_whole_payload_ptr) {
+                if (!sn_coap_handle_last_blockwise(handle, src_addr_ptr, received_coap_msg_ptr)) {
                     tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate whole payload!");
-                    return 0;
+                    return NULL;
                 }
-
-                received_coap_msg_ptr->payload_ptr = temp_whole_payload_ptr;
-                received_coap_msg_ptr->payload_len = whole_payload_len;
-
-                /* Copy stored Blockwise payloads to returned whole Blockwise payload pointer */
-                while (payload_ptr != NULL) {
-                    memcpy(temp_whole_payload_ptr, payload_ptr, payload_len);
-
-                    temp_whole_payload_ptr += payload_len;
-
-                    sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(handle);
-                    payload_ptr = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len);
-                }
-                received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
 
                 //todo: remove previous msg from list
             }
@@ -1996,6 +1955,40 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
         }
     }
     return received_coap_msg_ptr;
+}
+
+static bool sn_coap_handle_last_blockwise(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr)
+{
+
+    /* * * This is the last block when whole Blockwise payload from received * * */
+    /* * * blockwise messages is gathered and returned to User               * * */
+
+    /* Store last Blockwise payload to Linked list */
+    uint16_t payload_len            = 0;
+    uint8_t *payload_ptr            = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len);
+    uint32_t whole_payload_len      = sn_coap_protocol_linked_list_blockwise_payloads_get_len(handle, src_addr_ptr);
+    uint8_t *temp_whole_payload_ptr = NULL;
+
+    temp_whole_payload_ptr = handle->sn_coap_protocol_malloc(whole_payload_len);
+    if (temp_whole_payload_ptr == NULL || whole_payload_len > UINT16_MAX) {
+        handle->sn_coap_protocol_free(temp_whole_payload_ptr);
+        return false;
+    }
+
+    // In block message case, payload_ptr freeing must be done in application level
+    received_coap_msg_ptr->payload_ptr = temp_whole_payload_ptr;
+    received_coap_msg_ptr->payload_len = whole_payload_len;
+
+    /* Copy stored Blockwise payloads to returned whole Blockwise payload pointer */
+    while (payload_ptr != NULL) {
+        memcpy(temp_whole_payload_ptr, payload_ptr, payload_len);
+        temp_whole_payload_ptr += payload_len;
+        sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(handle);
+        payload_ptr = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len);
+    }
+    received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED;
+
+    return true;
 }
 
 static int8_t sn_coap_convert_block_size(uint16_t block_size)
