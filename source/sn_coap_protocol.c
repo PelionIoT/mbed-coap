@@ -1852,7 +1852,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
     /* Block2 Option in a response (e.g., a 2.05 response for GET) */
     /* Message ID must be same than in received message */
     else {
-    	tr_debug("sn_coap_handle_blockwise_message BLOCK2");
+        tr_debug("sn_coap_handle_blockwise_message BLOCK2");
         //This is response to request we made
         if (received_coap_msg_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE) {
             uint32_t block_number = 0;
@@ -1871,7 +1871,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
             if (received_coap_msg_ptr->options_list_ptr->block2 & 0x08) {
                 tr_debug("sn_coap_handle_blockwise_message BLOCK2 payload MORE BIT IS SET");
 
-            	coap_blockwise_msg_s *previous_blockwise_msg_ptr = NULL;
+                coap_blockwise_msg_s *previous_blockwise_msg_ptr = NULL;
                 //build and send ack
                 received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING;
 
@@ -1949,7 +1949,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                         }
                         memcpy(src_coap_blockwise_ack_msg_ptr->uri_path_ptr, fw_update_uri_path_ptr, fw_update_uri_path_len);
                     }
-
                 }
 
                 /* Then get needed memory count for Packet data */
@@ -1968,7 +1967,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     return NULL;
                 }
                 memset(dst_ack_packet_data_ptr, 0, dst_packed_data_needed_mem);
-
 
                 /* * * Then build Acknowledgement message to Packed data * * */
                 if ((sn_coap_builder_2(dst_ack_packet_data_ptr, src_coap_blockwise_ack_msg_ptr, handle->sn_coap_block_data_size)) < 0) {
@@ -2047,7 +2045,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
                 /* Copy stored Blockwise payloads to returned whole Blockwise payload pointer */
                 while (payload_ptr != NULL) {
-                	memcpy(temp_whole_payload_ptr, payload_ptr, payload_len);
+                    memcpy(temp_whole_payload_ptr, payload_ptr, payload_len);
 
                     temp_whole_payload_ptr += payload_len;
 
