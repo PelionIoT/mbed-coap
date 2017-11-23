@@ -405,8 +405,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         // Store the URI for Block2 subsequent GETs
         fw_update_uri_path_len = src_coap_msg_ptr->uri_path_len;
 
-
-        // TODO: Do we get uint16_t*?
         fw_update_uri_path_ptr = handle->sn_coap_protocol_malloc(src_coap_msg_ptr->uri_path_len);
         if (!fw_update_uri_path_ptr) {
             return -2;
@@ -698,7 +696,6 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     if (returned_dst_coap_msg_ptr->options_list_ptr != NULL &&
             (returned_dst_coap_msg_ptr->options_list_ptr->block1 != COAP_OPTION_BLOCK_NONE ||
              returned_dst_coap_msg_ptr->options_list_ptr->block2 != COAP_OPTION_BLOCK_NONE)) {
-
         returned_dst_coap_msg_ptr = sn_coap_handle_blockwise_message(handle, src_addr_ptr, returned_dst_coap_msg_ptr, param);
     } else {
         /* Get ... */
@@ -1866,7 +1863,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                                                                  received_coap_msg_ptr->payload_ptr,
                                                                  received_coap_msg_ptr->options_list_ptr->block2 >> 4);
 
-
             /* If not last block (more value is set) */
             if (received_coap_msg_ptr->options_list_ptr->block2 & 0x08) {
                 tr_debug("sn_coap_handle_blockwise_message BLOCK2 payload MORE BIT IS SET");
@@ -1935,10 +1931,9 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
                 /* Handle BLOCK2 (subsequent) Response GET msg code and uri path */
                 if (received_coap_msg_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CONTENT) {
-                	tr_debug("sn_coap_handle_blockwise_message BLOCK2 GET Response URI settings");
+                    tr_debug("sn_coap_handle_blockwise_message BLOCK2 GET Response URI settings");
 
-                	src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_REQUEST_GET;
-
+                    src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_REQUEST_GET;
                     if (fw_update_uri_path_ptr) {
                         src_coap_blockwise_ack_msg_ptr->uri_path_len = fw_update_uri_path_len;
                         src_coap_blockwise_ack_msg_ptr->uri_path_ptr = handle->sn_coap_protocol_malloc(fw_update_uri_path_len);
@@ -2025,7 +2020,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 /* * * blockwise messages is gathered and returned to User               * * */
 
                 /* Store last Blockwise payload to Linked list */
-            	tr_debug("sn_coap_handle_blockwise_message BLOCK2 LAST BLOCK");
+                tr_debug("sn_coap_handle_blockwise_message BLOCK2 LAST BLOCK");
 
                 uint16_t payload_len            = 0;
                 uint8_t *payload_ptr            = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len);
@@ -2033,7 +2028,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 uint8_t *temp_whole_payload_ptr = NULL;
 
                 temp_whole_payload_ptr = handle->sn_coap_protocol_malloc(whole_payload_len);
-                tr_debug("sn_coap_handle_blockwise_message BLOCK2 LAST BLOCK temp_whole_payload_ptr allocated:");
 
                 if (!temp_whole_payload_ptr) {
                     tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate whole payload!");
