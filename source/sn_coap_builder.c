@@ -53,6 +53,8 @@ sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap
 {
     sn_coap_hdr_s *coap_res_ptr;
 
+    tr_debug("sn_coap_build_response msg_code: %d msg_type: %d", msg_code, coap_packet_ptr->msg_type);
+
     if (!coap_packet_ptr || !handle) {
         return NULL;
     }
@@ -63,18 +65,23 @@ sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap
         return NULL;
     }
 
-    if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE) {
+    if (msg_code == COAP_MSG_CODE_REQUEST_GET) {
+        // Blockwise message response is new GET
+        tr_debug("sn_coap_build_response for Blockwise msg another GET");
+        coap_res_ptr->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+        coap_res_ptr->msg_code = (sn_coap_msg_code_e)msg_code;
+        /* msg_id needs to be set by the caller in this case */
+    }
+    else if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE) {
         coap_res_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
         coap_res_ptr->msg_code = (sn_coap_msg_code_e)msg_code;
         coap_res_ptr->msg_id = coap_packet_ptr->msg_id;
     }
-
     else if (coap_packet_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE) {
         coap_res_ptr->msg_type = COAP_MSG_TYPE_NON_CONFIRMABLE;
         coap_res_ptr->msg_code = (sn_coap_msg_code_e)msg_code;
         /* msg_id needs to be set by the caller in this case */
     }
-
     else {
         handle->sn_coap_protocol_free( coap_res_ptr );
         return NULL;
