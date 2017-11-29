@@ -77,7 +77,6 @@ static uint16_t              sn_coap_count_linked_list_size(const coap_send_msg_
 static uint32_t              sn_coap_calculate_new_resend_time(const uint32_t current_time, const uint8_t interval, const uint8_t counter);
 #endif
 
-
 /* * * * * * * * * * * * * * * * * */
 /* * * * GLOBAL DECLARATIONS * * * */
 /* * * * * * * * * * * * * * * * * */
@@ -1849,12 +1848,10 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
     /* Block2 Option in a response (e.g., a 2.05 response for GET) */
     /* Message ID must be same than in received message */
     else {
-        tr_debug("sn_coap_handle_blockwise_message BLOCK2");
         //This is response to request we made
         if (received_coap_msg_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE) {
             uint32_t block_number = 0;
 
-            tr_debug("sn_coap_handle_blockwise_message BLOCK2 payload");
             /* Store blockwise payload to Linked list */
             //todo: add block number to stored values - just to make sure all packets are in order
             sn_coap_protocol_linked_list_blockwise_payload_store(handle,
@@ -1865,7 +1862,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
             /* If not last block (more value is set) */
             if (received_coap_msg_ptr->options_list_ptr->block2 & 0x08) {
-                tr_debug("sn_coap_handle_blockwise_message BLOCK2 payload MORE BIT IS SET");
 
                 coap_blockwise_msg_s *previous_blockwise_msg_ptr = NULL;
                 //build and send ack
@@ -1890,7 +1886,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     return 0;
                 }
 
-
                 ns_list_remove(&handle->linked_list_blockwise_sent_msgs, previous_blockwise_msg_ptr);
                 if( previous_blockwise_msg_ptr->coap_msg_ptr ){
                     if(previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr){
@@ -1904,7 +1899,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 previous_blockwise_msg_ptr = 0;
 
                 /* * * Then build CoAP Acknowledgement message * * */
-                tr_debug("sn_coap_handle_blockwise_message BLOCK2 alloc ACK message");
 
                 if (sn_coap_parser_alloc_options(handle, src_coap_blockwise_ack_msg_ptr) == NULL) {
                     tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate options!");
@@ -1927,12 +1921,9 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
                 src_coap_blockwise_ack_msg_ptr->options_list_ptr->block2 = (block_number << 4) | block_temp;
 
-                tr_debug("sn_coap_handle_blockwise_message BLOCK2 block number: %d", block_number);
 
                 /* Handle BLOCK2 (subsequent) Response GET msg code and uri path */
                 if (received_coap_msg_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CONTENT) {
-                    tr_debug("sn_coap_handle_blockwise_message BLOCK2 GET Response URI settings");
-
                     src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_REQUEST_GET;
                     if (fw_update_uri_path_ptr) {
                         src_coap_blockwise_ack_msg_ptr->uri_path_len = fw_update_uri_path_len;
@@ -2020,15 +2011,12 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 /* * * blockwise messages is gathered and returned to User               * * */
 
                 /* Store last Blockwise payload to Linked list */
-                tr_debug("sn_coap_handle_blockwise_message BLOCK2 LAST BLOCK");
-
                 uint16_t payload_len            = 0;
                 uint8_t *payload_ptr            = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len);
                 uint16_t whole_payload_len      = sn_coap_protocol_linked_list_blockwise_payloads_get_len(handle, src_addr_ptr);
                 uint8_t *temp_whole_payload_ptr = NULL;
 
                 temp_whole_payload_ptr = handle->sn_coap_protocol_malloc(whole_payload_len);
-
                 if (!temp_whole_payload_ptr) {
                     tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate whole payload!");
                     return 0;

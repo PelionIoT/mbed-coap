@@ -53,8 +53,6 @@ sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap
 {
     sn_coap_hdr_s *coap_res_ptr;
 
-    tr_debug("sn_coap_build_response msg_code: %d msg_type: %d", msg_code, coap_packet_ptr->msg_type);
-
     if (!coap_packet_ptr || !handle) {
         return NULL;
     }
