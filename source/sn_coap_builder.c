@@ -65,7 +65,6 @@ sn_coap_hdr_s *sn_coap_build_response(struct coap_s *handle, sn_coap_hdr_s *coap
 
     if (msg_code == COAP_MSG_CODE_REQUEST_GET) {
         // Blockwise message response is new GET
-        tr_debug("sn_coap_build_response for Blockwise msg another GET");
         coap_res_ptr->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
         coap_res_ptr->msg_code = (sn_coap_msg_code_e)msg_code;
         /* msg_id needs to be set by the caller in this case */

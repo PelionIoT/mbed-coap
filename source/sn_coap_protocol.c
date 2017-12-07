@@ -81,8 +81,6 @@ static uint32_t              sn_coap_calculate_new_resend_time(const uint32_t cu
 /* * * * GLOBAL DECLARATIONS * * * */
 /* * * * * * * * * * * * * * * * * */
 static uint16_t message_id;
-uint8_t *fw_update_uri_path_ptr;
-static uint16_t fw_update_uri_path_len;
 
 int8_t sn_coap_protocol_destroy(struct coap_s *handle)
 {
@@ -151,11 +149,6 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
         }
     }
 #endif
-
-    if(fw_update_uri_path_ptr) {
-        handle->sn_coap_protocol_free(fw_update_uri_path_ptr);
-        fw_update_uri_path_ptr = NULL;
-    }
 
     handle->sn_coap_protocol_free(handle);
     handle = 0;
@@ -398,17 +391,6 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 
     if (dst_addr_ptr->addr_ptr == NULL) {
         return -2;
-    }
-
-    if (src_coap_msg_ptr->uri_path_ptr != NULL) {
-        // Store the URI for Block2 subsequent GETs
-        fw_update_uri_path_len = src_coap_msg_ptr->uri_path_len;
-
-        fw_update_uri_path_ptr = handle->sn_coap_protocol_malloc(src_coap_msg_ptr->uri_path_len);
-        if (!fw_update_uri_path_ptr) {
-            return -2;
-        }
-        memcpy(fw_update_uri_path_ptr, src_coap_msg_ptr->uri_path_ptr, src_coap_msg_ptr->uri_path_len);
     }
 
     /* Check if built Message type is else than Acknowledgement or Reset i.e. message type is Confirmable or Non-confirmable */
@@ -1859,10 +1841,8 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                                                                  received_coap_msg_ptr->payload_len,
                                                                  received_coap_msg_ptr->payload_ptr,
                                                                  received_coap_msg_ptr->options_list_ptr->block2 >> 4);
-
             /* If not last block (more value is set) */
             if (received_coap_msg_ptr->options_list_ptr->block2 & 0x08) {
-
                 coap_blockwise_msg_s *previous_blockwise_msg_ptr = NULL;
                 //build and send ack
                 received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING;
@@ -1885,18 +1865,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate message!");
                     return 0;
                 }
-
-                ns_list_remove(&handle->linked_list_blockwise_sent_msgs, previous_blockwise_msg_ptr);
-                if( previous_blockwise_msg_ptr->coap_msg_ptr ){
-                    if(previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr){
-                        handle->sn_coap_protocol_free(previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr);
-                        previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = 0;
-                    }
-                    sn_coap_parser_release_allocated_coap_msg_mem(handle, previous_blockwise_msg_ptr->coap_msg_ptr);
-                    previous_blockwise_msg_ptr->coap_msg_ptr = 0;
-                }
-                handle->sn_coap_protocol_free(previous_blockwise_msg_ptr);
-                previous_blockwise_msg_ptr = 0;
 
                 /* * * Then build CoAP Acknowledgement message * * */
 
@@ -1922,20 +1890,32 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 src_coap_blockwise_ack_msg_ptr->options_list_ptr->block2 = (block_number << 4) | block_temp;
 
 
-                /* Handle BLOCK2 (subsequent) Response GET msg code and uri path */
+                /* Set BLOCK2 (subsequent) GET msg code and copy uri path from previous msg*/
                 if (received_coap_msg_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CONTENT) {
                     src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_REQUEST_GET;
-                    if (fw_update_uri_path_ptr) {
-                        src_coap_blockwise_ack_msg_ptr->uri_path_len = fw_update_uri_path_len;
-                        src_coap_blockwise_ack_msg_ptr->uri_path_ptr = handle->sn_coap_protocol_malloc(fw_update_uri_path_len);
+                    if (previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_ptr) {
+                        src_coap_blockwise_ack_msg_ptr->uri_path_len = previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_len;
+                        src_coap_blockwise_ack_msg_ptr->uri_path_ptr = handle->sn_coap_protocol_malloc(previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_len);
                         if (!src_coap_blockwise_ack_msg_ptr->uri_path_ptr) {
                             sn_coap_parser_release_allocated_coap_msg_mem(handle, src_coap_blockwise_ack_msg_ptr);
                             tr_error("sn_coap_handle_blockwise_message - failed to allocate for uri path ptr!");
                             return NULL;
                         }
-                        memcpy(src_coap_blockwise_ack_msg_ptr->uri_path_ptr, fw_update_uri_path_ptr, fw_update_uri_path_len);
+                        memcpy(src_coap_blockwise_ack_msg_ptr->uri_path_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_len);
                     }
                 }
+
+                ns_list_remove(&handle->linked_list_blockwise_sent_msgs, previous_blockwise_msg_ptr);
+                if( previous_blockwise_msg_ptr->coap_msg_ptr ){
+                    if(previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr){
+                        handle->sn_coap_protocol_free(previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr);
+                        previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = 0;
+                    }
+                    sn_coap_parser_release_allocated_coap_msg_mem(handle, previous_blockwise_msg_ptr->coap_msg_ptr);
+                    previous_blockwise_msg_ptr->coap_msg_ptr = 0;
+                }
+                handle->sn_coap_protocol_free(previous_blockwise_msg_ptr);
+                previous_blockwise_msg_ptr = 0;
 
                 /* Then get needed memory count for Packet data */
                 dst_packed_data_needed_mem = sn_coap_builder_calc_needed_packet_data_size_2(src_coap_blockwise_ack_msg_ptr ,handle->sn_coap_block_data_size);
