@@ -15,6 +15,7 @@
 # OR (IAR-ARM)
 # make CC=iccarm
 
+
 LIB = libmbedcoap.a
 SRCS := \
 	source/sn_coap_protocol.c \
