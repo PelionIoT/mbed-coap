@@ -185,7 +185,6 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
 
 
 #if ENABLE_RESENDINGS  /* If Message resending is not used at all, this part of code will not be compiled */
-
     /* * * * Create Linked list for storing active resending messages  * * * */
     ns_list_init(&handle->linked_list_resent_msgs);
     handle->sn_coap_resending_queue_msgs = SN_COAP_RESENDING_QUEUE_SIZE_MSGS;
@@ -1906,8 +1905,8 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 }
 
                 ns_list_remove(&handle->linked_list_blockwise_sent_msgs, previous_blockwise_msg_ptr);
-                if( previous_blockwise_msg_ptr->coap_msg_ptr ){
-                    if(previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr){
+                if (previous_blockwise_msg_ptr->coap_msg_ptr) {
+                    if (previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr) {
                         handle->sn_coap_protocol_free(previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr);
                         previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = 0;
                     }
