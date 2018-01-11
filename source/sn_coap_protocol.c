@@ -1761,8 +1761,9 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                      tr_error("sn_coap_handle_blockwise_message - (recv block1) COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE!");
                      src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE;
                      src_coap_blockwise_ack_msg_ptr->options_list_ptr->size1 = handle->sn_coap_block_data_size;
+                     sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(handle);
                 }
-                
+
                 if (block_temp > sn_coap_convert_block_size(handle->sn_coap_block_data_size)) {
                     src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1 &= 0xFFFFF8;
                     src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1 |= sn_coap_convert_block_size(handle->sn_coap_block_data_size);
