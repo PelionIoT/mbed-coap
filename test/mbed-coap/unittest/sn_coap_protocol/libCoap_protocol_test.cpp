@@ -2407,3 +2407,35 @@ TEST(libCoap_protocol, sn_coap_protocol_block_remove)
     sn_coap_protocol_destroy(handle);
 }
 
+TEST(libCoap_protocol, sn_coap_protocol_remove_sent_blockwise_message)
+{
+    sn_coap_protocol_remove_sent_blockwise_message(0,0);
+    retCounter = 9;
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+    coap_blockwise_msg_s *message = (coap_blockwise_msg_s *)malloc(sizeof(coap_blockwise_msg_s));
+    memset(message, 0, sizeof(coap_blockwise_msg_s));
+    message->coap = handle;
+    message->coap_msg_ptr = (sn_coap_hdr_s*)malloc(sizeof(sn_coap_hdr_s));
+    memset(message->coap_msg_ptr, 0, sizeof(sn_coap_hdr_s));
+    message->coap_msg_ptr->msg_id = 100;
+    ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, message);
+    sn_coap_protocol_remove_sent_blockwise_message(handle, 1);
+    CHECK(ns_list_count(&handle->linked_list_blockwise_sent_msgs) == 1);
+
+    sn_coap_protocol_remove_sent_blockwise_message(handle, 100);
+    CHECK(ns_list_count(&handle->linked_list_blockwise_sent_msgs) == 0);
+    sn_coap_protocol_destroy(handle);
+}
+
+TEST(libCoap_protocol, sn_coap_protocol_handle_block2_response_internally)
+{
+    sn_coap_protocol_handle_block2_response_internally(0,0);
+    retCounter = 9;
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+    sn_coap_protocol_handle_block2_response_internally(handle, true);
+    CHECK(handle->sn_coap_internal_block2_resp_handling == true);
+    sn_coap_protocol_handle_block2_response_internally(handle, false);
+    CHECK(handle->sn_coap_internal_block2_resp_handling == false);
+    sn_coap_protocol_destroy(handle);
+}
+
