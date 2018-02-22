@@ -119,6 +119,24 @@ TEST(libCoap_protocol, sn_coap_protocol_set_block_size)
     CHECK( -1 == sn_coap_protocol_set_block_size(coap_handle,1) );
 }
 
+TEST(libCoap_protocol, sn_coap_protocol_clear_sent_blockwise_messages)
+{
+#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+    sn_coap_protocol_clear_sent_blockwise_messages(NULL);
+
+    coap_blockwise_msg_s *message = (coap_blockwise_msg_s*)malloc(sizeof(coap_blockwise_msg_s));
+    memset(message, 0, sizeof(coap_blockwise_msg_s));
+    message->coap = coap_handle;
+    message->coap_msg_ptr = (sn_coap_hdr_s*)malloc(sizeof(sn_coap_hdr_s));
+    memset(message->coap_msg_ptr, 0, sizeof(sn_coap_hdr_s));
+    message->coap_msg_ptr->payload_ptr = (uint8_t*)malloc(5);
+    message->coap_msg_ptr->payload_len = 5;
+    ns_list_add_to_end(&coap_handle->linked_list_blockwise_sent_msgs, message);
+    sn_coap_protocol_clear_sent_blockwise_messages(coap_handle);
+    CHECK( 0 == ns_list_count(&coap_handle->linked_list_blockwise_sent_msgs) );
+#endif
+}
+
 TEST(libCoap_protocol, sn_coap_protocol_set_duplicate_buffer_size)
 {
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
