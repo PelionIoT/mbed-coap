@@ -667,6 +667,8 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
 
             /* Check if there is no room to store message for duplication detection purposes */
             if (stored_duplication_msgs_count >= handle->sn_coap_duplication_buffer_size) {
+                tr_debug("sn_coap_protocol_parse - duplicate list full, dropping oldest");
+
                 /* Get oldest stored duplication message */
                 coap_duplication_info_s *stored_duplication_info_ptr = ns_list_get_first(&handle->linked_list_duplication_msgs);
 
