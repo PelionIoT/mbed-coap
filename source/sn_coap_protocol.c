@@ -790,6 +790,7 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
     if( !handle ){
        return -1;
     }
+    int i = 0;
 
     /* * * * Store current System time * * * */
     handle->system_time = current_time;
@@ -798,6 +799,7 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
     sn_coap_protocol_linked_list_blockwise_remove_old_data(handle);
 #endif
 
+    tr_info("sn_coap_protocol_exec - time %d", current_time);
 
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
     /* * * * Remove old duplication messages * * * */
@@ -809,6 +811,7 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
     /* foreach_safe isn't sufficient because callback routine could cancel messages. */
 rescan:
     ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
+        tr_info("sn_coap_protocol_exec - resend msg %d, resending time %d", i++, stored_msg_ptr->resending_time);
         // First check that msg belongs to handle
         if( stored_msg_ptr->coap == handle ){
             /* Check if it is time to send this message */
@@ -818,6 +821,7 @@ rescan:
 
                 /* Check if all re-sendings have been done */
                 if (stored_msg_ptr->resending_counter > handle->sn_coap_resending_count) {
+                    tr_info("sn_coap_protocol_exec - resending count full for message");
                     coap_version_e coap_version = COAP_VERSION_UNKNOWN;
 
                     /* Get message ID from stored sending message */
@@ -845,6 +849,7 @@ rescan:
                     /* Free memory of stored message */
                     sn_coap_protocol_release_allocated_send_msg_mem(handle, stored_msg_ptr);
                 } else {
+                    tr_info("sn_coap_protocol_exec - resending message");
                     /* Send message  */
                     stored_msg_ptr->coap->sn_coap_tx_callback(stored_msg_ptr->send_msg_ptr->packet_ptr,
                             stored_msg_ptr->send_msg_ptr->packet_len, stored_msg_ptr->send_msg_ptr->dst_addr_ptr, stored_msg_ptr->param);
@@ -891,6 +896,11 @@ static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle
 {
 
     coap_send_msg_s *stored_msg_ptr              = NULL;
+
+    uint16_t temp_msg_id = (send_packet_data_ptr[2] << 8);
+    temp_msg_id += (uint16_t)send_packet_data_ptr[3];
+
+    tr_info("sn_coap_protocol_linked_list_send_msg_store - store msg - resending time %d, id %d", sending_time, temp_msg_id);
 
     /* If both queue parameters are "0" or resending count is "0", then re-sending is disabled */
     if (((handle->sn_coap_resending_queue_msgs == 0) && (handle->sn_coap_resending_queue_bytes == 0)) || (handle->sn_coap_resending_count == 0)) {
@@ -993,6 +1003,8 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(struct c
 
 static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
 {
+    tr_info("sn_coap_protocol_linked_list_send_msg_remove - remove %d", msg_id);
+
     /* Loop all stored resending messages in Linked list */
     ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
         /* Get message ID from stored resending message */
