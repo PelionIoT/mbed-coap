@@ -372,7 +372,9 @@ int8_t sn_coap_protocol_delete_retransmission(struct coap_s *handle, uint16_t ms
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
 int8_t prepare_blockwise_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr)
 {
-    if ((src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
+    if ((src_coap_msg_ptr->payload_len > SN_COAP_MAX_NONBLOCKWISE_PAYLOAD_SIZE) &&
+        (src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) &&
+        (handle->sn_coap_block_data_size > 0)) {
         /* * * * Add Blockwise option to send CoAP message * * */
 
         /* Allocate memory for less used options */
@@ -436,15 +438,15 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
     }
 
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
-
     /* If blockwising needed */
-    if ((src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
+    if ((src_coap_msg_ptr->payload_len > SN_COAP_MAX_NONBLOCKWISE_PAYLOAD_SIZE) &&
+        (src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) &&
+        (handle->sn_coap_block_data_size > 0)) {
         /* Store original Payload length */
         original_payload_len = src_coap_msg_ptr->payload_len;
         /* Change Payload length of send message because Payload is blockwised */
         src_coap_msg_ptr->payload_len = handle->sn_coap_block_data_size;
     }
-
 #endif
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     /* * * * Build Packet data from CoAP message by using CoAP Header builder  * * * */
