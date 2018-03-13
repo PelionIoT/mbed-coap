@@ -18,6 +18,7 @@ echo
 echo "Creating report"
 echo 
 
+
 echo '<?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/xsl" href="junit_xsl.xslt"?>
 <list>' >> lcov/index.xml
