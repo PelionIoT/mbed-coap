@@ -1266,6 +1266,15 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
         return;
     }
 
+    // Do not add duplicates to list, this could happen if server needs to retransmit block message again
+    ns_list_foreach(coap_blockwise_payload_s, payload_info_ptr, &handle->linked_list_blockwise_received_payloads) {
+        if (0 == memcmp(addr_ptr->addr_ptr, payload_info_ptr->addr_ptr, addr_ptr->addr_len)) {
+            if (payload_info_ptr->port == addr_ptr->port && payload_info_ptr->block_number == block_number) {
+                return;
+            }
+        }
+    }
+
     coap_blockwise_payload_s *stored_blockwise_payload_ptr = NULL;
 
     /* * * * Allocating memory for stored Payload  * * * */
