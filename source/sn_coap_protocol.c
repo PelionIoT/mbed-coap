@@ -541,9 +541,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         stored_blockwise_msg_ptr->param = param;
         stored_blockwise_msg_ptr->msg_id = stored_blockwise_msg_ptr->coap_msg_ptr->msg_id;
         ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
-    }
-
-    else if (src_coap_msg_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET) {
+    } else if (src_coap_msg_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE) {
         /* Add message to linked list - response can be in blocks and we need header to build response.. */
         coap_blockwise_msg_s *stored_blockwise_msg_ptr;
 
@@ -1598,14 +1596,14 @@ static uint16_t sn_coap_count_linked_list_size(const coap_send_msg_list_t *linke
 #endif
 
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-void sn_coap_protocol_remove_sent_blockwise_message(struct coap_s *handle, uint16_t message_id)
+void sn_coap_protocol_remove_sent_blockwise_message(struct coap_s *handle, uint16_t msg_id)
 {
     if (!handle) {
         return;
     }
 
     ns_list_foreach_safe(coap_blockwise_msg_s, tmp, &handle->linked_list_blockwise_sent_msgs) {
-        if (tmp->coap == handle && tmp->coap_msg_ptr && tmp->coap_msg_ptr->msg_id == message_id) {
+        if (tmp->coap == handle && tmp->coap_msg_ptr && tmp->coap_msg_ptr->msg_id == msg_id) {
             handle->sn_coap_protocol_free(tmp->coap_msg_ptr->payload_ptr);
             sn_coap_parser_release_allocated_coap_msg_mem(tmp->coap, tmp->coap_msg_ptr);
             ns_list_remove(&handle->linked_list_blockwise_sent_msgs, tmp);
@@ -1646,6 +1644,27 @@ void sn_coap_protocol_block_remove(struct coap_s *handle, sn_nsdl_addr_s *source
         }
     }
 }
+
+/****************************************************************************
+ * \fn coap_blockwise_msg_s *sn_coap_stored_blockwise_msg_get(struct coap_s *handle, sn_coap_hdr_s *received_coap_msg_ptr)
+ *
+ * \brief Get blockwise message from list
+ *
+ * \param *handle Pointer to the coap handle structure
+ * \param *received_coap_msg_ptr Pointer to parsed CoAP message structure
+ *****************************************************************************/
+static coap_blockwise_msg_s *sn_coap_stored_blockwise_msg_get(struct coap_s *handle, sn_coap_hdr_s *received_coap_msg_ptr)
+{
+    ns_list_foreach(coap_blockwise_msg_s, msg, &handle->linked_list_blockwise_sent_msgs) {
+        if (received_coap_msg_ptr->token_len && (received_coap_msg_ptr->token_len == msg->coap_msg_ptr->token_len)) {
+            if(!memcmp(received_coap_msg_ptr->token_ptr, msg->coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len)) {
+                return msg;
+            }
+        }
+    }
+    return NULL;
+}
+
 /**************************************************************************//**
  * \fn static int8_t sn_coap_handle_blockwise_message(void)
  *
@@ -1982,28 +2001,26 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
 
                     /* Set BLOCK2 (subsequent) GET msg code and copy uri path from previous msg*/
-                    if (received_coap_msg_ptr->msg_code == COAP_MSG_CODE_RESPONSE_CONTENT) {
-                        src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_REQUEST_GET;
-                        if (previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_ptr) {
-                            src_coap_blockwise_ack_msg_ptr->uri_path_len = previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_len;
-                            src_coap_blockwise_ack_msg_ptr->uri_path_ptr = handle->sn_coap_protocol_malloc(previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_len);
-                            if (!src_coap_blockwise_ack_msg_ptr->uri_path_ptr) {
-                                sn_coap_parser_release_allocated_coap_msg_mem(handle, src_coap_blockwise_ack_msg_ptr);
-                                tr_error("sn_coap_handle_blockwise_message - failed to allocate for uri path ptr!");
-                                return NULL;
-                            }
-                            memcpy(src_coap_blockwise_ack_msg_ptr->uri_path_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_len);
+                    src_coap_blockwise_ack_msg_ptr->msg_code = previous_blockwise_msg_ptr->coap_msg_ptr->msg_code;
+                    if (previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_ptr) {
+                        src_coap_blockwise_ack_msg_ptr->uri_path_len = previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_len;
+                        src_coap_blockwise_ack_msg_ptr->uri_path_ptr = handle->sn_coap_protocol_malloc(previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_len);
+                        if (!src_coap_blockwise_ack_msg_ptr->uri_path_ptr) {
+                            sn_coap_parser_release_allocated_coap_msg_mem(handle, src_coap_blockwise_ack_msg_ptr);
+                            tr_error("sn_coap_handle_blockwise_message - failed to allocate for uri path ptr!");
+                            return NULL;
                         }
-                        if (previous_blockwise_msg_ptr->coap_msg_ptr->token_ptr) {
-                            src_coap_blockwise_ack_msg_ptr->token_len = previous_blockwise_msg_ptr->coap_msg_ptr->token_len;
-                            src_coap_blockwise_ack_msg_ptr->token_ptr = handle->sn_coap_protocol_malloc(previous_blockwise_msg_ptr->coap_msg_ptr->token_len);
-                            if (!src_coap_blockwise_ack_msg_ptr->token_ptr) {
-                                sn_coap_parser_release_allocated_coap_msg_mem(handle, src_coap_blockwise_ack_msg_ptr);
-                                tr_error("sn_coap_handle_blockwise_message - failed to allocate for token ptr!");
-                                return NULL;
-                            }
-                            memcpy(src_coap_blockwise_ack_msg_ptr->token_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->token_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->token_len);
+                        memcpy(src_coap_blockwise_ack_msg_ptr->uri_path_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->uri_path_len);
+                    }
+                    if (previous_blockwise_msg_ptr->coap_msg_ptr->token_ptr) {
+                        src_coap_blockwise_ack_msg_ptr->token_len = previous_blockwise_msg_ptr->coap_msg_ptr->token_len;
+                        src_coap_blockwise_ack_msg_ptr->token_ptr = handle->sn_coap_protocol_malloc(previous_blockwise_msg_ptr->coap_msg_ptr->token_len);
+                        if (!src_coap_blockwise_ack_msg_ptr->token_ptr) {
+                            sn_coap_parser_release_allocated_coap_msg_mem(handle, src_coap_blockwise_ack_msg_ptr);
+                            tr_error("sn_coap_handle_blockwise_message - failed to allocate for token ptr!");
+                            return NULL;
                         }
+                        memcpy(src_coap_blockwise_ack_msg_ptr->token_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->token_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->token_len);
                     }
 
                     ns_list_remove(&handle->linked_list_blockwise_sent_msgs, previous_blockwise_msg_ptr);
@@ -2128,7 +2145,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
         else {
             //Get message by using block number
             //NOTE: Getting the first from list might not be correct one
-            coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr = ns_list_get_first(&handle->linked_list_blockwise_sent_msgs);
+            coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr = sn_coap_stored_blockwise_msg_get(handle, received_coap_msg_ptr);
             if (stored_blockwise_msg_temp_ptr) {
                 uint16_t block_size;
                 uint32_t block_number;
@@ -2137,7 +2154,6 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 block_number = received_coap_msg_ptr->options_list_ptr->block2 >> 4;
                 block_temp = received_coap_msg_ptr->options_list_ptr->block2 & 0x07;
                 block_size = 1u << (block_temp + 4);
-
                 /* Build response message */
                 src_coap_blockwise_ack_msg_ptr = stored_blockwise_msg_temp_ptr->coap_msg_ptr;
 
