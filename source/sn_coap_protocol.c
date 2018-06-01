@@ -1758,6 +1758,11 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     stored_blockwise_msg_temp_ptr->coap_msg_ptr->payload_ptr = original_payload_ptr;
 
                     received_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_ACK;
+
+                    // Remove original message from the list when last block has been sent.
+                    if (!((src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1) & 0x08)) {
+                        sn_coap_protocol_remove_sent_blockwise_message(handle, stored_blockwise_msg_temp_ptr->coap_msg_ptr->msg_id);
+                    }
                 }
             } else {
                 // XXX what was this trying to free?
