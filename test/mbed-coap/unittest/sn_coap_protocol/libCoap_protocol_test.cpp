@@ -738,6 +738,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader->payload_len = 17;
 
     retCounter = 8;
+    sn_coap_protocol_set_block_size(handle, 128);
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL == ret );
     free(payload);
@@ -759,6 +760,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader->payload_len = 17;
 
     retCounter = 8;
+    sn_coap_protocol_set_block_size(handle, 256);
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL == ret );
     free(payload);
@@ -780,6 +782,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader->payload_len = 17;
 
     retCounter = 8;
+    sn_coap_protocol_set_block_size(handle, 512);
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL == ret );
     free(payload);
@@ -844,13 +847,14 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_builder_stub.expectedUint16 = 1;
 
     retCounter = 10;
+    sn_coap_protocol_set_block_size(handle, 1024);
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL != ret );
     CHECK(COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING == ret->coap_status);
     free(payload);
     free(list);
     free(sn_coap_parser_stub.expectedHeader);
-
+    sn_coap_protocol_set_block_size(handle, SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
@@ -2396,6 +2400,7 @@ TEST(libCoap_protocol, sn_coap_protocol_block_remove)
     retCounter = 19;
     sn_coap_parser_stub.expectedHeader->msg_id = 14;
     addr->port = 5600;
+    sn_coap_protocol_set_block_size(handle, 32);
     sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
     addr->port = 5601;
@@ -2405,6 +2410,7 @@ TEST(libCoap_protocol, sn_coap_protocol_block_remove)
     // Addresses does not match
     retCounter = 19;
     sn_coap_parser_stub.expectedHeader->msg_id = 15;
+    sn_coap_protocol_set_block_size(handle, 64);
     sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 2);
     addr->addr_ptr[0] = 'x';
