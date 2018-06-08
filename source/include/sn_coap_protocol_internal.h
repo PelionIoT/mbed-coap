@@ -201,6 +201,8 @@ typedef struct coap_blockwise_payload_ {
     uint8_t             *addr_ptr;
     uint16_t            port;
     uint32_t            block_number;
+    uint8_t             *token_ptr;
+    uint8_t             token_len;
 
     uint16_t            payload_len;
     uint8_t             *payload_ptr;
