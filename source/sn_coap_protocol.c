@@ -53,7 +53,7 @@ static coap_duplication_info_s *sn_coap_protocol_linked_list_duplication_info_se
 static void                  sn_coap_protocol_linked_list_duplication_info_remove(struct coap_s *handle, uint8_t *scr_addr_ptr, uint16_t port, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_duplication_info_remove_old_ones(struct coap_s *handle);
 #endif
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not enabled, this part of code will not be compiled */
 static void                  sn_coap_protocol_linked_list_blockwise_msg_remove(struct coap_s *handle, coap_blockwise_msg_s *removed_msg_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *handle, sn_nsdl_addr_s *addr_ptr, uint16_t stored_payload_len, uint8_t *stored_payload_ptr, uint8_t *token_ptr, uint8_t token_len, uint32_t block_number);
 static uint8_t              *sn_coap_protocol_linked_list_blockwise_payload_search(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length, uint8_t *token_ptr, uint8_t token_len);
@@ -116,7 +116,7 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
 #endif
 
 
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwise is not used at all, this part of code will not be compiled */
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwise is not enabled, this part of code will not be compiled */
     ns_list_foreach_safe(coap_blockwise_msg_s, tmp, &handle->linked_list_blockwise_sent_msgs) {
         if (tmp->coap == handle) {
             if (tmp->coap_msg_ptr) {
@@ -200,7 +200,7 @@ struct coap_s *sn_coap_protocol_init(void *(*used_malloc_func_ptr)(uint16_t), vo
     handle->sn_coap_duplication_buffer_size = SN_COAP_DUPLICATION_MAX_MSGS_COUNT;
 #endif
 
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not enabled, this part of code will not be compiled */
 
     ns_list_init(&handle->linked_list_blockwise_sent_msgs);
     ns_list_init(&handle->linked_list_blockwise_received_payloads);
@@ -232,7 +232,7 @@ int8_t sn_coap_protocol_set_block_size(struct coap_s *handle, uint16_t block_siz
 {
     (void) handle;
     (void) block_size;
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
     if (handle == NULL) {
         return -1;
     }
@@ -258,7 +258,7 @@ int8_t sn_coap_protocol_set_block_size(struct coap_s *handle, uint16_t block_siz
 void sn_coap_protocol_clear_sent_blockwise_messages(struct coap_s *handle)
 {
     (void) handle;
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
     if (handle == NULL) {
         return;
     }
@@ -363,9 +363,10 @@ int8_t sn_coap_protocol_delete_retransmission(struct coap_s *handle, uint16_t ms
     return -2;
 }
 
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+
 int8_t prepare_blockwise_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr)
 {
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not enabled, this part of code will not be compiled */
     if ((src_coap_msg_ptr->payload_len > SN_COAP_MAX_NONBLOCKWISE_PAYLOAD_SIZE) &&
         (src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) &&
         (handle->sn_coap_block_data_size > 0)) {
@@ -398,15 +399,16 @@ int8_t prepare_blockwise_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_
             src_coap_msg_ptr->options_list_ptr->size2 = src_coap_msg_ptr->payload_len;
         }
     }
+#endif
     return 0;
 }
-#endif
+
 
 int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr,
                                uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param)
 {
     int16_t  byte_count_built     = 0;
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not enabled, this part of code will not be compiled */
     uint16_t original_payload_len = 0;
 #endif
     /* * * * Check given pointers  * * * */
@@ -431,7 +433,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         }
     }
 
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not enabled, this part of code will not be compiled */
     /* If blockwising needed */
     if ((src_coap_msg_ptr->payload_len > SN_COAP_MAX_NONBLOCKWISE_PAYLOAD_SIZE) &&
         (src_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) &&
@@ -488,7 +490,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
     }
 #endif
 
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not enabled, this part of code will not be compiled */
 
     /* If blockwising needed */
     if ((original_payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
@@ -563,7 +565,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
     }
 
-#endif /* SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
+#endif /* SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
 
     /* * * * Return built CoAP message Packet data length  * * * */
     return byte_count_built;
@@ -635,7 +637,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     }
 
 
-#if !SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is used, this part of code will not be compiled */
+#if !SN_COAP_BLOCKWISE_ENABLED && !SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is enabled, this part of code will not be compiled */
     /* If blockwising used in received message */
     if (returned_dst_coap_msg_ptr->options_list_ptr != NULL &&
             (returned_dst_coap_msg_ptr->options_list_ptr->block1 != COAP_OPTION_BLOCK_NONE ||
@@ -646,7 +648,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
         //todo: send response -> not implemented
         return returned_dst_coap_msg_ptr;
     }
-#endif /* !SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
+#endif /* !SN_COAP_BLOCKWISE_ENABLED && !SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
 
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT/* If Message duplication is used, this part of code will not be compiled */
 
@@ -701,7 +703,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     /*** And here we check if message was block message ***/
     /*** If so, we call own block handling function and ***/
     /*** return to caller.                              ***/
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 
     if (returned_dst_coap_msg_ptr->options_list_ptr != NULL &&
             (returned_dst_coap_msg_ptr->options_list_ptr->block1 != COAP_OPTION_BLOCK_NONE ||
@@ -791,7 +793,7 @@ int8_t sn_coap_protocol_exec(struct coap_s *handle, uint32_t current_time)
     /* * * * Store current System time * * * */
     handle->system_time = current_time;
 
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
     /* * * * Handle block transfer timed outs * * * */
     sn_coap_protocol_handle_blockwise_timout(handle);
 #endif
@@ -1046,6 +1048,12 @@ void sn_coap_protocol_send_rst(struct coap_s *handle, uint16_t msg_id, sn_nsdl_a
     handle->sn_coap_tx_callback(packet_ptr, 4, addr_ptr, param);
 
 }
+
+uint16_t sn_coap_protocol_get_configured_blockwise_size(struct coap_s *handle)
+{
+    return handle->sn_coap_block_data_size;
+}
+
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
 
 /**************************************************************************//**
@@ -1215,7 +1223,7 @@ static void sn_coap_protocol_linked_list_duplication_info_remove_old_ones(struct
 
 #endif /* SN_COAP_DUPLICATION_MAX_MSGS_COUNT */
 
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 /**************************************************************************//**
  * \fn static void sn_coap_protocol_linked_list_blockwise_msg_remove(struct coap_s *handle, coap_blockwise_msg_s *removed_msg_ptr)
  *
@@ -1552,7 +1560,7 @@ static void sn_coap_protocol_handle_blockwise_timout(struct coap_s *handle)
     }
 }
 
-#endif /* SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
+#endif /* SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
 
 
 #if ENABLE_RESENDINGS  /* If Message resending is not used at all, this part of code will not be compiled */
@@ -1647,7 +1655,7 @@ static uint16_t sn_coap_count_linked_list_size(const coap_send_msg_list_t *linke
 
 #endif
 
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 void sn_coap_protocol_remove_sent_blockwise_message(struct coap_s *handle, uint16_t msg_id)
 {
     if (!handle) {
