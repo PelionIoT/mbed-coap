@@ -237,7 +237,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr.msg_id = 100;
     hdr.msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
     sn_coap_builder_stub.expectedInt16 = 0;
-    retCounter = 2;
+    retCounter = 3;
 
     coap_duplication_info_s *duplicate = (coap_duplication_info_s*)malloc(sizeof(coap_duplication_info_s));
     memset(duplicate, 0, sizeof(coap_duplication_info_s));
@@ -332,7 +332,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
-    retCounter = 3;
+    retCounter = 4;
     sn_coap_builder_stub.expectedInt16 = 1;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
