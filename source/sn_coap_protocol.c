@@ -120,30 +120,17 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
     ns_list_foreach_safe(coap_blockwise_msg_s, tmp, &handle->linked_list_blockwise_sent_msgs) {
         if (tmp->coap == handle) {
             if (tmp->coap_msg_ptr) {
-                if (tmp->coap_msg_ptr->payload_ptr) {
-                    handle->sn_coap_protocol_free(tmp->coap_msg_ptr->payload_ptr);
-                    tmp->coap_msg_ptr->payload_ptr = 0;
-                }
+                handle->sn_coap_protocol_free(tmp->coap_msg_ptr->payload_ptr);
                 sn_coap_parser_release_allocated_coap_msg_mem(tmp->coap, tmp->coap_msg_ptr);
             }
             ns_list_remove(&handle->linked_list_blockwise_sent_msgs, tmp);
             handle->sn_coap_protocol_free(tmp);
-            tmp = 0;
         }
     }
+
     ns_list_foreach_safe(coap_blockwise_payload_s, tmp, &handle->linked_list_blockwise_received_payloads) {
         if (tmp->coap == handle) {
-            if (tmp->addr_ptr) {
-                handle->sn_coap_protocol_free(tmp->addr_ptr);
-                tmp->addr_ptr = 0;
-            }
-            if (tmp->payload_ptr) {
-                handle->sn_coap_protocol_free(tmp->payload_ptr);
-                tmp->payload_ptr = 0;
-            }
-            ns_list_remove(&handle->linked_list_blockwise_received_payloads, tmp);
-            handle->sn_coap_protocol_free(tmp);
-            tmp = 0;
+            sn_coap_protocol_linked_list_blockwise_payload_remove(handle, tmp);
         }
     }
 #endif
