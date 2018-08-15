@@ -204,6 +204,45 @@ TEST(libCoap_protocol, sn_coap_protocol_delete_retransmission)
 #endif
 }
 
+TEST(libCoap_protocol, sn_coap_protocol_delete_retransmission_by_token)
+{
+#if ENABLE_RESENDINGS
+    retCounter = 6;
+    sn_nsdl_addr_s dst_addr_ptr;
+    sn_coap_hdr_s src_coap_msg_ptr;
+    uint8_t temp_addr[4] = {0};
+    uint8_t dst_packet_data_ptr[5] = {0x04, 0x00, 0x00, 0x63, 0x10};
+
+    memset(&dst_addr_ptr, 0, sizeof(sn_nsdl_addr_s));
+    memset(&src_coap_msg_ptr, 0, sizeof(sn_coap_hdr_s));
+
+    dst_addr_ptr.addr_ptr = temp_addr;
+    dst_addr_ptr.addr_len = 4;
+    dst_addr_ptr.type = SN_NSDL_ADDRESS_TYPE_IPV4;
+    src_coap_msg_ptr.token_ptr = (uint8_t*)malloc(1);
+    memset(src_coap_msg_ptr.token_ptr, 0x10, 1);
+    src_coap_msg_ptr.token_len = 4;
+
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+
+    CHECK( -1 == sn_coap_protocol_delete_retransmission_by_token(NULL, NULL, 0));
+
+    CHECK( -2 == sn_coap_protocol_delete_retransmission_by_token(handle,
+                                                                 src_coap_msg_ptr.token_ptr,
+                                                                 src_coap_msg_ptr.token_len));
+
+    sn_coap_builder_stub.expectedInt16 = 5;
+
+    CHECK( 0 < sn_coap_protocol_build(handle, &dst_addr_ptr, dst_packet_data_ptr, &src_coap_msg_ptr, NULL));
+
+    CHECK( 0 == sn_coap_protocol_delete_retransmission_by_token(handle, src_coap_msg_ptr.token_ptr, src_coap_msg_ptr.token_len));
+
+    free(src_coap_msg_ptr.token_ptr);
+    sn_coap_protocol_destroy(handle);
+#endif
+}
+
+
 TEST(libCoap_protocol, sn_coap_protocol_build)
 {
     retCounter = 1;
