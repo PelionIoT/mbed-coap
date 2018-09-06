@@ -462,11 +462,12 @@ int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
     /* First get payload from callback */
     uint16_t payload_len = 0;
     uint8_t *payload = NULL;
-    uint8_t last_block = blockwise_context->blockwise_payload_get(0 /* First block */, handle->sn_coap_block_data_size, &payload_len, &payload, blockwise_context->user_context);
+    uint8_t error = 0;
+    uint8_t last_block = blockwise_context->blockwise_payload_get(0 /* First block */, handle->sn_coap_block_data_size, &payload_len, &payload, &error, blockwise_context->user_context);
     bool store_blockwise = false;
     tr_debug("blockwise payload get - payload len %d, last block %d", payload_len, last_block);
 
-    if (payload == NULL) {
+    if (error > 0) {
         // TODO: Check if we need to free anything else? header maybe?
         return -2;
     }
@@ -1885,9 +1886,10 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     else {
                         /* Streaming blockwise */
                         /* Get payload */
-                        uint8_t last_block = stored_blockwise_msg_temp_ptr->context->blockwise_payload_get(block_number, block_size, &(src_coap_blockwise_ack_msg_ptr->payload_len), &(src_coap_blockwise_ack_msg_ptr->payload_ptr), stored_blockwise_msg_temp_ptr->context->user_context);
+                        uint8_t error = 0;
+                        uint8_t last_block = stored_blockwise_msg_temp_ptr->context->blockwise_payload_get(block_number, block_size, &(src_coap_blockwise_ack_msg_ptr->payload_len), &(src_coap_blockwise_ack_msg_ptr->payload_ptr), &error, stored_blockwise_msg_temp_ptr->context->user_context);
 
-                        if (src_coap_blockwise_ack_msg_ptr->payload_ptr == NULL) {
+                        if (error > 0) {
                             tr_error("sn_coap_handle_blockwise_message - (send block1) failed to retrieve new block!");
                             handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr->options_list_ptr);
                             src_coap_blockwise_ack_msg_ptr->options_list_ptr = 0;

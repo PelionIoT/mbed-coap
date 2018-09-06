@@ -277,12 +277,13 @@ typedef struct registration_info_ {
  *                      of the retrieved payload.
  * \param payload_ptr,  Output parameter, pointer to a uint16_t*, should be set to point to
  *                      the allocated payload buffer.
+ * \param error,        Output parameter, set to non-zero value to indicate an error.
  * \param user_context, A pointer to the user_context field.
  *
  * \return Return 0 if no more blocks to be sent, non-zero return value indicates more blocks
  *         to come.
  */
-typedef uint8_t (*blockwise_payload_get_cb)(uint32_t block_number, uint16_t block_size, /*out*/ uint16_t *payload_len, /*out*/ uint8_t **payload_ptr, const void* user_context);
+typedef uint8_t (*blockwise_payload_get_cb)(uint32_t block_number, uint16_t block_size, /*out*/ uint16_t *payload_len, /*out*/ uint8_t **payload_ptr, /*out*/ uint8_t *error, const void* user_context);
 
 /**
  * \fn blockwise_payload_get_cb
