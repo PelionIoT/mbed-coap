@@ -443,7 +443,7 @@ int8_t prepare_blockwise_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_
 
 int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
                                                  sn_coap_hdr_s *src_coap_msg_ptr,
-                                                 sn_coap_blockwise_context_s *blockwise_context)
+                                                 const sn_coap_blockwise_context_s *blockwise_context)
 {
     (void)handle;
     (void)src_coap_msg_ptr;
@@ -464,7 +464,6 @@ int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
     uint8_t *payload = NULL;
     uint8_t error = 0;
     uint8_t last_block = blockwise_context->blockwise_payload_get(0 /* First block */, handle->sn_coap_block_data_size, &payload_len, &payload, &error, blockwise_context->user_context);
-    bool store_blockwise = false;
     tr_debug("blockwise payload get - payload len %d, last block %d", payload_len, last_block);
 
     if (error > 0) {
@@ -486,7 +485,6 @@ int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
         /* Don't add size1 parameter since this is streaming and we don't know full size */
         src_coap_msg_ptr->options_list_ptr->use_size1 = false;
         src_coap_msg_ptr->options_list_ptr->use_size2 = false;
-        store_blockwise = true;
     }
 
     src_coap_msg_ptr->payload_len = payload_len;
@@ -495,29 +493,9 @@ int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
     return 0;
 }
 
-sn_coap_blockwise_context_s *sn_coap_protocol_create_blockwise_stream_context(struct coap_s *handle,
-                                                                              blockwise_payload_get_cb blockwise_payload_get,
-                                                                              blockwise_payload_free_cb blockwise_payload_free,
-                                                                              void *user_context)
-{
-    sn_coap_blockwise_context_s *ctx = (sn_coap_blockwise_context_s*)handle->sn_coap_protocol_malloc(sizeof(sn_coap_blockwise_context_s));
-    if (ctx != NULL) {
-        ctx->blockwise_payload_get = blockwise_payload_get;
-        ctx->blockwise_payload_free = blockwise_payload_free;
-        ctx->user_context = user_context;
-    }
-    return ctx;
-}
-
-void sn_coap_protocol_free_blockwise_stream_context(struct coap_s *handle,
-                                                    sn_coap_blockwise_context_s *blockwise_context)
-{
-    handle->sn_coap_protocol_free(blockwise_context);
-}
-
 int8_t sn_coap_protocol_store_blockwise_stream(struct coap_s *handle,
                                                sn_coap_hdr_s *src_coap_msg_ptr,
-                                               sn_coap_blockwise_context_s *blockwise_context,
+                                               const sn_coap_blockwise_context_s *blockwise_context,
                                                void *param)
 {
     (void)handle;
@@ -1741,7 +1719,9 @@ void sn_coap_protocol_remove_sent_blockwise_message(struct coap_s *handle, uint1
     ns_list_foreach_safe(coap_blockwise_msg_s, tmp, &handle->linked_list_blockwise_sent_msgs) {
         if (tmp->coap == handle && tmp->coap_msg_ptr && tmp->coap_msg_ptr->msg_id == msg_id) {
             handle->sn_coap_protocol_free(tmp->coap_msg_ptr->payload_ptr);
-            sn_coap_protocol_free_blockwise_stream_context(handle, tmp->context);
+            if (tmp->context != NULL && tmp->context->blockwise_context_free != NULL) {
+                tmp->context->blockwise_context_free(tmp->context, tmp->context->user_context);
+            }
             sn_coap_parser_release_allocated_coap_msg_mem(tmp->coap, tmp->coap_msg_ptr);
             ns_list_remove(&handle->linked_list_blockwise_sent_msgs, tmp);
             handle->sn_coap_protocol_free(tmp);

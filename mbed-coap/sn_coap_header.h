@@ -267,6 +267,9 @@ typedef struct registration_info_ {
     uint8_t *links_ptr;             /**< Resource registration string */
 } registration_info_t;
 
+
+typedef struct sn_coap_blockwise_context_ sn_coap_blockwise_context_s;
+
 /**
  * \fn blockwise_payload_get_cb
  * \brief Callback function type for retrieving a payload block for streaming request.
@@ -283,7 +286,7 @@ typedef struct registration_info_ {
  * \return Return 0 if no more blocks to be sent, non-zero return value indicates more blocks
  *         to come.
  */
-typedef uint8_t (*blockwise_payload_get_cb)(uint32_t block_number, uint16_t block_size, /*out*/ uint16_t *payload_len, /*out*/ uint8_t **payload_ptr, /*out*/ uint8_t *error, const void* user_context);
+typedef uint8_t (*blockwise_payload_get_cb)(uint32_t block_number, uint16_t block_size, /*out*/ uint16_t *payload_len, /*out*/ uint8_t **payload_ptr, /*out*/ uint8_t *error, void* user_context);
 
 /**
  * \fn blockwise_payload_get_cb
@@ -296,14 +299,24 @@ typedef uint8_t (*blockwise_payload_get_cb)(uint32_t block_number, uint16_t bloc
 typedef void (*blockwise_payload_free_cb)(uint32_t block_number, uint8_t *payload, void* user_context);
 
 /**
+ * \fn blockwise_context_free_cb
+ * \brief Callback function type for freeing a blockwise streaming request context.
+ *
+ * \param blockwise_stream, A constant pointer to the blockwise stream that can be freed.
+ * \param user_context, A pointer to the user_context field.
+ */
+typedef void (*blockwise_context_free_cb)(const sn_coap_blockwise_context_s *blockwise_context, void* user_context);
+
+/**
  * \struct sn_coap_blockwise_context_s
  * \brief A struct for defining context for a streaming blockwise request.
  */
-typedef struct sn_coap_blockwise_context_ {
+struct sn_coap_blockwise_context_ {
     blockwise_payload_get_cb  blockwise_payload_get;
     blockwise_payload_free_cb blockwise_payload_free;
+    blockwise_context_free_cb blockwise_context_free;
     void                      *user_context;
-} sn_coap_blockwise_context_s;
+};
 
 /**
  * \brief Address type of given address
