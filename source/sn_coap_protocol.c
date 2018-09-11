@@ -451,7 +451,7 @@ int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
 #if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not enabled, this part of code will not be compiled */
     tr_debug("sn_coap_protocol_prepare_blockwise_stream");
     /* * * * Check given pointers  * * * */
-    if (handle == NULL || src_coap_msg_ptr == NULL || handle == NULL) {
+    if (handle == NULL || src_coap_msg_ptr == NULL) {
         return -1;
     }
 
@@ -522,7 +522,6 @@ int8_t sn_coap_protocol_store_blockwise_stream(struct coap_s *handle,
         stored_blockwise_msg_ptr->coap_msg_ptr = sn_coap_protocol_copy_header(handle, src_coap_msg_ptr);
         if(stored_blockwise_msg_ptr->coap_msg_ptr == NULL) {
             handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
-            stored_blockwise_msg_ptr = 0;
             tr_error("sn_coap_protocol_build - block header copy failed!");
             return -2;
         }

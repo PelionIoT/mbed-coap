@@ -3025,3 +3025,403 @@ TEST(libCoap_protocol, sn_coap_protocol_get_configured_blockwise_size)
     sn_coap_protocol_destroy(handle);
 }
 
+TEST(libCoap_protocol, prepare_blockwise_message)
+{
+    retCounter = 9;
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+
+    sn_coap_hdr_s *msg_hdr = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(msg_hdr, 0, sizeof(sn_coap_hdr_s));
+    msg_hdr->payload_len = 512;
+
+    // No blockwising
+    handle->sn_coap_block_data_size = 0;
+    CHECK(0 == prepare_blockwise_message(handle, msg_hdr));
+
+    // Blockwising but option alloc fails
+    handle->sn_coap_block_data_size = 256;
+    retCounter = 0;
+    CHECK(-2 == prepare_blockwise_message(handle, msg_hdr));
+
+    // Request
+    retCounter = 1;
+    msg_hdr->msg_code = COAP_MSG_CODE_REQUEST_GET;
+    CHECK(0 == prepare_blockwise_message(handle, msg_hdr));
+    CHECK(NULL != msg_hdr->options_list_ptr);
+    CHECK(true == msg_hdr->options_list_ptr->use_size1);
+    CHECK(false == msg_hdr->options_list_ptr->use_size2);
+    CHECK(512 == msg_hdr->options_list_ptr->size1);
+    CHECK(0 != msg_hdr->options_list_ptr->block1);
+
+    // Response
+    retCounter = 1;
+    msg_hdr->msg_code = COAP_MSG_CODE_RESPONSE_CONTENT;
+    CHECK(0 == prepare_blockwise_message(handle, msg_hdr));
+    CHECK(NULL != msg_hdr->options_list_ptr);
+    CHECK(false == msg_hdr->options_list_ptr->use_size1);
+    CHECK(true == msg_hdr->options_list_ptr->use_size2);
+    CHECK(512 == msg_hdr->options_list_ptr->size2);
+    CHECK(0 != msg_hdr->options_list_ptr->block2);
+
+    free(msg_hdr->options_list_ptr);
+    free(msg_hdr);
+    sn_coap_protocol_destroy(handle);
+}
+
+static uint16_t mock_payload_len;
+static uint8_t *mock_payload_ptr;
+static uint8_t mock_error;
+static uint8_t mock_return;
+static uint8_t payload_get_count;
+static uint8_t payload_free_count;
+static uint8_t blockwise_payload_get(void* user_context,
+                                     uint32_t data_offset,
+                                     uint16_t data_size,
+                                     /*out*/ uint16_t *payload_len,
+                                     /*out*/ uint8_t **payload_ptr,
+                                     /*out*/ uint8_t *error)
+{
+    *payload_len = mock_payload_len;
+    *payload_ptr = mock_payload_ptr;
+    *error = mock_error;
+    payload_get_count++;
+    return mock_return;
+}
+
+static void blockwise_payload_free(void* user_context, uint8_t *payload)
+{
+    payload_free_count++;
+}
+
+static void blockwise_context_free(void* user_context,
+                                   const sn_coap_blockwise_context_s *blockwise_context)
+{
+
+}
+
+TEST(libCoap_protocol, sn_coap_protocol_prepare_blockwise_stream)
+{
+    retCounter = 9;
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+    sn_coap_hdr_s *msg_hdr = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(msg_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    sn_coap_blockwise_context_s blockwise_context;
+    blockwise_context.blockwise_payload_get = NULL;
+    blockwise_context.blockwise_payload_free = NULL;
+    blockwise_context.blockwise_context_free = NULL;
+    blockwise_context.user_context = NULL;
+
+    // NULL checks
+    CHECK_EQUAL(sn_coap_protocol_prepare_blockwise_stream(NULL, NULL, NULL), -1);
+    CHECK_EQUAL(sn_coap_protocol_prepare_blockwise_stream(handle, msg_hdr, NULL), -1);
+    CHECK_EQUAL(sn_coap_protocol_prepare_blockwise_stream(handle, msg_hdr, &blockwise_context), -1);
+
+    mock_payload_len = 0;
+    mock_payload_ptr = NULL;
+    mock_return = 0;
+    mock_error = 0;
+
+    blockwise_context.blockwise_payload_get = blockwise_payload_get;
+    blockwise_context.blockwise_payload_free = blockwise_payload_free;
+
+    // error from blockwise_payload_get
+    mock_error = 1;
+    CHECK_EQUAL(sn_coap_protocol_prepare_blockwise_stream(handle, msg_hdr, &blockwise_context), -2);
+
+    // Full block, no more blocks
+    mock_payload_len = handle->sn_coap_block_data_size;
+    mock_return = 1;
+    mock_error = 0;
+    mock_payload_ptr = (uint8_t*)malloc(10);
+    msg_hdr->payload_len = 0; // Clear before calling to check after
+    msg_hdr->payload_ptr = NULL; // Clear before calling to check after
+    CHECK_EQUAL(sn_coap_protocol_prepare_blockwise_stream(handle, msg_hdr, &blockwise_context), 0);
+    CHECK_EQUAL(msg_hdr->payload_len, handle->sn_coap_block_data_size);
+    CHECK_EQUAL(msg_hdr->payload_ptr, mock_payload_ptr);
+    CHECK_EQUAL(msg_hdr->options_list_ptr, NULL);
+
+    // Full block, more blocks, options allocation fails
+    mock_return = 0;
+    msg_hdr->payload_len = 0; // Clear before calling to check after
+    msg_hdr->payload_ptr = NULL; // Clear before calling to check after
+    retCounter = 0; // Fail options allocation
+    CHECK_EQUAL(sn_coap_protocol_prepare_blockwise_stream(handle, msg_hdr, &blockwise_context), -2);
+    CHECK_EQUAL(msg_hdr->options_list_ptr, NULL);
+
+    // Full block, more blocks, success case
+    mock_return = 0;
+    msg_hdr->payload_len = 0; // Clear before calling to check after
+    msg_hdr->payload_ptr = NULL; // Clear before calling to check after
+    retCounter = 1; // Fail options allocation
+    CHECK_EQUAL(sn_coap_protocol_prepare_blockwise_stream(handle, msg_hdr, &blockwise_context), 0);
+    CHECK(NULL != msg_hdr->options_list_ptr);
+    CHECK(0 != msg_hdr->options_list_ptr->block1);
+
+    free(mock_payload_ptr);
+    free(msg_hdr->options_list_ptr);
+    free(msg_hdr);
+    sn_coap_protocol_destroy(handle);
+}
+
+TEST(libCoap_protocol, sn_coap_protocol_store_blockwise_stream)
+{
+    retCounter = 9;
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+    sn_coap_hdr_s *msg_hdr = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(msg_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    sn_coap_blockwise_context_s blockwise_context;
+    blockwise_context.blockwise_payload_get = blockwise_payload_get;
+    blockwise_context.blockwise_payload_free = blockwise_payload_free;
+    blockwise_context.blockwise_context_free = NULL;
+    blockwise_context.user_context = NULL;
+
+    // No options list in coap header
+    CHECK_EQUAL(sn_coap_protocol_store_blockwise_stream(handle, msg_hdr, &blockwise_context, NULL), 0);
+    CHECK_TRUE(ns_list_is_empty(&handle->linked_list_blockwise_sent_msgs));
+
+    // Options list exist but block1 not set
+    msg_hdr->options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(msg_hdr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    CHECK_EQUAL(sn_coap_protocol_store_blockwise_stream(handle, msg_hdr, &blockwise_context, NULL), 0);
+    CHECK_TRUE(ns_list_is_empty(&handle->linked_list_blockwise_sent_msgs));
+
+    // stored blockwise msg allocation fails
+    retCounter = 0;
+    msg_hdr->options_list_ptr->block1 = 0x08;
+    CHECK_EQUAL(sn_coap_protocol_store_blockwise_stream(handle, msg_hdr, &blockwise_context, NULL), -2);
+    CHECK_TRUE(ns_list_is_empty(&handle->linked_list_blockwise_sent_msgs));
+
+    // header copy fails
+    retCounter = 1;
+    CHECK_EQUAL(sn_coap_protocol_store_blockwise_stream(handle, msg_hdr, &blockwise_context, NULL), -2);
+    CHECK_TRUE(ns_list_is_empty(&handle->linked_list_blockwise_sent_msgs));
+
+    // successful case
+    retCounter = 3;
+    CHECK_EQUAL(sn_coap_protocol_store_blockwise_stream(handle, msg_hdr, &blockwise_context, NULL), 0);
+    CHECK_FALSE(ns_list_is_empty(&handle->linked_list_blockwise_sent_msgs));
+
+    free(msg_hdr->options_list_ptr);
+    free(msg_hdr);
+    sn_coap_protocol_destroy(handle);
+}
+
+TEST(libCoap_protocol, sn_coap_handle_blockwise_message_streaming_success)
+{
+    retCounter = 9;
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+
+    // Configure parser stub so that we get a blockwise message out
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 9;
+
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(sn_coap_parser_stub.expectedHeader->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x48;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CONTINUE;
+    uint8_t* payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+
+    // Mocked source address
+    sn_nsdl_addr_s* addr = (sn_nsdl_addr_s*)malloc(sizeof(sn_nsdl_addr_s));
+    memset(addr, 0, sizeof(sn_nsdl_addr_s));
+    addr->addr_ptr = (uint8_t*)malloc(5);
+
+    // Mocked packet data
+    uint8_t *packet_data_ptr = (uint8_t*)malloc(5);
+    uint16_t packet_data_len = 5;
+
+    // Store the blockwise stream context
+    sn_coap_blockwise_context_s blockwise_context;
+    blockwise_context.blockwise_payload_get = blockwise_payload_get;
+    blockwise_context.blockwise_payload_free = blockwise_payload_free;
+    blockwise_context.blockwise_context_free = NULL;
+    blockwise_context.user_context = NULL;
+
+    coap_blockwise_msg_s *stored_blockwise_msg_ptr = (coap_blockwise_msg_s*)malloc(sizeof(coap_blockwise_msg_s));
+    memset(stored_blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
+    stored_blockwise_msg_ptr->timestamp = handle->system_time;
+    // Stored coap header
+    stored_blockwise_msg_ptr->coap_msg_ptr = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(stored_blockwise_msg_ptr->coap_msg_ptr, 0, sizeof(sn_coap_hdr_s));
+    stored_blockwise_msg_ptr->coap_msg_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    stored_blockwise_msg_ptr->coap_msg_ptr->msg_id = 9;
+    stored_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(stored_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    stored_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr->block1 = 0x08;
+    stored_blockwise_msg_ptr->coap = handle;
+    stored_blockwise_msg_ptr->param = NULL;
+    stored_blockwise_msg_ptr->msg_id = 9;
+    stored_blockwise_msg_ptr->context = &blockwise_context;
+    ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
+
+    retCounter = 4;
+    sn_coap_builder_stub.expectedUint16 = 10;
+    // No error and not last block
+    mock_payload_len = handle->sn_coap_block_data_size;
+    mock_return = 0;
+    mock_error = 0;
+    mock_payload_ptr = (uint8_t*)malloc(10);
+    sn_coap_hdr_s *recvd_ptr = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK(NULL != recvd_ptr);
+
+    free(mock_payload_ptr);
+    free(payload);
+    free(addr->addr_ptr);
+    free(addr);
+    free(packet_data_ptr);
+    free(recvd_ptr->options_list_ptr);
+    free(recvd_ptr);
+    sn_coap_protocol_destroy(handle);
+
+}
+
+TEST(libCoap_protocol, sn_coap_handle_blockwise_message_streaming_error)
+{
+    retCounter = 9;
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+
+    // Configure parser stub so that we get a blockwise message out
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 9;
+
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(sn_coap_parser_stub.expectedHeader->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x48;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CONTINUE;
+    uint8_t* payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+
+    // Mocked source address
+    sn_nsdl_addr_s* addr = (sn_nsdl_addr_s*)malloc(sizeof(sn_nsdl_addr_s));
+    memset(addr, 0, sizeof(sn_nsdl_addr_s));
+    addr->addr_ptr = (uint8_t*)malloc(5);
+
+    // Mocked packet data
+    uint8_t *packet_data_ptr = (uint8_t*)malloc(5);
+    uint16_t packet_data_len = 5;
+
+    // Store the blockwise stream context
+    sn_coap_blockwise_context_s blockwise_context;
+    blockwise_context.blockwise_payload_get = blockwise_payload_get;
+    blockwise_context.blockwise_payload_free = blockwise_payload_free;
+    blockwise_context.blockwise_context_free = NULL;
+    blockwise_context.user_context = NULL;
+
+    coap_blockwise_msg_s *stored_blockwise_msg_ptr = (coap_blockwise_msg_s*)malloc(sizeof(coap_blockwise_msg_s));
+    memset(stored_blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
+    stored_blockwise_msg_ptr->timestamp = handle->system_time;
+    // Stored coap header
+    stored_blockwise_msg_ptr->coap_msg_ptr = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(stored_blockwise_msg_ptr->coap_msg_ptr, 0, sizeof(sn_coap_hdr_s));
+    stored_blockwise_msg_ptr->coap_msg_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    stored_blockwise_msg_ptr->coap_msg_ptr->msg_id = 9;
+    stored_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(stored_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    stored_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr->block1 = 0x08;
+    stored_blockwise_msg_ptr->coap = handle;
+    stored_blockwise_msg_ptr->param = NULL;
+    stored_blockwise_msg_ptr->msg_id = 9;
+    stored_blockwise_msg_ptr->context = &blockwise_context;
+    ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
+
+    retCounter = 4;
+    sn_coap_builder_stub.expectedUint16 = 10;
+    // No error and not last block
+    mock_payload_len = handle->sn_coap_block_data_size;
+    mock_return = 0;
+    mock_error = 1;
+    mock_payload_ptr = (uint8_t*)malloc(10);
+    sn_coap_hdr_s *recvd_ptr = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK(NULL == recvd_ptr);
+
+    free(mock_payload_ptr);
+    free(payload);
+    free(addr->addr_ptr);
+    free(addr);
+    free(packet_data_ptr);
+    sn_coap_protocol_destroy(handle);
+}
+
+TEST(libCoap_protocol, sn_coap_handle_blockwise_message_streaming_packet_building_fails)
+{
+    retCounter = 9;
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
+
+    // Configure parser stub so that we get a blockwise message out
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 9;
+
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(sn_coap_parser_stub.expectedHeader->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x48;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CONTINUE;
+    uint8_t* payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+
+    // Mocked source address
+    sn_nsdl_addr_s* addr = (sn_nsdl_addr_s*)malloc(sizeof(sn_nsdl_addr_s));
+    memset(addr, 0, sizeof(sn_nsdl_addr_s));
+    addr->addr_ptr = (uint8_t*)malloc(5);
+
+    // Mocked packet data
+    uint8_t *packet_data_ptr = (uint8_t*)malloc(5);
+    uint16_t packet_data_len = 5;
+
+    // Store the blockwise stream context
+    sn_coap_blockwise_context_s blockwise_context;
+    blockwise_context.blockwise_payload_get = blockwise_payload_get;
+    blockwise_context.blockwise_payload_free = blockwise_payload_free;
+    blockwise_context.blockwise_context_free = NULL;
+    blockwise_context.user_context = NULL;
+
+    coap_blockwise_msg_s *stored_blockwise_msg_ptr = (coap_blockwise_msg_s*)malloc(sizeof(coap_blockwise_msg_s));
+    memset(stored_blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
+    stored_blockwise_msg_ptr->timestamp = handle->system_time;
+    // Stored coap header
+    stored_blockwise_msg_ptr->coap_msg_ptr = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(stored_blockwise_msg_ptr->coap_msg_ptr, 0, sizeof(sn_coap_hdr_s));
+    stored_blockwise_msg_ptr->coap_msg_ptr->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    stored_blockwise_msg_ptr->coap_msg_ptr->msg_id = 9;
+    stored_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(stored_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    stored_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr->block1 = 0x08;
+    stored_blockwise_msg_ptr->coap = handle;
+    stored_blockwise_msg_ptr->param = NULL;
+    stored_blockwise_msg_ptr->msg_id = 9;
+    stored_blockwise_msg_ptr->context = &blockwise_context;
+    ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
+
+    retCounter = 3;
+    sn_coap_builder_stub.expectedUint16 = 0;
+    // No error and not last block
+    mock_payload_len = handle->sn_coap_block_data_size;
+    mock_return = 0;
+    mock_error = 0;
+    payload_free_count = 0;
+    mock_payload_ptr = (uint8_t*)malloc(10);
+    sn_coap_hdr_s *recvd_ptr = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK(NULL == recvd_ptr);
+    CHECK_EQUAL(1, payload_free_count);
+
+    free(mock_payload_ptr);
+    free(payload);
+    free(addr->addr_ptr);
+    free(addr);
+    free(packet_data_ptr);
+    sn_coap_protocol_destroy(handle);
+}
