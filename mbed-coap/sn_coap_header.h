@@ -272,40 +272,39 @@ typedef struct sn_coap_blockwise_context_ sn_coap_blockwise_context_s;
 
 /**
  * \fn blockwise_payload_get_cb
- * \brief Callback function type for retrieving a payload block for streaming request.
+ * \brief Callback function type for retrieving part of payload for streaming request.
  *
- * \param block_number, Index of the block to retrieve
- * \param block_size,   Size of the block to retrieve
+ * \param user_context, A pointer to the user_context field.
+ * \param data_offset,  Offset of data block to retrieve.
+ * \param data_size,    Size of the data block to retrieve.
  * \param payload_size, Output parameter, pointer to a uint16_t, should be set to the length
  *                      of the retrieved payload.
  * \param payload_ptr,  Output parameter, pointer to a uint16_t*, should be set to point to
  *                      the allocated payload buffer.
  * \param error,        Output parameter, set to non-zero value to indicate an error.
- * \param user_context, A pointer to the user_context field.
  *
- * \return Return 0 if no more blocks to be sent, non-zero return value indicates more blocks
- *         to come.
+ * \return Return 0 if no more data to be sent, non-zero return value indicates more data
+ *         available.
  */
-typedef uint8_t (*blockwise_payload_get_cb)(uint32_t block_number, uint16_t block_size, /*out*/ uint16_t *payload_len, /*out*/ uint8_t **payload_ptr, /*out*/ uint8_t *error, void* user_context);
+typedef uint8_t (*blockwise_payload_get_cb)(void* user_context, uint32_t data_offset, uint16_t data_size, /*out*/ uint16_t *payload_len, /*out*/ uint8_t **payload_ptr, /*out*/ uint8_t *error);
 
 /**
- * \fn blockwise_payload_get_cb
+ * \fn blockwise_payload_free_cb
  * \brief Callback function type for freeing a payload block of streaming request.
  *
- * \param block_number, Index of the block to free
- * \param payload,      Pointer to the payload buffer to free
  * \param user_context, A pointer to the user_context field.
+ * \param payload,      Pointer to the payload buffer to free
  */
-typedef void (*blockwise_payload_free_cb)(uint32_t block_number, uint8_t *payload, void* user_context);
+typedef void (*blockwise_payload_free_cb)(void* user_context, uint8_t *payload);
 
 /**
  * \fn blockwise_context_free_cb
  * \brief Callback function type for freeing a blockwise streaming request context.
  *
- * \param blockwise_stream, A constant pointer to the blockwise stream that can be freed.
  * \param user_context, A pointer to the user_context field.
+ * \param blockwise_stream, A constant pointer to the blockwise stream that can be freed.
  */
-typedef void (*blockwise_context_free_cb)(const sn_coap_blockwise_context_s *blockwise_context, void* user_context);
+typedef void (*blockwise_context_free_cb)(void* user_context, const sn_coap_blockwise_context_s *blockwise_context);
 
 /**
  * \struct sn_coap_blockwise_context_s

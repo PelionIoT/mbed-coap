@@ -463,7 +463,7 @@ int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
     uint16_t payload_len = 0;
     uint8_t *payload = NULL;
     uint8_t error = 0;
-    uint8_t last_block = blockwise_context->blockwise_payload_get(0 /* First block */, handle->sn_coap_block_data_size, &payload_len, &payload, &error, blockwise_context->user_context);
+    uint8_t last_block = blockwise_context->blockwise_payload_get(blockwise_context->user_context, 0 /* First block */, handle->sn_coap_block_data_size, &payload_len, &payload, &error);
     tr_debug("blockwise payload get - payload len %d, last block %d", payload_len, last_block);
 
     if (error > 0) {
@@ -1720,7 +1720,7 @@ void sn_coap_protocol_remove_sent_blockwise_message(struct coap_s *handle, uint1
         if (tmp->coap == handle && tmp->coap_msg_ptr && tmp->coap_msg_ptr->msg_id == msg_id) {
             handle->sn_coap_protocol_free(tmp->coap_msg_ptr->payload_ptr);
             if (tmp->context != NULL && tmp->context->blockwise_context_free != NULL) {
-                tmp->context->blockwise_context_free(tmp->context, tmp->context->user_context);
+                tmp->context->blockwise_context_free(tmp->context->user_context, tmp->context);
             }
             sn_coap_parser_release_allocated_coap_msg_mem(tmp->coap, tmp->coap_msg_ptr);
             ns_list_remove(&handle->linked_list_blockwise_sent_msgs, tmp);
@@ -1867,7 +1867,12 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                         /* Streaming blockwise */
                         /* Get payload */
                         uint8_t error = 0;
-                        uint8_t last_block = stored_blockwise_msg_temp_ptr->context->blockwise_payload_get(block_number, block_size, &(src_coap_blockwise_ack_msg_ptr->payload_len), &(src_coap_blockwise_ack_msg_ptr->payload_ptr), &error, stored_blockwise_msg_temp_ptr->context->user_context);
+                        uint8_t last_block = stored_blockwise_msg_temp_ptr->context->blockwise_payload_get(stored_blockwise_msg_temp_ptr->context->user_context,
+                                                                                                           block_size * block_number,
+                                                                                                           block_size,
+                                                                                                           &(src_coap_blockwise_ack_msg_ptr->payload_len),
+                                                                                                           &(src_coap_blockwise_ack_msg_ptr->payload_ptr),
+                                                                                                           &error);
 
                         if (error > 0) {
                             tr_error("sn_coap_handle_blockwise_message - (send block1) failed to retrieve new block!");
@@ -1895,7 +1900,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
                         if (stored_blockwise_msg_temp_ptr->context != NULL) {
                             // Incase of streaming blockwise transfer call the free function
-                            stored_blockwise_msg_temp_ptr->context->blockwise_payload_free(block_number, src_coap_blockwise_ack_msg_ptr->payload_ptr, stored_blockwise_msg_temp_ptr->context->user_context);
+                            stored_blockwise_msg_temp_ptr->context->blockwise_payload_free(stored_blockwise_msg_temp_ptr->context->user_context, src_coap_blockwise_ack_msg_ptr->payload_ptr);
                         }
 
                         handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr->options_list_ptr);
@@ -1929,7 +1934,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
                     if (stored_blockwise_msg_temp_ptr->context != NULL) {
                         // Incase of streaming blockwise transfer call the free function
-                        stored_blockwise_msg_temp_ptr->context->blockwise_payload_free(block_number, src_coap_blockwise_ack_msg_ptr->payload_ptr, stored_blockwise_msg_temp_ptr->context->user_context);
+                        stored_blockwise_msg_temp_ptr->context->blockwise_payload_free(stored_blockwise_msg_temp_ptr->context->user_context, src_coap_blockwise_ack_msg_ptr->payload_ptr);
                     }
 
                     handle->sn_coap_protocol_free(dst_ack_packet_data_ptr);
