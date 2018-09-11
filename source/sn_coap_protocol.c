@@ -1266,6 +1266,48 @@ static void sn_coap_protocol_linked_list_duplication_info_remove_old_ones(struct
     }
 }
 
+
+/*****************************************************************************
+ * \fn static uint8_t sn_coap_protocol_update_duplicate_packet(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr, sn_nsdl_addr_s *dst_addr_ptr, int16_t dst_packet_len, uint8_t *dst_packet_data_ptr)
+ *
+ * \brief Finds duplicate packet if one exists and updates it's data.
+ *
+ * \param *src_coap_msg_ptr is pointer to source coap packet header
+ *
+ * \param *dst_addr_ptr is pointer to destination address structure
+ *
+ * \param dst_packet_len is destination packet length
+ *
+ * \param *dst_packet_data_ptr is pointer to destination packet data
+ *
+ * \return 0 Allocation or buffer limit reached
+ *
+ * \return 1 Duplicate message updated or no duplicate at all
+ *****************************************************************************/
+
+static uint8_t sn_coap_protocol_update_duplicate_packet(struct coap_s *handle,
+        sn_coap_hdr_s *src_coap_msg_ptr, sn_nsdl_addr_s *dst_addr_ptr,
+        int16_t dst_packet_len, uint8_t *dst_packet_data_ptr)
+{
+    if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT &&
+        handle->sn_coap_duplication_buffer_size != 0) {
+        coap_duplication_info_s* info = sn_coap_protocol_linked_list_duplication_info_search(handle,
+                                                                                             dst_addr_ptr,
+                                                                                             src_coap_msg_ptr->msg_id);
+        /* Update package data to duplication info struct if it's not there yet */
+        if (info && info->packet_ptr == NULL) {
+            info->packet_ptr = handle->sn_coap_protocol_malloc(dst_packet_len);
+            if (info->packet_ptr) {
+                memcpy(info->packet_ptr, dst_packet_data_ptr, dst_packet_len);
+                info->packet_len = dst_packet_len;
+            } else {
+                tr_error("sn_coap_protocol_build - failed to allocate duplication info!");
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
 #endif /* SN_COAP_DUPLICATION_MAX_MSGS_COUNT */
 
 #if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
@@ -2560,50 +2602,6 @@ static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, const 
     return destination_header_ptr;
 }
 #endif
-
-/*****************************************************************************
- * \fn static uint8_t sn_coap_protocol_update_duplicate_packet(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr, sn_nsdl_addr_s *dst_addr_ptr, int16_t dst_packet_len, uint8_t *dst_packet_data_ptr)
- *
- * \brief Finds duplicate packet if one exists and updates it's data.
- *
- * \param *src_coap_msg_ptr is pointer to source coap packet header
- *
- * \param *dst_addr_ptr is pointer to destination address structure
- *
- * \param dst_packet_len is destination packet length
- *
- * \param *dst_packet_data_ptr is pointer to destination packet data
- *
- * \return 0 Allocation or buffer limit reached
- *
- * \return 1 Duplicate message updated or no duplicate at all
- *****************************************************************************/
-#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
-static uint8_t sn_coap_protocol_update_duplicate_packet(struct coap_s *handle,
-        sn_coap_hdr_s *src_coap_msg_ptr, sn_nsdl_addr_s *dst_addr_ptr,
-        int16_t dst_packet_len, uint8_t *dst_packet_data_ptr)
-{
-    if (src_coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT &&
-        handle->sn_coap_duplication_buffer_size != 0) {
-        coap_duplication_info_s* info = sn_coap_protocol_linked_list_duplication_info_search(handle,
-                                                                                             dst_addr_ptr,
-                                                                                             src_coap_msg_ptr->msg_id);
-        /* Update package data to duplication info struct if it's not there yet */
-        if (info && info->packet_ptr == NULL) {
-            info->packet_ptr = handle->sn_coap_protocol_malloc(dst_packet_len);
-            if (info->packet_ptr) {
-                memcpy(info->packet_ptr, dst_packet_data_ptr, dst_packet_len);
-                info->packet_len = dst_packet_len;
-            } else {
-                tr_error("sn_coap_protocol_build - failed to allocate duplication info!");
-                return 0;
-            }
-        }
-    }
-    return 1;
-}
-#endif /* SN_COAP_DUPLICATION_MAX_MSGS_COUNT */
-
 
 /*****************************************************************************
  * \fn static uint8_t sn_coap_protocol_store_resend_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr, sn_nsdl_addr_s *dst_addr_ptr, int16_t dst_packet_len, uint8_t *dst_packet_data_ptr)
