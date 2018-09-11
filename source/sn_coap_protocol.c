@@ -64,8 +64,8 @@ static void                  sn_coap_protocol_linked_list_blockwise_payload_remo
 static uint32_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint8_t *token_ptr, uint8_t token_len);
 static void                  sn_coap_protocol_handle_blockwise_timout(struct coap_s *handle);
 static sn_coap_hdr_s        *sn_coap_handle_blockwise_message(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr, void *param);
-static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coap_hdr_s *source_header_ptr);
-static int8_t                sn_coap_protocol_store_blockwise_msg_context(struct coap_s *handle, uint16_t payload_len, sn_coap_hdr_s *src_coap_msg_ptr, void *param);
+static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr);
+static int8_t                sn_coap_protocol_store_blockwise_msg_context(struct coap_s *handle, uint16_t payload_len, const sn_coap_hdr_s *src_coap_msg_ptr, void *param);
 #endif
 #if ENABLE_RESENDINGS
 static uint8_t               sn_coap_protocol_store_resend_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t dst_packet_len, uint8_t *dst_packet_data_ptr, void* param);
@@ -494,7 +494,7 @@ int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
 }
 
 int8_t sn_coap_protocol_store_blockwise_stream(struct coap_s *handle,
-                                               sn_coap_hdr_s *src_coap_msg_ptr,
+                                               const sn_coap_hdr_s *src_coap_msg_ptr,
                                                const sn_coap_blockwise_context_s *blockwise_context,
                                                void *param)
 {
@@ -2428,7 +2428,7 @@ int8_t sn_coap_convert_block_size(uint16_t block_size)
     return 0;
 }
 
-static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, sn_coap_hdr_s *source_header_ptr)
+static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr)
 {
     sn_coap_hdr_s *destination_header_ptr;
 
@@ -2654,7 +2654,7 @@ static uint8_t sn_coap_protocol_store_resend_message(struct coap_s *handle,
 #if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 static int8_t sn_coap_protocol_store_blockwise_msg_context(struct coap_s *handle,
                                                            uint16_t payload_len,
-                                                           sn_coap_hdr_s *src_coap_msg_ptr,
+                                                           const sn_coap_hdr_s *src_coap_msg_ptr,
                                                            void *param)
 {
     /* If blockwising needed */

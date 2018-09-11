@@ -259,7 +259,7 @@ extern int8_t sn_coap_protocol_prepare_blockwise_stream(struct coap_s *handle,
  * \brief If blockwising is enabled this function can be used to initiate a blockwise streaming request.
  */
 extern int8_t sn_coap_protocol_store_blockwise_stream(struct coap_s *handle,
-                                                      sn_coap_hdr_s *src_coap_msg_ptr,
+                                                      const sn_coap_hdr_s *src_coap_msg_ptr,
                                                       const sn_coap_blockwise_context_s *blockwise_context,
                                                       void *param);
 
