@@ -66,6 +66,7 @@ static void                  sn_coap_protocol_handle_blockwise_timout(struct coa
 static sn_coap_hdr_s        *sn_coap_handle_blockwise_message(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr, void *param);
 static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr);
 static int8_t                sn_coap_protocol_store_blockwise_msg_context(struct coap_s *handle, uint16_t payload_len, const sn_coap_hdr_s *src_coap_msg_ptr, void *param);
+static coap_blockwise_msg_s *sn_coap_protocol_alloc_and_copy_header(struct coap_s *handle, const sn_coap_hdr_s *src_coap_msg_hdr);
 #endif
 #if ENABLE_RESENDINGS
 static uint8_t               sn_coap_protocol_store_resend_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr, sn_nsdl_addr_s *dst_addr_ptr, uint8_t dst_packet_len, uint8_t *dst_packet_data_ptr, void* param);
@@ -507,32 +508,16 @@ int8_t sn_coap_protocol_store_blockwise_stream(struct coap_s *handle,
     if (src_coap_msg_ptr->options_list_ptr != NULL && src_coap_msg_ptr->options_list_ptr->block1 & 0x08) {
         /* Store the context for sending future blocks */
         tr_debug("Storing blockwise context");
-        coap_blockwise_msg_s *stored_blockwise_msg_ptr;
-        stored_blockwise_msg_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_blockwise_msg_s));
+        coap_blockwise_msg_s *stored_blockwise_msg_ptr = sn_coap_protocol_alloc_and_copy_header(handle, src_coap_msg_ptr);
         if (!stored_blockwise_msg_ptr) {
-            //block paylaod save failed, only first block can be build. Perhaps we should return error.
+            // block context save failed, only first block can be build. Perhaps we should return error.
             tr_error("sn_coap_protocol_build - blockwise message allocation failed!");
-            return -2;
-        }
-        memset(stored_blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
-
-        /* Fill struct */
-        stored_blockwise_msg_ptr->timestamp = handle->system_time;
-
-        stored_blockwise_msg_ptr->coap_msg_ptr = sn_coap_protocol_copy_header(handle, src_coap_msg_ptr);
-        if(stored_blockwise_msg_ptr->coap_msg_ptr == NULL) {
-            handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
-            tr_error("sn_coap_protocol_build - block header copy failed!");
             return -2;
         }
 
         stored_blockwise_msg_ptr->coap_msg_ptr->payload_len = 0;
         stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = NULL;
         stored_blockwise_msg_ptr->context = blockwise_context;
-
-        stored_blockwise_msg_ptr->coap = handle;
-        stored_blockwise_msg_ptr->param = param;
-        stored_blockwise_msg_ptr->msg_id = stored_blockwise_msg_ptr->coap_msg_ptr->msg_id;
 
         ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
     }
@@ -603,7 +588,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
     }
 #endif
 
-#if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not used at all, this part of code will not be compiled */
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE /* If Message blockwising is not enabled, this part of code will not be compiled */
     int8_t result = sn_coap_protocol_store_blockwise_msg_context(handle, original_payload_len, src_coap_msg_ptr, param);
     if (result <= 0) {
         if (result == -1) {
@@ -1655,6 +1640,30 @@ rescan:
     }
 }
 
+static coap_blockwise_msg_s *sn_coap_protocol_alloc_and_copy_header(struct coap_s *handle, const sn_coap_hdr_s *src_coap_msg_hdr)
+{
+    coap_blockwise_msg_s *blockwise_msg_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_blockwise_msg_s));
+    if (!blockwise_msg_ptr) {
+        tr_error("sn_coap_protocol_alloc_and_copy_header - blockwise message allocation failed!");
+        return NULL;
+    }
+    memset(blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
+
+    blockwise_msg_ptr->coap_msg_ptr = sn_coap_protocol_copy_header(handle, src_coap_msg_hdr);
+    if(blockwise_msg_ptr->coap_msg_ptr == NULL) {
+        handle->sn_coap_protocol_free(blockwise_msg_ptr);
+        tr_error("sn_coap_protocol_alloc_and_copy_header - block header copy failed!");
+        return NULL;
+    }
+
+    /* Fill struct */
+    blockwise_msg_ptr->timestamp = handle->system_time;
+    blockwise_msg_ptr->coap = handle;
+    blockwise_msg_ptr->msg_id = blockwise_msg_ptr->coap_msg_ptr->msg_id;
+
+    return blockwise_msg_ptr;
+}
+
 #endif /* SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE */
 
 
@@ -2659,78 +2668,35 @@ static int8_t sn_coap_protocol_store_blockwise_msg_context(struct coap_s *handle
                                                            const sn_coap_hdr_s *src_coap_msg_ptr,
                                                            void *param)
 {
-    /* If blockwising needed */
-    if ((payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
+    // If need blockwising or sending a request where response might be blockwise
+    if (((payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) ||
+        src_coap_msg_ptr->msg_code <= COAP_MSG_CODE_REQUEST_GET) {
 
-        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-        /* * * * Manage rest blockwise messages sending by storing them to Linked list * * * */
-        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-        coap_blockwise_msg_s *stored_blockwise_msg_ptr;
-
-        stored_blockwise_msg_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_blockwise_msg_s));
+        coap_blockwise_msg_s *stored_blockwise_msg_ptr = sn_coap_protocol_alloc_and_copy_header(handle, src_coap_msg_ptr);
         if (!stored_blockwise_msg_ptr) {
             //block paylaod save failed, only first block can be build. Perhaps we should return error.
             tr_error("sn_coap_protocol_build - blockwise message allocation failed!");
             return -1;
         }
-        memset(stored_blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
 
-        /* Fill struct */
-        stored_blockwise_msg_ptr->timestamp = handle->system_time;
 
-        stored_blockwise_msg_ptr->coap_msg_ptr = sn_coap_protocol_copy_header(handle, src_coap_msg_ptr);
-        if( stored_blockwise_msg_ptr->coap_msg_ptr == NULL ){
-            handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
-            stored_blockwise_msg_ptr = 0;
-            tr_error("sn_coap_protocol_build - block header copy failed!");
-            return -2;
+        // If blockwising needed in request, we need copy the payload
+        if ((payload_len > handle->sn_coap_block_data_size) && (handle->sn_coap_block_data_size > 0)) {
+            // Copy the payload into the linked sent msgs list so that subsequent blocks can be sent
+            stored_blockwise_msg_ptr->coap_msg_ptr->payload_len = payload_len;
+            stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = handle->sn_coap_protocol_malloc(stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
+
+            if (!stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr) {
+                //block payload save failed, only first block can be build. Perhaps we should return error.
+                sn_coap_parser_release_allocated_coap_msg_mem(handle, stored_blockwise_msg_ptr->coap_msg_ptr);
+                handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
+                stored_blockwise_msg_ptr = 0;
+                tr_error("sn_coap_protocol_build - block payload allocation failed!");
+                return -1;
+            }
+            memcpy(stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr, src_coap_msg_ptr->payload_ptr, stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
         }
-
-        stored_blockwise_msg_ptr->coap_msg_ptr->payload_len = payload_len;
-        stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = handle->sn_coap_protocol_malloc(stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
-
-        if (!stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr) {
-            //block payload save failed, only first block can be build. Perhaps we should return error.
-            sn_coap_parser_release_allocated_coap_msg_mem(handle, stored_blockwise_msg_ptr->coap_msg_ptr);
-            handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
-            stored_blockwise_msg_ptr = 0;
-            tr_error("sn_coap_protocol_build - block payload allocation failed!");
-            return -1;
-        }
-        memcpy(stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr, src_coap_msg_ptr->payload_ptr, stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
-
-        stored_blockwise_msg_ptr->coap = handle;
         stored_blockwise_msg_ptr->param = param;
-        stored_blockwise_msg_ptr->msg_id = stored_blockwise_msg_ptr->coap_msg_ptr->msg_id;
-        ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
-    }
-
-    else if (src_coap_msg_ptr->msg_code == COAP_MSG_CODE_REQUEST_GET) {
-        /* Add message to linked list - response can be in blocks and we need header to build response.. */
-        coap_blockwise_msg_s *stored_blockwise_msg_ptr;
-
-        stored_blockwise_msg_ptr = handle->sn_coap_protocol_malloc(sizeof(coap_blockwise_msg_s));
-        if (!stored_blockwise_msg_ptr) {
-            tr_error("sn_coap_protocol_build - blockwise (GET) allocation failed!");
-            return -1;
-        }
-        memset(stored_blockwise_msg_ptr, 0, sizeof(coap_blockwise_msg_s));
-
-        /* Fill struct */
-        stored_blockwise_msg_ptr->timestamp = handle->system_time;
-
-        stored_blockwise_msg_ptr->coap_msg_ptr = sn_coap_protocol_copy_header(handle, src_coap_msg_ptr);
-        if( stored_blockwise_msg_ptr->coap_msg_ptr == NULL ){
-            handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
-            stored_blockwise_msg_ptr = 0;
-            tr_error("sn_coap_protocol_build - blockwise (GET) copy header failed!");
-            return -2;
-        }
-
-        stored_blockwise_msg_ptr->coap = handle;
-        stored_blockwise_msg_ptr->param = param;
-        stored_blockwise_msg_ptr->msg_id = stored_blockwise_msg_ptr->coap_msg_ptr->msg_id;
         ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
     }
 
