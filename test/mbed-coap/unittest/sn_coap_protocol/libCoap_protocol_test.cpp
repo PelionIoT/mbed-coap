@@ -917,8 +917,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     retCounter = 10;
     sn_coap_protocol_set_block_size(handle, 1024);
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK( NULL != ret );
-    CHECK(COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING == ret->coap_status);
+    CHECK( NULL == ret );
     free(payload);
     free(list);
     free(sn_coap_parser_stub.expectedHeader);
