@@ -47,9 +47,7 @@ struct sn_coap_hdr_;
 
 #define SN_COAP_RESENDING_MAX_COUNT                     3   /**< Default number of re-sendings  */
 
-#ifdef YOTTA_CFG_COAP_RESENDING_QUEUE_SIZE_MSGS
-#define SN_COAP_RESENDING_QUEUE_SIZE_MSGS YOTTA_CFG_COAP_RESENDING_QUEUE_SIZE_MSGS
-#elif defined MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_MSGS
+#ifdef MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_MSGS
 #define SN_COAP_RESENDING_QUEUE_SIZE_MSGS MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_MSGS
 #endif
 
@@ -57,9 +55,7 @@ struct sn_coap_hdr_;
 #define SN_COAP_RESENDING_QUEUE_SIZE_MSGS               2   /**< Default re-sending queue size - defines how many messages can be stored. Setting this to 0 disables feature */
 #endif
 
-#ifdef YOTTA_CFG_COAP_RESENDING_QUEUE_SIZE_BYTES
-#define SN_COAP_RESENDING_QUEUE_SIZE_BYTES YOTTA_CFG_COAP_RESENDING_QUEUE_SIZE_BYTES
-#elif defined MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_BYTES
+#ifdef MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_BYTES
 #define SN_COAP_RESENDING_QUEUE_SIZE_BYTES MBED_CONF_MBED_CLIENT_SN_COAP_RESENDING_QUEUE_SIZE_BYTES
 #endif
 
@@ -81,9 +77,7 @@ struct sn_coap_hdr_;
 
 /* Init value for the maximum count of messages to be stored for duplication detection          */
 /* Setting of this value to 0 will disable duplication check, also reduce use of ROM memory     */
-#ifdef YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
-#define SN_COAP_DUPLICATION_MAX_MSGS_COUNT YOTTA_CFG_COAP_DUPLICATION_MAX_MSGS_COUNT
-#elif defined MBED_CONF_MBED_CLIENT_SN_COAP_DUPLICATION_MAX_MSGS_COUNT
+#ifdef MBED_CONF_MBED_CLIENT_SN_COAP_DUPLICATION_MAX_MSGS_COUNT
 #define SN_COAP_DUPLICATION_MAX_MSGS_COUNT MBED_CONF_MBED_CLIENT_SN_COAP_DUPLICATION_MAX_MSGS_COUNT
 #endif
 
@@ -104,9 +98,7 @@ struct sn_coap_hdr_;
 /* Setting of this value to 0 will disable this feature, and also reduce use of ROM memory                          */
 /* Note: This define is common for both received and sent Blockwise messages                                        */
 
-#ifdef YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-#define SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-#elif defined MBED_CONF_MBED_CLIENT_SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
+#ifdef MBED_CONF_MBED_CLIENT_SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 #define SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE MBED_CONF_MBED_CLIENT_SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 #endif
 
@@ -130,9 +122,7 @@ struct sn_coap_hdr_;
 #define SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED      60 /**< Maximum time in seconds of data (messages and payload) to be stored for blockwising */
 #endif
 
-#ifdef YOTTA_CFG_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE
-#define SN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE YOTTA_CFG_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE
-#elif defined MBED_CONF_MBED_CLIENT_SN_COAP_MAX_INCOMING_MESSAGE_SIZE
+#ifdef MBED_CONF_MBED_CLIENT_SN_COAP_MAX_INCOMING_MESSAGE_SIZE
 #define SN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE MBED_CONF_MBED_CLIENT_SN_COAP_MAX_INCOMING_MESSAGE_SIZE
 #endif
 
