@@ -3020,7 +3020,7 @@ TEST(libCoap_protocol, sn_coap_protocol_get_configured_blockwise_size)
 {
     retCounter = 9;
     struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
-    CHECK(sn_coap_protocol_get_configured_blockwise_size(handle) == YOTTA_CFG_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
+    CHECK(sn_coap_protocol_get_configured_blockwise_size(handle) == SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
     sn_coap_protocol_destroy(handle);
 }
 
