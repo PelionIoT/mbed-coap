@@ -2641,6 +2641,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
     sn_coap_parser_stub.expectedHeader->msg_id = 18;
 
@@ -2681,6 +2682,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_RESET;
     sn_coap_parser_stub.expectedHeader->msg_id = 18;
 
@@ -2726,6 +2728,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
     sn_coap_parser_stub.expectedHeader->msg_id = 18;
 
