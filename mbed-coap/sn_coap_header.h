@@ -27,6 +27,7 @@
 extern "C" {
 #endif
 
+
 /* Handle structure */
 struct coap_s;
 
