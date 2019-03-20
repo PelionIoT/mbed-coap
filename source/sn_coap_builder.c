@@ -687,61 +687,67 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
 
         /* * * Build option header * * */
 
+        uint8_t first_byte;
+
         /* First option length without extended part */
         if (option_len <= 12) {
-            **dst_packet_data_pptr = option_len;
+            first_byte = option_len;
         }
 
         else if (option_len > 12 && option_len < 269) {
-            **dst_packet_data_pptr = 0x0D;
+            first_byte = 0x0D;
         }
 
         else if (option_len >= 269) {
-            **dst_packet_data_pptr = 0x0E;
+            first_byte = 0x0E;
         }
+
+        uint8_t *dest_packet = *dst_packet_data_pptr;
 
         /* Then option delta with extensions, and move pointer */
         if (option_delta <= 12) {
-            **dst_packet_data_pptr += (option_delta << 4);
-            *dst_packet_data_pptr += 1;
+            dest_packet[0] = first_byte + (option_delta << 4);
+            dest_packet += 1;
         }
 
         else if (option_delta > 12 && option_delta < 269) {
-            **dst_packet_data_pptr += 0xD0;
+            dest_packet[0] = first_byte + 0xD0;
             option_delta -= 13;
 
-            *(*dst_packet_data_pptr + 1) = (uint8_t)option_delta;
-            *dst_packet_data_pptr += 2;
+            dest_packet[1] = (uint8_t)option_delta;
+            dest_packet += 2;
         }
         //This is currently dead code (but possibly needed in future)
         else if (option_delta >= 269) {
-            **dst_packet_data_pptr += 0xE0;
+            dest_packet[0] = first_byte + 0xE0;
             option_delta -= 269;
 
-            *(*dst_packet_data_pptr + 2) = (uint8_t)option_delta;
-            *(*dst_packet_data_pptr + 1) = (option_delta >> 8);
-            *dst_packet_data_pptr += 3;
+            dest_packet[1] = (option_delta >> 8);
+            dest_packet[2] = (uint8_t)option_delta;
+            dest_packet += 3;
         }
 
         /* Now option length extensions, if needed */
         if (option_len > 12 && option_len < 269) {
-            **dst_packet_data_pptr = (uint8_t)(option_len - 13);
-            *dst_packet_data_pptr += 1;
+            dest_packet[0] = (uint8_t)(option_len - 13);
+            dest_packet += 1;
         }
 
         else if (option_len >= 269) {
-            *(*dst_packet_data_pptr + 1) = (uint8_t)(option_len - 269);
-            **dst_packet_data_pptr = ((option_len - 269) >> 8);
-            *dst_packet_data_pptr += 2;
+            dest_packet[0] = ((option_len - 269) >> 8);
+            dest_packet[1] = (uint8_t)(option_len - 269);
+            dest_packet += 2;
         }
 
         *previous_option_number = option_number;
 
         /* Write Option value */
-        memcpy(*dst_packet_data_pptr, option_ptr, option_len);
+        memcpy(dest_packet, option_ptr, option_len);
 
         /* Increase destination Packet data pointer */
-        (*dst_packet_data_pptr) += option_len;
+        dest_packet += option_len;
+
+        *dst_packet_data_pptr = dest_packet;
 
         return 1;
     }
