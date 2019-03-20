@@ -514,25 +514,19 @@ static int8_t sn_coap_builder_header_build(uint8_t **dst_packet_data_pptr, const
         return -1;
     }
 
-    /* * * Set CoAP Version * * */
-    **dst_packet_data_pptr = COAP_VERSION;
+    uint8_t* dest_packet = *dst_packet_data_pptr;
 
-    /* * * Add Message type * * */
-    **dst_packet_data_pptr += src_coap_msg_ptr->msg_type;
+    /* Set CoAP Version, Message type and Token length */
+    dest_packet[0] = COAP_VERSION | src_coap_msg_ptr->msg_type | src_coap_msg_ptr->token_len;
 
-    /* * * Add Token length * * */
-    **dst_packet_data_pptr += (src_coap_msg_ptr->token_len);
-
-    (*dst_packet_data_pptr) ++;
     /* * * Add Message code * * */
-    **dst_packet_data_pptr = src_coap_msg_ptr->msg_code;
-    (*dst_packet_data_pptr) ++;
+    dest_packet[1] = src_coap_msg_ptr->msg_code;
 
     /* * * Add Message ID * * */
-    **dst_packet_data_pptr = (uint8_t)(src_coap_msg_ptr->msg_id >> COAP_HEADER_MSG_ID_MSB_SHIFT); /* MSB part */
-    (*dst_packet_data_pptr) ++;
-    **dst_packet_data_pptr = (uint8_t)src_coap_msg_ptr->msg_id;                                   /* LSB part */
-    (*dst_packet_data_pptr) ++;
+    dest_packet[2] = (uint8_t)(src_coap_msg_ptr->msg_id >> COAP_HEADER_MSG_ID_MSB_SHIFT); /* MSB part */
+    dest_packet[3] = (uint8_t)src_coap_msg_ptr->msg_id;                                   /* LSB part */
+
+    *dst_packet_data_pptr = dest_packet + 4;
 
     /* Success */
     return 0;
