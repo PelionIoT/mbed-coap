@@ -45,7 +45,7 @@
 static void     sn_coap_parser_header_parse(uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, coap_version_e *coap_version_ptr);
 static int8_t   sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr, uint8_t *packet_data_start_ptr, uint16_t packet_len);
 static int8_t   sn_coap_parser_options_parse_multiple_options(struct coap_s *handle, uint8_t **packet_data_pptr, uint16_t packet_left_len,  uint8_t **dst_pptr, uint16_t *dst_len_ptr, sn_coap_option_numbers_e option, uint16_t option_number_len);
-static int16_t  sn_coap_parser_options_count_needed_memory_multiple_option(uint8_t *packet_data_ptr, uint16_t packet_left_len, sn_coap_option_numbers_e option, uint16_t option_number_len);
+static int16_t  sn_coap_parser_options_count_needed_memory_multiple_option(const uint8_t *packet_data_ptr, uint16_t packet_left_len, sn_coap_option_numbers_e option, uint16_t option_number_len);
 static int8_t   sn_coap_parser_payload_parse(uint16_t packet_data_len, uint8_t *packet_data_start_ptr, uint8_t **packet_data_pptr, sn_coap_hdr_s *dst_coap_msg_ptr);
 
 sn_coap_hdr_s *sn_coap_parser_init_message(sn_coap_hdr_s *coap_msg_ptr)
@@ -81,6 +81,8 @@ sn_coap_hdr_s *sn_coap_parser_alloc_message(struct coap_s *handle)
 
 sn_coap_options_list_s *sn_coap_parser_alloc_options(struct coap_s *handle, sn_coap_hdr_s *coap_msg_ptr)
 {
+    sn_coap_options_list_s *options_list_ptr;
+
     /* * * * Check given pointers * * * */
     if (handle == NULL || coap_msg_ptr == NULL) {
         return NULL;
@@ -92,24 +94,24 @@ sn_coap_options_list_s *sn_coap_parser_alloc_options(struct coap_s *handle, sn_c
     }
 
     /* * * * Allocate memory for options and initialize allocated memory with with default values  * * * */
-    coap_msg_ptr->options_list_ptr = handle->sn_coap_protocol_malloc(sizeof(sn_coap_options_list_s));
+    /* XXX not technically legal to memset pointers to 0 */
+    options_list_ptr = sn_coap_protocol_calloc(handle, sizeof(sn_coap_options_list_s));
 
-    if (coap_msg_ptr->options_list_ptr == NULL) {
+    if (options_list_ptr == NULL) {
         tr_error("sn_coap_parser_alloc_options - failed to allocate options list!");
         return NULL;
     }
 
-    /* XXX not technically legal to memset pointers to 0 */
-    memset(coap_msg_ptr->options_list_ptr, 0x00, sizeof(sn_coap_options_list_s));
+    coap_msg_ptr->options_list_ptr = options_list_ptr;
 
-    coap_msg_ptr->options_list_ptr->max_age = 0;
-    coap_msg_ptr->options_list_ptr->uri_port = COAP_OPTION_URI_PORT_NONE;
-    coap_msg_ptr->options_list_ptr->observe = COAP_OBSERVE_NONE;
-    coap_msg_ptr->options_list_ptr->accept = COAP_CT_NONE;
-    coap_msg_ptr->options_list_ptr->block2 = COAP_OPTION_BLOCK_NONE;
-    coap_msg_ptr->options_list_ptr->block1 = COAP_OPTION_BLOCK_NONE;
+    options_list_ptr->uri_port = COAP_OPTION_URI_PORT_NONE;
+    options_list_ptr->observe = COAP_OBSERVE_NONE;
+    options_list_ptr->accept = COAP_CT_NONE;
+    options_list_ptr->block2 = COAP_OPTION_BLOCK_NONE;
+    options_list_ptr->block1 = COAP_OPTION_BLOCK_NONE;
 
-    return coap_msg_ptr->options_list_ptr;
+
+    return options_list_ptr;
 }
 
 sn_coap_hdr_s *sn_coap_parser(struct coap_s *handle, uint16_t packet_data_len, uint8_t *packet_data_ptr, coap_version_e *coap_version_ptr)
@@ -661,7 +663,7 @@ static int8_t sn_coap_parser_options_parse_multiple_options(struct coap_s *handl
  *
  * \param uint16_t option_number_len length of the first option part
  */
-static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(uint8_t *packet_data_ptr, uint16_t packet_left_len, sn_coap_option_numbers_e option, uint16_t option_number_len)
+static int16_t sn_coap_parser_options_count_needed_memory_multiple_option(const uint8_t *packet_data_ptr, uint16_t packet_left_len, sn_coap_option_numbers_e option, uint16_t option_number_len)
 {
     uint16_t ret_value              = 0;
     uint16_t i                      = 1;
