@@ -117,6 +117,7 @@ int16_t sn_coap_builder_2(uint8_t *dst_packet_data_ptr, const sn_coap_hdr_s *src
         return -1;
     }
 
+    // XXX: this should not be needed anymore but I have no courage to remove it yet.
     memset(dst_packet_data_ptr, 0, dst_byte_count_to_be_built);
 
     /* * * * Store base (= original) destination Packet data pointer for later usage * * * */

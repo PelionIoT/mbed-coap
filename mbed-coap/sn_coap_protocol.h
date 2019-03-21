@@ -235,7 +235,7 @@ extern int8_t sn_coap_protocol_delete_retransmission(struct coap_s *handle, uint
  *
  * \brief If re-transmissions are enabled, this function removes message from retransmission buffer.
  */
-extern int8_t sn_coap_protocol_delete_retransmission_by_token(struct coap_s *handle, uint8_t *token, uint8_t token_len);
+extern int8_t sn_coap_protocol_delete_retransmission_by_token(struct coap_s *handle, const uint8_t *token, uint8_t token_len);
 
 /**
  * \fn int8_t sn_coap_convert_block_size(uint16_t block_size)
