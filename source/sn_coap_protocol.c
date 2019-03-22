@@ -50,7 +50,7 @@
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT/* If Message duplication detection is not used at all, this part of code will not be compiled */
 static void                  sn_coap_protocol_linked_list_duplication_info_store(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id, void *param);
 static coap_duplication_info_s *sn_coap_protocol_linked_list_duplication_info_search(const struct coap_s *handle, const sn_nsdl_addr_s *scr_addr_ptr, const uint16_t msg_id);
-static void                  sn_coap_protocol_linked_list_duplication_info_remove(struct coap_s *handle, uint8_t *scr_addr_ptr, uint16_t port, uint16_t msg_id);
+static void                  sn_coap_protocol_linked_list_duplication_info_remove(struct coap_s *handle, const sn_nsdl_addr_s *addr_ptr, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_duplication_info_remove_old_ones(struct coap_s *handle);
 static void                  sn_coap_protocol_duplication_info_free(struct coap_s *handle, coap_duplication_info_s *duplication_info_ptr);
 static bool                  sn_coap_protocol_update_duplicate_package_data(const struct coap_s *handle, const sn_nsdl_addr_s *dst_addr_ptr, const sn_coap_hdr_s *coap_msg_ptr, const int16_t data_size, const uint8_t *dst_packet_data_ptr);
@@ -79,6 +79,7 @@ static uint16_t              sn_coap_count_linked_list_size(const coap_send_msg_
 static uint32_t              sn_coap_calculate_new_resend_time(const uint32_t current_time, const uint8_t interval, const uint8_t counter);
 #endif
 
+static uint16_t              read_packet_msg_id(const coap_send_msg_s *stored_msg);
 static uint16_t              get_new_message_id(void);
 
 static bool                  compare_address_and_port(const sn_nsdl_addr_s* left, const sn_nsdl_addr_s* right);
@@ -101,16 +102,10 @@ int8_t sn_coap_protocol_destroy(struct coap_s *handle)
 
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT /* If Message duplication detection is not used at all, this part of code will not be compiled */
     ns_list_foreach_safe(coap_duplication_info_s, tmp, &handle->linked_list_duplication_msgs) {
-        if (tmp->address) {
-
-            handle->sn_coap_protocol_free(tmp->address->addr_ptr);
-            handle->sn_coap_protocol_free(tmp->address);
-        }
-        handle->sn_coap_protocol_free(tmp->packet_ptr);
 
         ns_list_remove(&handle->linked_list_duplication_msgs, tmp);
-        handle->count_duplication_msgs--;
-        handle->sn_coap_protocol_free(tmp);
+
+        sn_coap_protocol_duplication_info_free(handle, tmp);
     }
 
 #endif
@@ -345,10 +340,9 @@ int8_t sn_coap_protocol_delete_retransmission(struct coap_s *handle, uint16_t ms
         return -1;
     }
     ns_list_foreach_safe(coap_send_msg_s, tmp, &handle->linked_list_resent_msgs) {
-        if (tmp->send_msg_ptr.packet_ptr ) {
-            uint16_t temp_msg_id = (tmp->send_msg_ptr.packet_ptr[2] << 8);
-            temp_msg_id += (uint16_t)tmp->send_msg_ptr.packet_ptr[3];
-            if(temp_msg_id == msg_id){
+        if (tmp->send_msg_ptr.packet_ptr) {
+            uint16_t temp_msg_id = read_packet_msg_id(tmp);
+            if (temp_msg_id == msg_id) {
                 ns_list_remove(&handle->linked_list_resent_msgs, tmp);
                 --handle->count_resent_msgs;
                 sn_coap_protocol_release_allocated_send_msg_mem(handle, tmp);
@@ -372,9 +366,8 @@ int8_t sn_coap_protocol_delete_retransmission_by_token(struct coap_s *handle, co
         uint8_t stored_token_len =  (stored_msg->send_msg_ptr.packet_ptr[0] & 0x0F);
         if (stored_token_len == token_len) {
             if (memcmp(&stored_msg->send_msg_ptr.packet_ptr[4], token, stored_token_len) == 0) {
-                uint16_t temp_msg_id = (stored_msg->send_msg_ptr.packet_ptr[2] << 8);
-                temp_msg_id += (uint16_t)stored_msg->send_msg_ptr.packet_ptr[3];
-                tr_debug("sn_coap_protocol_delete_retransmission_by_token - removed msg_id: %d", temp_msg_id);
+
+                tr_debug("sn_coap_protocol_delete_retransmission_by_token - removed msg_id: %" PRIu16, read_packet_msg_id(stored_msg));
                 ns_list_remove(&handle->linked_list_resent_msgs, stored_msg);
                 --handle->count_resent_msgs;
 
@@ -388,6 +381,12 @@ int8_t sn_coap_protocol_delete_retransmission_by_token(struct coap_s *handle, co
     return -2;
 }
 
+static uint16_t read_packet_msg_id(const coap_send_msg_s *stored_msg)
+{
+    uint16_t msg_id = (stored_msg->send_msg_ptr.packet_ptr[2] << 8);
+    msg_id += (uint16_t)stored_msg->send_msg_ptr.packet_ptr[3];
+    return msg_id;
+}
 
 int8_t prepare_blockwise_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_msg_ptr)
 {
@@ -682,8 +681,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
 
                 /* Remove oldest stored duplication message for getting room for new duplication message */
                 sn_coap_protocol_linked_list_duplication_info_remove(handle,
-                                                                     stored_duplication_info_ptr->address->addr_ptr,
-                                                                     stored_duplication_info_ptr->address->port,
+                                                                     stored_duplication_info_ptr->address,
                                                                      stored_duplication_info_ptr->msg_id);
             }
 
@@ -822,9 +820,6 @@ rescan:
             if (stored_msg_ptr->resending_counter > handle->sn_coap_resending_count) {
                 coap_version_e coap_version = COAP_VERSION_UNKNOWN;
 
-                /* Get message ID from stored sending message */
-                uint16_t temp_msg_id = (stored_msg_ptr->send_msg_ptr.packet_ptr[2] << 8);
-                temp_msg_id += (uint16_t)stored_msg_ptr->send_msg_ptr.packet_ptr[3];
 
                 /* Remove message from Linked list */
                 ns_list_remove(&handle->linked_list_resent_msgs, stored_msg_ptr);
@@ -963,8 +958,7 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(struct c
     /* Loop all stored resending messages Linked list */
     ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
         /* Get message ID from stored resending message */
-        uint16_t temp_msg_id = (stored_msg_ptr->send_msg_ptr.packet_ptr[2] << 8);
-        temp_msg_id += (uint16_t)stored_msg_ptr->send_msg_ptr.packet_ptr[3];
+        uint16_t temp_msg_id = read_packet_msg_id(stored_msg_ptr);
 
         /* If message's Message ID is same than is searched */
         if (temp_msg_id == msg_id) {
@@ -993,8 +987,7 @@ static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, 
     /* Loop all stored resending messages in Linked list */
     ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
         /* Get message ID from stored resending message */
-        uint16_t temp_msg_id = (stored_msg_ptr->send_msg_ptr.packet_ptr[2] << 8);
-        temp_msg_id += (uint16_t)stored_msg_ptr->send_msg_ptr.packet_ptr[3];
+        uint16_t temp_msg_id = read_packet_msg_id(stored_msg_ptr);
 
         /* If message's Message ID is same than is searched */
         if (temp_msg_id == msg_id) {
@@ -1123,13 +1116,10 @@ static coap_duplication_info_s* sn_coap_protocol_linked_list_duplication_info_se
     ns_list_foreach(coap_duplication_info_s, stored_duplication_info_ptr, &handle->linked_list_duplication_msgs) {
         /* If message's Message ID is same than is searched */
         if (stored_duplication_info_ptr->msg_id == msg_id) {
-            /* If message's Source address is same than is searched */
-            if (0 == memcmp(addr_ptr->addr_ptr, stored_duplication_info_ptr->address->addr_ptr, addr_ptr->addr_len)) {
-                /* If message's Source address port is same than is searched */
-                if (stored_duplication_info_ptr->address->port == addr_ptr->port) {
-                    /* * * Correct Duplication info found * * * */
-                    return stored_duplication_info_ptr;
-                }
+            /* If message's Source address & port is same than is searched */
+            if (compare_address_and_port(addr_ptr, stored_duplication_info_ptr->address)) {
+                /* * * Correct Duplication info found * * * */
+                return stored_duplication_info_ptr;
             }
         }
     }
@@ -1148,28 +1138,18 @@ static coap_duplication_info_s* sn_coap_protocol_linked_list_duplication_info_se
  * \param msg_id is Message ID key to be removed
  *****************************************************************************/
 
-static void sn_coap_protocol_linked_list_duplication_info_remove(struct coap_s *handle, uint8_t *addr_ptr, uint16_t port, uint16_t msg_id)
+static void sn_coap_protocol_linked_list_duplication_info_remove(struct coap_s *handle, const sn_nsdl_addr_s *addr_ptr, uint16_t msg_id)
 {
-    /* Loop all stored duplication messages in Linked list */
-    ns_list_foreach(coap_duplication_info_s, removed_duplication_info_ptr, &handle->linked_list_duplication_msgs) {
-        /* If message's Address is same than is searched */
-        if (0 == memcmp(addr_ptr,
-                        removed_duplication_info_ptr->address->addr_ptr,
-                        removed_duplication_info_ptr->address->addr_len)) {
-            /* If message's Address prt is same than is searched */
-            if (removed_duplication_info_ptr->address->port == port) {
-                /* If Message ID is same than is searched */
-                if (removed_duplication_info_ptr->msg_id == msg_id) {
-                    /* * * * Correct Duplication info found, remove it from Linked list * * * */
-                    ns_list_remove(&handle->linked_list_duplication_msgs, removed_duplication_info_ptr);
-                    --handle->count_duplication_msgs;
 
-                    /* Free memory of stored Duplication info */
-                    sn_coap_protocol_duplication_info_free(handle, removed_duplication_info_ptr);
-                    return;
-                }
-            }
-        }
+    coap_duplication_info_s* removed_duplication_info_ptr = sn_coap_protocol_linked_list_duplication_info_search(handle, addr_ptr, msg_id);
+
+    if (removed_duplication_info_ptr) {
+        /* * * * Correct Duplication info found, remove it from Linked list * * * */
+        ns_list_remove(&handle->linked_list_duplication_msgs, removed_duplication_info_ptr);
+        --handle->count_duplication_msgs;
+
+        /* Free memory of stored Duplication info */
+        sn_coap_protocol_duplication_info_free(handle, removed_duplication_info_ptr);
     }
 }
 
