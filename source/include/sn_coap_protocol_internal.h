@@ -50,7 +50,6 @@ typedef struct coap_send_msg_ {
 
     sn_nsdl_transmit_s  send_msg_ptr;
 
-    struct coap_s       *coap;              /* CoAP library handle */
     void                *param;             /* Extra parameter that will be passed to TX/RX callback functions */
 
     ns_list_link_t      link;
@@ -64,7 +63,6 @@ typedef struct coap_duplication_info_ {
     uint16_t            msg_id;
     uint16_t            packet_len;
     uint8_t             *packet_ptr;
-    struct coap_s       *coap;  /* CoAP library handle */
     sn_nsdl_addr_s      *address;
     void                *param;
     ns_list_link_t      link;
@@ -77,7 +75,6 @@ typedef struct coap_blockwise_msg_ {
     uint32_t            timestamp;  /* Tells when Blockwise message is stored to Linked list */
 
     sn_coap_hdr_s       *coap_msg_ptr;
-    struct coap_s       *coap;      /* CoAP library handle */
 
     void                *param;
     uint16_t            msg_id;
@@ -100,7 +97,6 @@ typedef struct coap_blockwise_payload_ {
 
     uint16_t            payload_len;
     uint8_t             *payload_ptr;
-    struct coap_s       *coap;  /* CoAP library handle */
 
     ns_list_link_t     link;
 } coap_blockwise_payload_s;
