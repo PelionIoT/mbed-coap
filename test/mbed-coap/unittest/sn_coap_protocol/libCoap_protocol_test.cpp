@@ -125,7 +125,6 @@ TEST(libCoap_protocol, sn_coap_protocol_clear_sent_blockwise_messages)
 
     coap_blockwise_msg_s *message = (coap_blockwise_msg_s*)malloc(sizeof(coap_blockwise_msg_s));
     memset(message, 0, sizeof(coap_blockwise_msg_s));
-    message->coap = coap_handle;
     message->coap_msg_ptr = (sn_coap_hdr_s*)malloc(sizeof(sn_coap_hdr_s));
     memset(message->coap_msg_ptr, 0, sizeof(sn_coap_hdr_s));
     message->coap_msg_ptr->payload_ptr = (uint8_t*)malloc(5);
@@ -2992,7 +2991,6 @@ TEST(libCoap_protocol, sn_coap_protocol_remove_sent_blockwise_message)
     struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
     coap_blockwise_msg_s *message = (coap_blockwise_msg_s *)malloc(sizeof(coap_blockwise_msg_s));
     memset(message, 0, sizeof(coap_blockwise_msg_s));
-    message->coap = handle;
     message->coap_msg_ptr = (sn_coap_hdr_s*)malloc(sizeof(sn_coap_hdr_s));
     memset(message->coap_msg_ptr, 0, sizeof(sn_coap_hdr_s));
     message->coap_msg_ptr->msg_id = 100;
