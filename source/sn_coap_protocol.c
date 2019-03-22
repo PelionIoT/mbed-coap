@@ -666,7 +666,11 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     if ((returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE ||
             returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE) &&
             handle->sn_coap_duplication_buffer_size != 0) {
-        if (sn_coap_protocol_linked_list_duplication_info_search(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id) == NULL) {
+
+        coap_duplication_info_s* response = sn_coap_protocol_linked_list_duplication_info_search(handle,
+                                                                                                 src_addr_ptr,
+                                                                                                 returned_dst_coap_msg_ptr->msg_id);
+        if (response == NULL) {
             /* * * No Message duplication: Store received message for detecting later duplication * * */
 
             /* Get count of stored duplication messages */
@@ -690,9 +694,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
         } else { /* * * Message duplication detected * * */
             /* Set returned status to User */
             returned_dst_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_DUPLICATED_MSG;
-            coap_duplication_info_s* response = sn_coap_protocol_linked_list_duplication_info_search(handle,
-                                                                                                     src_addr_ptr,
-                                                                                                     returned_dst_coap_msg_ptr->msg_id);
+
             /* Send ACK response */
             if (response) {
                 /* Check that response has been created */
@@ -768,15 +770,9 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
 
         /* Check if there is ongoing active message resendings */
         if (stored_resending_msgs_count > 0) {
-            sn_nsdl_transmit_s *removed_msg_ptr = NULL;
 
-            /* Check if received message was confirmation for some active resending message */
-            removed_msg_ptr = sn_coap_protocol_linked_list_send_msg_search(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id);
-
-            if (removed_msg_ptr != NULL) {
-                /* Remove resending message from active message resending Linked list */
-                sn_coap_protocol_linked_list_send_msg_remove(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id);
-            }
+            /* Remove resending message from active message resending Linked list, if any exists */
+            sn_coap_protocol_linked_list_send_msg_remove(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id);
         }
     }
 #endif /* ENABLE_RESENDINGS */
@@ -886,7 +882,7 @@ static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle
         uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param)
 {
 
-    coap_send_msg_s *stored_msg_ptr              = NULL;
+    coap_send_msg_s *stored_msg_ptr;
 
     /* If both queue parameters are "0" or resending count is "0", then re-sending is disabled */
     if (((handle->sn_coap_resending_queue_msgs == 0) && (handle->sn_coap_resending_queue_bytes == 0)) || (handle->sn_coap_resending_count == 0)) {
@@ -951,7 +947,8 @@ static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle
  * \return Return value is pointer to found stored resending message in Linked
  *         list or NULL if message not found
  *****************************************************************************/
-
+#if 0
+// this is getting unused
 static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(struct coap_s *handle,
         const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
 {
@@ -973,6 +970,8 @@ static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(struct c
     /* Message not found */
     return NULL;
 }
+#endif
+
 /**************************************************************************//**
  * \fn static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
  *
@@ -1201,7 +1200,7 @@ static void sn_coap_protocol_linked_list_blockwise_msg_remove(struct coap_s *han
 {
     ns_list_remove(&handle->linked_list_blockwise_sent_msgs, removed_msg_ptr);
 
-    if( removed_msg_ptr->coap_msg_ptr ){
+    if (removed_msg_ptr->coap_msg_ptr) {
         handle->sn_coap_protocol_free(removed_msg_ptr->coap_msg_ptr->payload_ptr);
         removed_msg_ptr->coap_msg_ptr->payload_ptr = 0;
 
