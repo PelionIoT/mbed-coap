@@ -71,7 +71,6 @@ static coap_blockwise_msg_s *search_sent_blockwise_message(struct coap_s *handle
 
 #if ENABLE_RESENDINGS
 static uint8_t               sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param);
-static sn_nsdl_transmit_s   *sn_coap_protocol_linked_list_send_msg_search(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static coap_send_msg_s      *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len);
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handle, coap_send_msg_s *freed_send_msg_ptr);
@@ -924,42 +923,6 @@ static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle
     return 1;
 }
 
-/**************************************************************************//**
- * \fn static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
- *
- * \brief Searches stored resending message from Linked list
- *
- * \param *src_addr_ptr is searching key for searched message
- *
- * \param msg_id is searching key for searched message
- *
- * \return Return value is pointer to found stored resending message in Linked
- *         list or NULL if message not found
- *****************************************************************************/
-#if 0
-// this is getting unused
-static sn_nsdl_transmit_s *sn_coap_protocol_linked_list_send_msg_search(struct coap_s *handle,
-        const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
-{
-    /* Loop all stored resending messages Linked list */
-    ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
-        /* Get message ID from stored resending message */
-        uint16_t temp_msg_id = read_packet_msg_id(stored_msg_ptr);
-
-        /* If message's Message ID is same than is searched */
-        if (temp_msg_id == msg_id) {
-            /* If message's Source address and port is same than is searched */
-            if (compare_address_and_port(src_addr_ptr, &stored_msg_ptr->send_msg_ptr.dst_addr_ptr)) {
-                /* * * Message found, return pointer to that stored resending message * * * */
-                return &stored_msg_ptr->send_msg_ptr;
-            }
-        }
-    }
-
-    /* Message not found */
-    return NULL;
-}
-#endif
 
 /**************************************************************************//**
  * \fn static void sn_coap_protocol_linked_list_send_msg_remove(sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
@@ -2030,15 +1993,8 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                         src_coap_blockwise_ack_msg_ptr->token_len = received_coap_msg_ptr->token_len;
                     }
 
-                    ns_list_remove(&handle->linked_list_blockwise_sent_msgs, previous_blockwise_msg_ptr);
-                    if (previous_blockwise_msg_ptr->coap_msg_ptr) {
+                    sn_coap_protocol_linked_list_blockwise_msg_remove(handle, previous_blockwise_msg_ptr);
 
-                        handle->sn_coap_protocol_free(previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr);
-                        previous_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = 0;
-
-                        sn_coap_parser_release_allocated_coap_msg_mem(handle, previous_blockwise_msg_ptr->coap_msg_ptr);
-                    }
-                    handle->sn_coap_protocol_free(previous_blockwise_msg_ptr);
                     previous_blockwise_msg_ptr = 0;
 
                     /* Then get needed memory count for Packet data */
@@ -2252,9 +2208,9 @@ int8_t sn_coap_convert_block_size(uint16_t block_size)
         return 5;
     } else if (block_size == 1024) {
         return 6;
+    } else {
+       return 0;
     }
-
-    return 0;
 }
 
 static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr)
