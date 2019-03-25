@@ -60,7 +60,7 @@ static bool                  sn_coap_protocol_update_duplicate_package_data(cons
 static void                  sn_coap_protocol_linked_list_blockwise_msg_remove(struct coap_s *handle, coap_blockwise_msg_s *removed_msg_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *handle, sn_nsdl_addr_s *addr_ptr, uint16_t stored_payload_len, uint8_t *stored_payload_ptr, uint8_t *token_ptr, uint8_t token_len, uint32_t block_number);
 static uint8_t              *sn_coap_protocol_linked_list_blockwise_payload_search(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t *payload_length, const uint8_t *token_ptr, uint8_t token_len);
-static bool                  sn_coap_protocol_linked_list_blockwise_payload_compare_block_number(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, const uint8_t *token_ptr, uint8_t token_len, uint32_t block_number);
+static bool                  sn_coap_protocol_linked_list_blockwise_payload_search_compare_block_number(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, const uint8_t *token_ptr, uint8_t token_len, uint32_t block_number);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_remove(struct coap_s *handle, coap_blockwise_payload_s *removed_payload_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(struct coap_s *handle, uint8_t *token_ptr, uint8_t token_len);
 static uint32_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint8_t *token_ptr, uint8_t token_len);
@@ -1184,19 +1184,13 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
     }
 
     // Do not add duplicates to list, this could happen if server needs to retransmit block message again
-    ns_list_foreach(coap_blockwise_payload_s, payload_info_ptr, &handle->linked_list_blockwise_received_payloads) {
-        if ((0 == memcmp(addr_ptr->addr_ptr, payload_info_ptr->addr_ptr, addr_ptr->addr_len)) && (payload_info_ptr->port == addr_ptr->port)) {
-            if (token_ptr) {
-                if (!payload_info_ptr->token_ptr || (payload_info_ptr->token_len != token_len) || (memcmp(payload_info_ptr->token_ptr, token_ptr, token_len))) {
-                    continue;
-                }
-            } else if (payload_info_ptr->token_ptr) {
-                continue;
-            }
-            if (payload_info_ptr->block_number == block_number) {
-                return;
-            }
-        }
+
+    if (sn_coap_protocol_linked_list_blockwise_payload_search_compare_block_number(handle,
+                                                                             addr_ptr,
+                                                                             token_ptr,
+                                                                             token_len,
+                                                                             block_number)) {
+        return;
     }
 
     coap_blockwise_payload_s *stored_blockwise_payload_ptr = NULL;
@@ -1297,7 +1291,7 @@ static uint8_t *sn_coap_protocol_linked_list_blockwise_payload_search(struct coa
     return NULL;
 }
 
-static bool sn_coap_protocol_linked_list_blockwise_payload_compare_block_number(struct coap_s *handle,
+static bool sn_coap_protocol_linked_list_blockwise_payload_search_compare_block_number(struct coap_s *handle,
                                                                                    const sn_nsdl_addr_s *src_addr_ptr,
                                                                                    const uint8_t *token_ptr,
                                                                                    uint8_t token_len,
@@ -1315,8 +1309,8 @@ static bool sn_coap_protocol_linked_list_blockwise_payload_compare_block_number(
             } else if (stored_payload_info_ptr->token_ptr) {
                 continue;
             }
-            // Check that incoming block number matches to last received one
-            if (block_number - 1 == stored_payload_info_ptr->block_number) {
+            // Check that stored block number matches to given one
+            if (block_number == stored_payload_info_ptr->block_number) {
                 return true;
             }
         }
@@ -1755,11 +1749,11 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
             bool blocks_in_order = true;
 
             if (block_number > 0 &&
-                !sn_coap_protocol_linked_list_blockwise_payload_compare_block_number(handle,
+                !sn_coap_protocol_linked_list_blockwise_payload_search_compare_block_number(handle,
                                                                                      src_addr_ptr,
                                                                                      received_coap_msg_ptr->token_ptr,
                                                                                      received_coap_msg_ptr->token_len,
-                                                                                     block_number)) {
+                                                                                     block_number - 1)) {
                 blocks_in_order = false;
             }
 
