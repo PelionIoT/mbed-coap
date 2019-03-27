@@ -436,6 +436,8 @@ extern sn_coap_hdr_s *sn_coap_parser_alloc_message(struct coap_s *handle);
  */
 extern sn_coap_options_list_s *sn_coap_parser_alloc_options(struct coap_s *handle, sn_coap_hdr_s *coap_msg_ptr);
 
+extern sn_coap_hdr_s *sn_coap_parser_alloc_message_with_options(struct coap_s *handle);
+
 #ifdef __cplusplus
 }
 #endif
