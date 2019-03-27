@@ -699,7 +699,7 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
             first_byte = 0x0D;
         }
 
-        else if (option_len >= 269) {
+        else /*if (option_len >= 269)*/ {
             first_byte = 0x0E;
         }
 
@@ -719,7 +719,7 @@ static int16_t sn_coap_builder_options_build_add_one_option(uint8_t **dst_packet
             dest_packet += 2;
         }
         //This is currently dead code (but possibly needed in future)
-        else if (option_delta >= 269) {
+        else /*if (option_delta >= 269)*/ {
             dest_packet[0] = first_byte + 0xE0;
             option_delta -= 269;
 
@@ -783,11 +783,9 @@ static uint8_t sn_coap_builder_options_build_add_uint_option(uint8_t **dst_packe
 
     /* If output pointer isn't NULL, write it out */
     if (dst_packet_data_pptr) {
-        int16_t ret = sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, len, payload, option_number, previous_option_number);
-        /* Allow for failure returns when writing (why even permit failure returns?) */
-        if (ret < 0) {
-            return ret;
-        }
+        // No need to check & handle return value, as the function returns failure only if the option pointer is zero
+        // and it is pointing to a local variable here.
+        sn_coap_builder_options_build_add_one_option(dst_packet_data_pptr, len, payload, option_number, previous_option_number);
     }
 
     /* Return the total option size */
