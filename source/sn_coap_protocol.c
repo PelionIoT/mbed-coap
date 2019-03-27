@@ -62,7 +62,7 @@ static uint8_t              *sn_coap_protocol_linked_list_blockwise_payload_sear
 static bool                  sn_coap_protocol_linked_list_blockwise_payload_search_compare_block_number(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, const uint8_t *token_ptr, uint8_t token_len, uint32_t block_number);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_remove(struct coap_s *handle, coap_blockwise_payload_s *removed_payload_ptr);
 static void                  sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(struct coap_s *handle, uint8_t *token_ptr, uint8_t token_len);
-static uint32_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint8_t *token_ptr, uint8_t token_len);
+static uint32_t              sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, const uint8_t *token_ptr, uint8_t token_len);
 static void                  sn_coap_protocol_handle_blockwise_timout(struct coap_s *handle);
 static sn_coap_hdr_s        *sn_coap_handle_blockwise_message(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr, void *param);
 static bool                  sn_coap_handle_last_blockwise(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr);
@@ -1391,7 +1391,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_remove(struct coap_s 
  * \return Return value is length of Payloads as bytes
  *****************************************************************************/
 
-static uint32_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint8_t *token_ptr, uint8_t token_len)
+static uint32_t sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, const uint8_t *token_ptr, uint8_t token_len)
 {
     uint32_t ret_whole_payload_len = 0;
     /* Loop all stored blockwise payloads in Linked list */
