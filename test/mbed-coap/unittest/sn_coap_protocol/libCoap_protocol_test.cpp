@@ -469,20 +469,20 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     int buff_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
     hdr2->payload_ptr = (uint8_t*)malloc(buff_len);
 
-    for( int i=0; i < 8; i++ ){
-        retCounter = 1 + i;
+    for( int i=1; i <= 11; i++ ){
+        retCounter = i;
         sn_coap_builder_stub.expectedInt16 = 1;
         hdr2->payload_len = buff_len;
         int8_t rett = sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL);
         CHECK( -2 == rett );
     }
 
-    retCounter = 11;
+    retCounter = 12;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr2->payload_len = buff_len;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL));
 
-    retCounter = 11;
+    retCounter = 12;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr2->payload_len = buff_len;
     CHECK( 1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL));
