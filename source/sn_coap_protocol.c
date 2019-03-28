@@ -68,7 +68,7 @@ static sn_coap_hdr_s        *sn_coap_handle_blockwise_message(struct coap_s *han
 static bool                  sn_coap_handle_last_blockwise(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr);
 static sn_coap_hdr_s        *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr);
 static coap_blockwise_msg_s *search_sent_blockwise_message(struct coap_s *handle, uint16_t msg_id);
-static int16_t               store_blockwise_copy(struct coap_s *handle, const sn_coap_hdr_s *src_coap_msg_ptr, void *param, bool copy_payload);
+static int16_t               store_blockwise_copy(struct coap_s *handle, const sn_coap_hdr_s *src_coap_msg_ptr, void *param, uint16_t original_payload_len, bool copy_payload);
 #endif
 
 #if ENABLE_RESENDINGS
@@ -423,7 +423,6 @@ int8_t prepare_blockwise_message(struct coap_s *handle, sn_coap_hdr_s *src_coap_
     return 0;
 }
 
-
 int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr,
                                uint8_t *dst_packet_data_ptr, sn_coap_hdr_s *src_coap_msg_ptr, void *param)
 {
@@ -505,7 +504,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
         /* * * * Manage rest blockwise messages sending by storing them to Linked list * * * */
         /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-        int status = store_blockwise_copy(handle, src_coap_msg_ptr, param, true);
+        int status = store_blockwise_copy(handle, src_coap_msg_ptr, param, original_payload_len, true);
         if (status < 0) {
             return status;
         }
@@ -513,7 +512,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
     } else if (src_coap_msg_ptr->msg_code <= COAP_MSG_CODE_REQUEST_DELETE &&
                src_coap_msg_ptr->msg_code != COAP_MSG_CODE_EMPTY) {
 
-        int status = store_blockwise_copy(handle, src_coap_msg_ptr, param, false);
+        int status = store_blockwise_copy(handle, src_coap_msg_ptr, param, original_payload_len, false);
         if (status < 0) {
             return status;
         }
@@ -526,7 +525,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 }
 
 #if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-static int16_t store_blockwise_copy(struct coap_s *handle, const sn_coap_hdr_s *src_coap_msg_ptr, void *param, bool copy_payload)
+static int16_t store_blockwise_copy(struct coap_s *handle, const sn_coap_hdr_s *src_coap_msg_ptr, void *param, uint16_t original_payload_len, bool copy_payload)
 {
     coap_blockwise_msg_s *stored_blockwise_msg_ptr;
 
@@ -548,7 +547,7 @@ static int16_t store_blockwise_copy(struct coap_s *handle, const sn_coap_hdr_s *
     }
 
     if (copy_payload) {
-        stored_blockwise_msg_ptr->coap_msg_ptr->payload_len = src_coap_msg_ptr->payload_len;
+        stored_blockwise_msg_ptr->coap_msg_ptr->payload_len = original_payload_len;
         stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = sn_coap_protocol_malloc_copy(handle, src_coap_msg_ptr->payload_ptr, stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
 
         if (!stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr) {
