@@ -1750,7 +1750,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
             }
 
             // Check that incoming block number is in order.
-            uint32_t block_number = received_coap_msg_ptr->options_list_ptr->block1 >> 4;
+            const uint32_t block_number = received_coap_msg_ptr->options_list_ptr->block1 >> 4;
             bool blocks_in_order = true;
 
             if (block_number > 0 &&
@@ -1774,15 +1774,9 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
             /* Block option length can be 1-3 bytes. First 4-20 bits are for block number. Last 4 bits are ALWAYS more bit + block size. */
             if (received_coap_msg_ptr->options_list_ptr->block1 & 0x08) {
 
-                src_coap_blockwise_ack_msg_ptr = sn_coap_parser_alloc_message(handle);
+                src_coap_blockwise_ack_msg_ptr = sn_coap_parser_alloc_message_with_options(handle);
                 if (src_coap_blockwise_ack_msg_ptr == NULL) {
                     tr_error("sn_coap_handle_blockwise_message - (recv block1) failed to allocate ack message!");
-                    return NULL;
-                }
-
-                if (sn_coap_parser_alloc_options(handle, src_coap_blockwise_ack_msg_ptr) == NULL) {
-                   tr_error("sn_coap_handle_blockwise_message - (recv block1) failed to allocate options!");
-                    handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr);
                     return NULL;
                 }
 
@@ -1930,18 +1924,10 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                         return 0;
                     }
 
-                    src_coap_blockwise_ack_msg_ptr = sn_coap_parser_alloc_message(handle);
+                    /* * * Then build CoAP Acknowledgement message * * */
+                    src_coap_blockwise_ack_msg_ptr = sn_coap_parser_alloc_message_with_options(handle);
                     if (src_coap_blockwise_ack_msg_ptr == NULL) {
                         tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate message!");
-                        return 0;
-                    }
-
-                    /* * * Then build CoAP Acknowledgement message * * */
-
-                    if (sn_coap_parser_alloc_options(handle, src_coap_blockwise_ack_msg_ptr) == NULL) {
-                        tr_error("sn_coap_handle_blockwise_message - (send block2) failed to allocate options!");
-                        handle->sn_coap_protocol_free(src_coap_blockwise_ack_msg_ptr);
-                        src_coap_blockwise_ack_msg_ptr = 0;
                         return NULL;
                     }
 
@@ -1984,7 +1970,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     previous_blockwise_msg_ptr = 0;
 
                     /* Then get needed memory count for Packet data */
-                    dst_packed_data_needed_mem = sn_coap_builder_calc_needed_packet_data_size_2(src_coap_blockwise_ack_msg_ptr ,handle->sn_coap_block_data_size);
+                    dst_packed_data_needed_mem = sn_coap_builder_calc_needed_packet_data_size_2(src_coap_blockwise_ack_msg_ptr, handle->sn_coap_block_data_size);
 
                     /* Then allocate memory for Packet data */
                     dst_ack_packet_data_ptr = sn_coap_protocol_calloc(handle, dst_packed_data_needed_mem);
@@ -2078,13 +2064,14 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
             //NOTE: Getting the first from list might not be correct one
             coap_blockwise_msg_s *stored_blockwise_msg_temp_ptr = sn_coap_stored_blockwise_msg_get(handle, received_coap_msg_ptr);
             if (stored_blockwise_msg_temp_ptr) {
-                uint16_t block_size;
-                uint32_t block_number;
+
+                block_temp = received_coap_msg_ptr->options_list_ptr->block2 & 0x07;
 
                 /* Resolve block parameters */
-                block_number = received_coap_msg_ptr->options_list_ptr->block2 >> 4;
-                block_temp = received_coap_msg_ptr->options_list_ptr->block2 & 0x07;
-                block_size = 1u << (block_temp + 4);
+                const uint16_t block_size = 1u << (block_temp + 4);
+                const uint32_t block_number = received_coap_msg_ptr->options_list_ptr->block2 >> 4;
+
+
                 /* Build response message */
                 src_coap_blockwise_ack_msg_ptr = stored_blockwise_msg_temp_ptr->coap_msg_ptr;
 
