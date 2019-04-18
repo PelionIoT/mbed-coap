@@ -1884,9 +1884,9 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
     else {
         //This is response to request we made
         if (received_coap_msg_ptr->msg_code > COAP_MSG_CODE_REQUEST_DELETE) {
+#if SN_COAP_BLOCKWISE_INTERNAL_BLOCK_2_HANDLING_ENABLED
             if (handle->sn_coap_internal_block2_resp_handling) {
                 uint32_t block_number = 0;
-
                 /* Store blockwise payload to Linked list */
                 //todo: add block number to stored values - just to make sure all packets are in order
                 sn_coap_protocol_linked_list_blockwise_payload_store(handle,
@@ -2020,6 +2020,12 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     //todo: remove previous msg from list
                 }
             }
+#else
+            // If the internal handling is disabled, this code should not be ran unless
+            // the client messed up in its own handler.
+            tr_error("sn_coap_handle_blockwise_message - (send block2) - callback not set");
+            return NULL;
+#endif
         }
 
         //Now we send data to request
