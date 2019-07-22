@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright (c) 2019 ARM Limited
+# SPDX-License-Identifier: Apache-2.0
+
 # Execute script with root path where to find binaries. 
 # For example ./run_unit_tests_with_valgrind.sh ./build/x86-linux-native-coverage/test/mbedclient/
 

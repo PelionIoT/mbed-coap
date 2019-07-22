@@ -1,3 +1,5 @@
+# Copyright (c) 2019 ARM Limited
+# SPDX-License-Identifier: Apache-2.0
 #---------
 #
 # MakefileWorker.mk

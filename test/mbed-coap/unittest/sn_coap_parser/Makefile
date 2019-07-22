@@ -1,3 +1,5 @@
+# Copyright (c) 2019 ARM Limited
+# SPDX-License-Identifier: Apache-2.0
 include ../makefile_defines.txt
 
 COMPONENT_NAME = sn_coap_parser_unit

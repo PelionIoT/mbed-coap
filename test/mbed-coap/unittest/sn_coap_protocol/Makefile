@@ -1,3 +1,5 @@
+# Copyright (c) 2019 ARM Limited
+# SPDX-License-Identifier: Apache-2.0
 include ../makefile_defines.txt
 
 MBED_CLIENT_USER_CONFIG_FILE ?= $(CURDIR)/test_config.h

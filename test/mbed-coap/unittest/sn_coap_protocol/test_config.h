@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019 ARM Limited
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #ifndef TEST_CONFIG_H
 #define TEST_CONFIG_H
 

@@ -1,3 +1,5 @@
+# Copyright (c) 2019 ARM Limited
+# SPDX-License-Identifier: Apache-2.0
 #scan for folders having "Makefile" in them and remove 'this' to prevent loop
 DIRS := $(filter-out ./, $(sort $(dir $(shell find . -name 'Makefile'))))
 
