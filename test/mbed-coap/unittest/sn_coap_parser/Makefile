@@ -10,5 +10,6 @@ TEST_SRC_FILES = \
         main.cpp \
         sn_coap_parsertest.cpp \
         test_sn_coap_parser.c \
+        ../stubs/sn_coap_protocol_stub.c \
 
 include ../MakefileWorker.mk
