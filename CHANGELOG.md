@@ -61,6 +61,7 @@
 
 ## [v4.6.2](https://github.com/ARMmbed/mbed-coap/releases/tag/v4.6.2) 
 
+
 Do not clear block2 in subsequent block request.
 
 When sending a request with block2 option, eg. indicating need
