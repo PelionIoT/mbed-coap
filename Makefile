@@ -22,6 +22,7 @@ SRCS := \
 	source/sn_coap_header_check.c \
 	source/sn_coap_builder.c \
 
+
 override CFLAGS += -DVERSION='"$(VERSION)"'
 
 override CFLAGS += -Isource/include/
