@@ -666,7 +666,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     memset(list, 0, sizeof(sn_coap_options_list_s));
     sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
     sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x10;
-    sn_coap_parser_stub.expectedHeader->msg_id = 5;
+    sn_coap_parser_stub.expectedHeader->msg_id = 6;
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
     sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
     sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
