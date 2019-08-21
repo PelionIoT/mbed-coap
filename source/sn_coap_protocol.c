@@ -650,45 +650,47 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
 
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT/* If Message duplication is used, this part of code will not be compiled */
 
-    /* * * * Manage received CoAP message duplicate detection  * * * */
+    // Manage received CoAP message duplicate detection
 
-    /* If no message duplication detected */
+    // If no message duplication detected
     if ((returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE ||
-            returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE) &&
-            handle->sn_coap_duplication_buffer_size != 0) {
+         returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE ||
+         (returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT &&
+          returned_dst_coap_msg_ptr->msg_code != COAP_MSG_CODE_EMPTY)) &&
+          handle->sn_coap_duplication_buffer_size != 0) {
 
         coap_duplication_info_s* response = sn_coap_protocol_linked_list_duplication_info_search(handle,
                                                                                                  src_addr_ptr,
                                                                                                  returned_dst_coap_msg_ptr->msg_id);
         if (response == NULL) {
-            /* * * No Message duplication: Store received message for detecting later duplication * * */
+            // No Message duplication: Store received message for detecting later duplication
 
-            /* Get count of stored duplication messages */
+            // Get count of stored duplication messages
             uint16_t stored_duplication_msgs_count = handle->count_duplication_msgs;
 
-            /* Check if there is no room to store message for duplication detection purposes */
+            // Check if there is no room to store message for duplication detection purposes
             if (stored_duplication_msgs_count >= handle->sn_coap_duplication_buffer_size) {
                 tr_debug("sn_coap_protocol_parse - duplicate list full, dropping oldest");
 
-                /* Get oldest stored duplication message */
+                // Get oldest stored duplication message
                 coap_duplication_info_s *stored_duplication_info_ptr = ns_list_get_first(&handle->linked_list_duplication_msgs);
 
-                /* Remove oldest stored duplication message for getting room for new duplication message */
+                // Remove oldest stored duplication message for getting room for new duplication message
                 sn_coap_protocol_linked_list_duplication_info_remove(handle,
                                                                      stored_duplication_info_ptr->address->addr_ptr,
                                                                      stored_duplication_info_ptr->address->port,
                                                                      stored_duplication_info_ptr->msg_id);
             }
 
-            /* Store Duplication info to Linked list */
+            // Store Duplication info to Linked list
             sn_coap_protocol_linked_list_duplication_info_store(handle, src_addr_ptr, returned_dst_coap_msg_ptr->msg_id, param);
-        } else { /* * * Message duplication detected * * */
-            /* Set returned status to User */
+        } else { // Message duplication detected
+            // Set returned status to User
             returned_dst_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_DUPLICATED_MSG;
 
-            /* Send ACK response */
-            if (response) {
-                /* Check that response has been created */
+            // Send ACK response
+            if (response && returned_dst_coap_msg_ptr->msg_type != COAP_MSG_TYPE_ACKNOWLEDGEMENT) {
+                // Check that response has been created
                 if (response->packet_ptr) {
                     tr_debug("sn_coap_protocol_parse - send ack for duplicate message");
                     handle->sn_coap_tx_callback(response->packet_ptr,
