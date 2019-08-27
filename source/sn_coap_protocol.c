@@ -706,11 +706,12 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     /*** And here we check if message was block message ***/
     /*** If so, we call own block handling function and ***/
     /*** return to caller.                              ***/
+
 #if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 
     if (returned_dst_coap_msg_ptr->options_list_ptr != NULL &&
-            (returned_dst_coap_msg_ptr->options_list_ptr->block1 != COAP_OPTION_BLOCK_NONE ||
-             returned_dst_coap_msg_ptr->options_list_ptr->block2 != COAP_OPTION_BLOCK_NONE)) {
+        (returned_dst_coap_msg_ptr->options_list_ptr->block1 != COAP_OPTION_BLOCK_NONE ||
+        returned_dst_coap_msg_ptr->options_list_ptr->block2 != COAP_OPTION_BLOCK_NONE)) {
 
         // the sn_coap_handle_blockwise_message() will return the given message on success or NULL on error
         if (sn_coap_handle_blockwise_message(handle, src_addr_ptr, returned_dst_coap_msg_ptr, param) == NULL) {
@@ -721,6 +722,63 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
             sn_coap_parser_release_allocated_coap_msg_mem(handle, returned_dst_coap_msg_ptr);
             returned_dst_coap_msg_ptr = NULL;
         }
+
+    } else if (returned_dst_coap_msg_ptr->payload_len > handle->sn_coap_block_data_size) {
+
+        // If message comes without block1 information and payload length is too large to handle.
+        // Send hint response to the server to start a blockwise transfer.
+
+        tr_info("sn_coap_protocol_parse - payload too large, request blockwise transfer");
+
+        uint8_t *packet_data_ptr = NULL;
+        uint16_t packet_data_size = 0;
+        sn_coap_hdr_s *resp = sn_coap_build_response(handle,
+                                                     returned_dst_coap_msg_ptr,
+                                                     COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE);
+
+        if (resp == NULL) {
+            tr_error("sn_coap_protocol_parse - payload too large, failed to build response!");
+            goto cleanup;
+        }
+
+        if (sn_coap_parser_alloc_options(handle, resp) == NULL) {
+            tr_error("sn_coap_protocol_parse - payload too large, failed to allocate options!");
+            goto cleanup;
+        }
+
+        // set block1 size into response
+        resp->options_list_ptr->block1 &= 0x08;
+        resp->options_list_ptr->block1 |= sn_coap_convert_block_size(handle->sn_coap_block_data_size);
+
+        packet_data_size = sn_coap_builder_calc_needed_packet_data_size_2(resp, handle->sn_coap_block_data_size);
+
+        packet_data_ptr = handle->sn_coap_protocol_malloc(packet_data_size);
+
+        if (packet_data_ptr == NULL) {
+            tr_error("sn_coap_protocol_parse - payload too large, failed to allocate buffer!");
+            goto cleanup;
+        }
+
+        if (sn_coap_builder_2(packet_data_ptr, resp, handle->sn_coap_block_data_size) < 0) {
+            tr_error("sn_coap_protocol_parse - payload too large, builder failed!");
+            goto cleanup;
+        }
+
+        sn_coap_parser_release_allocated_coap_msg_mem(handle, resp);
+
+        handle->sn_coap_tx_callback(packet_data_ptr, packet_data_size, src_addr_ptr, param);
+
+        handle->sn_coap_protocol_free(packet_data_ptr);
+
+        returned_dst_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING;
+
+        return returned_dst_coap_msg_ptr;
+
+cleanup:
+        sn_coap_parser_release_allocated_coap_msg_mem(handle, resp);
+        sn_coap_parser_release_allocated_coap_msg_mem(handle, returned_dst_coap_msg_ptr);
+        handle->sn_coap_protocol_free(packet_data_ptr);
+        return NULL;
 
     } else if (returned_dst_coap_msg_ptr->msg_code != COAP_MSG_CODE_EMPTY) {
         // Do not clean stored blockwise message when empty ack is received.
