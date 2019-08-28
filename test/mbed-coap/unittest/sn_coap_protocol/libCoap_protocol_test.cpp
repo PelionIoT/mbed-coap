@@ -31,6 +31,10 @@ static coap_s *coap_handle = NULL;
 void myFree(void* addr);
 void* myMalloc(uint16_t size);
 uint8_t null_tx_cb(uint8_t *a, uint16_t b, sn_nsdl_addr_s *c, void *d);
+void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
+void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
+void test_block2_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
+void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
 
 TEST_GROUP(libCoap_protocol)
 {
@@ -530,10 +534,8 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
 TEST(libCoap_protocol, sn_coap_protocol_parse)
 {
     CHECK( NULL == sn_coap_protocol_parse(NULL, NULL, 0, NULL, NULL) );
-
     retCounter = 1;
-    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
-
+    struct coap_s * handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, null_rx_cb);
 
     sn_nsdl_addr_s* addr = (sn_nsdl_addr_s*)malloc(sizeof(sn_nsdl_addr_s));
     memset(addr, 0, sizeof(sn_nsdl_addr_s));
@@ -546,19 +548,21 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader = NULL;
     CHECK( NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL) );
 
+    // Failed to parse CoAP header
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_header_check_stub.expectedInt8 = 1;
     sn_coap_parser_stub.expectedHeader->coap_status = COAP_STATUS_PARSER_ERROR_IN_HEADER;
     CHECK( NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL) );
 
+    // sn_coap_protocol_parse - message code not valid!
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_header_check_stub.expectedInt8 = 1;
     sn_coap_parser_stub.expectedHeader->msg_code = sn_coap_msg_code_e(COAP_MSG_CODE_RESPONSE_PROXYING_NOT_SUPPORTED + 60);
-
     CHECK( NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL) );
 
+    // Send reset message
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_header_check_stub.expectedInt8 = 0;
@@ -567,6 +571,22 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_EMPTY;
 
     CHECK( NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL) );
+
+    test_block1_receive(handle, addr, packet_data_len, packet_data_ptr);
+
+    test_block1_send(handle, addr, packet_data_len, packet_data_ptr);
+
+    test_block2_receive(handle, addr, packet_data_len, packet_data_ptr);
+
+    test_block2_send(handle, addr, packet_data_len, packet_data_ptr);
+
+    free(packet_data_ptr);
+    free(addr->addr_ptr);
+    free(addr);
+
+    sn_coap_protocol_destroy(handle);
+
+#if 0
 
     //Test sn_coap_handle_blockwise_message, block1 != NULL -->
     sn_coap_protocol_set_duplicate_buffer_size(handle,1);
@@ -2838,7 +2858,9 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     free(addr->addr_ptr);
     free(addr);
     sn_coap_protocol_destroy(handle);
+#endif
 }
+
 
 TEST(libCoap_protocol, sn_coap_protocol_exec)
 {
@@ -3091,3 +3113,1454 @@ TEST(libCoap_protocol, sn_coap_protocol_get_configured_blockwise_size)
     sn_coap_protocol_destroy(handle);
 }
 
+void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
+{
+    // sn_coap_protocol_linked_list_blockwise_payload_store - failed addr_ptr null
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+
+    sn_coap_options_list_s* list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 1;
+    sn_coap_parser_stub.expectedHeader->msg_id = 4;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    sn_coap_hdr_s *ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate blockwise!
+    uint8_t* payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 1;
+    sn_coap_parser_stub.expectedHeader->msg_id = 4;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    free(payload);
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate payload!
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 1;
+    sn_coap_parser_stub.expectedHeader->msg_id = 4;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 4;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    free(payload);
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate address pointer!
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 1;
+    sn_coap_parser_stub.expectedHeader->msg_id = 5;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 5;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    free(payload);
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate token pointer!
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    uint32_t token = 1000;
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 1;
+    sn_coap_parser_stub.expectedHeader->msg_id = 6;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 6;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    free(payload);
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - success
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 1;
+    sn_coap_parser_stub.expectedHeader->msg_id = 7;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 7;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - success, reallocate
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x10;
+    sn_coap_parser_stub.expectedHeader->msg_id = 8;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 7;
+    // Update existing block data payload
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    CHECK(ret->payload_len == 10);
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate temp buffer!
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x20;
+    sn_coap_parser_stub.expectedHeader->msg_id = 9;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 3;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL );
+    free(payload);
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - success
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 1;
+    sn_coap_parser_stub.expectedHeader->msg_id = 700;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 7;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - failed to reallocate payload!
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x20;
+    sn_coap_parser_stub.expectedHeader->msg_id = 701;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 4;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL );
+    free(payload);
+
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - success, size1 present
+    payload = (uint8_t*)malloc(16);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 16;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1 = 20;
+    sn_coap_parser_stub.expectedHeader->msg_id = 10;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 7;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+
+
+    // sn_coap_protocol_linked_list_blockwise_payload_store - success, size1, update block payload
+    payload = (uint8_t*)malloc(4);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 4;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x10;
+    sn_coap_parser_stub.expectedHeader->msg_id = 11;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 7;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    CHECK(ret->payload_len == 20);
+
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    sn_coap_protocol_clear_received_blockwise_messages(handle);
+    // end of sn_coap_protocol_linked_list_blockwise_payload_store() testing
+
+    // continue block1 testing -->
+
+    // sn_coap_handle_blockwise_message - (recv block1) failed to allocate ack message!
+    payload = (uint8_t*)malloc(16);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 16;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x08;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1 = 16;
+    sn_coap_parser_stub.expectedHeader->msg_id = 12;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 3;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    free(payload);
+
+
+    // sn_coap_handle_blockwise_message - (recv block1) COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE!
+    payload = (uint8_t*)malloc(16);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 16;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x08;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1 = SN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE + 1;
+    sn_coap_parser_stub.expectedHeader->msg_id = 13;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 7;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    free(payload);
+
+    // sn_coap_handle_blockwise_message - (recv block1) block size1 bigger than configured block size
+    payload = (uint8_t*)malloc(16);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 16;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    // Block1 size 128 bytes
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x1b;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1 = 16;
+    sn_coap_parser_stub.expectedHeader->msg_id = 14;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
+
+    retCounter = 8;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret );
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    sn_coap_protocol_clear_received_blockwise_messages(handle);
+    free(payload);
+
+    // sn_coap_protocol_update_duplication_package_data - failed to allocate duplication info!
+    payload = (uint8_t*)malloc(16);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 16;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x08;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1 = 16;
+    sn_coap_parser_stub.expectedHeader->msg_id = 15;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_POST;
+
+    retCounter = 7;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL);
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    free(payload);
+
+    // sn_coap_handle_blockwise_message - (recv block1) message allocation failed!
+    payload = (uint8_t*)malloc(16);
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 16;
+
+    sn_coap_parser_stub.expectedHeader->token_len = sizeof(uint32_t);
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(sizeof(uint32_t));
+    memcpy(sn_coap_parser_stub.expectedHeader->token_ptr, &token, sizeof(uint32_t));
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x08;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->size1 = 16;
+    sn_coap_parser_stub.expectedHeader->msg_id = 16;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_DELETE;
+
+    retCounter = 5;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL);
+    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    free(payload);
+}
+
+void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
+{
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 15;
+
+    sn_coap_options_list_s* list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x00;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    uint8_t *payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+
+    retCounter = 2;
+    sn_coap_hdr_s *ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
+    CHECK( COAP_STATUS_OK == ret->coap_status );
+    free(payload);
+    free(list);
+    free(sn_coap_parser_stub.expectedHeader);
+
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 15;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+
+    retCounter = 2;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
+    CHECK( COAP_STATUS_OK == ret->coap_status );
+    free(payload);
+    free(list);
+    free(sn_coap_parser_stub.expectedHeader);
+
+    // sn_coap_handle_blockwise_message - (send block1) - success
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 16;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CONTINUE;
+    payload = (uint8_t*)malloc(16);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 16;
+
+    sn_coap_hdr_s tmp_hdr;
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    uint8_t* dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    int buff_size = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 17;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_size);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 16;
+    tmp_hdr.payload_len = buff_size;
+
+    // Create block message to sent blockwise list
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 7;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
+    CHECK( ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_ACK );
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (send block1) - success - last block
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 17;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x18;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(16);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 16;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    buff_size = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 17;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_size);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 17;
+    tmp_hdr.payload_len = buff_size;
+
+    // Create block message to sent blockwise list
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 7;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
+    CHECK( ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_ACK );
+    // Last block sent, list should be empty now
+    CHECK( ns_list_count(&handle->linked_list_blockwise_sent_msgs) == 0 );
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (send block1) failed to allocate ack message!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 18;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x18;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(16);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 16;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    buff_size = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 17;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_size);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 18;
+    tmp_hdr.payload_len = buff_size;
+
+    // Create block message to sent blockwise list
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 3;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+
+    // sn_coap_handle_blockwise_message - (send block1) failed to allocate ack message!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 19;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0xe808;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(UINT16_MAX);
+    tmp_hdr.msg_id = 19;
+    tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    tmp_hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    tmp_hdr.options_list_ptr = NULL;
+
+    tmp_hdr.payload_len = UINT16_MAX;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    tmp_hdr.payload_ptr = NULL;
+
+    free(dst_packet_data_ptr);
+
+    retCounter = 2;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    free(payload);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+}
+
+void test_block2_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
+{
+    // sn_coap_handle_blockwise_message - (recv block2) success - set more - bit
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 20;
+
+    sn_coap_options_list_s *list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_DELETE;
+    uint8_t *payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+    sn_coap_parser_stub.expectedHeader->token_len = 4;
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(4);
+    memset(sn_coap_parser_stub.expectedHeader->token_ptr, '1', 4);
+
+    sn_coap_hdr_s tmp_hdr;
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    uint8_t *dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    int buff_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+
+    tmp_hdr.msg_id = 20;
+    tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    tmp_hdr.payload_len = buff_len;
+    tmp_hdr.token_len = 4;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(4);
+    memset(tmp_hdr.token_ptr, '1', 4);
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    tmp_hdr.payload_ptr = NULL;
+    free(tmp_hdr.token_ptr);
+    tmp_hdr.token_ptr = NULL;
+    free(dst_packet_data_ptr);
+
+    retCounter = 6;
+    sn_coap_hdr_s *ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
+    CHECK( COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status );
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (recv block2) success - last block
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 21;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x1b;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_DELETE;
+    payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+    sn_coap_parser_stub.expectedHeader->token_len = 4;
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(4);
+    memset(sn_coap_parser_stub.expectedHeader->token_ptr, '1', 4);
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    buff_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+
+    tmp_hdr.msg_id = 21;
+    tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    tmp_hdr.payload_len = buff_len;
+    tmp_hdr.token_len = 4;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(4);
+    memset(tmp_hdr.token_ptr, '1', 4);
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    tmp_hdr.payload_ptr = NULL;
+    free(tmp_hdr.token_ptr);
+    tmp_hdr.token_ptr = NULL;
+    free(dst_packet_data_ptr);
+
+    retCounter = 6;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
+    CHECK( COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status );
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (recv block2) failed to allocate packet!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 22;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_DELETE;
+    payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+    sn_coap_parser_stub.expectedHeader->token_len = 4;
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(4);
+    memset(sn_coap_parser_stub.expectedHeader->token_ptr, '1', 4);
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+
+    tmp_hdr.msg_id = 22;
+    tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    tmp_hdr.payload_len = buff_len;
+    tmp_hdr.token_len = 4;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(4);
+    memset(tmp_hdr.token_ptr, '1', 4);
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    tmp_hdr.payload_ptr = NULL;
+    free(tmp_hdr.token_ptr);
+    tmp_hdr.token_ptr = NULL;
+    free(dst_packet_data_ptr);
+
+    retCounter = 5;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (recv block2) failed to allocate options!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 23;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_DELETE;
+    payload = (uint8_t*)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+    sn_coap_parser_stub.expectedHeader->token_len = 4;
+    sn_coap_parser_stub.expectedHeader->token_ptr = (uint8_t*)malloc(4);
+    memset(sn_coap_parser_stub.expectedHeader->token_ptr, '1', 4);
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+
+    tmp_hdr.msg_id = 23;
+    tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    tmp_hdr.payload_len = buff_len;
+    tmp_hdr.token_len = 4;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(4);
+    memset(tmp_hdr.token_ptr, '1', 4);
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    tmp_hdr.payload_ptr = NULL;
+    free(tmp_hdr.token_ptr);
+    tmp_hdr.token_ptr = NULL;
+    free(dst_packet_data_ptr);
+
+    retCounter = 3;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    free(payload);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+}
+
+void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t packet_data_len, uint8_t *packet_data_ptr)
+{
+    // sn_coap_handle_blockwise_message - (send block2) previous message null!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    sn_coap_options_list_s *list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 30;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    uint8_t *payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    sn_coap_hdr_s *ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    free(payload);
+
+    // sn_coap_handle_blockwise_message - (send block2) failed to allocate message!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 31;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    sn_coap_hdr_s tmp_hdr;
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    uint8_t *dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    int buff_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 31;
+    tmp_hdr.payload_len = buff_len;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 0;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL == ret );
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+
+    // sn_coap_handle_blockwise_message - (send block2) success!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 32;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 32;
+    tmp_hdr.payload_len = buff_len;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 10;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING );
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - COAP_STATUS_PARSER_DUPLICATED_MSG
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 32;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 32;
+    tmp_hdr.payload_len = buff_len;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 10;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret->coap_status == COAP_STATUS_PARSER_DUPLICATED_MSG );
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (send block2) success - token + uri!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 33;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 33;
+    tmp_hdr.payload_len = buff_len;
+
+    tmp_hdr.uri_path_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.uri_path_len = buff_len;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.token_len = buff_len;
+
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(tmp_hdr.uri_path_ptr);
+    free(tmp_hdr.token_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 10;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING );
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - failed to allocate for uri path ptr!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 34;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 34;
+    tmp_hdr.payload_len = buff_len;
+
+    tmp_hdr.uri_path_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.uri_path_len = buff_len;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.token_len = buff_len;
+
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(tmp_hdr.uri_path_ptr);
+    free(tmp_hdr.token_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 5;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL );
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - failed to allocate for token ptr!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 35;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 35;
+    tmp_hdr.payload_len = buff_len;
+
+    tmp_hdr.uri_path_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.uri_path_len = buff_len;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.token_len = buff_len;
+
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(tmp_hdr.uri_path_ptr);
+    free(tmp_hdr.token_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 6;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL );
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (send block2) failed to allocate packet!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 36;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 36;
+    tmp_hdr.payload_len = buff_len;
+
+    tmp_hdr.uri_path_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.uri_path_len = buff_len;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.token_len = buff_len;
+
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(tmp_hdr.uri_path_ptr);
+    free(tmp_hdr.token_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 7;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL );
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (send block2) failed to allocate blockwise message!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 37;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 37;
+    tmp_hdr.payload_len = buff_len;
+
+    tmp_hdr.uri_path_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.uri_path_len = buff_len;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.token_len = buff_len;
+
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(tmp_hdr.uri_path_ptr);
+    free(tmp_hdr.token_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 8;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL );
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (send block2) builder failed!
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 0x08;
+    sn_coap_parser_stub.expectedHeader->msg_id = 38;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    retCounter = 20;
+
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.msg_id = 38;
+    tmp_hdr.payload_len = buff_len;
+
+    tmp_hdr.uri_path_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.uri_path_len = buff_len;
+    tmp_hdr.token_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.token_len = buff_len;
+
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(tmp_hdr.uri_path_ptr);
+    free(tmp_hdr.token_ptr);
+    free(dst_packet_data_ptr);
+
+    retCounter = 10;
+    sn_coap_builder_stub.expectedInt16 = -1;
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret == NULL );
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    // sn_coap_handle_blockwise_message - (send block2) last block
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+
+    list = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = -1;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block2 = 1;
+    sn_coap_parser_stub.expectedHeader->msg_id = 41;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    payload = (uint8_t*)malloc(5);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 5;
+
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( NULL != ret );
+    CHECK( ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED );
+    free(payload);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+
+    // Do not clean stored blockwise message when empty ack is received
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 100;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+    dst_packet_data_ptr[2]=0;
+    dst_packet_data_ptr[3]=18;
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 5;
+    buff_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.msg_id = 100;
+    tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    tmp_hdr.payload_len = buff_len;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(dst_packet_data_ptr);
+
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret != NULL );
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, ret);
+
+    // Do not clean stored blockwise message when empty ack is received - remove from the list
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 101;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+    dst_packet_data_ptr[2]=0;
+    dst_packet_data_ptr[3]=185;
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 5;
+    buff_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.msg_id = 101;
+    tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    tmp_hdr.payload_len = buff_len;
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->observe = 1;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(dst_packet_data_ptr);
+
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret != NULL );
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, ret);
+
+    // Do not clean stored blockwise message when empty ack is received - remove from the list
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_id = 101;
+
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    dst_packet_data_ptr = (uint8_t*)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+    dst_packet_data_ptr[2]=0;
+    dst_packet_data_ptr[3]=185;
+
+    retCounter = 20;
+    sn_coap_builder_stub.expectedInt16 = 5;
+    buff_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
+    tmp_hdr.payload_ptr = (uint8_t*)malloc(buff_len);
+    tmp_hdr.msg_id = 101;
+    tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
+    tmp_hdr.payload_len = buff_len;
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s*)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->observe = 1;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    free(dst_packet_data_ptr);
+
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK( ret != NULL );
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, ret);
+}
