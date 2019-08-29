@@ -1,5 +1,14 @@
 # Change Log
 
+## [v5.1.0](https://github.com/ARMmbed/mbed-coap/releases/tag/v5.1.0)
+
+- Introduce SN_COAP_REDUCE_BLOCKWISE_HEAP_FOOTPRINT configuration flag. 
+  Flag is disabled by default to keep the backward compatibility in place.
+  If flag is enabled, application must NOT free the payload when it gets the COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED status.
+  And application must call sn_coap_protocol_block_remove() instead.
+
+-[Full Changelog](https://github.com/ARMmbed/mbed-coap/compare/v5.0.0...v5.1.0)
+
 ## [v5.0.0](https://github.com/ARMmbed/mbed-coap/releases/tag/v5.0.0)
 
 - Reduce heap footprint by storing only single block when receiving a blockwise message.
