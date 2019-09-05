@@ -691,12 +691,15 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
             returned_dst_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_DUPLICATED_MSG;
 
             // Send ACK response
+            tr_debug("sn_coap_protocol_parse - Send ACK response - msgid %d", response->msg_id);
             if (response && returned_dst_coap_msg_ptr->msg_type != COAP_MSG_TYPE_ACKNOWLEDGEMENT) {
                 // Check that response has been created
                 if (response->packet_ptr) {
                     tr_debug("sn_coap_protocol_parse - send ack for duplicate message");
                     handle->sn_coap_tx_callback(response->packet_ptr,
                             response->packet_len, response->address, response->param);
+                } else {
+                    tr_debug("sn_coap_protocol_parse - duplicate no packet_ptr");
                 }
             }
 
@@ -1078,6 +1081,7 @@ static void sn_coap_protocol_linked_list_duplication_info_store(struct coap_s *h
 {
     coap_duplication_info_s *stored_duplication_info_ptr = NULL;
 
+    tr_debug("sn_coap_protocol_linked_list_duplication_info_store - msgid %d", msg_id);
     /* * * * Allocating memory for stored Duplication info * * * */
 
     /* Allocate memory for stored Duplication info's structure */
@@ -2461,16 +2465,23 @@ static bool sn_coap_protocol_update_duplicate_package_data(const struct coap_s *
                                                         const int16_t data_size,
                                                         const uint8_t *dst_packet_data_ptr)
 {
+    tr_debug("sn_coap_protocol_update_duplicate_package_data - msgid %d", coap_msg_ptr->msg_id);
     if (coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT &&
+        coap_msg_ptr->msg_code != COAP_MSG_CODE_EMPTY &&
         handle->sn_coap_duplication_buffer_size != 0) {
         coap_duplication_info_s* info = sn_coap_protocol_linked_list_duplication_info_search(handle,
                                                                                              dst_addr_ptr,
                                                                                              coap_msg_ptr->msg_id);
 
+        if (info == NULL) {
+            tr_debug("sn_coap_protocol_update_duplicate_package_data - msgid %d -not found!", coap_msg_ptr->msg_id);
+        }
+
         /* Update package data to duplication info struct if it's not there yet */
         if (info && info->packet_ptr == NULL) {
             info->packet_ptr = handle->sn_coap_protocol_malloc(data_size);
             if (info->packet_ptr) {
+                tr_debug("sn_coap_protocol_update_duplicate_package_data - updated");
                 memcpy(info->packet_ptr, dst_packet_data_ptr, data_size);
                 info->packet_len = data_size;
             } else {
