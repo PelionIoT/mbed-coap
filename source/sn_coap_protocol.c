@@ -2256,7 +2256,7 @@ static bool sn_coap_handle_last_blockwise(struct coap_s *handle, const sn_nsdl_a
     uint32_t whole_payload_len      = sn_coap_protocol_linked_list_blockwise_payloads_get_len(handle, src_addr_ptr, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
     uint8_t *payload_ptr            = sn_coap_protocol_linked_list_blockwise_payload_search(handle, src_addr_ptr, &payload_len, received_coap_msg_ptr->token_ptr, received_coap_msg_ptr->token_len);
 
-    tr_debug("sn_coap_handle_last_blockwise - whole len %d", whole_payload_len);
+    tr_debug("sn_coap_handle_last_blockwise - whole len %" PRIu32, whole_payload_len);
     if (!whole_payload_len) {
         return false;
     }
