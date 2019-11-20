@@ -62,7 +62,6 @@ static uint8_t                  *sn_coap_protocol_linked_list_blockwise_payload_
 static coap_blockwise_payload_s *sn_coap_protocol_linked_list_blockwise_search(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, const uint8_t *token_ptr, uint8_t token_len);
 static bool                     sn_coap_protocol_linked_list_blockwise_payload_search_compare_block_number(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, const uint8_t *token_ptr, uint8_t token_len, uint32_t block_number);
 static void                     sn_coap_protocol_linked_list_blockwise_payload_remove(struct coap_s *handle, coap_blockwise_payload_s *removed_payload_ptr);
-static void                     sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(struct coap_s *handle, uint8_t *token_ptr, uint8_t token_len);
 static uint32_t                 sn_coap_protocol_linked_list_blockwise_payloads_get_len(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, const uint8_t *token_ptr, uint8_t token_len);
 static void                     sn_coap_protocol_handle_blockwise_timout(struct coap_s *handle);
 static sn_coap_hdr_s            *sn_coap_handle_blockwise_message(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, sn_coap_hdr_s *received_coap_msg_ptr, void *param);
@@ -1460,32 +1459,6 @@ static bool sn_coap_protocol_linked_list_blockwise_payload_search_compare_block_
     }
 
     return false;
-}
-
-/**************************************************************************//**
- * \fn static void sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(struct coap_s *handle)
- *
- * \brief Removes current stored blockwise paylod from Linked list
- *****************************************************************************/
-
-static void sn_coap_protocol_linked_list_blockwise_payload_remove_oldest(struct coap_s *handle, uint8_t *token_ptr, uint8_t token_len)
-{
-    /* Remove oldest node in Linked list*/
-    if (token_ptr) {
-        ns_list_foreach(coap_blockwise_payload_s, removed_payload_ptr, &handle->linked_list_blockwise_received_payloads) {
-            if ((token_len == removed_payload_ptr->token_len) && !memcmp(removed_payload_ptr->token_ptr, token_ptr, token_len)) {
-                sn_coap_protocol_linked_list_blockwise_payload_remove(handle, removed_payload_ptr);
-                return;
-            }
-        }
-    } else {
-        ns_list_foreach(coap_blockwise_payload_s, removed_payload_ptr, &handle->linked_list_blockwise_received_payloads) {
-            if (!removed_payload_ptr->token_ptr) {
-                sn_coap_protocol_linked_list_blockwise_payload_remove(handle, removed_payload_ptr);
-                return;
-            }
-        }
-    }
 }
 
 /**************************************************************************//**
