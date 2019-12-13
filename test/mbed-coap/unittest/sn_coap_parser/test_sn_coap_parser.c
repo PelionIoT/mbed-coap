@@ -148,7 +148,7 @@ bool test_sn_coap_parser_options_parsing()
         sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
 
     // For testing buffer overflow case
-    buffer9[5] = 238; //14 | 14
+	buffer9[5] = 238; //14 | 14
 	buffer9[6] = 6;
 	buffer9[7] = 7;
 	retCounter = 2;
