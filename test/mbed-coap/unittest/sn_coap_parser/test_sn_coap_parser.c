@@ -27,6 +27,10 @@ void myFree(void* ptr){
 
 bool test_sn_coap_parser()
 {
+	struct coap_s* coap = (struct coap_s*)malloc(sizeof(struct coap_s));
+	coap->sn_coap_protocol_malloc = myMalloc;
+	coap->sn_coap_protocol_free = myFree;
+
     // Should return NULL
     if( sn_coap_parser_alloc_message(NULL) ) {
         return false;
@@ -36,21 +40,32 @@ bool test_sn_coap_parser()
         return false;
     }
 
+    // Should return NULL
+	if( sn_coap_parser_alloc_message_with_options(NULL) ) {
+		return false;
+	}
+
+	// Should return NULL
+	sn_coap_hdr_s * hdr = sn_coap_parser_alloc_message_with_options(coap);
+	if( hdr != NULL ){
+		free(hdr);
+		return false;
+	}
+	free(hdr);
+
     retCounter = 0;
     bool ret = true;
     // use zero-initialized buffer for tests
     uint8_t* ptr = (uint8_t*)calloc(20, 1);
     assert(ptr);
     // Should return NULL
-    sn_coap_hdr_s * hdr = sn_coap_parser(NULL, 8, ptr, NULL);
+    hdr = sn_coap_parser(NULL, 8, ptr, NULL);
     if( hdr != NULL ){
         free(hdr);
         free(ptr);
         return false;
     }
-    struct coap_s* coap = (struct coap_s*)malloc(sizeof(struct coap_s));
-    coap->sn_coap_protocol_malloc = myMalloc;
-    coap->sn_coap_protocol_free = myFree;
+
     retCounter = 0;
     coap_version_e* ver = (coap_version_e*)malloc(sizeof(coap_version_e));
     // Should return NULL
