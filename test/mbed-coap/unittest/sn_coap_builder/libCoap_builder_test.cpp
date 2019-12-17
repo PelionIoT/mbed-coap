@@ -442,8 +442,12 @@ TEST(libCoap_builder, sn_coap_builder_calc_needed_packet_data_size)
 
     //Test sn_coap_builder_options_calculate_jump_need "else" case
     header.options_list_ptr = NULL;
-    uint16_t val = sn_coap_builder_calc_needed_packet_data_size(&header);
-    CHECK( 12 == val );
+    CHECK( 12 == sn_coap_builder_calc_needed_packet_data_size(&header) );
+
+    //Test detecting sn_coap_builder_calc_needed_packet_data_size return value wont overflow
+    header.payload_len = UINT16_MAX;
+    CHECK( 0 == sn_coap_builder_calc_needed_packet_data_size(&header) );
+
 
     free(header.uri_path_ptr);
     free(header.token_ptr);
