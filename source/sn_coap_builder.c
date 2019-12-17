@@ -237,12 +237,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(const sn_coap_hdr_s *src
                 }
 
                 /* Add needed memory for Option value */
-                if ( sn_coap_builder_check_uint16_overflow(returned_byte_count,src_options_list_ptr->proxy_uri_len)){
-                    returned_byte_count += src_options_list_ptr->proxy_uri_len;
-                } else {
-                    tr_error("sn_coap_builder_calc_needed_packet_data_size_2 - packet data size would overflow!");
-                    return 0;
-                }                
+                returned_byte_count += src_options_list_ptr->proxy_uri_len;
             }
             /* ETAG - Repeatable option. Length of this option is 1-8 bytes*/
             if (src_options_list_ptr->etag_ptr != NULL) {
@@ -269,12 +264,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(const sn_coap_hdr_s *src
                     tr_error("sn_coap_builder_calc_needed_packet_data_size_2 - uri host too large!");
                     return 0;
                 }
-                if ( sn_coap_builder_check_uint16_overflow(returned_byte_count,src_options_list_ptr->uri_host_len)){
-                    returned_byte_count += src_options_list_ptr->uri_host_len;
-                } else {
-                    tr_error("sn_coap_builder_calc_needed_packet_data_size_2 - packet data size would overflow!");
-                    return 0;
-                }
+                returned_byte_count += src_options_list_ptr->uri_host_len;
             }
             /* LOCATION PATH - Repeatable option. Length of this option is 0-255 bytes*/
             if (src_options_list_ptr->location_path_ptr != NULL) {
