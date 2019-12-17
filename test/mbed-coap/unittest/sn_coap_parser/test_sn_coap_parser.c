@@ -79,13 +79,13 @@ bool test_sn_coap_parser()
 bool test_sn_coap_parser_options_parsing()
 {
     uint8_t buffer6[6];
-    uint8_t buffer9[9];
+    uint8_t buffer9[278];
     struct coap_s* coap = (struct coap_s*)malloc(sizeof(struct coap_s));
 
     coap->sn_coap_protocol_malloc = myMalloc;
     coap->sn_coap_protocol_free = myFree;
     memset(buffer6, 0, 6);
-    memset(buffer9, 0, 9);
+    memset(buffer9, 0, 278);
 
     buffer9[0] = 9;
     
@@ -140,7 +140,7 @@ bool test_sn_coap_parser_options_parsing()
     buffer9[6] = 6;
     buffer9[7] = 7;
     retCounter = 2;
-    hdr = sn_coap_parser(coap, 9, buffer9, ver);
+    hdr = sn_coap_parser(coap, 278, buffer9, ver);
     if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
         return false;
     }
