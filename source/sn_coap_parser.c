@@ -310,27 +310,13 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
             option_number = *(*packet_data_pptr + 1) + 13;
             (*packet_data_pptr)++;
         } else if (option_number == 14) {
-            if ( message_left>= 2){
-                option_number = *(*packet_data_pptr + 2);
-                option_number += (*(*packet_data_pptr + 1) << 8) + 269;
-                (*packet_data_pptr) += 2;
-            } else {
-                /* packet_data_pptr would overflow! */
-                tr_error("sn_coap_parser_options_parse - **packet_data_pptr overflow !");
-                return -1;
-            }            
+            option_number = *(*packet_data_pptr + 2);
+            option_number += (*(*packet_data_pptr + 1) << 8) + 269;
+            (*packet_data_pptr) += 2;
         }
         /* Option number 15 reserved for payload marker. This is handled as a error! */
         else if (option_number == 15) {
             tr_error("sn_coap_parser_options_parse - invalid option number(15)!");
-            return -1;
-        }
-
-        message_left = packet_len - ((*packet_data_pptr) - packet_data_start_ptr);
-
-        if (message_left == 0){
-            /* packet_data_pptr would overflow! */
-            tr_error("sn_coap_parser_options_parse - **packet_data_pptr overflow !");
             return -1;
         }
 
@@ -342,15 +328,9 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
             option_len = *(*packet_data_pptr + 1) + 13;
             (*packet_data_pptr)++;
         } else if (option_len == 14) {
-            if ( message_left>= 2){
-                option_len = *(*packet_data_pptr + 2);
-                option_len += (*(*packet_data_pptr + 1) << 8) + 269;
-                (*packet_data_pptr) += 2;
-            } else {
-                /* packet_data_pptr would overflow! */
-                tr_error("sn_coap_parser_options_parse - **packet_data_pptr overflow while resolving option length!");
-                return -1;
-            }            
+            option_len = *(*packet_data_pptr + 2);
+            option_len += (*(*packet_data_pptr + 1) << 8) + 269;
+            (*packet_data_pptr) += 2;
         }
         /* Option number length 15 is reserved for the future use - ERROR */
         else if (option_len == 15) {
@@ -359,8 +339,6 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
         }
 
         message_left = packet_len - (*packet_data_pptr - packet_data_start_ptr);
-
-        
 
         /* * * Parse option itself * * */
         /* Some options are handled independently in own functions */
@@ -386,12 +364,6 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                     return -1;
                 }
                 break;
-        }
-
-        if (message_left < option_len){
-            /* packet_data_pptr would overflow! */
-            tr_error("sn_coap_parser_options_parse - **packet_data_pptr would overflow when parsing options!");
-            return -1;
         }
 
         /* Parse option */
@@ -428,7 +400,9 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
                     tr_error("sn_coap_parser_options_parse - COAP_OPTION_PROXY_URI allocation failed!");
                     return -1;
                 }
+
                 (*packet_data_pptr) += option_len;
+
                 break;
 
             case COAP_OPTION_ETAG:
@@ -607,9 +581,11 @@ static int8_t sn_coap_parser_options_parse(struct coap_s *handle, uint8_t **pack
         if ((*packet_data_pptr - packet_data_start_ptr) > packet_len) {
             return -1;
         }
+
         message_left = packet_len - (*packet_data_pptr - packet_data_start_ptr);
 
     }
+
     return 0;
 }
 
