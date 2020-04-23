@@ -98,6 +98,11 @@
  * \brief Sets the CoAP re-send interval in seconds.
  * By default is 10 seconds.
  */
+
+#ifdef MBED_CONF_MBED_CLIENT_DEFAULT_RESPONSE_TIMEOUT
+#define DEFAULT_RESPONSE_TIMEOUT MBED_CONF_MBED_CLIENT_DEFAULT_RESPONSE_TIMEOUT
+#endif
+
 #ifndef DEFAULT_RESPONSE_TIMEOUT
 #define DEFAULT_RESPONSE_TIMEOUT                        10  /**< Default re-sending timeout as seconds */
 #endif
