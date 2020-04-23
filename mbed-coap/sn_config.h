@@ -98,6 +98,11 @@
  * \brief Sets the CoAP re-send interval in seconds.
  * By default is 10 seconds.
  */
+
+#ifdef MBED_CONF_MBED_CLIENT_DEFAULT_RESPONSE_TIMEOUT
+#define DEFAULT_RESPONSE_TIMEOUT MBED_CONF_MBED_CLIENT_DEFAULT_RESPONSE_TIMEOUT
+#endif
+
 #ifndef DEFAULT_RESPONSE_TIMEOUT
 #define DEFAULT_RESPONSE_TIMEOUT                        10  /**< Default re-sending timeout as seconds */
 #endif
@@ -219,6 +224,10 @@
  * \brief Maximum time in seconds howe long message is kept for duplicate detection.
  * By default 60 seconds.
  */
+#ifdef MBED_CONF_MBED_CLIENT_SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED
+#define SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED MBED_CONF_MBED_CLIENT_SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED
+#endif
+
 #ifndef SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED
 #define SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED    60 /** RESPONSE_TIMEOUT * RESPONSE_RANDOM_FACTOR * (2 ^ MAX_RETRANSMIT - 1) + the expected maximum round trip time **/
 #endif
