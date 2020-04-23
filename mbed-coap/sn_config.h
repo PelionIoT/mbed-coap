@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 ARM Limited. All rights reserved.
+ * Copyright (c) 2020 ARM Limited. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  * Licensed under the Apache License, Version 2.0 (the License); you may
  * not use this file except in compliance with the License.
@@ -229,7 +229,7 @@
 #endif
 
 #ifndef SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED
-#define SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED    60 /** RESPONSE_TIMEOUT * RESPONSE_RANDOM_FACTOR * (2 ^ MAX_RETRANSMIT - 1) + the expected maximum round trip time **/
+#define SN_COAP_DUPLICATION_MAX_TIME_MSGS_STORED    300 /** RESPONSE_TIMEOUT * RESPONSE_RANDOM_FACTOR * (2 ^ MAX_RETRANSMIT - 1) + the expected maximum round trip time **/
 #endif
 
 /**
@@ -243,7 +243,7 @@
 #endif
 
 #ifndef SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED
-#define SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED      60 /**< Maximum time in seconds of data (messages and payload) to be stored for blockwising */
+#define SN_COAP_BLOCKWISE_MAX_TIME_DATA_STORED      300 /**< Maximum time in seconds of data (messages and payload) to be stored for blockwising */
 #endif
 
 /**
