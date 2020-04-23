@@ -1200,7 +1200,7 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
     sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
 
-    retCounter = 7;
+    retCounter = 8;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( ret );
     CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
@@ -1569,7 +1569,7 @@ void test_block2_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
     tmp_hdr.token_ptr = NULL;
     free(dst_packet_data_ptr);
 
-    retCounter = 6;
+    retCounter = 7;
     sn_coap_hdr_s *ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL != ret );
     CHECK( COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status );
@@ -1622,7 +1622,7 @@ void test_block2_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
     tmp_hdr.token_ptr = NULL;
     free(dst_packet_data_ptr);
 
-    retCounter = 6;
+    retCounter = 7;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK( NULL != ret );
     CHECK( COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status );
