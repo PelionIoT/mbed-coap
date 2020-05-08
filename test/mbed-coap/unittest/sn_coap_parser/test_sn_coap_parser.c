@@ -317,14 +317,14 @@ bool test_sn_coap_parser_options_parsing_switches()
         sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
 
     buffer18[5] = 68; //4 | 4
-	retCounter = 5;
-	hdr = sn_coap_parser(coap, 10, buffer18, ver);
-	if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_OK) ){
-		sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
-		return false;
-	}
-	if (hdr)
-		sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
+    retCounter = 5;
+    hdr = sn_coap_parser(coap, 10, buffer18, ver);
+    if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_OK) ){
+	sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
+	return false;
+    }
+    if (hdr)
+	sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
 
     buffer18[5] = 85; //5 | 5
     retCounter = 2;
@@ -389,9 +389,9 @@ bool test_sn_coap_parser_options_parsing_switches()
     if (hdr)
         sn_coap_parser_release_allocated_coap_msg_mem(coap, hdr);
 
-    buffer18[5] = 128; //8 | 8
+    buffer18[5] = 128; //8 | 0
     retCounter = 4;
-    hdr = sn_coap_parser(coap, 13, buffer18, ver);
+    hdr = sn_coap_parser(coap, 14, buffer18, ver);
     if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_OK) ){
         return false;
     }
@@ -401,8 +401,8 @@ bool test_sn_coap_parser_options_parsing_switches()
     buffer18[5] = 136; //8 | 8
     retCounter = 4;
     //This should test if (ret_status >= 0) {}
-    hdr = sn_coap_parser(coap, 13, buffer18, ver);
-    if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_PARSER_ERROR_IN_HEADER) ){
+    hdr = sn_coap_parser(coap, 14, buffer18, ver);
+    if( !hdr || (hdr && hdr->coap_status != COAP_STATUS_OK) ){
         return false;
     }
     if (hdr)
