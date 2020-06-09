@@ -227,7 +227,7 @@ void sn_coap_parser_release_allocated_coap_msg_mem(struct coap_s *handle, sn_coa
  *
  * \param *coap_version_ptr is destination for parsed CoAP specification version
  */
-static const uint8_t *sn_coap_parser_header_parse(const uint8_t *packet_data_ptr, sn_coap_hdr_s *dst_coap_msg_ptr, coap_version_e *coap_version_ptr)
+static const uint8_t *sn_coap_parser_header_parse(const uint8_t * restrict packet_data_ptr, sn_coap_hdr_s * restrict dst_coap_msg_ptr, coap_version_e * restrict coap_version_ptr)
 {
     /* Parse CoAP Version and message type*/
     *coap_version_ptr = (coap_version_e)(*packet_data_ptr & COAP_HEADER_VERSION_MASK);
@@ -251,7 +251,7 @@ static const uint8_t *sn_coap_parser_header_parse(const uint8_t *packet_data_ptr
  *
  * \return Return value is value of uint
  */
-static uint32_t sn_coap_parser_options_parse_uint(const uint8_t **packet_data_pptr, uint8_t option_len)
+static uint32_t sn_coap_parser_options_parse_uint(const uint8_t * restrict * restrict packet_data_pptr, uint8_t option_len)
 {
     uint32_t value = 0;
     const uint8_t *packet_data_ptr = *packet_data_pptr;
@@ -322,7 +322,7 @@ static int8_t sn_coap_parser_check_packet_ptr(const uint8_t *packet_data_ptr, co
  *
  * \return Return The remaining packet data length
  */
-static uint16_t sn_coap_parser_move_packet_ptr(const uint8_t **packet_data_pptr, const uint8_t *packet_data_start_ptr, uint16_t packet_len, uint16_t delta)
+static uint16_t sn_coap_parser_move_packet_ptr(const uint8_t * restrict *packet_data_pptr, const uint8_t *packet_data_start_ptr, uint16_t packet_len, uint16_t delta)
 {
     const uint8_t *packet_end = packet_data_start_ptr + packet_len;
     const uint8_t *new_data_ptr = *packet_data_pptr + delta;
@@ -405,7 +405,7 @@ static int8_t sn_coap_parser_read_packet_u16(uint16_t *dst, const uint8_t *packe
  *
  * \return Return 0 if the read was successful, -1 otherwise
  */
-static int8_t parse_ext_option(uint16_t *dst, const uint8_t **packet_data_pptr, const uint8_t *packet_data_start_ptr, uint16_t packet_len, uint_fast16_t *message_left)
+static int8_t parse_ext_option(uint16_t *dst, const uint8_t * restrict *packet_data_pptr, const uint8_t *packet_data_start_ptr, uint16_t packet_len, uint_fast16_t *message_left)
 {
     uint16_t option_number = *dst;
 
@@ -457,7 +457,7 @@ static int8_t parse_ext_option(uint16_t *dst, const uint8_t **packet_data_pptr, 
  *
  * \return Return value is advanced input pointer in ok case and NULL in failure case
  */
-static const uint8_t * sn_coap_parser_options_parse(const uint8_t *packet_data_ptr, struct coap_s *handle, sn_coap_hdr_s *dst_coap_msg_ptr, const uint8_t *packet_data_start_ptr, uint_fast16_t packet_len)
+static const uint8_t * sn_coap_parser_options_parse(const uint8_t * restrict packet_data_ptr, struct coap_s * restrict handle, sn_coap_hdr_s * restrict dst_coap_msg_ptr, const uint8_t *packet_data_start_ptr, uint_fast16_t packet_len)
 {
     uint_fast16_t previous_option_number = 0;
     uint_fast16_t message_left           = sn_coap_parser_move_packet_ptr(&packet_data_ptr, packet_data_start_ptr, packet_len, 0);
@@ -755,10 +755,11 @@ static const uint8_t * sn_coap_parser_options_parse(const uint8_t *packet_data_p
  *
  * \return Return value is advanced input pointer. In failure case NULL is returned.
 */
-static const uint8_t *sn_coap_parser_options_parse_multiple_options(const uint8_t *packet_data_ptr, struct coap_s *handle, uint16_t packet_left_len,  uint8_t **dst_pptr, uint16_t *dst_len_ptr, sn_coap_option_numbers_e option, uint16_t option_number_len)
+static const uint8_t *sn_coap_parser_options_parse_multiple_options(const uint8_t * restrict packet_data_ptr, struct coap_s * restrict handle, uint16_t packet_left_len,  uint8_t ** restrict dst_pptr, uint16_t * restrict dst_len_ptr, sn_coap_option_numbers_e option, uint16_t option_number_len)
 {
+
     int           uri_query_needed_heap       = sn_coap_parser_options_count_needed_memory_multiple_option(packet_data_ptr, packet_left_len, option, option_number_len);
-    uint8_t       *temp_parsed_uri_query_ptr   = NULL;
+    uint8_t       * restrict temp_parsed_uri_query_ptr   = NULL;
     const uint8_t *start_ptr = packet_data_ptr;
     uint_fast16_t  message_left = packet_left_len;
     bool           first_option = true;
@@ -845,7 +846,7 @@ static const uint8_t *sn_coap_parser_options_parse_multiple_options(const uint8_
  *
  * \param uint16_t option_number_len length of the first option part
  */
-static int sn_coap_parser_options_count_needed_memory_multiple_option(const uint8_t *packet_data_ptr, uint16_t packet_left_len, sn_coap_option_numbers_e option, uint16_t option_number_len)
+static int sn_coap_parser_options_count_needed_memory_multiple_option(const uint8_t * restrict packet_data_ptr, uint16_t packet_left_len, sn_coap_option_numbers_e option, uint16_t option_number_len)
 {
     int      ret_value              = 0;
     uint_fast16_t message_left      = packet_left_len;
@@ -924,7 +925,7 @@ static int sn_coap_parser_options_count_needed_memory_multiple_option(const uint
  *
  * \param *dst_coap_msg_ptr is destination for parsed CoAP message
  *****************************************************************************/
-static const uint8_t *sn_coap_parser_payload_parse(const uint8_t *packet_data_ptr, uint16_t packet_data_len, uint8_t *packet_data_start_ptr, sn_coap_hdr_s *dst_coap_msg_ptr)
+static const uint8_t *sn_coap_parser_payload_parse(const uint8_t * restrict packet_data_ptr, uint16_t packet_data_len, uint8_t *packet_data_start_ptr, sn_coap_hdr_s * restrict dst_coap_msg_ptr)
 {
     /* If there is payload */
     if ((packet_data_ptr - packet_data_start_ptr) < packet_data_len) {
