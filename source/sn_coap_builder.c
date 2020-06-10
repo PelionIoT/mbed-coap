@@ -111,15 +111,13 @@ int16_t sn_coap_builder_2(uint8_t * restrict dst_packet_data_ptr, const sn_coap_
         return -2;
     }
 
-    /* Initialize given Packet data memory area with zero values */
+    /* This serves as a pre-validity check for various src_coap_msg_ptr fields */
+    /* (as long as SN_COAP_CONSTANT_NEEDED_SIZE is not set) */
     uint16_t dst_byte_count_to_be_built = sn_coap_builder_calc_needed_packet_data_size_2(src_coap_msg_ptr, blockwise_payload_size);
     if (!dst_byte_count_to_be_built) {
         tr_error("sn_coap_builder_2 - failed to allocate message!");
         return -1;
     }
-
-    // XXX: this should not be needed anymore but I have no courage to remove it yet.
-    memset(dst_packet_data_ptr, 0, dst_byte_count_to_be_built);
 
     /* * * * Store base (= original) destination Packet data pointer for later usage * * * */
     base_packet_data_ptr = dst_packet_data_ptr;
