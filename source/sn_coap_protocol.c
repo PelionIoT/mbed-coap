@@ -513,7 +513,7 @@ int16_t sn_coap_protocol_build(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_p
 #if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
 static int16_t store_blockwise_copy(struct coap_s *handle, const sn_coap_hdr_s *src_coap_msg_ptr, void *param, uint16_t original_payload_len, bool copy_payload)
 {
-    coap_blockwise_msg_s *stored_blockwise_msg_ptr;
+    coap_blockwise_msg_s * restrict stored_blockwise_msg_ptr;
 
     stored_blockwise_msg_ptr = sn_coap_protocol_calloc(handle, sizeof(coap_blockwise_msg_s));
     if (!stored_blockwise_msg_ptr) {
@@ -525,20 +525,21 @@ static int16_t store_blockwise_copy(struct coap_s *handle, const sn_coap_hdr_s *
     /* Fill struct */
     stored_blockwise_msg_ptr->timestamp = handle->system_time;
 
-    stored_blockwise_msg_ptr->coap_msg_ptr = sn_coap_protocol_copy_header(handle, src_coap_msg_ptr);
-    if( stored_blockwise_msg_ptr->coap_msg_ptr == NULL ){
+    sn_coap_hdr_s * restrict copied_msg_ptr = sn_coap_protocol_copy_header(handle, src_coap_msg_ptr);
+    if( copied_msg_ptr == NULL ){
         handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
         tr_error("sn_coap_protocol_build - block header copy failed!");
         return -2;
     }
+    stored_blockwise_msg_ptr->coap_msg_ptr = copied_msg_ptr;
 
     if (copy_payload) {
-        stored_blockwise_msg_ptr->coap_msg_ptr->payload_len = original_payload_len;
-        stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr = sn_coap_protocol_malloc_copy(handle, src_coap_msg_ptr->payload_ptr, stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
+        copied_msg_ptr->payload_len = original_payload_len;
+        copied_msg_ptr->payload_ptr = sn_coap_protocol_malloc_copy(handle, src_coap_msg_ptr->payload_ptr, stored_blockwise_msg_ptr->coap_msg_ptr->payload_len);
 
-        if (!stored_blockwise_msg_ptr->coap_msg_ptr->payload_ptr) {
+        if (!copied_msg_ptr->payload_ptr) {
             //block payload save failed, only first block can be build. Perhaps we should return error.
-            sn_coap_parser_release_allocated_coap_msg_mem(handle, stored_blockwise_msg_ptr->coap_msg_ptr);
+            sn_coap_parser_release_allocated_coap_msg_mem(handle, copied_msg_ptr);
             handle->sn_coap_protocol_free(stored_blockwise_msg_ptr);
             tr_error("sn_coap_protocol_build - block payload allocation failed!");
             return -2;
@@ -546,7 +547,7 @@ static int16_t store_blockwise_copy(struct coap_s *handle, const sn_coap_hdr_s *
     }
 
     stored_blockwise_msg_ptr->param = param;
-    stored_blockwise_msg_ptr->msg_id = stored_blockwise_msg_ptr->coap_msg_ptr->msg_id;
+    stored_blockwise_msg_ptr->msg_id = copied_msg_ptr->msg_id;
 
     ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, stored_blockwise_msg_ptr);
 
@@ -554,9 +555,8 @@ static int16_t store_blockwise_copy(struct coap_s *handle, const sn_coap_hdr_s *
 }
 #endif
 
-sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint16_t packet_data_len, uint8_t *packet_data_ptr, void *param)
+sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s * restrict handle, sn_nsdl_addr_s * restrict src_addr_ptr, uint16_t packet_data_len, uint8_t * restrict packet_data_ptr, void *param)
 {
-    sn_coap_hdr_s   *returned_dst_coap_msg_ptr = NULL;
     coap_version_e   coap_version              = COAP_VERSION_UNKNOWN;
 
     /* * * * Check given pointer * * * */
@@ -566,7 +566,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *handle, sn_nsdl_addr_s *src
     }
 
     /* * * * Parse Packet data to CoAP message by using CoAP Header parser * * * */
-    returned_dst_coap_msg_ptr = sn_coap_parser(handle, packet_data_len, packet_data_ptr, &coap_version);
+    sn_coap_hdr_s * restrict returned_dst_coap_msg_ptr = sn_coap_parser(handle, packet_data_len, packet_data_ptr, &coap_version);
 
     /* Check status of returned pointer */
     if (returned_dst_coap_msg_ptr == NULL) {
@@ -930,11 +930,11 @@ rescan:
  * \return 1 Msg stored properly
  *****************************************************************************/
 
-static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len,
-        uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param)
+static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s * restrict handle, sn_nsdl_addr_s * restrict dst_addr_ptr, uint16_t send_packet_data_len,
+        uint8_t * restrict send_packet_data_ptr, uint32_t sending_time, void *param)
 {
 
-    coap_send_msg_s *stored_msg_ptr;
+    coap_send_msg_s * restrict stored_msg_ptr;
 
     /* If both queue parameters are "0" or resending count is "0", then re-sending is disabled */
     if (((handle->sn_coap_resending_queue_msgs == 0) && (handle->sn_coap_resending_queue_bytes == 0)) || (handle->sn_coap_resending_count == 0)) {
@@ -997,7 +997,7 @@ static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle
  * \param msg_id is searching key for removed message
  *****************************************************************************/
 
-static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id)
+static void sn_coap_protocol_linked_list_send_msg_remove(struct coap_s * restrict handle, const sn_nsdl_addr_s * restrict src_addr_ptr, uint16_t msg_id)
 {
     /* Loop all stored resending messages in Linked list */
     ns_list_foreach(coap_send_msg_s, stored_msg_ptr, &handle->linked_list_resent_msgs) {
@@ -1068,10 +1068,10 @@ uint16_t sn_coap_protocol_get_configured_blockwise_size(struct coap_s *handle)
  * \param *addr_ptr is pointer to Address information to be stored
  *****************************************************************************/
 
-static void sn_coap_protocol_linked_list_duplication_info_store(struct coap_s *handle, sn_nsdl_addr_s *addr_ptr,
+static void sn_coap_protocol_linked_list_duplication_info_store(struct coap_s * restrict handle, sn_nsdl_addr_s * restrict addr_ptr,
         uint16_t msg_id, void *param)
 {
-    coap_duplication_info_s *stored_duplication_info_ptr = NULL;
+    coap_duplication_info_s * restrict stored_duplication_info_ptr = NULL;
 
     /* * * * Allocating memory for stored Duplication info * * * */
 
@@ -1249,10 +1249,10 @@ static void sn_coap_protocol_linked_list_blockwise_msg_remove(struct coap_s *han
  * \param size1 Size of the whole incoming message
  *****************************************************************************/
 
-static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *handle, sn_nsdl_addr_s *addr_ptr,
+static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s * restrict handle, sn_nsdl_addr_s * restrict addr_ptr,
         uint16_t payload_len,
-        uint8_t *payload_ptr,
-        uint8_t *token_ptr,
+        uint8_t * restrict payload_ptr,
+        uint8_t * restrict token_ptr,
         uint8_t token_len,
         uint32_t block_number,
         uint32_t size1)
@@ -1270,7 +1270,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
         return;
     }
 
-    coap_blockwise_payload_s *stored_blockwise_payload_ptr = sn_coap_protocol_linked_list_blockwise_search(handle, addr_ptr, token_ptr, token_len);
+    coap_blockwise_payload_s * restrict stored_blockwise_payload_ptr = sn_coap_protocol_linked_list_blockwise_search(handle, addr_ptr, token_ptr, token_len);
 
     if (stored_blockwise_payload_ptr && stored_blockwise_payload_ptr->use_size1) {
         memcpy(stored_blockwise_payload_ptr->payload_ptr + (block_number * handle->sn_coap_block_data_size), payload_ptr, payload_len);
@@ -1278,7 +1278,7 @@ static void sn_coap_protocol_linked_list_blockwise_payload_store(struct coap_s *
         uint16_t new_len = stored_blockwise_payload_ptr->payload_len + payload_len;
         tr_debug("sn_coap_protocol_linked_list_blockwise_payload_store - reallocate from %d to %d", stored_blockwise_payload_ptr->payload_len, new_len);
 
-        uint8_t *temp_ptr = handle->sn_coap_protocol_malloc(stored_blockwise_payload_ptr->payload_len);
+        uint8_t * restrict temp_ptr = handle->sn_coap_protocol_malloc(stored_blockwise_payload_ptr->payload_len);
         if (temp_ptr == NULL) {
             tr_error("sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate temp buffer!");
             sn_coap_protocol_linked_list_blockwise_payload_remove(handle, stored_blockwise_payload_ptr);
@@ -1749,7 +1749,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 {
     sn_coap_hdr_s *src_coap_blockwise_ack_msg_ptr = NULL;
     uint16_t dst_packed_data_needed_mem = 0;
-    uint8_t *dst_ack_packet_data_ptr = NULL;
+    uint8_t * restrict dst_ack_packet_data_ptr = NULL;
     uint8_t block_temp = 0;
 
     uint16_t original_payload_len = 0;
@@ -1920,7 +1920,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                     }
 
                     if (block_temp > sn_coap_convert_block_size(handle->sn_coap_block_data_size)) {
-                        src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1 &= 0xFFFFF8;
+                        src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1 &= 0xFFFFFFF8;
                         src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1 |= sn_coap_convert_block_size(handle->sn_coap_block_data_size);
                     }
                 }
@@ -2312,9 +2312,9 @@ int8_t sn_coap_convert_block_size(uint16_t block_size)
     return -1;
 }
 
-static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr)
+static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s * restrict handle, const sn_coap_hdr_s * restrict source_header_ptr)
 {
-    sn_coap_hdr_s *destination_header_ptr;
+    sn_coap_hdr_s * restrict destination_header_ptr;
 
     destination_header_ptr = sn_coap_parser_alloc_message(handle);
     if (!destination_header_ptr) {
@@ -2357,8 +2357,8 @@ static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, const 
             return 0;
         }
 
-        const sn_coap_options_list_s *source_options_list_ptr = source_header_ptr->options_list_ptr;
-        sn_coap_options_list_s *destination_options_list_ptr = destination_header_ptr->options_list_ptr;
+        const sn_coap_options_list_s * restrict source_options_list_ptr = source_header_ptr->options_list_ptr;
+        sn_coap_options_list_s * restrict destination_options_list_ptr = destination_header_ptr->options_list_ptr;
 
         destination_options_list_ptr->max_age = source_options_list_ptr->max_age;
 
