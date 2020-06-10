@@ -78,7 +78,7 @@ static uint8_t               sn_coap_protocol_linked_list_send_msg_store(struct 
 static void                  sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
 static coap_send_msg_s      *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len);
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handle, coap_send_msg_s *freed_send_msg_ptr);
-static uint16_t              sn_coap_count_linked_list_size(const coap_send_msg_list_t *linked_list_ptr);
+static uint_fast16_t         sn_coap_count_linked_list_size(const coap_send_msg_list_t *linked_list_ptr);
 static uint32_t              sn_coap_calculate_new_resend_time(const uint32_t current_time, const uint8_t interval, const uint8_t counter);
 #endif
 
@@ -202,19 +202,9 @@ int8_t sn_coap_protocol_set_block_size(struct coap_s *handle, uint16_t block_siz
     if (handle == NULL) {
         return -1;
     }
-    switch (block_size) {
-        case 0:
-        case 16:
-        case 32:
-        case 64:
-        case 128:
-        case 256:
-        case 512:
-        case 1024:
-            handle->sn_coap_block_data_size = block_size;
-            return 0;
-        default:
-            break;
+    if (sn_coap_convert_block_size(block_size) >= 0) {
+        handle->sn_coap_block_data_size = block_size;
+        return 0;
     }
 #endif
     return -1;
@@ -317,8 +307,8 @@ void sn_coap_protocol_clear_retransmission_buffer(struct coap_s *handle)
     ns_list_foreach_safe(coap_send_msg_s, tmp, &handle->linked_list_resent_msgs) {
         ns_list_remove(&handle->linked_list_resent_msgs, tmp);
         sn_coap_protocol_release_allocated_send_msg_mem(handle, tmp);
-        --handle->count_resent_msgs;
     }
+    handle->count_resent_msgs = 0;
 #endif
 }
 
@@ -1212,14 +1202,14 @@ void sn_coap_protocol_linked_list_duplication_info_remove(struct coap_s *handle,
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
 static void sn_coap_protocol_duplication_info_free(struct coap_s *handle, coap_duplication_info_s *duplication_info_ptr)
 {
-    if (duplication_info_ptr) {
-        if (duplication_info_ptr->address) {
-            handle->sn_coap_protocol_free(duplication_info_ptr->address->addr_ptr);
-            handle->sn_coap_protocol_free(duplication_info_ptr->address);
-        }
-        handle->sn_coap_protocol_free(duplication_info_ptr->packet_ptr);
-        handle->sn_coap_protocol_free(duplication_info_ptr);
+    // General purpose free functions ignore null pointer inputs - this
+    // private one knows it never receives null.
+    if (duplication_info_ptr->address) {
+        handle->sn_coap_protocol_free(duplication_info_ptr->address->addr_ptr);
+        handle->sn_coap_protocol_free(duplication_info_ptr->address);
     }
+    handle->sn_coap_protocol_free(duplication_info_ptr->packet_ptr);
+    handle->sn_coap_protocol_free(duplication_info_ptr);
 }
 #endif // SN_COAP_DUPLICATION_MAX_MSGS_COUNT
 
@@ -1651,9 +1641,9 @@ static void sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handl
  *
  * \param const coap_send_msg_list_t *linked_list_ptr pointer to linked list
  *****************************************************************************/
-static uint16_t sn_coap_count_linked_list_size(const coap_send_msg_list_t *linked_list_ptr)
+static uint_fast16_t sn_coap_count_linked_list_size(const coap_send_msg_list_t *linked_list_ptr)
 {
-    uint16_t total_size = 0;
+    uint_fast16_t total_size = 0;
 
     ns_list_foreach(coap_send_msg_s, stored_msg_ptr, linked_list_ptr) {
         total_size += stored_msg_ptr->send_msg_ptr.packet_len;
@@ -1778,13 +1768,13 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 if (stored_blockwise_msg_temp_ptr) {
                     /* Build response message */
 
-                    uint16_t block_size;
+                    uint_fast16_t block_size;
                     uint32_t block_number;
 
                     /* Get block option parameters from received message */
                     block_number = received_coap_msg_ptr->options_list_ptr->block1 >> 4;
                     block_temp = received_coap_msg_ptr->options_list_ptr->block1 & 0x07;
-                    block_size = 1u << (block_temp + 4);
+                    block_size = 16u << block_temp;
 
                     /* Build next block message */
                     src_coap_blockwise_ack_msg_ptr = stored_blockwise_msg_temp_ptr->coap_msg_ptr;
@@ -1920,7 +1910,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
                     /* Check block size */
                     block_temp = (src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1 & 0x07);
-                    uint16_t block_size = 1u << (block_temp + 4);
+                    uint_fast16_t block_size = 16u << block_temp;
 
                     if (block_size >  handle->sn_coap_block_data_size) {
                          // Include maximum size that stack can handle into response
@@ -2171,7 +2161,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 block_temp = received_coap_msg_ptr->options_list_ptr->block2 & 0x07;
 
                 /* Resolve block parameters */
-                const uint16_t block_size = 1u << (block_temp + 4);
+                const uint_fast16_t block_size = 16u << block_temp;
                 const uint32_t block_number = received_coap_msg_ptr->options_list_ptr->block2 >> 4;
 
 
@@ -2314,23 +2304,12 @@ static bool sn_coap_handle_last_blockwise(struct coap_s *handle, const sn_nsdl_a
 
 int8_t sn_coap_convert_block_size(uint16_t block_size)
 {
-    if (block_size == 16) {
-        return 0;
-    } else if (block_size == 32) {
-        return 1;
-    } else if (block_size == 64) {
-        return 2;
-    } else if (block_size == 128) {
-        return 3;
-    } else if (block_size == 256) {
-        return 4;
-    } else if (block_size == 512) {
-        return 5;
-    } else if (block_size == 1024) {
-        return 6;
-    } else {
-       return 0;
+    for (int n = 0; n < 6; n++) {
+        if (block_size == (16 << n)) {
+            return n;
+        }
     }
+    return -1;
 }
 
 static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s *handle, const sn_coap_hdr_s *source_header_ptr)
