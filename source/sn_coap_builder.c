@@ -142,16 +142,26 @@ int16_t sn_coap_builder_2(uint8_t *dst_packet_data_ptr, const sn_coap_hdr_s *src
         /* * * * * * * * * * * * * * * * * * */
         sn_coap_builder_payload_build(&dst_packet_data_ptr, src_coap_msg_ptr);
     }
+
+    /* Shout as much as we can about overflow - if we exceed this, may have overrun user's buffer */
+    if (dst_packet_data_ptr - base_packet_data_ptr > dst_byte_count_to_be_built) {
+        return -1;
+    }
+
     /* * * * Return built Packet data length * * * */
     return (dst_packet_data_ptr - base_packet_data_ptr);
 }
-uint16_t sn_coap_builder_calc_needed_packet_data_size(const sn_coap_hdr_s *src_coap_msg_ptr)
+
+uint16_t (sn_coap_builder_calc_needed_packet_data_size)(const sn_coap_hdr_s *src_coap_msg_ptr)
 {
     return sn_coap_builder_calc_needed_packet_data_size_2(src_coap_msg_ptr, SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
 }
 
-uint16_t sn_coap_builder_calc_needed_packet_data_size_2(const sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_payload_size)
+uint16_t (sn_coap_builder_calc_needed_packet_data_size_2)(const sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_payload_size)
 {
+#ifdef SN_COAP_CONSTANT_NEEDED_SIZE
+    return SN_COAP_CONSTANT_NEEDED_SIZE;
+#else
     (void)blockwise_payload_size;
     uint_fast32_t returned_byte_count = 0;
 
@@ -358,6 +368,7 @@ uint16_t sn_coap_builder_calc_needed_packet_data_size_2(const sn_coap_hdr_s *src
         return 0;
     }
     return (uint16_t)returned_byte_count;
+#endif
 }
 
 /**
