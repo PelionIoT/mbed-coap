@@ -1911,7 +1911,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                 // Response with COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE if the payload size is more than we can handle
                 if (received_coap_msg_ptr->options_list_ptr->size1 > SN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE) {
                     // Include maximum size that stack can handle into response
-                    tr_error("sn_coap_handle_blockwise_message - (recv block1) COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE!");
+                    tr_info("sn_coap_handle_blockwise_message - (recv block1) entity too large");
                     src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE;
                 }
                 else {
@@ -1924,7 +1924,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
 
                     if (block_size >  handle->sn_coap_block_data_size) {
                          // Include maximum size that stack can handle into response
-                         tr_error("sn_coap_handle_blockwise_message - (recv block1) COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE!");
+                        tr_info("sn_coap_handle_blockwise_message - (recv block1) entity too large");
                          src_coap_blockwise_ack_msg_ptr->msg_code = COAP_MSG_CODE_RESPONSE_REQUEST_ENTITY_TOO_LARGE;
                          src_coap_blockwise_ack_msg_ptr->options_list_ptr->size1 = handle->sn_coap_block_data_size;
                     }
