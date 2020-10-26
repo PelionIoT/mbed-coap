@@ -49,12 +49,12 @@ int16_t sn_coap_builder(uint8_t *dst_packet_data_ptr, const sn_coap_hdr_s *src_c
     return sn_coap_builder_stub.expectedInt16;
 }
 
-uint16_t sn_coap_builder_calc_needed_packet_data_size_2(const sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_size)
+uint16_t (sn_coap_builder_calc_needed_packet_data_size_2)(const sn_coap_hdr_s *src_coap_msg_ptr, uint16_t blockwise_size)
 {
     return sn_coap_builder_stub.expectedUint16;
 }
 
-uint16_t sn_coap_builder_calc_needed_packet_data_size(const sn_coap_hdr_s *src_coap_msg_ptr)
+uint16_t (sn_coap_builder_calc_needed_packet_data_size)(const sn_coap_hdr_s *src_coap_msg_ptr)
 {
     return sn_coap_builder_stub.expectedUint16;
 }
