@@ -24,6 +24,7 @@
 #define SN_COAP_HEADER_H_
 
 #include "sn_config.h"
+#include "ns_types.h"
 
 #ifdef __cplusplus
 extern "C" {
