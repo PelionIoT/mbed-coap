@@ -39,14 +39,14 @@
 /* * * * LOCAL FUNCTION PROTOTYPES * * * */
 static uint8_t *sn_coap_builder_header_build(uint8_t *dst_packet_data_pptr, const sn_coap_hdr_s *src_coap_msg_ptr);
 static uint8_t *sn_coap_builder_options_build(uint8_t *dst_packet_data_ptr, const sn_coap_hdr_s *src_coap_msg_ptr);
-static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, const uint8_t *query_ptr, sn_coap_option_numbers_e option);
-static uint8_t *sn_coap_builder_options_build_add_one_option(uint8_t *dst_packet_data_ptr, uint16_t option_len, const uint8_t *option_ptr, sn_coap_option_numbers_e option_number, uint16_t *previous_option_number);
-static uint8_t *sn_coap_builder_options_build_add_multiple_option(uint8_t *dst_packet_data_pptr, const uint8_t *src_pptr, uint16_t src_len_ptr, sn_coap_option_numbers_e option, uint16_t *previous_option_number);
+static uint_fast16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, const uint8_t *query_ptr, sn_coap_option_numbers_e option);
+static uint8_t *sn_coap_builder_options_build_add_one_option(uint8_t *dst_packet_data_ptr, uint_fast16_t option_len, const uint8_t *option_ptr, sn_coap_option_numbers_e option_number, uint16_t *previous_option_number);
+static uint8_t *sn_coap_builder_options_build_add_multiple_option(uint8_t *dst_packet_data_pptr, const uint8_t *src_pptr, uint_fast16_t src_len, sn_coap_option_numbers_e option, uint16_t *previous_option_number);
 static uint_fast8_t sn_coap_builder_options_calc_uint_option_size(uint32_t option_value);
 static uint8_t *sn_coap_builder_options_build_add_uint_option(uint8_t *dst_packet_data_ptr, uint32_t value, sn_coap_option_numbers_e option_number, uint16_t *previous_option_number);
-static uint8_t  sn_coap_builder_options_get_option_part_count(uint16_t query_len, const uint8_t *query_ptr, sn_coap_option_numbers_e option);
-static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option_string(uint16_t query_len, const uint8_t *query_ptr, uint8_t query_index, sn_coap_option_numbers_e option);
-static int_fast16_t sn_coap_builder_options_get_option_part_position(uint16_t query_len, const uint8_t *query_ptr, uint8_t query_index, sn_coap_option_numbers_e option);
+static uint_fast8_t  sn_coap_builder_options_get_option_part_count(uint_fast16_t query_len, const uint8_t *query_ptr, sn_coap_option_numbers_e option);
+static uint_fast16_t sn_coap_builder_options_get_option_part_length_from_whole_option_string(uint_fast16_t query_len, const uint8_t *query_ptr, uint_fast8_t query_index, sn_coap_option_numbers_e option);
+static int_fast16_t sn_coap_builder_options_get_option_part_position(uint_fast16_t query_len, const uint8_t *query_ptr, uint_fast8_t query_index, sn_coap_option_numbers_e option);
 static uint8_t *sn_coap_builder_payload_build(uint8_t *dst_packet_data_ptr, const sn_coap_hdr_s *src_coap_msg_ptr);
 static uint_fast8_t sn_coap_builder_options_calculate_jump_need(const sn_coap_hdr_s *src_coap_msg_ptr);
 
@@ -678,7 +678,7 @@ static uint8_t *sn_coap_builder_options_build(uint8_t * restrict dst_packet_data
  *
  * \return Advanced destination
  */
-static uint8_t *sn_coap_builder_options_build_add_one_option(uint8_t * restrict dst_packet_data_ptr, uint16_t option_len,
+static uint8_t *sn_coap_builder_options_build_add_one_option(uint8_t * restrict dst_packet_data_ptr, uint_fast16_t option_len,
         const uint8_t * restrict option_ptr, sn_coap_option_numbers_e option_number, uint16_t * restrict previous_option_number)
 {
     /* Check if there is option at all */
@@ -689,7 +689,7 @@ static uint8_t *sn_coap_builder_options_build_add_one_option(uint8_t * restrict 
 
         /* * * Build option header * * */
 
-        uint8_t first_byte;
+        uint_fast8_t first_byte;
 
         /* First option length without extended part */
         if (option_len <= 12) {
@@ -779,7 +779,7 @@ static uint8_t *sn_coap_builder_options_build_add_uint_option(uint8_t * restrict
     uint8_t payload[4];
     uint_fast8_t len = 0;
     /* Construct the variable-length payload representing the value */
-    for (uint8_t i = 0; i < 4; i++) {
+    for (uint_fast8_t i = 0; i < 4; i++) {
         if (len > 0 || (option_value & 0xff000000)) {
             payload[len++] = option_value >> 24;
         }
@@ -804,14 +804,14 @@ static uint8_t *sn_coap_builder_options_build_add_uint_option(uint8_t * restrict
  *
  * \return Returns updated output pointer
  */
-static uint8_t *sn_coap_builder_options_build_add_multiple_option(uint8_t * restrict dst_packet_data_ptr, const uint8_t * restrict src_pptr, uint16_t src_len, sn_coap_option_numbers_e option, uint16_t * restrict previous_option_number)
+static uint8_t *sn_coap_builder_options_build_add_multiple_option(uint8_t * restrict dst_packet_data_ptr, const uint8_t * restrict src_pptr, uint_fast16_t src_len, sn_coap_option_numbers_e option, uint16_t * restrict previous_option_number)
 {
     /* Check if there is option at all */
     if (src_pptr != NULL) {
         const uint8_t * restrict query_ptr  = src_pptr;
-        uint8_t     query_part_count        = 0;
-        uint16_t    query_len               = src_len;
-        uint8_t     i                       = 0;
+        uint_fast8_t query_part_count       = 0;
+        uint_fast16_t query_len             = src_len;
+        uint_fast8_t i                      = 0;
         uint_fast16_t query_part_offset     = 0;
 
         /* Get query part count */
@@ -820,7 +820,7 @@ static uint8_t *sn_coap_builder_options_build_add_multiple_option(uint8_t * rest
         /* * * * Options by adding all parts to option * * * */
         for (i = 0; i < query_part_count; i++) {
             /* Get length of query part */
-            uint16_t one_query_part_len = sn_coap_builder_options_get_option_part_length_from_whole_option_string(query_len, query_ptr, i, option);
+            uint_fast16_t one_query_part_len = sn_coap_builder_options_get_option_part_length_from_whole_option_string(query_len, query_ptr, i, option);
 
             /* Get position of query part */
             query_part_offset = sn_coap_builder_options_get_option_part_position(query_len, query_ptr, i, option);
@@ -845,9 +845,9 @@ static uint8_t *sn_coap_builder_options_build_add_multiple_option(uint8_t * rest
  *
  * \return Return value is count of needed memory as bytes for Uri-query option
  */
-static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, const uint8_t *query_ptr, sn_coap_option_numbers_e option)
+static uint_fast16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, const uint8_t *query_ptr, sn_coap_option_numbers_e option)
 {
-    uint8_t       query_part_count  = sn_coap_builder_options_get_option_part_count(query_len, query_ptr, option);
+    uint_fast8_t  query_part_count  = sn_coap_builder_options_get_option_part_count(query_len, query_ptr, option);
     uint_fast8_t  i                 = 0;
     uint_fast16_t ret_value         = 0;
 
@@ -858,7 +858,7 @@ static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, con
         /* * * Length of Option number and Option value length * * */
 
         /* Get length of Query part */
-        uint16_t one_query_part_len = sn_coap_builder_options_get_option_part_length_from_whole_option_string(query_len, query_ptr, i, option);
+        uint_fast16_t one_query_part_len = sn_coap_builder_options_get_option_part_length_from_whole_option_string(query_len, query_ptr, i, option);
 
         /* Check option length */
         switch (option) {
@@ -926,7 +926,7 @@ static uint16_t sn_coap_builder_options_calc_option_size(uint16_t query_len, con
  *
  * \return Return value is count of query parts
  */
-static uint8_t sn_coap_builder_options_get_option_part_count(uint16_t query_len, const uint8_t *query_ptr, sn_coap_option_numbers_e option)
+static uint_fast8_t sn_coap_builder_options_get_option_part_count(uint_fast16_t query_len, const uint8_t *query_ptr, sn_coap_option_numbers_e option)
 {
     if (query_len <= 2) {
         return 1;
@@ -968,8 +968,8 @@ static uint8_t sn_coap_builder_options_get_option_part_count(uint16_t query_len,
  *
  * \return Return value is length of query part
  */
-static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option_string(uint16_t query_len, const uint8_t *query_ptr,
-        uint8_t query_index, sn_coap_option_numbers_e option)
+static uint_fast16_t sn_coap_builder_options_get_option_part_length_from_whole_option_string(uint_fast16_t query_len, const uint8_t *query_ptr,
+        uint_fast8_t query_index, sn_coap_option_numbers_e option)
 {
     uint_fast16_t returned_query_part_len = 0;
     uint_fast8_t  temp_query_index        = 0;
@@ -1026,8 +1026,8 @@ static uint16_t sn_coap_builder_options_get_option_part_length_from_whole_option
  * \return Return value is position (= offset) of query part in whole query. In
  *         fail cases -1 is returned.
  */
-static int_fast16_t sn_coap_builder_options_get_option_part_position(uint16_t query_len, const uint8_t *query_ptr,
-        uint8_t query_index, sn_coap_option_numbers_e option)
+static int_fast16_t sn_coap_builder_options_get_option_part_position(uint_fast16_t query_len, const uint8_t *query_ptr,
+        uint_fast8_t query_index, sn_coap_option_numbers_e option)
 {
     uint_fast16_t returned_query_part_offset = 0;
     uint_fast8_t  temp_query_index           = 0;

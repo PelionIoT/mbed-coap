@@ -45,7 +45,7 @@ int8_t prepare_blockwise_message(struct coap_s *handle, struct sn_coap_hdr_ *coa
 
 /* Structure which is stored to Linked list for message sending purposes */
 typedef struct coap_send_msg_ {
-    uint8_t             resending_counter;  /* Tells how many times message is still tried to resend */
+    uint_fast8_t        resending_counter;  /* Tells how many times message is still tried to resend */
     uint32_t            resending_time;     /* Tells next resending time */
 
     sn_nsdl_transmit_s  send_msg_ptr;
@@ -137,10 +137,10 @@ struct coap_s {
 };
 
 /* Utility function which performs a call to sn_coap_protocol_malloc() and memset's the result to zero. */
-void *sn_coap_protocol_calloc(struct coap_s *handle, uint16_t length);
+void *sn_coap_protocol_calloc(struct coap_s *handle, uint_fast16_t length);
 
 /* Utility function which performs a call to sn_coap_protocol_malloc() and memcopy's the source to result buffer. */
-void *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, uint16_t length);
+void *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, uint_fast16_t length);
 
 #ifdef __cplusplus
 }

@@ -52,8 +52,8 @@ static void                  sn_coap_protocol_linked_list_duplication_info_store
 static coap_duplication_info_s *sn_coap_protocol_linked_list_duplication_info_search(const struct coap_s *handle, const sn_nsdl_addr_s *scr_addr_ptr, const uint16_t msg_id);
 static void                  sn_coap_protocol_linked_list_duplication_info_remove_old_ones(struct coap_s *handle);
 static void                  sn_coap_protocol_duplication_info_free(struct coap_s *handle, coap_duplication_info_s *duplication_info_ptr);
-static bool                  sn_coap_protocol_update_duplicate_package_data(const struct coap_s *handle, const sn_nsdl_addr_s *dst_addr_ptr, const sn_coap_hdr_s *coap_msg_ptr, const int16_t data_size, const uint8_t *dst_packet_data_ptr);
-static bool                  sn_coap_protocol_update_duplicate_package_data_all(const struct coap_s *handle, const sn_nsdl_addr_s *dst_addr_ptr, const sn_coap_hdr_s *coap_msg_ptr, const int16_t data_size, const uint8_t *dst_packet_data_ptr);
+static bool                  sn_coap_protocol_update_duplicate_package_data(const struct coap_s *handle, const sn_nsdl_addr_s *dst_addr_ptr, const sn_coap_hdr_s *coap_msg_ptr, const int_fast16_t data_size, const uint8_t *dst_packet_data_ptr);
+static bool                  sn_coap_protocol_update_duplicate_package_data_all(const struct coap_s *handle, const sn_nsdl_addr_s *dst_addr_ptr, const sn_coap_hdr_s *coap_msg_ptr, const int_fast16_t data_size, const uint8_t *dst_packet_data_ptr);
 
 #endif
 
@@ -74,9 +74,9 @@ static int16_t                  store_blockwise_copy(struct coap_s *handle, cons
 #endif
 
 #if ENABLE_RESENDINGS
-static uint8_t               sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param);
+static uint8_t               sn_coap_protocol_linked_list_send_msg_store(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint_fast16_t send_packet_data_len, uint8_t *send_packet_data_ptr, uint32_t sending_time, void *param);
 static void                  sn_coap_protocol_linked_list_send_msg_remove(struct coap_s *handle, const sn_nsdl_addr_s *src_addr_ptr, uint16_t msg_id);
-static coap_send_msg_s      *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len);
+static coap_send_msg_s      *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint_fast16_t packet_data_len);
 static void                  sn_coap_protocol_release_allocated_send_msg_mem(struct coap_s *handle, coap_send_msg_s *freed_send_msg_ptr);
 static uint_fast16_t         sn_coap_count_linked_list_size(const coap_send_msg_list_t *linked_list_ptr);
 static uint32_t              sn_coap_calculate_new_resend_time(const uint32_t current_time, const uint8_t interval, const uint8_t counter);
@@ -928,7 +928,7 @@ rescan:
  * \return 1 Msg stored properly
  *****************************************************************************/
 
-static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s * restrict handle, sn_nsdl_addr_s * restrict dst_addr_ptr, uint16_t send_packet_data_len,
+static uint8_t sn_coap_protocol_linked_list_send_msg_store(struct coap_s * restrict handle, sn_nsdl_addr_s * restrict dst_addr_ptr, uint_fast16_t send_packet_data_len,
         uint8_t * restrict send_packet_data_ptr, uint32_t sending_time, void *param)
 {
 
@@ -1589,7 +1589,7 @@ rescan:
  * \return pointer to allocated struct
  *****************************************************************************/
 
-coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint16_t packet_data_len)
+coap_send_msg_s *sn_coap_protocol_allocate_mem_for_msg(struct coap_s *handle, sn_nsdl_addr_s *dst_addr_ptr, uint_fast16_t packet_data_len)
 {
 
     coap_send_msg_s *msg_ptr = sn_coap_protocol_calloc(handle, sizeof(coap_send_msg_s));
@@ -2443,7 +2443,7 @@ static sn_coap_hdr_s *sn_coap_protocol_copy_header(struct coap_s * restrict hand
 static bool sn_coap_protocol_update_duplicate_package_data(const struct coap_s *handle,
                                                            const sn_nsdl_addr_s *dst_addr_ptr,
                                                            const sn_coap_hdr_s *coap_msg_ptr,
-                                                           const int16_t data_size,
+                                                           const int_fast16_t data_size,
                                                            const uint8_t *dst_packet_data_ptr)
 {
     if (coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT &&
@@ -2456,7 +2456,7 @@ static bool sn_coap_protocol_update_duplicate_package_data(const struct coap_s *
 static bool sn_coap_protocol_update_duplicate_package_data_all(const struct coap_s *handle,
                                                                const sn_nsdl_addr_s *dst_addr_ptr,
                                                                const sn_coap_hdr_s *coap_msg_ptr,
-                                                               const int16_t data_size,
+                                                               const int_fast16_t data_size,
                                                                const uint8_t *dst_packet_data_ptr)
 {
     coap_duplication_info_s* info = sn_coap_protocol_linked_list_duplication_info_search(handle,
@@ -2479,7 +2479,7 @@ static bool sn_coap_protocol_update_duplicate_package_data_all(const struct coap
 }
 #endif
 
-void *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, uint16_t length)
+void *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, uint_fast16_t length)
 {
     void *dest = handle->sn_coap_protocol_malloc(length);
 
@@ -2494,7 +2494,7 @@ void *sn_coap_protocol_malloc_copy(struct coap_s *handle, const void *source, ui
  * are, but that would require the client to fill one up, as a wrapper filled from this
  * class would need access to the handle itself.
  */
-void *sn_coap_protocol_calloc(struct coap_s *handle, uint16_t length)
+void *sn_coap_protocol_calloc(struct coap_s *handle, uint_fast16_t length)
 {
     void *result = handle->sn_coap_protocol_malloc(length);
 
