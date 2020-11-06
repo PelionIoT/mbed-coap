@@ -587,15 +587,17 @@ static const uint8_t * sn_coap_parser_options_parse(const uint8_t * restrict pac
                     return NULL;
                 }
                 /* This is managed independently because User gives this option in one character table */
+                uint16_t len;
                 packet_data_ptr = sn_coap_parser_options_parse_multiple_options(packet_data_ptr, handle,
                              message_left,
                              &dst_coap_msg_ptr->options_list_ptr->etag_ptr,
-                             (uint16_t *)&dst_coap_msg_ptr->options_list_ptr->etag_len,
+                             &len,
                              COAP_OPTION_ETAG, option_len);
                 if (!packet_data_ptr) {
                     tr_error("sn_coap_parser_options_parse - COAP_OPTION_ETAG not valid!");
                     return NULL;
                 }
+                dst_coap_msg_ptr->options_list_ptr->etag_len = (uint8_t) len;
                 break;
 
             case COAP_OPTION_URI_HOST:
