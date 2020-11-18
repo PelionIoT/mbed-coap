@@ -2,6 +2,7 @@
 # Makefile for COAP library
 #
 
+
 # Define compiler toolchain with CC or PLATFORM variables
 # Example (GCC toolchains, default $CC and $AR are used)
 # make
