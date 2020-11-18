@@ -237,8 +237,8 @@ ifneq ($(CPPUTEST_USE_VPATH), Y)
 endif
 
 ifndef TARGET_PLATFORM
-#CPPUTEST_LIB_LINK_DIR = $(CPPUTEST_HOME)/lib
-CPPUTEST_LIB_LINK_DIR = /usr/lib/x86_64-linux-gnu
+CPPUTEST_LIB_LINK_DIR = $(CPPUTEST_HOME)/lib
+#CPPUTEST_LIB_LINK_DIR = /usr/lib/x86_64-linux-gnu
 else
 CPPUTEST_LIB_LINK_DIR = $(CPPUTEST_HOME)/lib/$(TARGET_PLATFORM)
 endif
@@ -525,8 +525,8 @@ else
 		gcov --object-directory $(CPPUTEST_OBJS_DIR)/$$f $$f >> $(GCOV_OUTPUT) 2>>$(GCOV_ERROR) ; \
 	done
 endif
-#	$(CPPUTEST_HOME)/scripts/filterGcov.sh $(GCOV_OUTPUT) $(GCOV_ERROR) $(GCOV_REPORT) $(TEST_OUTPUT)
-	/usr/share/cpputest/scripts/filterGcov.sh $(GCOV_OUTPUT) $(GCOV_ERROR) $(GCOV_REPORT) $(TEST_OUTPUT)
+	$(CPPUTEST_HOME)/scripts/filterGcov.sh $(GCOV_OUTPUT) $(GCOV_ERROR) $(GCOV_REPORT) $(TEST_OUTPUT)
+#	/usr/share/cpputest/scripts/filterGcov.sh $(GCOV_OUTPUT) $(GCOV_ERROR) $(GCOV_REPORT) $(TEST_OUTPUT)
 	$(SILENCE)cat $(GCOV_REPORT)
 	$(SILENCE)mkdir -p gcov
 	$(SILENCE)mv *.gcov gcov

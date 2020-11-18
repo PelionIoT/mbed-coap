@@ -15,6 +15,9 @@ TEST_MODULES = ./test_modules
 TEST_MODULE_MBED_TRACE = $(TEST_MODULES)/mbed-trace
 TEST_MODULE_NANOSTACK = $(TEST_MODULES)/nanostack-libservice
 TEST_MODULE_RANDLIB = $(TEST_MODULES)/mbed-client-randlib
+TEST_MODULE_CCPUTEST_VERSION = "v3.8"
+TEST_MODULE_CPPUTEST = $(TEST_MODULES)/cpputest
+TEST_MODULE_CPPUTEST_LIB = $(TEST_MODULE_CPPUTEST)/lib/libCppUTest.a
 
 .PHONY: clone
 clone:
@@ -33,8 +36,13 @@ clone:
 	if [ ! -d $(TEST_MODULE_RANDLIB) ]; \
 		then git clone --depth 1 git@github.com:ARMmbed/mbed-client-randlib.git $(TEST_MODULE_RANDLIB); \
 	fi;
+
+	if [ ! -d $(TEST_MODULE_CPPUTEST) ]; \
+		then git clone --single-branch -b $(TEST_MODULE_CCPUTEST_VERSION) https://github.com/cpputest/cpputest.git $(TEST_MODULE_CPPUTEST); \
+	fi;
+
 .PHONY: test
-test: $(TESTDIRS)
+test: $(TEST_MODULE_CPPUTEST_LIB) $(TESTDIRS)
 	@rm -rf ./lcov
 	@rm -rf ./coverage
 	@mkdir -p lcov
@@ -56,6 +64,13 @@ test: $(TESTDIRS)
 	@lcov -q -r $(COVERAGEFILE) "/mbed-client-libservice*" -o $(COVERAGEFILE)
 	@genhtml -q $(COVERAGEFILE) --show-details --output-directory lcov/html
 	@echo mbed-coap module unit tests built
+
+$(TEST_MODULE_CPPUTEST_LIB):
+	cd $(TEST_MODULE_CPPUTEST) && \
+	./autogen.sh && \
+	./configure && \
+	make && \
+	cd $(CUR_DIR); \
 
 $(TESTDIRS):
 	@make -C $(@:build-%=%)

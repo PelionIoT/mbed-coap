@@ -9,6 +9,6 @@ mkdir $valgrind_logs
 find $1 -type f -executable -exec sh -c "file -i '{}' | grep -q 'x-executable; charset=binary'" \; -print > $input
 while file= read -r binary
 do
-    valgrind --track-origins=yes --xml=yes --xml-file="${valgrind_logs}/valgrind_$(basename $binary).xml" "$binary"
+    valgrind --track-origins=yes --leak-check=full --xml=yes --xml-file="${valgrind_logs}/valgrind_$(basename $binary).xml" "$binary"
 
 done < "$input"
