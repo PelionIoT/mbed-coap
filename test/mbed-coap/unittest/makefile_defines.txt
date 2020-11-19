@@ -1,5 +1,5 @@
 #--- Inputs ----#
-CPPUTEST_HOME = /usr
+CPPUTEST_HOME = ../../../../test_modules/cpputest
 CPPUTEST_USE_EXTENSIONS = Y
 CPPUTEST_USE_VPATH = Y
 CPPUTEST_USE_GCOV = Y
