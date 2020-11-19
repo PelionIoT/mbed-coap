@@ -55,12 +55,10 @@ test: $(TEST_MODULE_CPPUTEST_LIB) $(TESTDIRS)
 	@xsltproc -o lcov/testresults.html lcov/junit_xsl.xslt lcov/index.xml
 	@rm -f lcov/junit_xsl.xslt
 	@rm -f lcov/index.xml
-#	@find ./ -name '*.gcno' | xargs cp --backup=numbered -t ./coverage/
-#	@find ./ -name '*.gcda' | xargs cp --backup=numbered -t ./coverage/
-#	@gcovr --object-directory ./coverage -x -o ./lcov/gcovr.xml
-	@lcov -d test/. -c -o $(COVERAGEFILE)
-	@lcov  -r $(COVERAGEFILE) "/usr*" -o $(COVERAGEFILE)
-	@lcov  -r $(COVERAGEFILE) "*unittest*" -o $(COVERAGEFILE)
+	@gcovr -r . -r . --filter='.*source/sn_coap_builder.c.*' --filter='.*source/sn_coap_protocol.c.*' --filter='.*source/sn_coap_parser.c.*' --filter='.*source/sn_coap_header_check.c.*' -x -o ./lcov/gcovr.xml
+	@lcov -q -d test/. -c -o $(COVERAGEFILE)
+	@lcov -q -r $(COVERAGEFILE) "/usr*" -o $(COVERAGEFILE)
+	@lcov -q -r $(COVERAGEFILE) "*unittest*" -o $(COVERAGEFILE)
 	@lcov -q -r $(COVERAGEFILE) "*test_modules*" -o $(COVERAGEFILE)
 	@genhtml -q $(COVERAGEFILE) --show-details --output-directory lcov/html
 	@echo mbed-coap module unit tests built
