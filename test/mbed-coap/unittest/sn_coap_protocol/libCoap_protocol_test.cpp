@@ -155,7 +155,7 @@ TEST(libCoap_protocol, sn_coap_protocol_set_retransmission_parameters)
     CHECK( 0 == sn_coap_protocol_set_retransmission_parameters(coap_handle,3, 10) );
     CHECK( -1 == sn_coap_protocol_set_retransmission_parameters(NULL,3,0) );
 #endif
-    CHECK( -1 == sn_coap_protocol_set_retransmission_parameters(coap_handle,999,0) )
+    CHECK( -1 == sn_coap_protocol_set_retransmission_parameters(coap_handle,999,0) );
 }
 
 TEST(libCoap_protocol, sn_coap_protocol_set_retransmission_buffer)
