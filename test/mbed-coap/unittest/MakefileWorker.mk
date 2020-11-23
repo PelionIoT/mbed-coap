@@ -392,7 +392,8 @@ STUFF_TO_CLEAN += \
 #The gcda files for gcov need to be deleted before each run
 #To avoid annoying messages.
 GCOV_CLEAN = $(SILENCE)rm -f $(GCOV_GCDA_FILES) $(GCOV_OUTPUT) $(GCOV_REPORT) $(GCOV_ERROR)
-RUN_TEST_TARGET = $(SILENCE)  $(GCOV_CLEAN) ; echo "Running $(TEST_TARGET)"; ./$(TEST_TARGET) $(CPPUTEST_EXE_FLAGS) -ojunit
+RUN_TEST_TARGET = $(SILENCE)  $(GCOV_CLEAN) ; echo "Running $(TEST_TARGET)"; valgrind --track-origins=yes --leak-check=full --xml=yes --xml-file="valgrind_$(TEST_TARGET).xml" ./$(TEST_TARGET) $(CPPUTEST_EXE_FLAGS) -ojunit
+
 
 ifeq ($(CPPUTEST_USE_GCOV), Y)
 
@@ -505,6 +506,7 @@ clean:
 	$(SILENCE)rm -rf $(CPPUTEST_LIB_DIR)
 	$(SILENCE)find . -name "*.gcno" | xargs rm -f
 	$(SILENCE)find . -name "*.gcda" | xargs rm -f
+	$(SILENCE)find . -name "valgrind_*.xml" | xargs rm -f
 
 #realclean gets rid of all gcov, o and d files in the directory tree
 #not just the ones made by this makefile
