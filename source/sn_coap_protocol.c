@@ -641,9 +641,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *restrict handle, sn_nsdl_ad
 
     // If no message duplication detected
     if ((returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_CONFIRMABLE ||
-            returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE ||
-            (returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_ACKNOWLEDGEMENT &&
-             returned_dst_coap_msg_ptr->msg_code != COAP_MSG_CODE_EMPTY)) &&
+            returned_dst_coap_msg_ptr->msg_type == COAP_MSG_TYPE_NON_CONFIRMABLE) &&
             handle->sn_coap_duplication_buffer_size != 0) {
 
         coap_duplication_info_s *response = sn_coap_protocol_linked_list_duplication_info_search(handle,
@@ -676,7 +674,7 @@ sn_coap_hdr_s *sn_coap_protocol_parse(struct coap_s *restrict handle, sn_nsdl_ad
             returned_dst_coap_msg_ptr->coap_status = COAP_STATUS_PARSER_DUPLICATED_MSG;
 
             // Send ACK response
-            if (response && returned_dst_coap_msg_ptr->msg_type != COAP_MSG_TYPE_ACKNOWLEDGEMENT) {
+            if (response) {
                 // Check that response has been created
                 if (response->packet_ptr) {
                     tr_debug("sn_coap_protocol_parse - send ack for duplicate message");
