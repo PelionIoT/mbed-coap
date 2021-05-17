@@ -2308,7 +2308,7 @@ static bool sn_coap_handle_last_blockwise(struct coap_s *handle, const sn_nsdl_a
 
 int8_t sn_coap_convert_block_size(uint16_t block_size)
 {
-    for (int n = 0; n < 6; n++) {
+    for (int n = 0; n <= 6; n++) {
         if (block_size == (16 << n)) {
             return n;
         }
