@@ -1367,6 +1367,7 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     tmp_hdr.options_list_ptr = (sn_coap_options_list_s *)malloc(sizeof(sn_coap_options_list_s));
     memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
     tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.options_list_ptr->block1 = 0x08;
     tmp_hdr.msg_id = 16;
     tmp_hdr.payload_len = buff_size;
 
@@ -1413,6 +1414,7 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     tmp_hdr.options_list_ptr = (sn_coap_options_list_s *)malloc(sizeof(sn_coap_options_list_s));
     memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
     tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.options_list_ptr->block1 = 0x18;
     tmp_hdr.msg_id = 17;
     tmp_hdr.payload_len = buff_size;
 
@@ -1460,6 +1462,7 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     tmp_hdr.options_list_ptr = (sn_coap_options_list_s *)malloc(sizeof(sn_coap_options_list_s));
     memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
     tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.options_list_ptr->block1 = 0x18;
     tmp_hdr.msg_id = 18;
     tmp_hdr.payload_len = buff_size;
 
@@ -1500,23 +1503,108 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     tmp_hdr.payload_ptr = (uint8_t *)malloc(UINT16_MAX);
     tmp_hdr.msg_id = 19;
     tmp_hdr.msg_code = COAP_MSG_CODE_RESPONSE_CREATED;
-    tmp_hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
-    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
-
-    free(tmp_hdr.options_list_ptr);
-    tmp_hdr.options_list_ptr = NULL;
-
     tmp_hdr.payload_len = UINT16_MAX;
     sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     tmp_hdr.payload_ptr = NULL;
-
     free(dst_packet_data_ptr);
+    free(payload);
 
     retCounter = 2;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
     CHECK(NULL == ret);
+
+    // block1 response not in order, request stays in resend queue
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_id = 20;
+
+    list = (sn_coap_options_list_s *)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x18;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CONTINUE;
+    payload = (uint8_t *)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+
+    dst_packet_data_ptr = (uint8_t *)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    sn_coap_builder_stub.expectedInt16 = 1;
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    retCounter = 7;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    buff_size = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 17;
+    tmp_hdr.payload_ptr = (uint8_t *)malloc(buff_size);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s *)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.options_list_ptr->block1 = 0x28;
+    tmp_hdr.msg_id = 20;
+    tmp_hdr.payload_len = buff_size;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK(ns_list_count(&handle->linked_list_resent_msgs) == 1);
+    CHECK(NULL != ret);
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    tmp_hdr.payload_ptr = NULL;
+    free(dst_packet_data_ptr);
+    free(payload);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+
+    // block1 final response comes too early, request stays in resend queue
+    sn_coap_protocol_clear_retransmission_buffer(handle);
+    sn_coap_protocol_clear_sent_blockwise_messages(handle);
+
+    sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
+    memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
+    sn_coap_parser_stub.expectedHeader->msg_id = 21;
+
+    list = (sn_coap_options_list_s *)malloc(sizeof(sn_coap_options_list_s));
+    memset(list, 0, sizeof(sn_coap_options_list_s));
+    sn_coap_parser_stub.expectedHeader->options_list_ptr = list;
+    sn_coap_parser_stub.expectedHeader->options_list_ptr->block1 = 0x07;
+    sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_ACKNOWLEDGEMENT;
+    sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_RESPONSE_CONTINUE;
+    payload = (uint8_t *)malloc(17);
+    sn_coap_parser_stub.expectedHeader->payload_ptr = payload;
+    sn_coap_parser_stub.expectedHeader->payload_len = 17;
+
+    dst_packet_data_ptr = (uint8_t *)malloc(5);
+    memset(dst_packet_data_ptr, '1', 5);
+
+    sn_coap_builder_stub.expectedInt16 = 1;
+    memset(&tmp_hdr, 0, sizeof(sn_coap_hdr_s));
+
+    retCounter = 7;
+    sn_coap_builder_stub.expectedInt16 = 1;
+    buff_size = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 17;
+    tmp_hdr.payload_ptr = (uint8_t *)malloc(buff_size);
+    tmp_hdr.options_list_ptr = (sn_coap_options_list_s *)malloc(sizeof(sn_coap_options_list_s));
+    memset(tmp_hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
+    tmp_hdr.options_list_ptr->block2 = 1;
+    tmp_hdr.options_list_ptr->block1 = 0x08;
+    tmp_hdr.msg_id = 21;
+    tmp_hdr.payload_len = buff_size;
+    sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
+
+    ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
+    CHECK(ns_list_count(&handle->linked_list_resent_msgs) == 1);
+    CHECK(NULL != ret);
+    free(tmp_hdr.options_list_ptr);
+    free(tmp_hdr.payload_ptr);
+    tmp_hdr.payload_ptr = NULL;
+    free(dst_packet_data_ptr);
+    sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
+
     free(payload);
     sn_coap_protocol_clear_retransmission_buffer(handle);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
