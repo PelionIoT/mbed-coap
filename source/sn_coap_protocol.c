@@ -876,7 +876,9 @@ rescan:
                     tmp_coap_hdr_ptr = sn_coap_parser(handle, stored_msg_ptr->send_msg_ptr.packet_len, stored_msg_ptr->send_msg_ptr.packet_ptr, &coap_version);
 
                     if (tmp_coap_hdr_ptr != 0) {
+#if SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
                         sn_coap_protocol_remove_sent_blockwise_message(handle, tmp_coap_hdr_ptr->msg_id);
+#endif // SN_COAP_BLOCKWISE_ENABLED || SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
                         tmp_coap_hdr_ptr->coap_status = COAP_STATUS_BUILDER_MESSAGE_SENDING_FAILED;
                         handle->sn_coap_rx_callback(tmp_coap_hdr_ptr, &stored_msg_ptr->send_msg_ptr.dst_addr_ptr, stored_msg_ptr->param);
 
