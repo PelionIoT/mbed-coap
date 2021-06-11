@@ -1823,6 +1823,7 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                         }
                     } else {
                         tr_warn("sn_coap_handle_blockwise_message - blocks not in order, requested: %"PRIu32" received: %"PRIu32"  --> ignore", req_block_number, block_number);
+                        src_coap_blockwise_ack_msg_ptr->options_list_ptr->block1 = (req_block_number << 4) | block_temp;
                         *keep_in_resend_queue = true;
                     }
                 }
