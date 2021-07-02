@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "CppUTest/TestHarness.h"
+#include "gtest/gtest.h"
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
@@ -36,14 +36,13 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *src_addr_ptr, uint1
 void test_block2_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
 void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t packet_data_len, uint8_t *packet_data_ptr);
 
-TEST_GROUP(libCoap_protocol)
-{
-    void setup() {
+class libCoap_protocol : public testing::Test {
+    void SetUp(void) {
         retCounter = 1;
         coap_handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
     }
 
-    void teardown() {
+    void TearDown(void) {
         retCounter = 0;
         sn_coap_protocol_destroy(coap_handle);
     }
@@ -52,7 +51,6 @@ TEST_GROUP(libCoap_protocol)
 void *myMalloc(uint16_t size)
 {
     if (retCounter > 0) {
-        int a = retCounter;
         retCounter--;
         return malloc(size);
     } else {
@@ -74,12 +72,12 @@ uint8_t null_tx_cb(uint8_t *a, uint16_t b, sn_nsdl_addr_s *c, void *d)
 
 int8_t null_rx_cb(sn_coap_hdr_s *a, sn_nsdl_addr_s *b, void *c)
 {
-
+    return 0;
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_destroy)
+TEST_F(libCoap_protocol, sn_coap_protocol_destroy)
 {
-    CHECK(-1 == sn_coap_protocol_destroy(NULL));
+    ASSERT_TRUE(-1 == sn_coap_protocol_destroy(NULL));
     struct coap_s *handle = (struct coap_s *)malloc(sizeof(struct coap_s));
     handle->sn_coap_protocol_free = &myFree;
     handle->sn_coap_protocol_malloc = &myMalloc;
@@ -95,35 +93,35 @@ TEST(libCoap_protocol, sn_coap_protocol_destroy)
     ns_list_init(&handle->linked_list_blockwise_sent_msgs);
     ns_list_init(&handle->linked_list_blockwise_received_payloads);
 #endif
-    CHECK(0 == sn_coap_protocol_destroy(handle));
+    ASSERT_TRUE(0 == sn_coap_protocol_destroy(handle));
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_init_null_func_ptrs)
+TEST_F(libCoap_protocol, sn_coap_protocol_init_null_func_ptrs)
 {
-    POINTERS_EQUAL(NULL, sn_coap_protocol_init(NULL, NULL, NULL, NULL));
+    ASSERT_TRUE(NULL == sn_coap_protocol_init(NULL, NULL, NULL, NULL));
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_init_null_malloc)
+TEST_F(libCoap_protocol, sn_coap_protocol_init_null_malloc)
 {
-    POINTERS_EQUAL(NULL, sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL));
+    ASSERT_TRUE(NULL == sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL));
 
     retCounter = 1;
     struct coap_s *handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
-    CHECK(NULL != handle);
+    ASSERT_TRUE(NULL != handle);
 
     sn_coap_protocol_destroy(handle);
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_set_block_size)
+TEST_F(libCoap_protocol, sn_coap_protocol_set_block_size)
 {
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
-    CHECK(0 == sn_coap_protocol_set_block_size(coap_handle, 16));
-    CHECK(-1 == sn_coap_protocol_set_block_size(NULL, 1));
+    ASSERT_TRUE(0 == sn_coap_protocol_set_block_size(coap_handle, 16));
+    ASSERT_TRUE(-1 == sn_coap_protocol_set_block_size(NULL, 1));
 #endif
-    CHECK(-1 == sn_coap_protocol_set_block_size(coap_handle, 1));
+    ASSERT_TRUE(-1 == sn_coap_protocol_set_block_size(coap_handle, 1));
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_clear_sent_blockwise_messages)
+TEST_F(libCoap_protocol, sn_coap_protocol_clear_sent_blockwise_messages)
 {
 #if SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE
     sn_coap_protocol_clear_sent_blockwise_messages(NULL);
@@ -136,45 +134,45 @@ TEST(libCoap_protocol, sn_coap_protocol_clear_sent_blockwise_messages)
     message->coap_msg_ptr->payload_len = 5;
     ns_list_add_to_end(&coap_handle->linked_list_blockwise_sent_msgs, message);
     sn_coap_protocol_clear_sent_blockwise_messages(coap_handle);
-    CHECK(0 == ns_list_count(&coap_handle->linked_list_blockwise_sent_msgs));
+    ASSERT_TRUE(0 == ns_list_count(&coap_handle->linked_list_blockwise_sent_msgs));
 #endif
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_set_duplicate_buffer_size)
+TEST_F(libCoap_protocol, sn_coap_protocol_set_duplicate_buffer_size)
 {
 #if SN_COAP_DUPLICATION_MAX_MSGS_COUNT
-    CHECK(0 == sn_coap_protocol_set_duplicate_buffer_size(coap_handle, 3));
-    CHECK(-1 == sn_coap_protocol_set_duplicate_buffer_size(NULL, 3));
+    ASSERT_TRUE(0 == sn_coap_protocol_set_duplicate_buffer_size(coap_handle, 3));
+    ASSERT_TRUE(-1 == sn_coap_protocol_set_duplicate_buffer_size(NULL, 3));
 #endif
-    CHECK(-1 == sn_coap_protocol_set_duplicate_buffer_size(coap_handle, 999));
+    ASSERT_TRUE(-1 == sn_coap_protocol_set_duplicate_buffer_size(coap_handle, 231));
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_set_retransmission_parameters)
+TEST_F(libCoap_protocol, sn_coap_protocol_set_retransmission_parameters)
 {
 #if ENABLE_RESENDINGS
-    CHECK(0 == sn_coap_protocol_set_retransmission_parameters(coap_handle, 3, 0));
-    CHECK(0 == sn_coap_protocol_set_retransmission_parameters(coap_handle, 3, 10));
-    CHECK(-1 == sn_coap_protocol_set_retransmission_parameters(NULL, 3, 0));
+    ASSERT_TRUE(0 == sn_coap_protocol_set_retransmission_parameters(coap_handle, 3, 0));
+    ASSERT_TRUE(0 == sn_coap_protocol_set_retransmission_parameters(coap_handle, 3, 10));
+    ASSERT_TRUE(-1 == sn_coap_protocol_set_retransmission_parameters(NULL, 3, 0));
 #endif
-    CHECK(-1 == sn_coap_protocol_set_retransmission_parameters(coap_handle, 999, 0));
+    ASSERT_TRUE(-1 == sn_coap_protocol_set_retransmission_parameters(coap_handle, 231, 0));
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_set_retransmission_buffer)
+TEST_F(libCoap_protocol, sn_coap_protocol_set_retransmission_buffer)
 {
 #if ENABLE_RESENDINGS
-    CHECK(0 == sn_coap_protocol_set_retransmission_buffer(coap_handle, 3, 3));
-    CHECK(-1 == sn_coap_protocol_set_retransmission_buffer(NULL, 3, 3));
+    ASSERT_TRUE(0 == sn_coap_protocol_set_retransmission_buffer(coap_handle, 3, 3));
+    ASSERT_TRUE(-1 == sn_coap_protocol_set_retransmission_buffer(NULL, 3, 3));
 #endif
-    CHECK(-1 == sn_coap_protocol_set_retransmission_buffer(coap_handle, 3, 999));
+    ASSERT_TRUE(-1 == sn_coap_protocol_set_retransmission_buffer(coap_handle, 3, 999));
 }
 
-//TEST(libCoap_protocol, sn_coap_protocol_clear_retransmission_buffer)
+//TEST_F(libCoap_protocol, sn_coap_protocol_clear_retransmission_buffer)
 //{
 //    sn_coap_protocol_clear_retransmission_buffer();
 //}
 #include <stdio.h>
 
-TEST(libCoap_protocol, sn_coap_protocol_delete_retransmission)
+TEST_F(libCoap_protocol, sn_coap_protocol_delete_retransmission)
 {
 #if ENABLE_RESENDINGS
     retCounter = 6;
@@ -192,21 +190,21 @@ TEST(libCoap_protocol, sn_coap_protocol_delete_retransmission)
 
     struct coap_s *handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
 
-    CHECK(-1 == sn_coap_protocol_delete_retransmission(NULL, 0));
+    ASSERT_TRUE(-1 == sn_coap_protocol_delete_retransmission(NULL, 0));
 
-    CHECK(-2 == sn_coap_protocol_delete_retransmission(handle, 0));
+    ASSERT_TRUE(-2 == sn_coap_protocol_delete_retransmission(handle, 0));
 
     sn_coap_builder_stub.expectedInt16 = 4;
 
-    CHECK(0 < sn_coap_protocol_build(handle, &dst_addr_ptr, dst_packet_data_ptr, &src_coap_msg_ptr, NULL));
+    ASSERT_TRUE(0 < sn_coap_protocol_build(handle, &dst_addr_ptr, dst_packet_data_ptr, &src_coap_msg_ptr, NULL));
 
-    CHECK(0 == sn_coap_protocol_delete_retransmission(handle, 99));
+    ASSERT_TRUE(0 == sn_coap_protocol_delete_retransmission(handle, 99));
 
     sn_coap_protocol_destroy(handle);
 #endif
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_delete_retransmission_by_token)
+TEST_F(libCoap_protocol, sn_coap_protocol_delete_retransmission_by_token)
 {
 #if ENABLE_RESENDINGS
     retCounter = 6;
@@ -227,17 +225,17 @@ TEST(libCoap_protocol, sn_coap_protocol_delete_retransmission_by_token)
 
     struct coap_s *handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
 
-    CHECK(-1 == sn_coap_protocol_delete_retransmission_by_token(NULL, NULL, 0));
+    ASSERT_TRUE(-1 == sn_coap_protocol_delete_retransmission_by_token(NULL, NULL, 0));
 
-    CHECK(-2 == sn_coap_protocol_delete_retransmission_by_token(handle,
+    ASSERT_TRUE(-2 == sn_coap_protocol_delete_retransmission_by_token(handle,
                                                                 src_coap_msg_ptr.token_ptr,
                                                                 src_coap_msg_ptr.token_len));
 
     sn_coap_builder_stub.expectedInt16 = 9;
 
-    CHECK(0 < sn_coap_protocol_build(handle, &dst_addr_ptr, dst_packet_data_ptr, &src_coap_msg_ptr, NULL));
+    ASSERT_TRUE(0 < sn_coap_protocol_build(handle, &dst_addr_ptr, dst_packet_data_ptr, &src_coap_msg_ptr, NULL));
 
-    CHECK(0 == sn_coap_protocol_delete_retransmission_by_token(handle, src_coap_msg_ptr.token_ptr, src_coap_msg_ptr.token_len));
+    ASSERT_TRUE(0 == sn_coap_protocol_delete_retransmission_by_token(handle, src_coap_msg_ptr.token_ptr, src_coap_msg_ptr.token_len));
 
     free(src_coap_msg_ptr.token_ptr);
     sn_coap_protocol_destroy(handle);
@@ -245,7 +243,7 @@ TEST(libCoap_protocol, sn_coap_protocol_delete_retransmission_by_token)
 }
 
 
-TEST(libCoap_protocol, sn_coap_protocol_build)
+TEST_F(libCoap_protocol, sn_coap_protocol_build)
 {
     retCounter = 1;
     struct coap_s *handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
@@ -259,9 +257,9 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     uint8_t *dst_packet_data_ptr = (uint8_t *)malloc(5);
     memset(dst_packet_data_ptr, '1', 5);
 
-    CHECK(-2 == sn_coap_protocol_build(NULL, NULL, NULL, NULL, NULL));
+    ASSERT_TRUE(-2 == sn_coap_protocol_build(NULL, NULL, NULL, NULL, NULL));
 
-    CHECK(-2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(-2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     hdr.msg_type = COAP_MSG_TYPE_CONFIRMABLE;
     hdr.msg_id = 0;
@@ -272,7 +270,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     sn_coap_builder_stub.expectedInt16 = 0;
     retCounter = 6;
 
-    CHECK(0 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(0 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     // Test duplicate response sending
     addr.port = 1000;
@@ -291,7 +289,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     duplicate->msg_id = 100;
     ns_list_add_to_end(&handle->linked_list_duplication_msgs, duplicate);
 
-    CHECK(0 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(0 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     ns_list_remove(&handle->linked_list_duplication_msgs, duplicate);
     free(duplicate->address->addr_ptr);
@@ -305,19 +303,19 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
 
     sn_coap_builder_stub.expectedInt16 = -3;
-//    CHECK( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+//    ASSERT_TRUE( -2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     retCounter = 0;
     hdr.options_list_ptr = (sn_coap_options_list_s *)malloc(sizeof(sn_coap_options_list_s));
     memset(hdr.options_list_ptr, 0, sizeof(sn_coap_options_list_s));
     hdr.options_list_ptr->block1 = 67777;
 
-    CHECK(-3 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(-3 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
     free(hdr.options_list_ptr);
     hdr.options_list_ptr = NULL;
 
     retCounter = 2;
-    CHECK(-3 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(-3 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     free(hdr.options_list_ptr);
     hdr.options_list_ptr = NULL;
@@ -329,7 +327,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     hdr.options_list_ptr->block2 = 1;
     retCounter = 0;
 
-    CHECK(-3 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(-3 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
     free(hdr.options_list_ptr);
     hdr.options_list_ptr = NULL;
 
@@ -346,7 +344,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
         hdr.payload_len = multiplier + 20;
         retCounter = 2;
         hdr.msg_code = COAP_MSG_CODE_RESPONSE_BAD_REQUEST;
-        CHECK(-3 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+        ASSERT_TRUE(-3 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
         hdr.msg_code = COAP_MSG_CODE_EMPTY;
 
         free(hdr.options_list_ptr);
@@ -362,29 +360,29 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
 
     retCounter = 1;
     sn_coap_builder_stub.expectedInt16 = -1;
-    CHECK(-1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(-1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     retCounter = 6;
     sn_coap_builder_stub.expectedInt16 = 1;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     hdr.msg_code = COAP_MSG_CODE_EMPTY;
 
     retCounter = 7;
     sn_coap_builder_stub.expectedInt16 = 1;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     retCounter = 8;
     sn_coap_builder_stub.expectedInt16 = 1;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     retCounter = 9;
     sn_coap_builder_stub.expectedInt16 = 1;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     retCounter = 10;
     sn_coap_builder_stub.expectedInt16 = 1;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     // Test second SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE -->
     hdr.payload_ptr = (uint8_t *)malloc(SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20);
@@ -394,7 +392,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     sn_coap_protocol_clear_retransmission_buffer(handle);
     retCounter = 7;
     sn_coap_builder_stub.expectedInt16 = 1;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
     free(hdr.payload_ptr);
 
     hdr.payload_ptr = (uint8_t *)malloc(SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20);
@@ -403,7 +401,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
 
     retCounter = 8;
     sn_coap_builder_stub.expectedInt16 = 1;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     free(hdr.payload_ptr);
     hdr.payload_ptr = (uint8_t *)malloc(UINT16_MAX);
@@ -412,7 +410,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
 
     retCounter = 9;
     sn_coap_builder_stub.expectedInt16 = 1;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     free(hdr.payload_ptr);
     hdr.payload_ptr = (uint8_t *)malloc(UINT16_MAX - 1);
@@ -421,7 +419,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
 
     retCounter = 10;
     sn_coap_builder_stub.expectedInt16 = 1;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     sn_coap_protocol_destroy(handle);
     handle = NULL;
@@ -434,7 +432,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     retCounter = 4;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE + 20;
-    CHECK(-2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(-2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     free(hdr.options_list_ptr);
     hdr.options_list_ptr = NULL;
@@ -479,18 +477,18 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
         sn_coap_builder_stub.expectedInt16 = 1;
         hdr2->payload_len = buff_len;
         int8_t rett = sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL);
-        CHECK(-2 == rett);
+        ASSERT_TRUE(-2 == rett);
     }
 
     retCounter = 12;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr2->payload_len = buff_len;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL));
 
     retCounter = 12;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr2->payload_len = buff_len;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, hdr2, NULL));
 
     free(hdr2->payload_ptr);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, hdr2);
@@ -502,7 +500,7 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     retCounter = 7;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     sn_coap_protocol_destroy(handle);
     handle = NULL;
@@ -512,12 +510,12 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     retCounter = 4;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
-    CHECK(-2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(-2 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     retCounter = 8;
     sn_coap_builder_stub.expectedInt16 = 1;
     hdr.payload_len = 0;
-    CHECK(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
+    ASSERT_TRUE(1 == sn_coap_protocol_build(handle, &addr, dst_packet_data_ptr, &hdr, NULL));
 
     free(hdr.payload_ptr);
     hdr.payload_ptr = NULL;
@@ -532,9 +530,9 @@ TEST(libCoap_protocol, sn_coap_protocol_build)
     sn_coap_protocol_destroy(handle);
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_parse)
+TEST_F(libCoap_protocol, sn_coap_protocol_parse)
 {
-    CHECK(NULL == sn_coap_protocol_parse(NULL, NULL, 0, NULL, NULL));
+    ASSERT_TRUE(NULL == sn_coap_protocol_parse(NULL, NULL, 0, NULL, NULL));
     retCounter = 1;
     struct coap_s *handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, null_rx_cb);
 
@@ -547,21 +545,21 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     uint16_t packet_data_len = 5;
 
     sn_coap_parser_stub.expectedHeader = NULL;
-    CHECK(NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL));
+    ASSERT_TRUE(NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL));
 
     // Failed to parse CoAP header
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_header_check_stub.expectedInt8 = 1;
     sn_coap_parser_stub.expectedHeader->coap_status = COAP_STATUS_PARSER_ERROR_IN_HEADER;
-    CHECK(NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL));
+    ASSERT_TRUE(NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL));
 
     // sn_coap_protocol_parse - message code not valid!
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
     sn_coap_header_check_stub.expectedInt8 = 1;
     sn_coap_parser_stub.expectedHeader->msg_code = sn_coap_msg_code_e(COAP_MSG_CODE_RESPONSE_PROXYING_NOT_SUPPORTED + 60);
-    CHECK(NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL));
+    ASSERT_TRUE(NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL));
 
     // Send reset message
     sn_coap_parser_stub.expectedHeader = (sn_coap_hdr_s *)malloc(sizeof(sn_coap_hdr_s));
@@ -571,7 +569,7 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
     sn_coap_parser_stub.expectedHeader->msg_type = COAP_MSG_TYPE_CONFIRMABLE;
     sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_EMPTY;
 
-    CHECK(NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL));
+    ASSERT_TRUE(NULL == sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL));
 
     test_block1_receive(handle, addr, packet_data_len, packet_data_ptr);
 
@@ -589,9 +587,9 @@ TEST(libCoap_protocol, sn_coap_protocol_parse)
 }
 
 
-TEST(libCoap_protocol, sn_coap_protocol_exec)
+TEST_F(libCoap_protocol, sn_coap_protocol_exec)
 {
-    CHECK(-1 == sn_coap_protocol_exec(NULL, 0));
+    ASSERT_TRUE(-1 == sn_coap_protocol_exec(NULL, 0));
 
     retCounter = 1;
     struct coap_s *handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
@@ -651,14 +649,14 @@ TEST(libCoap_protocol, sn_coap_protocol_exec)
     free(addr->addr_ptr);
     free(addr);
 
-    CHECK(0 == sn_coap_protocol_exec(handle, 600));
+    ASSERT_TRUE(0 == sn_coap_protocol_exec(handle, 600));
 
     sn_coap_builder_stub.expectedInt16 = 0;
     retCounter = 0;
     sn_coap_protocol_destroy(handle);
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_exec2)
+TEST_F(libCoap_protocol, sn_coap_protocol_exec2)
 {
     retCounter = 1;
     struct coap_s *handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, null_rx_cb);
@@ -722,14 +720,14 @@ TEST(libCoap_protocol, sn_coap_protocol_exec2)
     memset(sn_coap_parser_stub.expectedHeader, 0, sizeof(sn_coap_hdr_s));
 
     sn_coap_protocol_set_retransmission_parameters(handle, 0, 5);
-    CHECK(0 == sn_coap_protocol_exec(handle, 600));
+    ASSERT_TRUE(0 == sn_coap_protocol_exec(handle, 600));
 
     sn_coap_builder_stub.expectedInt16 = 0;
     retCounter = 0;
     sn_coap_protocol_destroy(handle);
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_block_remove)
+TEST_F(libCoap_protocol, sn_coap_protocol_block_remove)
 {
     sn_coap_protocol_block_remove(0, 0, 0, 0);
     retCounter = 9;
@@ -762,9 +760,9 @@ TEST(libCoap_protocol, sn_coap_protocol_block_remove)
     // Success
     retCounter = 19;
     sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
     sn_coap_protocol_block_remove(handle, addr, packet_data_len, packet_data_ptr);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
 
     // Ports does not match
     retCounter = 19;
@@ -772,25 +770,25 @@ TEST(libCoap_protocol, sn_coap_protocol_block_remove)
     addr->port = 5600;
     sn_coap_protocol_set_block_size(handle, 32);
     sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
     addr->port = 5601;
     sn_coap_protocol_block_remove(handle, addr, packet_data_len, packet_data_ptr);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
 
     // Addresses does not match
     retCounter = 19;
     sn_coap_parser_stub.expectedHeader->msg_id = 15;
     sn_coap_protocol_set_block_size(handle, 64);
     sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 2);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 2);
     addr->addr_ptr[0] = 'x';
     sn_coap_protocol_block_remove(handle, addr, packet_data_len, packet_data_ptr);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 2);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 2);
 
     // Payload length does not match
     addr->addr_ptr[0] = 'a';
     sn_coap_protocol_block_remove(handle, addr, packet_data_len + 1, packet_data_ptr);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 2);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 2);
 
     free(sn_coap_parser_stub.expectedHeader->options_list_ptr);
     free(sn_coap_parser_stub.expectedHeader);
@@ -801,7 +799,7 @@ TEST(libCoap_protocol, sn_coap_protocol_block_remove)
     sn_coap_protocol_destroy(handle);
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_remove_sent_blockwise_message)
+TEST_F(libCoap_protocol, sn_coap_protocol_remove_sent_blockwise_message)
 {
     sn_coap_protocol_remove_sent_blockwise_message(0, 0);
     retCounter = 9;
@@ -813,30 +811,30 @@ TEST(libCoap_protocol, sn_coap_protocol_remove_sent_blockwise_message)
     message->coap_msg_ptr->msg_id = 100;
     ns_list_add_to_end(&handle->linked_list_blockwise_sent_msgs, message);
     sn_coap_protocol_remove_sent_blockwise_message(handle, 1);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_sent_msgs) == 1);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_sent_msgs) == 1);
 
     sn_coap_protocol_remove_sent_blockwise_message(handle, 100);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_sent_msgs) == 0);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_sent_msgs) == 0);
     sn_coap_protocol_destroy(handle);
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_handle_block2_response_internally)
+TEST_F(libCoap_protocol, sn_coap_protocol_handle_block2_response_internally)
 {
     sn_coap_protocol_handle_block2_response_internally(0, 0);
     retCounter = 9;
     struct coap_s *handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
     sn_coap_protocol_handle_block2_response_internally(handle, true);
-    CHECK(handle->sn_coap_internal_block2_resp_handling == true);
+    ASSERT_TRUE(handle->sn_coap_internal_block2_resp_handling == true);
     sn_coap_protocol_handle_block2_response_internally(handle, false);
-    CHECK(handle->sn_coap_internal_block2_resp_handling == false);
+    ASSERT_TRUE(handle->sn_coap_internal_block2_resp_handling == false);
     sn_coap_protocol_destroy(handle);
 }
 
-TEST(libCoap_protocol, sn_coap_protocol_get_configured_blockwise_size)
+TEST_F(libCoap_protocol, sn_coap_protocol_get_configured_blockwise_size)
 {
     retCounter = 9;
     struct coap_s *handle = sn_coap_protocol_init(myMalloc, myFree, null_tx_cb, NULL);
-    CHECK(sn_coap_protocol_get_configured_blockwise_size(handle) == SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
+    ASSERT_TRUE(sn_coap_protocol_get_configured_blockwise_size(handle) == SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE);
     sn_coap_protocol_destroy(handle);
 }
 
@@ -855,8 +853,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
     sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
 
     sn_coap_hdr_s *ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(NULL == ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
 
     // sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate blockwise!
     uint8_t *payload = (uint8_t *)malloc(5);
@@ -874,8 +872,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
     sn_coap_parser_stub.expectedHeader->msg_code = COAP_MSG_CODE_REQUEST_GET;
 
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(NULL == ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
     free(payload);
 
     // sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate payload!
@@ -895,8 +893,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 4;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(NULL == ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
     free(payload);
 
     // sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate address pointer!
@@ -916,8 +914,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 5;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(NULL == ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
     free(payload);
 
     // sn_coap_protocol_linked_list_blockwise_payload_store - failed to allocate token pointer!
@@ -942,8 +940,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 6;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(NULL == ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
     free(payload);
 
     // sn_coap_protocol_linked_list_blockwise_payload_store - success
@@ -967,8 +965,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 8;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    ASSERT_TRUE(ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
     free(payload);
 #if !SN_COAP_REDUCE_BLOCKWISE_HEAP_FOOTPRINT
     free(sn_coap_parser_stub.expectedHeader->payload_ptr);
@@ -998,9 +996,9 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
     retCounter = 7;
     // Update existing block data payload
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
-    CHECK(ret->payload_len == 10);
+    ASSERT_TRUE(ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    ASSERT_TRUE(ret->payload_len == 10);
 #if !SN_COAP_REDUCE_BLOCKWISE_HEAP_FOOTPRINT
     free(sn_coap_parser_stub.expectedHeader->payload_ptr);
 #endif
@@ -1028,7 +1026,7 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 3;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
+    ASSERT_TRUE(ret == NULL);
     free(payload);
 
     // sn_coap_protocol_linked_list_blockwise_payload_store - success
@@ -1052,8 +1050,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 8;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    ASSERT_TRUE(ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
     free(payload);
 #if !SN_COAP_REDUCE_BLOCKWISE_HEAP_FOOTPRINT
     free(sn_coap_parser_stub.expectedHeader->payload_ptr);
@@ -1081,7 +1079,7 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 4;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
+    ASSERT_TRUE(ret == NULL);
     free(payload);
 
 
@@ -1107,8 +1105,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 8;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    ASSERT_TRUE(ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
     free(payload);
 
 #if !SN_COAP_REDUCE_BLOCKWISE_HEAP_FOOTPRINT
@@ -1139,9 +1137,9 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 7;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
-    CHECK(ret->payload_len == 20);
+    ASSERT_TRUE(ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 1);
+    ASSERT_TRUE(ret->payload_len == 20);
 
 #if !SN_COAP_REDUCE_BLOCKWISE_HEAP_FOOTPRINT
     free(sn_coap_parser_stub.expectedHeader->payload_ptr);
@@ -1176,8 +1174,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 3;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(ret == NULL);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
     free(payload);
 
 
@@ -1203,8 +1201,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 8;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
     free(payload);
 
@@ -1231,8 +1229,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 8;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
     sn_coap_protocol_clear_received_blockwise_messages(handle);
     free(payload);
@@ -1259,8 +1257,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 7;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(ret == NULL);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
     free(payload);
 
     // sn_coap_handle_blockwise_message - (recv block1) message allocation failed!
@@ -1285,8 +1283,8 @@ void test_block1_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 5;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
-    CHECK(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
+    ASSERT_TRUE(ret == NULL);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_received_payloads) == 0);
     free(payload);
 }
 
@@ -1309,8 +1307,13 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 2;
     sn_coap_hdr_s *ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL != ret);
-    CHECK(COAP_STATUS_OK == ret->coap_status);
+    ASSERT_TRUE(NULL != ret);
+
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT && SN_COAP_DUPLICATION_MAX_MSGS_COUNT > 1
+    ASSERT_TRUE(COAP_STATUS_PARSER_DUPLICATED_MSG == ret->coap_status);
+#else
+    ASSERT_TRUE(COAP_STATUS_OK == ret->coap_status);
+#endif
     free(payload);
     free(list);
     free(sn_coap_parser_stub.expectedHeader);
@@ -1332,8 +1335,12 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 2;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL != ret);
-    CHECK(COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status);
+    ASSERT_TRUE(NULL != ret);
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT && SN_COAP_DUPLICATION_MAX_MSGS_COUNT > 1
+    ASSERT_TRUE(COAP_STATUS_PARSER_DUPLICATED_MSG == ret->coap_status);
+#else
+    ASSERT_TRUE(COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status);
+#endif
     free(payload);
     free(list);
     free(sn_coap_parser_stub.expectedHeader);
@@ -1380,8 +1387,12 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 7;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL != ret);
-    CHECK(ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_ACK);
+    ASSERT_TRUE(NULL != ret);
+#if SN_COAP_DUPLICATION_MAX_MSGS_COUNT && SN_COAP_DUPLICATION_MAX_MSGS_COUNT > 1
+    ASSERT_TRUE(COAP_STATUS_PARSER_DUPLICATED_MSG == ret->coap_status);
+#else
+    ASSERT_TRUE(COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status);
+#endif
     free(payload);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
@@ -1427,10 +1438,10 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 7;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL != ret);
-    CHECK(ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_ACK);
+    ASSERT_TRUE(NULL != ret);
+    ASSERT_TRUE(ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_ACK);
     // Last block sent, list should be empty now
-    CHECK(ns_list_count(&handle->linked_list_blockwise_sent_msgs) == 0);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_blockwise_sent_msgs) == 0);
     free(payload);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
     sn_coap_protocol_clear_retransmission_buffer(handle);
@@ -1475,7 +1486,7 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 3;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
+    ASSERT_TRUE(NULL == ret);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
 
@@ -1513,7 +1524,7 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 2;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
+    ASSERT_TRUE(NULL == ret);
 
     // block1 response not in order, request stays in resend queue
     sn_coap_protocol_clear_retransmission_buffer(handle);
@@ -1551,8 +1562,8 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
 
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ns_list_count(&handle->linked_list_resent_msgs) == 1);
-    CHECK(NULL != ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_resent_msgs) == 1);
+    ASSERT_TRUE(NULL != ret);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     tmp_hdr.payload_ptr = NULL;
@@ -1597,8 +1608,8 @@ void test_block1_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     sn_coap_protocol_build(handle, addr, dst_packet_data_ptr, &tmp_hdr, NULL);
 
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ns_list_count(&handle->linked_list_resent_msgs) == 1);
-    CHECK(NULL != ret);
+    ASSERT_TRUE(ns_list_count(&handle->linked_list_resent_msgs) == 1);
+    ASSERT_TRUE(NULL != ret);
     free(tmp_hdr.options_list_ptr);
     free(tmp_hdr.payload_ptr);
     tmp_hdr.payload_ptr = NULL;
@@ -1660,8 +1671,8 @@ void test_block2_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 7;
     sn_coap_hdr_s *ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL != ret);
-    CHECK(COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status);
+    ASSERT_TRUE(NULL != ret);
+    ASSERT_TRUE(COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status);
     free(payload);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
@@ -1713,8 +1724,8 @@ void test_block2_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 7;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL != ret);
-    CHECK(COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status);
+    ASSERT_TRUE(NULL != ret);
+    ASSERT_TRUE(COAP_STATUS_PARSER_BLOCKWISE_ACK == ret->coap_status);
     free(payload);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
@@ -1765,7 +1776,7 @@ void test_block2_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 5;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
+    ASSERT_TRUE(NULL == ret);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
     sn_coap_protocol_clear_retransmission_buffer(handle);
@@ -1815,7 +1826,7 @@ void test_block2_receive(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t p
 
     retCounter = 3;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
+    ASSERT_TRUE(NULL == ret);
     free(payload);
     sn_coap_protocol_clear_retransmission_buffer(handle);
 }
@@ -1840,7 +1851,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     sn_coap_parser_stub.expectedHeader->payload_len = 5;
 
     sn_coap_hdr_s *ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
+    ASSERT_TRUE(NULL == ret);
     free(payload);
 
     // sn_coap_handle_blockwise_message - (send block2) failed to allocate message!
@@ -1883,7 +1894,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 0;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL == ret);
+    ASSERT_TRUE(NULL == ret);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
 
@@ -1924,7 +1935,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 10;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING);
+    ASSERT_TRUE(ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
@@ -1967,7 +1978,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 10;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret->coap_status == COAP_STATUS_PARSER_DUPLICATED_MSG);
+    ASSERT_TRUE(ret->coap_status == COAP_STATUS_PARSER_DUPLICATED_MSG);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
@@ -2018,7 +2029,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 10;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING);
+    ASSERT_TRUE(ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVING);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, sn_coap_parser_stub.expectedHeader);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
@@ -2069,7 +2080,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 5;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
+    ASSERT_TRUE(ret == NULL);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
     sn_coap_protocol_clear_retransmission_buffer(handle);
@@ -2119,7 +2130,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 6;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
+    ASSERT_TRUE(ret == NULL);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
     sn_coap_protocol_clear_retransmission_buffer(handle);
@@ -2169,7 +2180,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 7;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
+    ASSERT_TRUE(ret == NULL);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
     sn_coap_protocol_clear_retransmission_buffer(handle);
@@ -2219,7 +2230,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 8;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
+    ASSERT_TRUE(ret == NULL);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
     sn_coap_protocol_clear_retransmission_buffer(handle);
@@ -2270,7 +2281,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     retCounter = 10;
     sn_coap_builder_stub.expectedInt16 = -1;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret == NULL);
+    ASSERT_TRUE(ret == NULL);
     free(payload);
     sn_coap_protocol_clear_sent_blockwise_messages(handle);
     sn_coap_protocol_clear_retransmission_buffer(handle);
@@ -2294,8 +2305,8 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
 
     retCounter = 10;
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(NULL != ret);
-    CHECK(ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED);
+    ASSERT_TRUE(NULL != ret);
+    ASSERT_TRUE(ret->coap_status == COAP_STATUS_PARSER_BLOCKWISE_MSG_RECEIVED);
     free(payload);
 #if !SN_COAP_REDUCE_BLOCKWISE_HEAP_FOOTPRINT
     free(sn_coap_parser_stub.expectedHeader->payload_ptr);
@@ -2331,7 +2342,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     free(dst_packet_data_ptr);
 
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret != NULL);
+    ASSERT_TRUE(ret != NULL);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, ret);
 
     // Do not clean stored blockwise message when empty ack is received - remove from the list
@@ -2365,7 +2376,7 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     free(dst_packet_data_ptr);
 
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret != NULL);
+    ASSERT_TRUE(ret != NULL);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, ret);
 
     // Do not clean stored blockwise message when empty ack is received - remove from the list
@@ -2399,6 +2410,6 @@ void test_block2_send(struct coap_s *handle, sn_nsdl_addr_s *addr, uint16_t pack
     free(dst_packet_data_ptr);
 
     ret = sn_coap_protocol_parse(handle, addr, packet_data_len, packet_data_ptr, NULL);
-    CHECK(ret != NULL);
+    ASSERT_TRUE(ret != NULL);
     sn_coap_parser_release_allocated_coap_msg_mem(handle, ret);
 }
