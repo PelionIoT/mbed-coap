@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "CppUTest/TestHarness.h"
+#include "gtest/gtest.h"
 #include <string.h>
 #include <stdint.h>
 #include "sn_coap_protocol.h"
 #include "sn_coap_header_internal.h"
 
 
-TEST_GROUP(libCoap_header_check)
-{
-    void setup() {
+class libCoap_header_check : public testing::Test {
+    void SetUp(void) {
 
     }
 
-    void teardown() {
+    void TearDown(void) {
 
     }
 };
 
-TEST(libCoap_header_check, header_check)
+TEST_F(libCoap_header_check, header_check)
 {
     sn_coap_hdr_s coap_header;
 
@@ -40,17 +39,18 @@ TEST(libCoap_header_check, header_check)
     coap_header.msg_code = COAP_MSG_CODE_REQUEST_GET;
 
     /* Happy-happy case */
-    CHECK(sn_coap_header_validity_check(&coap_header, (coap_version_e)COAP_VERSION_1) == 0);
+    ASSERT_TRUE(sn_coap_header_validity_check(&coap_header, (coap_version_e)COAP_VERSION_1) == 0);
 
 
-    CHECK(sn_coap_header_validity_check(&coap_header, (coap_version_e) 0) == -1);
+    ASSERT_TRUE(sn_coap_header_validity_check(&coap_header, (coap_version_e) 0) == -1);
 
     coap_header.msg_type = (sn_coap_msg_type_e)0x40;
 
-    CHECK(sn_coap_header_validity_check(&coap_header, (coap_version_e)COAP_VERSION_1) == -1);
+    ASSERT_TRUE(sn_coap_header_validity_check(&coap_header, (coap_version_e)COAP_VERSION_1) == -1);
 
     coap_header.msg_type = (sn_coap_msg_type_e)COAP_MSG_TYPE_CONFIRMABLE;
     coap_header.msg_code = (sn_coap_msg_code_e)5;
 
-    CHECK(sn_coap_header_validity_check(&coap_header, (coap_version_e)COAP_VERSION_1) == -1);
+    ASSERT_TRUE(sn_coap_header_validity_check(&coap_header, (coap_version_e)COAP_VERSION_1) == -1);
 }
+
