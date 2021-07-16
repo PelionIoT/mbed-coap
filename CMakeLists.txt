@@ -102,9 +102,9 @@ add_executable(sn_coap_protocol_test
     test/stubs/sn_coap_header_check_stub.c)
 
 target_compile_definitions(sn_coap_protocol_test PRIVATE 
-    SN_COAP_DUPLICATION_MAX_MSGS_COUNT=1
+    MBED_CONF_MBED_CLIENT_SN_COAP_DUPLICATION_MAX_MSGS_COUNT=1
     ENABLE_RESENDINGS=1
-    SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE=16
+    MBED_CONF_MBED_CLIENT_SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE=16
     SN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE=65535
     )
 

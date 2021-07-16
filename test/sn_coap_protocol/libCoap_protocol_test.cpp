@@ -51,7 +51,6 @@ class libCoap_protocol : public testing::Test {
 void *myMalloc(uint16_t size)
 {
     if (retCounter > 0) {
-        int a = retCounter;
         retCounter--;
         return malloc(size);
     } else {
@@ -73,7 +72,7 @@ uint8_t null_tx_cb(uint8_t *a, uint16_t b, sn_nsdl_addr_s *c, void *d)
 
 int8_t null_rx_cb(sn_coap_hdr_s *a, sn_nsdl_addr_s *b, void *c)
 {
-
+    return 0;
 }
 
 TEST_F(libCoap_protocol, sn_coap_protocol_destroy)
