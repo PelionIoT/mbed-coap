@@ -51,9 +51,22 @@ if (enable_coverage_data)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
 endif ()
 
-add_executable(libCoap_builder_test
+
+function(add_unittest TEST TEST_PATH)
+    add_executable(${TEST} EXCLUDE_FROM_ALL "${TEST_PATH}/${TEST}.cpp")
+    add_test(${TEST} ${TEST})
+    if (TARGET check)
+        add_dependencies(check ${TEST})
+    else()
+        add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
+                    DEPENDS ${TEST})
+    endif()
+endfunction()
+
+
+add_unittest(libCoap_builder_test test/sn_coap_builder)
+target_sources(libCoap_builder_test PRIVATE
     source/sn_coap_builder.c
-    test/sn_coap_builder/libCoap_builder_test.cpp
     test/stubs/sn_coap_header_check_stub.c)
 
 target_include_directories(libCoap_builder_test PUBLIC
@@ -66,70 +79,71 @@ target_link_libraries(
     mbedcoap
 )
 
-add_executable(libCoap_header_check_test
-    source/sn_coap_header_check.c
-    test/sn_coap_header_check/libCoap_header_test.cpp)
+add_unittest(libCoap_header_test test/sn_coap_header_check)
+target_sources(libCoap_header_test PRIVATE
+    source/sn_coap_header_check.c)
 
-target_include_directories(libCoap_header_check_test PUBLIC
+target_include_directories(libCoap_header_test PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/include
     ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs)
 
 target_link_libraries(
-    libCoap_header_check_test
+    libCoap_header_test
     gtest_main
     mbedcoap
 )
 
-add_executable(libCoap_parser_test
+add_unittest(sn_coap_parsertest test/sn_coap_parser)
+target_sources(sn_coap_parsertest PRIVATE
     source/sn_coap_parser.c
-    test/sn_coap_parser/sn_coap_parsertest.cpp
     test/sn_coap_parser/test_sn_coap_parser.c)
 
-target_include_directories(libCoap_parser_test PUBLIC
+
+target_include_directories(sn_coap_parsertest PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/include
     ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs)
 
 target_link_libraries(
-    libCoap_parser_test
+    sn_coap_parsertest
     gtest_main
     mbedcoap
 )
 
-add_executable(sn_coap_protocol_test
+add_unittest(libCoap_protocol_test test/sn_coap_protocol)
+target_sources(libCoap_protocol_test PRIVATE
     source/sn_coap_protocol.c
-    test/sn_coap_protocol/libCoap_protocol_test.cpp
     test/stubs/sn_coap_parser_stub.c
     test/stubs/sn_coap_builder_stub.c
     test/stubs/sn_coap_header_check_stub.c)
 
-target_compile_definitions(sn_coap_protocol_test PRIVATE 
+target_compile_definitions(libCoap_protocol_test PRIVATE
     MBED_CONF_MBED_CLIENT_SN_COAP_DUPLICATION_MAX_MSGS_COUNT=1
     ENABLE_RESENDINGS=1
     MBED_CONF_MBED_CLIENT_SN_COAP_MAX_BLOCKWISE_PAYLOAD_SIZE=16
     SN_COAP_MAX_INCOMING_BLOCK_MESSAGE_SIZE=65535
     )
 
-target_include_directories(sn_coap_protocol_test PUBLIC
+target_include_directories(libCoap_protocol_test PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/include
     ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs)
 
 target_link_libraries(
-    sn_coap_protocol_test
+    libCoap_protocol_test
     gtest_main
     mbedcoap
 )
 
 # GTest framework requires C++ version 11
-set_target_properties(libCoap_builder_test libCoap_header_check_test libCoap_parser_test sn_coap_protocol_test
+set_target_properties(libCoap_builder_test libCoap_header_test sn_coap_parsertest libCoap_protocol_test
 PROPERTIES
     CXX_STANDARD 11
 )
 
 include(GoogleTest)
 gtest_discover_tests(libCoap_builder_test)
-gtest_discover_tests(libCoap_header_check_test)
-gtest_discover_tests(libCoap_parser_test)
-gtest_discover_tests(sn_coap_protocol_test)
+gtest_discover_tests(libCoap_header_test)
+gtest_discover_tests(sn_coap_parsertest)
+gtest_discover_tests(libCoap_protocol_test)
 
 if (enable_coverage_data AND ${CMAKE_PROJECT_NAME} STREQUAL "mbedcoap")
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html")
