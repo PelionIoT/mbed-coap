@@ -67,16 +67,21 @@ endfunction()
 add_unittest(libCoap_builder_test test/sn_coap_builder)
 target_sources(libCoap_builder_test PRIVATE
     source/sn_coap_builder.c
-    test/stubs/sn_coap_header_check_stub.c)
+    test/stubs/sn_coap_header_check_stub.c
+    test/stubs/sn_coap_protocol_stub.c
+    test/stubs/sn_coap_parser_stub.c)
 
 target_include_directories(libCoap_builder_test PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs)
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs
+    ${CMAKE_CURRENT_SOURCE_DIR}/mbed-coap
+    ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(
     libCoap_builder_test
     gtest_main
-    mbedcoap
+    nanostack-libserviceInterface
+    mbedTraceInterface
 )
 
 add_unittest(libCoap_header_test test/sn_coap_header_check)
@@ -85,28 +90,36 @@ target_sources(libCoap_header_test PRIVATE
 
 target_include_directories(libCoap_header_test PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs)
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs
+    ${CMAKE_CURRENT_SOURCE_DIR}/mbed-coap
+    ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(
     libCoap_header_test
     gtest_main
-    mbedcoap
+    nanostack-libserviceInterface
+    mbedTraceInterface
+    mbedRandLibInterface
 )
 
 add_unittest(sn_coap_parsertest test/sn_coap_parser)
 target_sources(sn_coap_parsertest PRIVATE
     source/sn_coap_parser.c
-    test/sn_coap_parser/test_sn_coap_parser.c)
+    test/sn_coap_parser/test_sn_coap_parser.c
+    test/stubs/sn_coap_protocol_stub.c)
 
 
 target_include_directories(sn_coap_parsertest PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs)
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs
+    ${CMAKE_CURRENT_SOURCE_DIR}/mbed-coap
+    ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(
     sn_coap_parsertest
+    nanostack-libserviceInterface
+    mbedTraceInterface
     gtest_main
-    mbedcoap
 )
 
 add_unittest(libCoap_protocol_test test/sn_coap_protocol)
@@ -114,7 +127,9 @@ target_sources(libCoap_protocol_test PRIVATE
     source/sn_coap_protocol.c
     test/stubs/sn_coap_parser_stub.c
     test/stubs/sn_coap_builder_stub.c
-    test/stubs/sn_coap_header_check_stub.c)
+    test/stubs/sn_coap_header_check_stub.c
+    test/stubs/randLIB_stub.cpp
+    test/stubs/ns_list_stub.c)
 
 target_compile_definitions(libCoap_protocol_test PRIVATE
     MBED_CONF_MBED_CLIENT_SN_COAP_DUPLICATION_MAX_MSGS_COUNT=1
@@ -125,12 +140,16 @@ target_compile_definitions(libCoap_protocol_test PRIVATE
 
 target_include_directories(libCoap_protocol_test PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs)
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/stubs
+    ${CMAKE_CURRENT_SOURCE_DIR}/mbed-coap
+    ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(
     libCoap_protocol_test
     gtest_main
-    mbedcoap
+    nanostack-libserviceInterface
+    mbedTraceInterface
+    mbedRandLibInterface
 )
 
 # GTest framework requires C++ version 11
@@ -140,15 +159,15 @@ PROPERTIES
 )
 
 include(GoogleTest)
-gtest_discover_tests(libCoap_builder_test)
-gtest_discover_tests(libCoap_header_test)
-gtest_discover_tests(sn_coap_parsertest)
-gtest_discover_tests(libCoap_protocol_test)
+gtest_discover_tests(libCoap_builder_test EXTRA_ARGS --gtest_output=xml: XML_OUTPUT_DIR libCoap_builder_test)
+gtest_discover_tests(libCoap_header_test EXTRA_ARGS --gtest_output=xml: XML_OUTPUT_DIR libCoap_header_test)
+gtest_discover_tests(sn_coap_parsertest EXTRA_ARGS --gtest_output=xml: XML_OUTPUT_DIR sn_coap_parsertest)
+gtest_discover_tests(libCoap_protocol_test EXTRA_ARGS --gtest_output=xml: XML_OUTPUT_DIR libCoap_protocol_test)
 
 if (enable_coverage_data AND ${CMAKE_PROJECT_NAME} STREQUAL "mbedcoap")
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html")
 
     add_test(NAME coap_cov WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMAND ${BASH} -c "gcovr -r . -e ${CMAKE_CURRENT_SOURCE_DIR}/build -e '.*test.*' --html --html-details -o build/html/example-html-details.html"
+        COMMAND ${BASH} -c "gcovr -r . -e ${CMAKE_CURRENT_SOURCE_DIR}/build -e '.*test.*' --html --html-details -o build/html/coverity_index.html"
     )
 endif ()

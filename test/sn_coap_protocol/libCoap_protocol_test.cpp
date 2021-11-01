@@ -24,6 +24,7 @@
 #include "sn_coap_builder_stub.h"
 #include "sn_coap_parser_stub.h"
 #include "sn_coap_header_check_stub.h"
+#include "ns_list.h"
 
 
 int retCounter = 0;
