@@ -54,14 +54,8 @@ if (test_all OR ${CMAKE_PROJECT_NAME} STREQUAL "mbedcoap")
 
 
     function(add_unittest TEST TEST_PATH)
-        add_executable(${TEST} EXCLUDE_FROM_ALL "${TEST_PATH}/${TEST}.cpp")
+        add_executable(${TEST} "${TEST_PATH}/${TEST}.cpp")
         add_test(${TEST} ${TEST})
-        if (TARGET check)
-            add_dependencies(check ${TEST})
-        else()
-            add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
-                        DEPENDS ${TEST})
-        endif()
     endfunction()
 
 
