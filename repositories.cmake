@@ -42,17 +42,17 @@ FetchContent_MakeAvailable(googletest)
 
 FetchContent_Declare(nanostack_libservice_decl
     GIT_REPOSITORY      ${nanostack_libservice_repo}
-    GIT_TAG             "cmake_refactor"
+    GIT_TAG             "master"
 )
 
 FetchContent_Declare(mbed_randlib_decl
     GIT_REPOSITORY      ${mbed_randlib_repo}
-    GIT_TAG             "cmake_refactor"
+    GIT_TAG             "master"
 )
 
 FetchContent_Declare(mbed_trace_decl
     GIT_REPOSITORY      ${mbed_trace_repo}
-    GIT_TAG             "cmake_refactor"
+    GIT_TAG             "master"
 )
 
 message("Project name " ${CMAKE_PROJECT_NAME})
