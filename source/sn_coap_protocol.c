@@ -2060,6 +2060,16 @@ static sn_coap_hdr_s *sn_coap_handle_blockwise_message(struct coap_s *handle, sn
                         }
                         src_coap_blockwise_ack_msg_ptr->token_len = received_coap_msg_ptr->token_len;
                     }
+                    if (previous_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr->uri_query_ptr) {
+
+                        src_coap_blockwise_ack_msg_ptr->options_list_ptr->uri_query_ptr = sn_coap_protocol_malloc_copy(handle, previous_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr->uri_query_ptr, previous_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr->uri_query_len);
+                        if (!src_coap_blockwise_ack_msg_ptr->options_list_ptr->uri_query_ptr) {
+                            sn_coap_parser_release_allocated_coap_msg_mem(handle, src_coap_blockwise_ack_msg_ptr);
+                            tr_error("sn_coap_handle_blockwise_message - failed to allocate for uri query ptr!");
+                            return NULL;
+                        }
+                        src_coap_blockwise_ack_msg_ptr->options_list_ptr->uri_query_len = previous_blockwise_msg_ptr->coap_msg_ptr->options_list_ptr->uri_query_len;
+                    }
 
                     sn_coap_protocol_linked_list_blockwise_msg_remove(handle, previous_blockwise_msg_ptr);
 
