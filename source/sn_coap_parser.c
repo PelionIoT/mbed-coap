@@ -668,7 +668,7 @@ static const uint8_t * sn_coap_parser_options_parse(const uint8_t * restrict pac
                 break;
 
             case COAP_OPTION_OBSERVE:
-                if ((option_len > 2) || dst_coap_msg_ptr->options_list_ptr->observe != COAP_OBSERVE_NONE) {
+                if ((option_len > 3) || dst_coap_msg_ptr->options_list_ptr->observe != COAP_OBSERVE_NONE) {
                     tr_error("sn_coap_parser_options_parse - COAP_OPTION_OBSERVE not valid!");
                     return NULL;
                 }
